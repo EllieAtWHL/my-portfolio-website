@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Simple override for Spurs Women page */
+[data-path="spurs-women"] {
+  --color-spurs-navy: #081521;
+  --color-spurs-light: #f5f7fa;
+  --color-link-dark: #78BEE8;
+  --color-link-light: #132257;
+}
+
+/* Force background to use correct variables */
+[data-path="spurs-women"] body {
+  background: linear-gradient(135deg, #0a1929 0%, #0d1b2a 50%, #081521 100%) !important;
+  color: #ffffff !important;
+}
+
+/* Navbar background fix */
+[data-path="spurs-women"] nav {
+  background: #081521 !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+}
+
+/* Default links - light blue for dark mode, darker navy for light mode */
+[data-path="spurs-women"] a {
+  @apply text-[#78BEE8] hover:opacity-80 transition-opacity;
+}
+
+/* Navbar is always dark, so links should always be light */
+[data-path="spurs-women"] nav a {
+  color: #78BEE8 !important;
+  transition: opacity 0.2s;
+}
+
+[data-path="spurs-women"] nav a:hover {
+  opacity: 0.8;
+}
+
+/* Stadium light gradient noise overlay */
+[data-path="spurs-women"] .bg-noise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.1'/%3E%3C/svg%3E");
+  opacity: 0.12;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Ensure content appears above noise */
+[data-path="spurs-women"] main {
+  position: relative;
+  z-index: 2;
+}
