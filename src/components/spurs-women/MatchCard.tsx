@@ -1,8 +1,25 @@
 import Link from 'next/link';
+import { Card } from '@/components/Card';
+
+// Simple function to clean color values from database
+function cleanColorValue(color: string): string {
+  if (!color) return 'gray-600';
+  
+  // Remove brackets if present: [red-600] -> red-600
+  let cleaned = color.replace(/^\[|\]$/g, '');
+  
+  // Return the Tailwind color name directly
+  return cleaned;
+}
 
 // Simple function to generate Tailwind classes from database colors
 function getColorClasses(primaryColor: string, secondaryColor: string) {
-  return `bg-${primaryColor} text-${secondaryColor}`;
+  const cleanPrimary = cleanColorValue(primaryColor);
+  const cleanSecondary = cleanColorValue(secondaryColor);
+  
+  // Generate standard Tailwind classes, not arbitrary values
+  const classes = `bg-${cleanPrimary} text-${cleanSecondary}`;
+  return classes;
 }
 
 type MatchProps = {
@@ -41,10 +58,10 @@ export default function MatchCard({ match }: MatchProps) {
   const awayScore = match.is_home_match ? match.opponent_score : match.spurs_score;
 
   return (
-    <Link href={`/matches/${match.id}`} className="block">
-      <div className="spurs-card">
+    <Link href={`/spurs-women/matches/${match.id}`} className="block">
+      <Card variant="accent" padding="md" className="spurs-match-card relative mb-4 lg:mb-6">
         {/* Date at top center */}
-        <div className="text-center text-sm text-spurs-gray mb-2 flex justify-center items-center gap-4">
+        <div className="text-center text-sm mb-2 flex justify-center items-center gap-4">
           {new Date(match.date).toLocaleDateString()}
           {match.competitions?.name && (
             <span className="text-spurs-gray" title={match.competitions.name}>
@@ -80,7 +97,7 @@ export default function MatchCard({ match }: MatchProps) {
                 {match.away_team.name}
               </span>
             </div>
-            <div className="text-lg font-semibold">{homeScore} - {awayScore}</div>
+            <div className="text-lg font-semibold text-spurs-navy">{homeScore} - {awayScore}</div>
           </div>
           
           {/* Desktop layout: score between teams */}
@@ -88,13 +105,13 @@ export default function MatchCard({ match }: MatchProps) {
             <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getColorClasses(match.home_team.primary_color, match.home_team.secondary_color)}`}>
               {match.home_team.name}
             </span>
-            <span className="absolute left-1/2 transform -translate-x-1/2 text-xl font-semibold">{homeScore} - {awayScore}</span>
+            <span className="absolute left-1/2 transform -translate-x-1/2 text-xl font-semibold text-spurs-navy">{homeScore} - {awayScore}</span>
             <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getColorClasses(match.away_team.primary_color, match.away_team.secondary_color)}`}>
               {match.away_team.name}
             </span>
           </div>
         </div>
-      </div>
+      </Card>
     </Link>
   );
 }

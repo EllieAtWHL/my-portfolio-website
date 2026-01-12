@@ -6,6 +6,7 @@ import MatchCard from '@/components/spurs-women/MatchCard';
 import NewsCard from '@/components/spurs-women/NewsCard';
 import PodcastCard from '@/components/spurs-women/PodcastCard';
 import VideoCard from '@/components/spurs-women/VideoCard';
+import { supabase } from '@/lib/supabase';
 
 interface NewsArticle {
   title: string;
@@ -50,13 +51,54 @@ export default function HomePage() {
     document.title = 'Home - Tottenham Hotspur Women';
     
     async function fetchMatches() {
+      const now = new Date().toISOString();
+      
       try {
-        // For now, use mock data since we don't have Supabase setup in this portfolio
-        setUpcomingMatches([]);
-        setPreviousMatches([]);
+        // Fetch upcoming matches (next 3)
+        const { data: upcoming, error: upcomingError } = await supabase
+          .from('matches')
+          .select(`
+            *,
+            home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
+            away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
+            competitions(name, icon_svg)
+          `)
+          .gte('date', now)
+          .order('date', { ascending: true })
+          .limit(3);
+        
+        // Fetch previous matches (last 3)
+        const { data: previous, error: previousError } = await supabase
+          .from('matches')
+          .select(`
+            *,
+            home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
+            away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
+            competitions(name, icon_svg)
+          `)
+          .lt('date', now)
+          .order('date', { ascending: false })
+          .limit(3);
+        
+        if (upcomingError) {
+          console.error('Error fetching upcoming matches:', upcomingError);
+          setUpcomingMatches([]);
+        } else {
+          setUpcomingMatches(upcoming || []);
+        }
+        
+        if (previousError) {
+          console.error('Error fetching previous matches:', previousError);
+          setPreviousMatches([]);
+        } else {
+          setPreviousMatches(previous || []);
+        }
       } catch (error) {
         console.error('Error fetching matches:', error);
+        setUpcomingMatches([]);
+        setPreviousMatches([]);
       }
+      
       setMatchesLoading(false);
     }
 
@@ -103,12 +145,12 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div>
+    <div className="container mx-auto px-4 max-w-7xl">
       <h1 className="text-3xl font-bold mb-8 text-center text-white">Tottenham Hotspur Women</h1>
 
-      <div className="lg:grid lg:grid-cols-2 lg:gap-8 space-y-8 lg:space-y-0">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Upcoming Matches Section */}
-        <section>
+        <div className="w-full">
           <h2 className="text-2xl font-semibold mb-4 text-white">Next 3 Matches</h2>
           <div className="space-y-4">
             {matchesLoading ? (
@@ -124,10 +166,10 @@ export default function HomePage() {
               <p className="text-spurs-gray italic">No upcoming matches scheduled</p>
             )}
           </div>
-        </section>
+        </div>
 
         {/* Previous Matches Section */}
-        <section>
+        <div className="w-full">
           <h2 className="text-2xl font-semibold mb-4 text-white">Previous 3 Matches</h2>
           <div className="space-y-4">
             {matchesLoading ? (
@@ -143,7 +185,7 @@ export default function HomePage() {
               <p className="text-spurs-gray italic">No previous matches</p>
             )}
           </div>
-        </section>
+        </div>
       </div>
 
       {/* Link to Seasons page */}
