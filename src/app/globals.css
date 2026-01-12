@@ -3316,3 +3316,93 @@ body:not(.dark) .button.primary:hover {
   width: 100% !important;
   max-width: 100% !important;
 }
+
+/* ===================================
+   SPURS WOMEN STYLING
+   =================================== */
+
+/* Only override colors for Spurs Women pages */
+.spurs-women-navbar {
+  background: linear-gradient(135deg, #132257 0%, #1e3a8a 50%, #1e40af 100%) !important;
+}
+
+.spurs-brand-text {
+  color: #ffffff;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  margin-left: 1rem;
+}
+
+.spurs-logo {
+  /* Remove border to keep logo clean */
+}
+
+.spurs-navbar-links li a {
+  color: #ffffff !important;
+}
+
+/* More specific selectors to override main site styles */
+footer.spurs-women-footer .navbar-links li:hover a,
+.spurs-women-navbar .spurs-navbar-links li:hover a {
+  background: rgba(96, 165, 250, 0.3) !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
+  transform: translateY(-2px) !important;
+  color: #ffffff !important;
+}
+
+/* Override link colors for Spurs Women */
+.spurs-women-footer .findMe a.linktree-link,
+.spurs-women-footer a {
+  color: #60a5fa !important;
+  text-decoration: underline !important;
+  text-decoration-color: #60a5fa !important;
+  text-decoration-thickness: 2px !important;
+}
+
+.spurs-women-footer .findMe a.linktree-link:hover,
+.spurs-women-footer a:hover {
+  color: #93c5fd !important;
+  text-decoration-color: #93c5fd !important;
+}
+
+/* Dark mode styles for Spurs Women */
+.spurs-women-navbar.dark {
+  background: linear-gradient(135deg, #0a1929 0%, #1e293b 50%, #334155 100%) !important;
+}
+
+.spurs-women-navbar.dark .spurs-navbar-links li:hover a {
+  background: rgba(59, 130, 246, 0.3) !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
+}
+
+/* Spurs Women Footer */
+.spurs-women-footer {
+  background: linear-gradient(135deg, #132257 0%, #1e3a8a 50%, #1e40af 100%) !important;
+  border-top: 2px solid #60a5fa;
+}
+
+.spurs-women-footer.dark {
+  background: linear-gradient(135deg, #0a1929 0%, #1e293b 50%, #334155 100%) !important;
+}
+
+/* Spurs Women dark mode toggle styling */
+.spurs-women-footer .switch input:checked + .slider {
+  background-color: #1e3a8a !important;
+}
+
+.spurs-women-footer .switch input:checked + .slider:before {
+  background: #ffffff !important;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .spurs-navbar-links {
+    background: linear-gradient(135deg, #132257 0%, #1e3a8a 100%) !important;
+  }
+  
+  .spurs-dark-mode-toggle {
+    right: 1rem;
+    top: 1rem;
+  }
+}

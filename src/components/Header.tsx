@@ -4,11 +4,13 @@ import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useTheme } from './ThemeProvider';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
   const isSpursWomen = pathname?.startsWith('/spurs-women');
+  const { isDarkMode } = useTheme();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -33,12 +35,12 @@ export default function Header() {
   };
 
   return (
-    <header className="navbar">
-      <div className="brand-title">
+    <header className={`navbar ${isSpursWomen ? 'spurs-women-navbar' : ''} ${isDarkMode ? 'dark' : ''}`}>
+      <div className={`brand-title ${isSpursWomen ? 'spurs-brand-title' : ''}`}>
         <Link href="/">
           <Image 
             src="/logo.png" 
-            alt="EllieAtWHL" 
+            alt={"EllieAtWHL"} 
             width={50}
             height={50}
             className="logo"
@@ -47,19 +49,19 @@ export default function Header() {
       </div>
       
       <div 
-        className="toggle-button"
+        className={`toggle-button ${isSpursWomen ? 'spurs-toggle-button' : ''}`}
         onClick={toggleMenu}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => e.key === 'Enter' && toggleMenu()}
         aria-label="Toggle menu"
       >
-        <span className="bar"></span>
-        <span className="bar"></span>
-        <span className="bar"></span>
+        <span className={`bar ${isSpursWomen ? 'spurs-bar' : ''}`}></span>
+        <span className={`bar ${isSpursWomen ? 'spurs-bar' : ''}`}></span>
+        <span className={`bar ${isSpursWomen ? 'spurs-bar' : ''}`}></span>
       </div>
 
-      <nav className={`navbar-links ${isMenuOpen ? 'active' : ''}`}>
+      <nav className={`navbar-links ${isMenuOpen ? 'active' : ''} ${isSpursWomen ? 'spurs-navbar-links' : ''}`}>
         <ul>
           {navItems.map((item) => (
             <li key={item.href}>
