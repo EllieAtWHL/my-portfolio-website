@@ -1,4 +1,8 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# My Portfolio Website
+
+> **📋 Project Architecture:** See `reference/PROJECT_CONTEXT.md` for the complete architectural guide, technical decisions, and project boundaries.
+
+This is a [Next.js](https://nextjs.org) project that consolidates my personal portfolio and an unofficial Spurs Women fan site into a single application.
 
 ## Getting Started
 
