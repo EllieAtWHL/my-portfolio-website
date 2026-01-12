@@ -8,12 +8,12 @@ interface VideoCardProps {
 
 export default function VideoCard({ video }: VideoCardProps) {
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+    <div className="spurs-card overflow-hidden">
       <a 
         href={video.link} 
         target="_blank" 
         rel="noopener noreferrer"
-        className="block"
+        className="block spurs-link"
       >
         <div className="w-full bg-gray-200">
           {video.thumbnail ? (
@@ -35,10 +35,10 @@ export default function VideoCard({ video }: VideoCardProps) {
           )}
         </div>
         <div className="p-4">
-          <h3 className="font-semibold text-gray-900 line-clamp-2 text-sm mb-2">
+          <h3 className="font-semibold text-spurs-navy line-clamp-2 text-sm mb-2">
             {video.title}
           </h3>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-spurs-gray">
             {new Date(video.pubDate).toLocaleDateString()}
           </p>
         </div>

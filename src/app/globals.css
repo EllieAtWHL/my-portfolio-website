@@ -52,6 +52,15 @@ html[data-theme-loading] {
   --warning-dark-text: #ffeaa7;
   --slider-gray: #ccc;
   --button-hover-light: #d1e7d1;
+  
+  /* Spurs Women Theme Colors */
+  --spurs-navy: #081521;
+  --spurs-navy-light: #0d1b2a;
+  --spurs-navy-lighter: #1a2f42;
+  --spurs-blue: #78BEE8;
+  --spurs-blue-light: #a8d0e8;
+  --spurs-white: #f5f7fa;
+  --spurs-gray: #64748b;
 }
 
 /* Prevent flash of incorrect theme */
@@ -3404,5 +3413,149 @@ footer.spurs-women-footer .navbar-links li:hover a,
   .spurs-dark-mode-toggle {
     right: 1rem;
     top: 1rem;
+  }
+}
+
+/* Spurs Women Section Styles */
+[data-path="spurs-women"] {
+  /* Light mode: white background */
+  background: var(--bg-white);
+  color: var(--spurs-navy);
+}
+
+/* Dark mode for Spurs Women */
+.dark [data-path="spurs-women"],
+.dark [data-path="spurs-women"] .content {
+  /* Dark mode: clear navy blue background */
+  background: #081521 !important;
+  color: #ffffff !important;
+}
+
+/* Spurs Women Layout Adjustments */
+[data-path="spurs-women"] .content {
+  background: transparent;
+}
+
+/* Spurs Women Cards */
+.spurs-card {
+  background: var(--bg-white);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid var(--spurs-blue);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.spurs-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.spurs-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--spurs-blue), var(--spurs-blue-light));
+}
+
+/* Dark mode for Spurs Women cards */
+.dark .spurs-card {
+  background: rgba(6, 21, 6, 0.5);
+  border-left-color: var(--spurs-blue);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Spurs Women Links */
+.spurs-link {
+  color: var(--spurs-blue);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.spurs-link:hover {
+  color: var(--spurs-blue-light);
+  text-decoration: underline;
+}
+
+/* Spurs Women Buttons */
+.spurs-button {
+  display: inline-block;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, var(--spurs-navy) 0%, var(--spurs-navy-light) 100%);
+  color: var(--spurs-white);
+  border: none;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(8, 21, 33, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.spurs-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(8, 21, 33, 0.4);
+  color: var(--spurs-white);
+  text-decoration: none;
+}
+
+/* Spurs Women Section Headers */
+[data-path="spurs-women"] h1,
+[data-path="spurs-women"] h2,
+[data-path="spurs-women"] h3 {
+  color: var(--spurs-navy);
+}
+
+.dark [data-path="spurs-women"] h1,
+.dark [data-path="spurs-women"] h2,
+.dark [data-path="spurs-women"] h3 {
+  color: var(--dark-text);
+}
+
+/* Spurs Women Loading Spinner */
+.spurs-spinner {
+  border-color: var(--spurs-navy);
+  border-top-color: var(--spurs-blue);
+}
+
+.dark .spurs-spinner {
+  border-color: var(--dark-text);
+  border-top-color: var(--spurs-blue);
+}
+
+[data-path="spurs-women"] .scrollable {
+  padding-bottom: 120px; /* Account for fixed footer */
+}
+
+/* Ensure proper spacing in Spurs women sections */
+[data-path="spurs-women"] section {
+  margin-bottom: 3rem;
+}
+
+[data-path="spurs-women"] section:last-child {
+  margin-bottom: 0;
+}
+
+/* Grid layouts for Spurs women content */
+[data-path="spurs-women"] .grid {
+  gap: 1.5rem;
+}
+
+/* Responsive adjustments for Spurs women */
+@media (max-width: 768px) {
+  [data-path="spurs-women"] .scrollable {
+    padding-bottom: 120px;
+  }
+  
+  [data-path="spurs-women"] section {
+    margin-bottom: 2rem;
   }
 }

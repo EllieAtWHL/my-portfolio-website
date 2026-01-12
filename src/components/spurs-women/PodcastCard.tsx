@@ -17,23 +17,23 @@ interface PodcastCardProps {
 
 export default function PodcastCard({ episode }: PodcastCardProps) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border border-gray-200 dark:border-gray-700">
+    <div className="spurs-card">
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
-          <h3 className="font-semibold text-lg text-gray-900 dark:text-white mb-1">
+          <h3 className="font-semibold text-lg text-spurs-navy mb-1">
             {episode.episodeNumber}
           </h3>
-          <h4 className="text-md font-medium text-spurs-navy dark:text-blue-400 mb-2">
+          <h4 className="text-md font-medium text-spurs-navy mb-2">
             {episode.title}
           </h4>
         </div>
       </div>
       
-      <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
+      <p className="text-gray-600 text-sm mb-4 line-clamp-3">
         {episode.description}
       </p>
       
-      <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-4">
+      <div className="flex items-center justify-between text-xs text-spurs-gray mb-4">
         <span>{episode.duration}</span>
         <span>{episode.publishDate}</span>
       </div>
@@ -42,7 +42,7 @@ export default function PodcastCard({ episode }: PodcastCardProps) {
         href={episode.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center justify-center w-full bg-spurs-navy hover:bg-blue-800 text-white font-medium py-2 px-4 rounded transition-colors"
+        className="spurs-button inline-flex items-center justify-center w-full"
       >
         Listen Now
         <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
