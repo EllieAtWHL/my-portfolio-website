@@ -70,3 +70,59 @@
   color: #ffffff !important;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3) !important;
 }
+
+/* Override spurs-link colors for dark mode */
+.dark [data-path="spurs-women"] .spurs-link {
+  color: #ffffff !important;
+}
+
+.dark [data-path="spurs-women"] .spurs-link:hover {
+  color: #78BEE8 !important;
+}
+
+/* Override text-spurs-navy and other spurs text colors for dark mode */
+.dark [data-path="spurs-women"] .text-spurs-navy {
+  color: #ffffff !important;
+}
+
+.dark [data-path="spurs-women"] h2,
+.dark [data-path="spurs-women"] h3,
+.dark [data-path="spurs-women"] h4 {
+  color: #ffffff !important;
+}
+
+/* More specific overrides for NewsCard elements */
+.dark [data-path="spurs-women"] .spurs-card h3,
+.dark [data-path="spurs-women"] .spurs-card .text-spurs-navy {
+  color: #ffffff !important;
+}
+
+.dark [data-path="spurs-women"] .spurs-card .spurs-link {
+  color: #ffffff !important;
+}
+
+.dark [data-path="spurs-women"] .spurs-card .spurs-link:hover {
+  color: #78BEE8 !important;
+}
+
+/* Override gray text in dark mode */
+.dark [data-path="spurs-women"] .text-spurs-gray,
+.dark [data-path="spurs-women"] .text-gray-700 {
+  color: #d1d5db !important;
+}
+
+/* Force all text elements to use correct colors in dark mode */
+.dark [data-path="spurs-women"] * {
+  --spurs-navy: #ffffff !important;
+  --spurs-blue: #78BEE8 !important;
+  --spurs-gray: #d1d5db !important;
+}
+
+/* Override any remaining problematic text colors */
+.dark [data-path="spurs-women"] [class*="text-spurs-"] {
+  color: #ffffff !important;
+}
+
+.dark [data-path="spurs-women"] [class*="text-gray-"] {
+  color: #d1d5db !important;
+}

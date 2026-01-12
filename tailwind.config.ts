@@ -16,6 +16,15 @@ const config: Config = {
         'third-colour': 'hsl(113, 75%, 7.5%)',
         'success-color': 'hsl(113, 90%, 15%)',
         'error-color': 'rgb(194, 62, 62)',
+        
+        // Spurs Women theme colors
+        'spurs-navy': '#081521',
+        'spurs-navy-light': '#0d1b2a',
+        'spurs-navy-lighter': '#1a2f42',
+        'spurs-blue': '#78BEE8',
+        'spurs-blue-light': '#a8d0e8',
+        'spurs-white': '#f5f7fa',
+        'spurs-gray': '#64748b',
       },
       fontFamily: {
         'nokora': ['Nokora', 'Arial', 'Helvetica', 'sans-serif'],
