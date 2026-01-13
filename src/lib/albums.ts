@@ -1,4 +1,4 @@
-import { supabase } from '@utils/supabase';
+import { supabase } from '@/utils/supabase';
 import { AlbumPhoto } from '../types/album';
 
 export async function getAlbumPhotos(bucket: string, path: string): Promise<AlbumPhoto[]> {

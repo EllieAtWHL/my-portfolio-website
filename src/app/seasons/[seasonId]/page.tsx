@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { supabase } from '@utils/supabase';
-import MatchCard from '@components/MatchCard';
+import { supabase } from '@/utils/supabase';
+import MatchCard from '@/components/spurs-women/MatchCard';
 
 type Match = {
   id: number;

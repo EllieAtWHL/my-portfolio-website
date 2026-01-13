@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import MatchCard from '@components/MatchCard';
-import { supabase } from '@utils/supabase';
+import MatchCard from '@/components/spurs-women/MatchCard';
+import { supabase } from '@/utils/supabase';
 
 export default function MatchesPage() {
   const [allMatches, setAllMatches] = useState<any[]>([]);

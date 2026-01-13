@@ -6,7 +6,7 @@ import MatchCard from '@/components/spurs-women/MatchCard';
 import NewsCard from '@/components/spurs-women/NewsCard';
 import PodcastCard from '@/components/spurs-women/PodcastCard';
 import VideoCard from '@/components/spurs-women/VideoCard';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/utils/supabase';
 
 interface NewsArticle {
   title: string;

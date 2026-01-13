@@ -474,3 +474,42 @@ footer.spurs-women-footer .navbar-links li:hover a,
 .dark [data-path="spurs-women"] .spurs-match-card > div:first-child {
   color: var(--spurs-blue) !important;
 }
+
+/* ===================================
+   SPURS WOMEN SEASON CARDS
+   =================================== */
+
+/* Season cards - use Spurs Women theme instead of green accent */
+.spurs-season-card,
+.spurs-season-card.accent-card {
+  position: relative;
+  border-left-color: var(--spurs-navy) !important;
+  background: var(--spurs-white);
+}
+
+/* Dark mode for Spurs Women season cards */
+.dark [data-path="spurs-women"] .spurs-season-card,
+.dark [data-path="spurs-women"] .spurs-season-card.accent-card {
+  background: var(--spurs-navy-lighter) !important;
+  border-left-color: var(--spurs-blue) !important;
+}
+
+/* Ensure season card text follows Spurs Women color scheme */
+[data-path="spurs-women"] .spurs-season-card h2,
+[data-path="spurs-women"] .spurs-season-card .text-xl {
+  color: var(--spurs-navy) !important;
+}
+
+.dark [data-path="spurs-women"] .spurs-season-card h2,
+.dark [data-path="spurs-women"] .spurs-season-card .text-xl {
+  color: #ffffff !important;
+}
+
+/* Season card match count text */
+[data-path="spurs-women"] .spurs-season-card .text-spurs-gray {
+  color: var(--spurs-gray) !important;
+}
+
+.dark [data-path="spurs-women"] .spurs-season-card .text-spurs-gray {
+  color: #d1d5db !important;
+}

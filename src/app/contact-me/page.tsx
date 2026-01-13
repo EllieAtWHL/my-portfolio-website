@@ -71,14 +71,14 @@ export default function ContactMe() {
                 <input 
                   type="hidden" 
                   name="retURL" 
-                  value="https://www.ellieatwhl.co.uk/contact-me/thank-you"
+                  value="/contact-me/thank-you"
                 />
                 
                 {/* NOTE: These fields are optional debugging elements. Please uncomment */}
                 {/* these lines if you wish to test in debug mode. */}
-                {/* <input type="hidden" name="debug" value=1> */}
+                {/* <input type="hidden" name="debug" value="1" /> */}
                 {/* <input type="hidden" name="debugEmail" */}
-                {/* value="eleanormatthewman+salesforce@gmail.com"> */}
+                {/* value="eleanormatthewman+salesforce@gmail.com" /> */}
                 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
