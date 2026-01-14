@@ -17,10 +17,8 @@ export default function SpursWomenLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div data-path="spurs-women" className="min-h-screen relative">
-      <div className="content">
-        <main className="scrollable">{children}</main>
-      </div>
+    <div data-path="spurs-women" className="min-h-screen relative bg-noise">
+      {children}
     </div>
   );
 }

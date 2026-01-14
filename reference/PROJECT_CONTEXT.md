@@ -137,8 +137,9 @@ styles/
 
   - Tailwind CSS is the primary styling mechanism.
   - No inline styles unless absolutely unavoidable.
-  - Use CSS variables (via Tailwind config and `:root`) for:
-    - Colours
+  - **ALWAYS use CSS variables (via Tailwind config and `:root`) for colors - never hardcode color values in CSS**
+  - Use CSS variables for:
+    - Colours (mandatory - no hardcoded hex values)
     - Spacing where appropriate
     - Font decisions
   - Design tokens should be defined once and reused.

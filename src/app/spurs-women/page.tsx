@@ -145,36 +145,36 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="container mx-auto px-4 max-w-7xl">
-      <h1 className="text-3xl font-bold mb-8 text-center text-white">Tottenham Hotspur Women</h1>
+    <main className="p-8">
+      <h1 className="text-3xl font-bold mb-8 text-center">Tottenham Hotspur Women</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="lg:grid lg:grid-cols-2 lg:gap-8 space-y-8 lg:space-y-0">
         {/* Upcoming Matches Section */}
-        <div className="w-full">
-          <h2 className="text-2xl font-semibold mb-4 text-white">Next 3 Matches</h2>
-          <div className="space-y-4">
-            {matchesLoading ? (
-              <div className="flex justify-center items-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 spurs-spinner"></div>
-                <span className="ml-2 text-spurs-gray">Loading matches...</span>
-              </div>
-            ) : upcomingMatches.length > 0 ? (
-              upcomingMatches.map((match) => (
-                <MatchCard key={match.id} match={match} />
-              ))
-            ) : (
-              <p className="text-spurs-gray italic">No upcoming matches scheduled</p>
-            )}
-          </div>
-        </div>
+        <section>
+            <h2 className="text-2xl font-semibold mb-4">Next 3 Matches</h2>
+            <div className="space-y-4">
+              {matchesLoading ? (
+                <div className="flex justify-center items-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <span className="ml-2 text-gray-600">Loading matches...</span>
+                </div>
+              ) : upcomingMatches.length > 0 ? (
+                upcomingMatches.map((match) => (
+                  <MatchCard key={match.id} match={match} />
+                ))
+              ) : (
+                <p className="text-gray-500 italic">No upcoming matches scheduled</p>
+              )}
+            </div>
+        </section>
 
         {/* Previous Matches Section */}
-        <div className="w-full">
-          <h2 className="text-2xl font-semibold mb-4 text-white">Previous 3 Matches</h2>
+        <section>
+          <h2 className="text-2xl font-semibold mb-4">Previous 3 Matches</h2>
           <div className="space-y-4">
             {matchesLoading ? (
-              <div className="flex justify-center items-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 spurs-spinner"></div>
+            <div className="flex justify-center items-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
                 <span className="ml-2 text-spurs-gray">Loading matches...</span>
               </div>
             ) : previousMatches.length > 0 ? (
@@ -182,17 +182,17 @@ export default function HomePage() {
                 <MatchCard key={match.id} match={match} />
               ))
             ) : (
-              <p className="text-spurs-gray italic">No previous matches</p>
+              <p className="text-gray-500 italic">No previous matches</p>
             )}
           </div>
-        </div>
+        </section>
       </div>
 
       {/* Link to Seasons page */}
       <div className="mt-12 text-center">
         <Link
           href="/spurs-women/seasons"
-          className="spurs-button"
+          className="inline-block bg-blue-900 text-white px-6 py-3 rounded hover:bg-blue-800 transition-colors"
         >
           View All Seasons
         </Link>
@@ -202,11 +202,11 @@ export default function HomePage() {
       <div className="mt-12 space-y-12">
         {/* Spurs Women News Section */}
         <section>
-          <h2 className="text-2xl font-semibold mb-6 text-center text-white">Latest Spurs Women News</h2>
+          <h2 className="text-2xl font-semibold mb-6 text-center">Latest Spurs Women News</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {newsLoading ? (
               <div className="col-span-full flex justify-center items-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 spurs-spinner"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                 <span className="ml-2 text-spurs-gray">Loading news...</span>
               </div>
             ) : spursNews.length > 0 ? (
@@ -214,7 +214,7 @@ export default function HomePage() {
                 <NewsCard key={`${article.guid}-${index}`} article={article} />
               ))
             ) : (
-              <div className="col-span-full text-center text-spurs-gray italic">
+              <div className="col-span-full text-center text-gray-500 italic">
                 No Spurs Women news available at the moment.
               </div>
             )}
@@ -223,48 +223,48 @@ export default function HomePage() {
 
         {/* Spurs Women Podcasts Section */}
         <section>
-          <h2 className="text-2xl font-semibold mb-6 text-center text-white">Latest Podcast Episodes</h2>
+          <h2 className="text-2xl font-semibold mb-6 text-center">Latest Podcast Episodes</h2>
           <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-6">
             {podcastEpisodes.length > 0 ? (
               podcastEpisodes.slice(0, 2).map((episode, index) => (
                 <PodcastCard key={`${episode.episodeNumber}-${index}`} episode={episode} />
               ))
             ) : (
-              <div className="col-span-full text-center text-spurs-gray italic">
+              <div className="col-span-full text-center text-gray-500 italic">
                 No podcast episodes available at the moment.
               </div>
             )}
           </div>
           <div className="mt-6 text-center">
-            <p className="text-spurs-gray text-sm mb-4">
-              Featuring N17 Women (dedicated Spurs Women podcast) and Hometown Glory (Spurs culture)
+            <p className="text-gray-600 dark:text-gray-400  text-sm mb-4">
+              Featuring N17 Women (dedicated Spurs Women podcast) and Hometown Glory (Spurs culture). I have no affiliation with these podcasts.
             </p>
           </div>
         </section>
 
         {/* Spurs Women Videos Section */}
         <section>
-          <h2 className="text-2xl font-semibold mb-6 text-center text-white">Latest Videos</h2>
+          <h2 className="text-2xl font-semibold mb-6 text-center">Latest Videos</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {videos.length > 0 ? (
               videos.map((video, index) => (
                 <VideoCard key={`${video.videoId}-${index}`} video={video} />
               ))
             ) : (
-              <div className="col-span-full text-center text-spurs-gray italic">
+              <div className="col-span-full text-center text-gray-500 italic">
                 No videos available at the moment.
               </div>
             )}
           </div>
           <div className="mt-6 text-center">
-            <p className="text-spurs-gray text-sm mb-4">
+            <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
               Official videos from the Spurs Women YouTube channel
             </p>
             <a
               href="https://www.youtube.com/@SpursWomen"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center spurs-link text-sm font-medium"
+              className="inline-flex items-center text-red-600 hover:text-red-700 text-sm font-medium"
             >
               <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
@@ -274,6 +274,6 @@ export default function HomePage() {
           </div>
         </section>
       </div>
-    </div>
+    </main>
   );
 }
