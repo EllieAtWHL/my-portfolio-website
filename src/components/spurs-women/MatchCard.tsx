@@ -1,9 +1,12 @@
 import Link from 'next/link';
 import { Card } from '@/components/Card';
 
-// Simple function to generate Tailwind classes from database colors
-function getColorClasses(primaryColor: string, secondaryColor: string) {
-  return `bg-${primaryColor} text-${secondaryColor}`;
+// Simple function to generate Tailwind classes from database colors with fallbacks
+function getColorClasses(primaryColor: string | null | undefined, secondaryColor: string | null | undefined) {
+  // Fallback to gray/white if colors are null or undefined
+  const primary = primaryColor || 'gray-500';
+  const secondary = secondaryColor || 'white';
+  return `bg-${primary} text-${secondary}`;
 }
 
 type MatchProps = {
@@ -14,18 +17,18 @@ type MatchProps = {
       id: number;
       name: string;
       short_name: string;
-      primary_color: string;
-      secondary_color: string;
+      primary_color: string | null;
+      secondary_color: string | null;
       is_tottenham: boolean;
-    };
+    } | null;
     away_team: {
       id: number;
       name: string;
       short_name: string;
-      primary_color: string;
-      secondary_color: string;
+      primary_color: string | null;
+      secondary_color: string | null;
       is_tottenham: boolean;
-    };
+    } | null;
     spurs_score: number;
     opponent_score: number;
     attended: boolean;
@@ -71,12 +74,12 @@ export default function MatchCard({ match }: MatchProps) {
         
         {/* Teams and Score - responsive layout */}
         <div className="grid grid-cols-3 items-center gap-2 text-center mb-6">
-          <span className={`inline-flex items-center justify-center px-2 py-1 rounded-full text-xs sm:px-3 sm:py-1 sm:text-sm font-medium ${getColorClasses(match.home_team.primary_color, match.home_team.secondary_color)}`}>
-            {match.home_team.name}
+          <span className={`inline-flex items-center justify-center px-2 py-1 rounded-full text-xs sm:px-3 sm:py-1 sm:text-sm font-medium ${getColorClasses(match.home_team?.primary_color, match.home_team?.secondary_color)}`}>
+            {match.home_team?.name || 'Unknown Team'}
           </span>
           <span className="spurs-text text-lg sm:text-xl font-semibold">{homeScore} - {awayScore}</span>
-          <span className={`inline-flex items-center justify-center px-2 py-1 rounded-full text-xs sm:px-3 sm:py-1 sm:text-sm font-medium ${getColorClasses(match.away_team.primary_color, match.away_team.secondary_color)}`}>
-            {match.away_team.name}
+          <span className={`inline-flex items-center justify-center px-2 py-1 rounded-full text-xs sm:px-3 sm:py-1 sm:text-sm font-medium ${getColorClasses(match.away_team?.primary_color, match.away_team?.secondary_color)}`}>
+            {match.away_team?.name || 'Unknown Team'}
           </span>
         </div>
       </Card>
