@@ -3506,3 +3506,10 @@ button.lightbox-nav-button:hover {
   text-decoration-color: currentColor;
   opacity: 0.8;
 }
+
+/* Spurs mobile navigation specific styles */
+@media (max-width: 768px) {
+  .spurs.navbar .navbar-links.spurs-links {
+    background: linear-gradient(135deg, var(--spurs-primary-dark) 0%, var(--spurs-primary-darker) 100%);
+  }
+}

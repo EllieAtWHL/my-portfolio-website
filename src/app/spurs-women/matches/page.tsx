@@ -92,7 +92,7 @@ export default function MatchesPage() {
           <h1 className="spurs-text text-3xl font-bold mb-4 text-center">All Tottenham Hotspur Women Matches</h1>
           
           {/* Filter buttons */}
-          <div className="flex justify-center gap-4 mb-6">
+          <div className="flex flex-col md:flex-row justify-center items-center gap-4 mb-6">
             <Button
               variant={'spurs'}
               onClick={() => setFilter('all')}
