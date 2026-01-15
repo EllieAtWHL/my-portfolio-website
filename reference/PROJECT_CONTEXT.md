@@ -495,6 +495,10 @@ From `reference/todo-list.md`:
 
 **Spurs Women Site:**
 - [ ] Fix the colour scheme in general
+- [ ] Ensure we have a backup primary and secondary colour in case they are not inut - and teamname probably too
+- [ ] Add players (starters, subds, unused bench)
+- [ ] Add match stats where available
+- [ ] Add external video media type
 
 ### Priority Action Items
 
