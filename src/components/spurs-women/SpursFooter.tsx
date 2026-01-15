@@ -1,5 +1,7 @@
 'use client';
 
+import BlueskyLogo from './BlueskyLogo';
+
 
 export default function Footer() {
 
@@ -7,14 +9,15 @@ export default function Footer() {
     <footer className={`spurs footer`}>
       <div className="findMe floatLeft">
         <p>
-          Find all my socials on{' '}
+          Follow me on {' '}
           <a
-            href="https://linktr.ee/EllieAtWHL"
+            href="https://bsky.app/profile/ellieatwhl.co.uk"
             target="_blank"
             rel="noopener noreferrer"
-            className="linktree-link spurs-text venue-link"
+            className="linktree-link spurs-text venue-link inline-flex items-center gap-1"
           >
-            Linktree
+            <BlueskyLogo size={16} className="inline-block" />
+            Bluesky
           </a>
         </p>
       </div>

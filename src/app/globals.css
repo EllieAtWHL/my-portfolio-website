@@ -3345,6 +3345,11 @@ body:not(.dark) .button.primary:hover {
   color: var(--spurs-dark-text);
 }
 
+/* Add bottom padding to main content to account for fixed footer */
+.spurs-wrapper main {
+  padding-bottom: 6rem; /* 96px - adjust based on footer height */
+}
+
 .spurs.navbar,
 .dark .spurs.navbar,
 .spurs.footer,
