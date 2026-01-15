@@ -29,7 +29,7 @@ export default function MatchInfo({ venue, attendance, notes, date, kickoff_time
   };
 
   return (
-    <Card variant="spursAccent" padding="md">
+    <Card variant="spursAccent" padding="md" hover={false}>
       <div className="mb-6">
         {date && (
           <p className="mb-2">
@@ -43,7 +43,7 @@ export default function MatchInfo({ venue, attendance, notes, date, kickoff_time
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-800 underline"
+              className="venue-link spurs-text underline decoration-2 hover:opacity-80"
             >
               {venue}
             </a>

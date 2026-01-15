@@ -7,6 +7,7 @@ import MatchHeader from '@/components/spurs-women/MatchHeader';
 import MatchInfo from '@/components/spurs-women/MatchInfo';
 import MediaGallery from '@/components/spurs-women/MediaGallery';
 import MediaList from '@/components/spurs-women/MediaList';
+import { Card } from '@/components/Card';
 import { Media, PhotoMedia } from '@/types/media';
 
 type Match = {
@@ -148,7 +149,9 @@ export default function MatchDetail() {
             date={match.date} 
             kickoff_time={match.kickoff_time} 
           />
-          <MediaList items={articles} title="Articles" />
+          <Card variant="spursAccent" padding="md">
+            <MediaList items={articles} title="Articles" />
+          </Card>
         </div>
 
         {/* Bottom section: Photos and social media */}

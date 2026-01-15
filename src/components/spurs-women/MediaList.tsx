@@ -19,7 +19,7 @@ export default function MediaList({ items, title }: MediaListProps) {
   const otherItems = items.filter(item => item.type !== 'social media');
 
   return (
-    <div className="mb-6">
+    <div>
       <h2 className="text-2xl font-bold mb-2">{title}</h2>
       
       {/* Social media items without bullet points */}

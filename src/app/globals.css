@@ -3479,3 +3479,19 @@ header.spurs.navbar .spurs-links li:hover a {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(120, 190, 232, 0.3);
 }
+
+/* Ensure venue link in MatchInfo has underline */
+.spurs-wrapper .venue-link.spurs-text,
+.dark .spurs-wrapper .venue-link.spurs-text {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-decoration-color: currentColor;
+}
+
+.spurs-wrapper .venue-link.spurs-text:hover,
+.dark .spurs-wrapper .venue-link.spurs-text:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-decoration-color: currentColor;
+  opacity: 0.8;
+}
