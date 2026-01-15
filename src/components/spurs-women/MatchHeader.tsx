@@ -40,7 +40,7 @@ export default function MatchHeader({ home_team, away_team, homeScore, awayScore
         </div>
       )}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
-        <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2 sm:gap-4 flex-wrap">
+        <h1 className="font-bold flex items-center gap-2 sm:gap-4 flex-wrap">
           <span>
             {home_team.name}
           </span>
@@ -61,3 +61,4 @@ export default function MatchHeader({ home_team, away_team, homeScore, awayScore
     </div>
   );
 }
+//TODO: Can we fix the H1 so the team names aren't so large!

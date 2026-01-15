@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/utils/supabase';
-import { PhotoMedia } from '../types/media';
+import { PhotoMedia } from '../../types/media';
 import LightboxGallery from './LightboxGallery';
 
 type MediaGalleryProps = {

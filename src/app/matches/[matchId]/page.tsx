@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { supabase } from '@/utils/supabase';
-import MatchHeader from '@/components/MatchHeader';
-import MatchInfo from '@/components/MatchInfo';
-import MediaGallery from '@/components/MediaGallery';
-import MediaList from '@/components/MediaList';
+import MatchHeader from '@/components/spurs-women/MatchHeader';
+import MatchInfo from '@/components/spurs-women/MatchInfo';
+import MediaGallery from '@/components/spurs-women/MediaGallery';
+import MediaList from '@/components/spurs-women/MediaList';
 import { Media, PhotoMedia } from '@/types/media';
 
 type Match = {

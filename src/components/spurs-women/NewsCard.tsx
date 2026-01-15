@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Card } from '@/components/Card';
 
 export interface NewsArticle {
   title: string;
@@ -28,14 +29,14 @@ export default function NewsCard({ article }: NewsCardProps) {
   };
 
   return (
-    <div className="spurs-card">
+    <Card variant="accent" padding="md">
       <div className="flex justify-between items-start mb-2">
-        <h3 className="text-lg font-semibold text-spurs-navy line-clamp-2 flex-1 mr-2">
+        <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-300 line-clamp-2 flex-1 mr-2">
           <Link 
             href={article.link} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="spurs-link hover:text-spurs-blue-light transition-colors"
+            className="over:text-blue-600 dark:hover:text-blue-400 transition-colors"
           >
             {article.title}
           </Link>
@@ -54,20 +55,20 @@ export default function NewsCard({ article }: NewsCardProps) {
           </span>
         )}
       </div>
-      <p className="text-sm text-spurs-gray mb-3">
+      <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
         {formatDate(article.isoDate)}
       </p>
-      <p className="text-gray-700 line-clamp-3">
+      <p className="text-gray-700 dark:text-gray-300 line-clamp-3">
         {article.contentSnippet}
       </p>
       <Link 
         href={article.link} 
         target="_blank" 
         rel="noopener noreferrer"
-        className="spurs-link inline-block mt-4 text-sm font-medium"
+        className="inline-block mt-4 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
       >
         Read more →
       </Link>
-    </div>
+    </Card>
   );
 }

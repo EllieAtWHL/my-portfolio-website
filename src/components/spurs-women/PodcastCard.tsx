@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Card } from '@/components/Card';
 
 interface PodcastEpisode {
   title: string;
@@ -17,7 +18,7 @@ interface PodcastCardProps {
 
 export default function PodcastCard({ episode }: PodcastCardProps) {
   return (
-    <div className="spurs-card">
+    <Card variant="accent" padding="md">
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
           <h3 className="font-semibold text-lg text-spurs-navy mb-1">
@@ -49,6 +50,6 @@ export default function PodcastCard({ episode }: PodcastCardProps) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
         </svg>
       </Link>
-    </div>
+    </Card>
   );
 }
