@@ -94,19 +94,19 @@ export default function MatchesPage() {
           {/* Filter buttons */}
           <div className="flex justify-center gap-4 mb-6">
             <Button
-              variant={filter === 'all' ? 'primary' : 'secondary'}
+              variant={'spurs'}
               onClick={() => setFilter('all')}
             >
               All Matches
             </Button>
             <Button
-              variant={filter === 'upcoming' ? 'primary' : 'secondary'}
+              variant={'spurs'}
               onClick={() => setFilter('upcoming')}
             >
               Upcoming Only
             </Button>
             <Button
-              variant={filter === 'previous' ? 'primary' : 'secondary'}
+              variant={'spurs'}
               onClick={() => setFilter('previous')}
             >
               Previous Only
@@ -147,7 +147,7 @@ export default function MatchesPage() {
         {/* Back to seasons link */}
         <div className="mt-12 text-center">
           <Link href="/spurs-women/seasons">
-            <Button variant="secondary">
+            <Button variant="spurs">
               Back to Seasons
             </Button>
           </Link>
