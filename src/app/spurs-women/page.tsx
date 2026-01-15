@@ -203,6 +203,11 @@ export default function HomePage() {
         {/* Spurs Women News Section */}
         <section>
           <h2 className="text-2xl font-semibold mb-6 text-center">Latest Spurs Women News</h2>
+          <div className="mt-6 mb-8 text-center">
+            <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
+              Curated feed from selected sources bringing you the latest Spurs Women news and updates
+            </p>
+          </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {newsLoading ? (
               <div className="col-span-full flex justify-center items-center py-12">
@@ -224,6 +229,11 @@ export default function HomePage() {
         {/* Spurs Women Podcasts Section */}
         <section>
           <h2 className="text-2xl font-semibold mb-6 text-center">Latest Podcast Episodes</h2>
+          <div className="mt-6 mb-8 text-center">
+            <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
+              Featuring N17 Women (dedicated Spurs Women podcast) and Hometown Glory (Spurs culture). These are independent podcast and are not affiliated with this website nor Tottenham Hotspur.
+            </p>
+          </div>
           <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-6">
             {podcastEpisodes.length > 0 ? (
               podcastEpisodes.slice(0, 2).map((episode, index) => (
@@ -235,28 +245,12 @@ export default function HomePage() {
               </div>
             )}
           </div>
-          <div className="mt-6 text-center">
-            <p className="text-gray-600 dark:text-gray-400  text-sm mb-4">
-              Featuring N17 Women (dedicated Spurs Women podcast) and Hometown Glory (Spurs culture). I have no affiliation with these podcasts.
-            </p>
-          </div>
         </section>
 
         {/* Spurs Women Videos Section */}
         <section>
           <h2 className="text-2xl font-semibold mb-6 text-center">Latest Videos</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {videos.length > 0 ? (
-              videos.map((video, index) => (
-                <VideoCard key={`${video.videoId}-${index}`} video={video} />
-              ))
-            ) : (
-              <div className="col-span-full text-center text-gray-500 italic">
-                No videos available at the moment.
-              </div>
-            )}
-          </div>
-          <div className="mt-6 text-center">
+          <div className="mt-6 mb-8 text-center">
             <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
               Official videos from the Spurs Women YouTube channel
             </p>
@@ -271,6 +265,17 @@ export default function HomePage() {
               </svg>
               Visit Spurs Women YouTube
             </a>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {videos.length > 0 ? (
+              videos.map((video, index) => (
+                <VideoCard key={`${video.videoId}-${index}`} video={video} />
+              ))
+            ) : (
+              <div className="col-span-full text-center text-gray-500 italic">
+                No videos available at the moment.
+              </div>
+            )}
           </div>
         </section>
       </div>
