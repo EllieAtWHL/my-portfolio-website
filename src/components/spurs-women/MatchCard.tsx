@@ -71,11 +71,11 @@ export default function MatchCard({ match }: MatchProps) {
         
         {/* Teams and Score - responsive layout */}
         <div className="grid grid-cols-3 items-center gap-2 text-center mb-6">
-          <span className={`inline-flex items-center justify-start px-2 py-1 rounded-full text-xs sm:px-3 sm:py-1 sm:text-sm font-medium ${getColorClasses(match.home_team.primary_color, match.home_team.secondary_color)}`}>
+          <span className={`inline-flex items-center justify-center px-2 py-1 rounded-full text-xs sm:px-3 sm:py-1 sm:text-sm font-medium ${getColorClasses(match.home_team.primary_color, match.home_team.secondary_color)}`}>
             {match.home_team.name}
           </span>
           <span className="spurs-text text-lg sm:text-xl font-semibold">{homeScore} - {awayScore}</span>
-          <span className={`inline-flex items-center justify-end px-2 py-1 rounded-full text-xs sm:px-3 sm:py-1 sm:text-sm font-medium ${getColorClasses(match.away_team.primary_color, match.away_team.secondary_color)}`}>
+          <span className={`inline-flex items-center justify-center px-2 py-1 rounded-full text-xs sm:px-3 sm:py-1 sm:text-sm font-medium ${getColorClasses(match.away_team.primary_color, match.away_team.secondary_color)}`}>
             {match.away_team.name}
           </span>
         </div>
