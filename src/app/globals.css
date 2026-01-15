@@ -3387,6 +3387,11 @@ header.spurs.navbar .spurs-links li:hover a {
   color: var(--spurs-dark-text);
 }
 
+a.spurs-text:hover,
+.dark a.spurs-text:hover {
+  text-decoration: none;
+}
+
 .spurs-accent-card {
   background: var(--spurs-dark-bg-1);
   border-left: 4px solid var(--spurs-primary-light);
@@ -3398,4 +3403,8 @@ header.spurs.navbar .spurs-links li:hover a {
 
 .spurs-accent-card p {
   color: var(--spurs-primary-light);
+}
+
+.test {
+  color: white;
 }

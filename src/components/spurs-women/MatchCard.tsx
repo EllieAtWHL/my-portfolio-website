@@ -42,7 +42,7 @@ export default function MatchCard({ match }: MatchProps) {
   const awayScore = match.is_home_match ? match.opponent_score : match.spurs_score;
 
   return (
-    <Link href={`/spurs-women/matches/${match.id}`} className="block">
+    <Link href={`/spurs-women/matches/${match.id}`} className="block spurs-text">
       <Card variant="spursAccent" padding="md">
         {/* Date at top center */}
         <div className="text-center text-sm spurs-text mb-2 flex justify-center items-center gap-4">
