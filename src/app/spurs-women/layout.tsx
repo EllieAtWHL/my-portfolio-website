@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import "./globals.css";
+import "../globals.css";
+import SpursHeader from "../../components/spurs-women/SpursHeader";
 
 export const metadata: Metadata = {
   title: "Tottenham Hotspur Women",
@@ -16,9 +17,12 @@ export default function SpursWomenLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <div data-path="spurs-women" className="min-h-screen relative bg-noise">
-      {children}
-    </div>
+  return (  
+    <>
+      <SpursHeader />
+      <div className="spurs-wrapper">
+        {children}
+      </div>
+    </>
   );
 }

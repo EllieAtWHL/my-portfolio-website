@@ -70,30 +70,14 @@ export default function MatchCard({ match }: MatchProps) {
         )}
         
         {/* Teams and Score - responsive layout */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-3 sm:gap-0">
-          {/* Mobile layout: stacked */}
-          <div className="sm:hidden flex flex-col items-center w-full">
-            <div className="flex justify-between items-center w-full mb-3">
-              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium truncate max-w-[40%] ${getColorClasses(match.home_team.primary_color, match.home_team.secondary_color)}`}>
-                {match.home_team.name}
-              </span>
-              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium truncate max-w-[40%] ${getColorClasses(match.away_team.primary_color, match.away_team.secondary_color)}`}>
-                {match.away_team.name}
-              </span>
-            </div>
-            <div className="text-lg font-semibold">{homeScore} - {awayScore}</div>
-          </div>
-          
-          {/* Desktop layout: score between teams */}
-          <div className="hidden sm:flex justify-between items-center w-full relative">
-            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getColorClasses(match.home_team.primary_color, match.home_team.secondary_color)}`}>
-              {match.home_team.name}
-            </span>
-            <span className="absolute left-1/2 transform -translate-x-1/2 text-xl font-semibold text-spurs-navy">{homeScore} - {awayScore}</span>
-            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getColorClasses(match.away_team.primary_color, match.away_team.secondary_color)}`}>
-              {match.away_team.name}
-            </span>
-          </div>
+        <div className="grid grid-cols-3 items-center gap-2 text-center mb-6">
+          <span className={`inline-flex items-center justify-start px-2 py-1 rounded-full text-xs sm:px-3 sm:py-1 sm:text-sm font-medium ${getColorClasses(match.home_team.primary_color, match.home_team.secondary_color)}`}>
+            {match.home_team.name}
+          </span>
+          <span className="spurs-text text-lg sm:text-xl font-semibold">{homeScore} - {awayScore}</span>
+          <span className={`inline-flex items-center justify-end px-2 py-1 rounded-full text-xs sm:px-3 sm:py-1 sm:text-sm font-medium ${getColorClasses(match.away_team.primary_color, match.away_team.secondary_color)}`}>
+            {match.away_team.name}
+          </span>
         </div>
       </Card>
     </Link>

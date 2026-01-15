@@ -1,6 +1,8 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@source inline("bg-{slate,gray,zinc,neutral,stone,red,orange,amber,yellow,lime,green,emerald,teal,cyan,sky,blue,indigo,violet,purple,fuchsia,pink,rose}-{50,{100..900..100},950}");
+@source inline("text-{slate,gray,zinc,neutral,stone,red,orange,amber,yellow,lime,green,emerald,teal,cyan,sky,blue,indigo,violet,purple,fuchsia,pink,rose}-{50,{100..900..100},950}");
+@source inline("bg-black bg-white text-black text-white");
 
 /* Hide content until theme is applied to prevent flash */
 html[data-theme-loading] {
@@ -14,11 +16,20 @@ html[data-theme-loading] {
   --brand-primary-light: #4a7c4a;
   --brand-primary-darker: #1f3f1f;
   --brand-primary-darkest: #1a4d1a;
+
+  --spurs-primary-dark: #081521;
+  --spurs-primary-light: #f5f7fa;
+  --spurs-primary-darker: #06101a;
+  --spurs-primary-darkest: #040d14;
   
   /* Light Theme Background Colors */
   --bg-light-1: #f0f9f0;
   --bg-light-2: #e0f5e0;
   --bg-white: #ffffff;
+
+  --spurs-bg-light-1: #f5f7fa;
+  --spurs-bg-light-2: #e8ecf1;
+  --spurs-bg-white: #ffffff;
   
   /* Dark Theme Colors */
   --dark-bg-1: #0a1f0a;
@@ -28,6 +39,14 @@ html[data-theme-loading] {
   --dark-text: #e8f5e8;
   --dark-accent: #a9dec2;
   --dark-accent-bright: #6ee7b7;
+
+  --spurs-dark-bg-1: #081521;
+  --spurs-dark-bg-2: #06101a;
+  --spurs-dark-nav: #0a1a2a;
+  --spurs-dark-nav-light: #071424;
+  --spurs-dark-text: #f5f7fa;
+  --spurs-dark-accent: #78BEE8;
+  --spurs-dark-accent-bright: #aad0e8;
   
   /* Neutral Colors */
   --neutral-gray: #666;
@@ -38,6 +57,9 @@ html[data-theme-loading] {
   --accent-brand: #86efac;
   --shadow-brand: rgba(45, 90, 45, 0.3);
   --shadow-dark: rgba(0, 0, 0, 0.1);
+
+  --accent-spurs: #78BEE8;
+  --shadow-spurs: rgba(120, 190, 232, 0.3);
   
   /* Additional Colors */
   --dark-text-darker: #061506;
@@ -52,15 +74,15 @@ html[data-theme-loading] {
   --warning-dark-text: #ffeaa7;
   --slider-gray: #ccc;
   --button-hover-light: #d1e7d1;
+
+  --spurs-dark-text-darker: #06101a;
+  --spurs-button-hover-light: #b9cfff;
+
 }
 
 /* Prevent flash of incorrect theme */
 html {
   transition: opacity 0.3s ease-in-out;
-}
-
-body {
-  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
 }
 
 /* Base styles */
@@ -70,7 +92,8 @@ body {
   box-sizing: border-box;
 }
 
-body {
+.main-wrapper {
+  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
   margin: 0;
   padding: 0;
   background: linear-gradient(135deg, var(--bg-light-1) 0%, var(--bg-light-2) 100%);
@@ -79,13 +102,14 @@ body {
   font-size: 16px;
   line-height: 1.6;
   overflow-x: hidden;
-}
-
-/* Layout */
-.wrapper {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+.spurs-wrapper {
+  background: linear-gradient(135deg, var(--spurs-dark-bg-1) 0%, var(--spurs-dark-bg-2) 100%);
+  color: var(--spurs-dark-text);
 }
 
 .navbar {
@@ -96,6 +120,11 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2rem;
+  height: 80px;
 }
 
 .content {
@@ -115,15 +144,6 @@ body {
   right: 0;
   width: 100%;
   z-index: 100;
-}
-
-/* Navigation */
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 2rem;
-  height: 80px;
 }
 
 .brand-title img {
@@ -3111,7 +3131,7 @@ input:checked + .slider:before {
 }
 
 .dark .navbar {
-  background: linear-gradient(135deg, var(--dark-bg-1) 0%, var(--dark-bg-2) 100%) !important;
+  background: linear-gradient(135deg, var(--dark-bg-1) 0%, var(--dark-bg-2) 100%);
 }
 
 .dark .footer {
@@ -3119,11 +3139,11 @@ input:checked + .slider:before {
 }
 
 .dark a {
-  color: var(--dark-accent) !important;
+  color: var(--dark-accent);
 }
 
 .dark a:hover {
-  color: var(--dark-accent-bright) !important;
+  color: var(--dark-accent-bright);
 }
 
 .dark button,
@@ -3317,4 +3337,41 @@ body:not(.dark) .button.primary:hover {
   max-width: 100% !important;
 }
 
+/* Spurs styling */
 
+.spurs.navbar,
+.dark .spurs.navbar {
+  background: linear-gradient(135deg, var(--spurs-primary-dark) 0%, var(--spurs-primary-darkest) 100%);
+  color: var(--spurs-dark-nav);
+}
+
+.spurs.navbar .navbar-links.spurs-links li a,
+.dark .spurs.navbar .navbar-links.spurs-links li a {
+  color: var(--spurs-primary-light);
+}
+
+.spurs.navbar .navbar-links.spurs-links li a:hover,
+.dark .spurs.navbar .navbar-links.spurs-links li a:hover {
+  color: var(--spurs-dark-accent);
+}
+
+header.spurs.navbar .spurs-links li a::before {
+  background: linear-gradient(90deg, transparent, rgba(120, 190, 232, 0.2), transparent);
+}
+
+header.spurs.navbar .spurs-links li:hover a {
+  background: rgba(120, 190, 232, 0.15);
+}
+
+.spurs-wrapper h1.spurs-text {
+  background: linear-gradient(135deg, var(--spurs-dark-text) 0%, var(--spurs-dark-accent-bright) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.spurs-wrapper a .spurs-text,
+.dark .spurs-wrapper a .spurs-text,
+.spurs-wrapper h2 {
+  color: var(--spurs-dark-text);
+}

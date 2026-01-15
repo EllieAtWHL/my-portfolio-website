@@ -142,6 +142,10 @@ styles/
     - Colours (mandatory - no hardcoded hex values)
     - Spacing where appropriate
     - Font decisions
+  - **CSS Variable Limitation**: CSS variables cannot be used with `rgba()` functions for opacity (e.g., `rgba(var(--color), 0.2)` is invalid CSS). When transparency is needed, either:
+    - Use hardcoded RGB values with opacity (e.g., `rgba(120, 190, 232, 0.2)`)
+    - Create separate CSS variables for transparent versions
+    - Use opacity CSS properties instead of rgba values
   - Design tokens should be defined once and reused.
   - Components should be flexible and configurable rather than duplicated.
 

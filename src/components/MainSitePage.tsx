@@ -4,7 +4,7 @@ import Footer from './Footer';
 
 export default function MainSitePage({ children }: { children: React.ReactNode }) {
   return (
-    <div className="wrapper">
+    <div className="main-wrapper">
       <Header />
       {children}
       <Footer />
