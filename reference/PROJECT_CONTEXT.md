@@ -432,4 +432,78 @@ These may be revisited only if the project’s scope or audience changes signifi
 
 ---
 
+## Code Review Findings (January 2026)
+
+### Critical Compliance Issues
+
+#### 1. CSS Variable Usage Violations
+**Issue**: The project context states "**ALWAYS use CSS variables (via Tailwind config and `:root`) for colors - never hardcode color values in CSS**", but there are numerous violations:
+
+- **`globals.css`**: Contains 101 instances of hardcoded `rgba()` values
+- **Examples**: `rgba(45, 90, 45, 0.3)`, `rgba(120, 190, 232, 0.3)`, `rgba(0, 0, 0, 0.1)`
+
+**Required Action**: Replace all hardcoded `rgba()` values with CSS variables or Tailwind utilities per context guidelines (lines 140-148).
+
+#### 2. Button Migration Incomplete
+**Issue**: The project has a new Button component but migration is incomplete:
+
+- **`Button.tsx`**: Uses CSS classes like `'button primary'` and `'button secondary'` instead of Tailwind utilities
+- **`contact-me/page.tsx`**: Line 152 shows `<Button className="button primary">` - mixing old and new patterns
+- **Migration guide exists** but many files still use old button patterns
+
+**Required Action**: Complete button migration across all files listed in BUTTON_MIGRATION.md.
+
+#### 3. dangerouslySetInnerHTML Usage
+**Issue**: Two Spurs Women components use `dangerouslySetInnerHTML`:
+
+- **`MatchHeader.tsx`**: Line 33 renders `competition.icon_svg`
+- **`MatchCard.tsx`**: Line 53 renders `match.competitions.icon_svg`
+
+**Required Action**: Find safer alternatives for SVG rendering to avoid security risks.
+
+#### 4. Tailwind Config Issues
+**Issue**: The `tailwind.config.ts` contains extensive hardcoded color arrays that contradict the CSS variable approach.
+
+**Required Action**: Remove hardcoded color arrays in favor of CSS variables.
+
+#### 5. Component Architecture Inconsistencies
+**Issue**: Some components don't follow established patterns:
+
+- **`MatchHeader.tsx`**: Contains TODO comment about H1 styling (line 64)
+- Mixed styling approaches between CSS classes and Tailwind utilities
+
+**Required Action**: Standardize component styling approaches.
+
+### Positive Compliance ✅
+
+- **TypeScript Usage**: All components use TypeScript properly with good type definitions
+- **Server Components by Default**: Most components are server components unless interaction is needed
+- **File Structure**: Follows the established `app/` and `components/` organization
+- **Technology Stack**: Next.js 16.1.1, Tailwind CSS v4, TypeScript 5 correctly implemented
+- **Supabase Integration**: Present as planned
+
+### Current Todo List Integration
+
+From `reference/todo-list.md`:
+
+**Main Site:**
+- [ ] Adjust width of cards for large screens on experience page
+- [ ] Lightning series is still showing a flicker of light mode when loading
+- [ ] Add London 2012 pages
+- [ ] Fix Regicide Game (Note: Game appears to have structure but is not functional)
+- [ ] Work on Salesforce Orgs page as sucks at the moment
+
+**Spurs Women Site:**
+- [ ] Fix the colour scheme in general
+
+### Priority Action Items
+
+1. **Fix CSS Variable Violations** (Critical)
+2. **Complete Button Migration** (High)
+3. **Address dangerouslySetInnerHTML** (High - Security)
+4. **Update Project Context** (Medium - Documentation)
+5. **Clean Up Tailwind Config** (Medium)
+
+---
+
 This document should be used by both humans and AI as the source of truth for architectural intent. If code and documentation disagree, the documentation should be updated deliberately rather than ignored.
