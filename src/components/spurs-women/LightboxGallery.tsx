@@ -94,13 +94,13 @@ export default function LightboxGallery({
 
       {/* Main image container */}
       <div 
-        className="relative max-w-full max-h-full overflow-hidden"
+        className="relative max-w-full overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <img
           src={currentPhoto.url}
           alt={currentPhoto.caption || 'Match photo'}
-          className="max-w-full max-h-full object-contain"
+          className="max-w-full object-contain"
           onLoad={() => setIsLoading(false)}
           onContextMenu={(e) => e.preventDefault()}
           onDragStart={(e) => e.preventDefault()}
@@ -130,7 +130,7 @@ export default function LightboxGallery({
 
         {/* Navigation buttons */}
         <button
-          className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full pointer-events-auto transition-colors"
+          className="absolute left-4 top-1/2 transform -translate-y-1/2 lightbox-nav-button p-3 rounded-full pointer-events-auto transition-colors"
           onClick={(e) => {
             e.stopPropagation();
             navigatePrevious();
@@ -143,7 +143,7 @@ export default function LightboxGallery({
         </button>
 
         <button
-          className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full pointer-events-auto transition-colors"
+          className="absolute right-4 top-1/2 transform -translate-y-1/2 lightbox-nav-button p-3 rounded-full pointer-events-auto transition-colors"
           onClick={(e) => {
             e.stopPropagation();
             navigateNext();
@@ -167,7 +167,7 @@ export default function LightboxGallery({
 
             {/* Close button */}
             <button
-              className="bg-white/20 hover:bg-white/30 text-white p-2 rounded-full pointer-events-auto transition-colors"
+              className="lightbox-nav-button p-2 rounded-full pointer-events-auto transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 onClose();

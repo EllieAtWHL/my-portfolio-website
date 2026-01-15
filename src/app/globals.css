@@ -3136,7 +3136,7 @@ input:checked + .slider:before {
 }
 
 .dark .footer {
-  background: linear-gradient(135deg, var(--dark-bg-1) 0%, var(--dark-bg-2) 100%) !important;
+  background: linear-gradient(135deg, var(--dark-bg-1) 0%, var(--dark-bg-2) 100%);
 }
 
 .dark a {
@@ -3346,9 +3346,11 @@ body:not(.dark) .button.primary:hover {
 }
 
 .spurs.navbar,
-.dark .spurs.navbar {
+.dark .spurs.navbar,
+.spurs.footer,
+.dark .spurs.footer {
   background: linear-gradient(135deg, var(--spurs-primary-dark) 0%, var(--spurs-primary-darkest) 100%);
-  color: var(--spurs-dark-nav);
+  color: var(--spurs-dark-text);
 }
 
 .spurs.navbar .navbar-links.spurs-links li a,
@@ -3422,6 +3424,20 @@ header.spurs.navbar .spurs-links li:hover a {
 
 .media-title {
   margin: 0 0 1rem 0;
+}
+
+/* Lightbox navigation buttons */
+button.lightbox-nav-button {
+  background: rgba(245, 247, 250, 0.8);
+  color: #081521;
+}
+
+button.lightbox-nav-button:hover {
+  background: rgba(245, 247, 250, 1);
+}
+
+.test {
+  color: white;
 }
 
 .spurs-wrapper button.spurs-button,

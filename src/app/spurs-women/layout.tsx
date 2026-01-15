@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "../globals.css";
 import SpursHeader from "../../components/spurs-women/SpursHeader";
+import SpursFooter from "../../components/spurs-women/SpursFooter";
 
 export const metadata: Metadata = {
   title: "Tottenham Hotspur Women",
@@ -22,6 +23,7 @@ export default function SpursWomenLayout({
       <SpursHeader />
       <div className="spurs-wrapper min-h-screen">
         {children}
+        <SpursFooter />
       </div>
     </>
   );
