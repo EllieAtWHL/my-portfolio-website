@@ -27,6 +27,7 @@ html[data-theme-loading] {
   --bg-light-2: #e0f5e0;
   --bg-white: #ffffff;
 
+  --spurs-bg-med: rgb(43, 53,65);
   --spurs-bg-light-1: #f5f7fa;
   --spurs-bg-light-2: #e8ecf1;
   --spurs-bg-white: #ffffff;
@@ -105,11 +106,6 @@ html {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-}
-
-.spurs-wrapper {
-  background: linear-gradient(135deg, var(--spurs-dark-bg-1) 0%, var(--spurs-dark-bg-2) 100%);
-  color: var(--spurs-dark-text);
 }
 
 .navbar {
@@ -3339,6 +3335,11 @@ body:not(.dark) .button.primary:hover {
 
 /* Spurs styling */
 
+.spurs-wrapper {
+  background: linear-gradient(90deg, var(--spurs-dark-bg-2) 0%, var(--spurs-dark-bg-1) 25%, var(--spurs-bg-med) 50%, var(--spurs-dark-bg-1) 75%, var(--spurs-dark-bg-2) 100%);
+  color: var(--spurs-dark-text);
+}
+
 .spurs.navbar,
 .dark .spurs.navbar {
   background: linear-gradient(135deg, var(--spurs-primary-dark) 0%, var(--spurs-primary-darkest) 100%);
@@ -3365,9 +3366,14 @@ header.spurs.navbar .spurs-links li:hover a {
 
 .spurs-wrapper h1.spurs-text {
   background: linear-gradient(135deg, var(--spurs-dark-text) 0%, var(--spurs-dark-accent-bright) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: clamp(1.5rem, 8vw, 3rem);
+}
+
+.spurs-wrapper h2 {
+    font-size: clamp(1.5rem, 6vw, 2rem);
 }
 
 .spurs-wrapper a .spurs-text,
