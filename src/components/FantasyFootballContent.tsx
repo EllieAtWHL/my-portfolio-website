@@ -61,7 +61,7 @@ export default function FantasyFootballContent() {
           </Card>
         </section>
 
-        <Card variant="default" padding="md" className="blog-section">
+        <section className="blog-section">
           <h2 className="section-title">Setting up the APIs</h2>
           <p>
             With the data model in place, my next task was to set up the API calls to My Fantasy League to retrieve the necessary data and populate the records. While I won't go into detail about each individual API, I will mention that I used the following five exports to gather the data. (You can find more information about these exports in the <a href="https://www03.myfantasyleague.com/2022/api_info?L=" target="_blank" rel="noopener noreferrer">My Fantasy League documentation</a>.)
@@ -84,9 +84,9 @@ export default function FantasyFootballContent() {
             <li>The Players (MFLManagePlayers) class handled the players, adp, and playerRanks callouts and was responsible for upserting the related Player__c records in Salesforce.</li>
             <li>The Owners (MFLManageOwners) class gathered information about the franchises and owners in the league and was responsible for upserting the corresponding Team_Owner__c records in Salesforce.</li>
           </ul>
-        </Card>
+        </section>
         
-        <Card variant="default" padding="lg">
+        <section className="blog-section">
           <h2 className="section-title">Building the draft board front end</h2>
           <p>
             This is the central component of the draft application. Initially, the draft was controlled from a single page that required login and was intended to be shared via screen sharing with virtual attendees. However, in a later iteration, I transformed it into a read-only view of the draft that was publicly accessible to anyone in the league, allowing them to follow the draft in real-time from any location. The page was dynamically updated whenever a pick was made using the new Commissioner page.
@@ -101,15 +101,15 @@ export default function FantasyFootballContent() {
             In summary, the draft board component simply listens for an event and refreshes the data when it is received.
           </p>
           
-          <Card variant="default" padding="sm" className="video-container">
+          <div padding="sm" className="video-container">
             <video controls className="video-iframe w-full rounded-lg">
               <source src="/ghl/videos/GHLDraft_watermarked.mkv" type="video/webm" />
               Your browser does not support the video tag.
             </video>
-          </Card>
-        </Card>
+          </div>
+        </section>
 
-        <Card variant="default" padding="md">
+        <section className="blog-section">
           <h2 className="section-title">Building the commissioner control panel</h2>
           <p>
             The commissioner controller panel is the more complex part of the application, as it allows the commissioner to make, delete, and upload picks. This panel is essential for ensuring that the draft process runs smoothly and that the picks are immediately available for viewing by the rest of the league.
@@ -142,15 +142,15 @@ export default function FantasyFootballContent() {
             </p>   
           </Card>
           
-          <Card variant="default" padding="sm" className="video-container">
+          <div padding="sm" className="video-container">
             <video controls className="video-iframe w-full rounded-lg">
               <source src="/ghl/videos/GHLController_watermarked.mkv" type="video/webm" />
               Your browser does not support the video tag.
             </video>
-          </Card>
-        </Card>
+          </div>
+        </section>
         
-        <Card variant="default" padding="md">
+         <section className="blog-section">
           <h2 className="section-title">Setting up the community pages</h2>
           <p>
             With all of the components in place, I created a Digital Experience (formerly known as a Community) and added the read-only view of the board to the Home page, making it publicly accessible. The Commissioner Panel was added to a separate page that required login to access. This completed the development of the draft application.
@@ -158,22 +158,22 @@ export default function FantasyFootballContent() {
           <p>
             <a href="https://goldenhelmetleague-dev-ed.develop.my.site.com/draft/s/" target="_blank" rel="noopener noreferrer" className="external-link">View of Current Draft Board</a>
           </p>
-        </Card>
+        </section>
 
-        <Card variant="default" padding="md">
+         <section className="blog-section">
           <h2 className="section-title">Final touches</h2>
           <p>
             With the remaining time before the draft, I added a few extra features to the application. One of these was a control panel within Salesforce that could be used to update the team and player listings from My Fantasy League to ensure that we had the most current information. I created buttons that called the existing Apex classes that performed the exports to accomplish this.
           </p>
           
-          <Card variant="default" padding="sm" className="blog-image">
+          <div padding="sm" className="blog-image">
             <img 
               src="/ghl/GHLControlPanel.png" 
               alt="Control Panel"
               className="content-image w-full rounded-lg"
             />
-          </Card>
-        </Card>
+          </div>
+        </section>
 
         <Card variant="highlight" padding="md">
           <p>
