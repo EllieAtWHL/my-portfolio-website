@@ -1,5 +1,6 @@
 import Footer from '@/components/Footer';
 import FantasyFootballContent from '@/components/FantasyFootballContent';
+import MainSitePage from '@/components/MainSitePage';
 
 export const metadata = {
   title: 'Fantasy Football Draft Application',
@@ -28,11 +29,10 @@ export const metadata = {
 
 export default function FantasyFootball() {
   return (
-    <div className="content">
-      <div className="scrollable">
+    <MainSitePage>
+      <div className="content">
         <FantasyFootballContent />
       </div>
-      <Footer />
-    </div>
+    </MainSitePage>
   );
 }

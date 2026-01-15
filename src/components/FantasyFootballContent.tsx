@@ -52,13 +52,13 @@ export default function FantasyFootballContent() {
 
           <p>Below is the final data model I went with.</p>
 
-          <Card variant="default" padding="sm" className="blog-image">
+          <div padding="sm" className="blog-image">
             <img 
               src="/ghl/GHLdataModel.png" 
               alt="Data Model"
               className="content-image w-full rounded-lg"
             />
-          </Card>
+          </div>
         </section>
 
         <section className="blog-section">
