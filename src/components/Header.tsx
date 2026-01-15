@@ -1,27 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useTheme } from './ThemeProvider';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const pathname = usePathname();
-  const isSpursWomen = pathname?.startsWith('/spurs-women');
   const { isDarkMode } = useTheme();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  // Navigation items based on route
-  const navItems = isSpursWomen ? [
-    { href: "/spurs-women", label: "Home" },
-    { href: "/spurs-women/seasons", label: "Seasons" },
-    { href: "/spurs-women/matches", label: "All Matches" },
-  ] : [
+  // Navigation items for main site
+  const navItems = [
     { href: "/", label: "Home" },
     { href: "/about-me", label: "About Me" },
     { href: "/experience", label: "Experience" },
@@ -35,8 +28,8 @@ export default function Header() {
   };
 
   return (
-    <header className={`navbar ${isSpursWomen ? 'spurs-women-navbar' : ''} ${isDarkMode ? 'dark' : ''}`}>
-      <div className={`brand-title ${isSpursWomen ? 'spurs-brand-title' : ''}`}>
+    <header className={`navbar ${isDarkMode ? 'dark' : ''}`}>
+      <div className="brand-title">
         <Link href="/">
           <Image 
             src="/logo.png" 
@@ -49,19 +42,19 @@ export default function Header() {
       </div>
       
       <div 
-        className={`toggle-button ${isSpursWomen ? 'spurs-toggle-button' : ''}`}
+        className="toggle-button"
         onClick={toggleMenu}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => e.key === 'Enter' && toggleMenu()}
         aria-label="Toggle menu"
       >
-        <span className={`bar ${isSpursWomen ? 'spurs-bar' : ''}`}></span>
-        <span className={`bar ${isSpursWomen ? 'spurs-bar' : ''}`}></span>
-        <span className={`bar ${isSpursWomen ? 'spurs-bar' : ''}`}></span>
+        <span className="bar"></span>
+        <span className="bar"></span>
+        <span className="bar"></span>
       </div>
 
-      <nav className={`navbar-links ${isMenuOpen ? 'active' : ''} ${isSpursWomen ? 'spurs-navbar-links' : ''}`}>
+      <nav className={`navbar-links ${isMenuOpen ? 'active' : ''}`}>
         <ul>
           {navItems.map((item) => (
             <li key={item.href}>

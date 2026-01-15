@@ -1,15 +1,12 @@
 'use client';
 
 import { useTheme } from './ThemeProvider';
-import { usePathname } from 'next/navigation';
 
 export default function Footer() {
   const { isDarkMode, toggleDarkMode } = useTheme();
-  const pathname = usePathname();
-  const isSpursWomen = pathname?.startsWith('/spurs-women');
 
   return (
-    <footer className={`footer ${isSpursWomen ? 'spurs-women-footer' : ''} ${isDarkMode ? 'dark' : ''}`}>
+    <footer className={`footer ${isDarkMode ? 'dark' : ''}`}>
       <div className="findMe floatLeft">
         <p>
           Find all my socials on{' '}
