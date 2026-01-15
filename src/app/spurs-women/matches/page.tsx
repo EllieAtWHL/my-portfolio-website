@@ -89,7 +89,7 @@ export default function MatchesPage() {
     <main className="p-8">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-4 text-center">All Tottenham Hotspur Women Matches</h1>
+          <h1 className="spurs-text text-3xl font-bold mb-4 text-center">All Tottenham Hotspur Women Matches</h1>
           
           {/* Filter buttons */}
           <div className="flex justify-center gap-4 mb-6">

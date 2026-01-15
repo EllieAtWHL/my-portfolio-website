@@ -55,7 +55,7 @@ export default function SeasonsPage() {
 
   return (
     <main className="p-8">
-      <h1 className="text-3xl font-bold mb-6">Seasons</h1>
+      <h1 className="spurs-text text-3xl font-bold mb-6">Seasons</h1>
       {loading ? (
         <p>Loading seasons...</p>
       ) : (

@@ -90,7 +90,7 @@ export default function SeasonDetail() {
 
   return (
     <main className="p-8">
-      <h1 className="text-3xl font-bold mb-6">
+      <h1 className="spurs-text text-3xl font-bold mb-6">
         {season ? `Matches for ${season.name}` : 'Loading season...'}
       </h1>
 

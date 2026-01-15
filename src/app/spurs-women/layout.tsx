@@ -20,7 +20,7 @@ export default function SpursWomenLayout({
   return (  
     <>
       <SpursHeader />
-      <div className="spurs-wrapper">
+      <div className="spurs-wrapper min-h-screen">
         {children}
       </div>
     </>
