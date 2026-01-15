@@ -149,9 +149,11 @@ export default function MatchDetail() {
             date={match.date} 
             kickoff_time={match.kickoff_time} 
           />
+          {articles.length > 0 && (
           <Card variant="spursAccent" padding="md">
             <MediaList items={articles} title="Articles" />
           </Card>
+        )}
         </div>
 
         {/* Bottom section: Photos and social media */}

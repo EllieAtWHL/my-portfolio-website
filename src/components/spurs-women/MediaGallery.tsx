@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/utils/supabase';
 import { PhotoMedia } from '../../types/media';
 import LightboxGallery from './LightboxGallery';
+import { Button } from '@/components/Button';
 
 type MediaGalleryProps = {
   photos: PhotoMedia[];
@@ -120,12 +121,13 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold">Photos</h2>
           {allPhotos.length > 0 && (
-            <button
+            <Button
               onClick={openGalleryFromStart}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium"
+              variant="spurs"
+              size="sm"
             >
               View in Gallery
-            </button>
+            </Button>
           )}
         </div>
         
@@ -162,12 +164,12 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
             ))}
             {allPhotos.length > 12 && (
               <div className="col-span-full text-center py-4">
-                <button
+                <Button
                   onClick={openGalleryFromStart}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors font-medium"
+                  variant="spurs"
                 >
                   View All {allPhotos.length} Photos in Gallery
-                </button>
+                </Button>
               </div>
             )}
           </div>

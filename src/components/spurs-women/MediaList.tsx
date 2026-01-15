@@ -20,7 +20,7 @@ export default function MediaList({ items, title }: MediaListProps) {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-2">{title}</h2>
+      <h2 className="text-2xl font-bold media-title">{title}</h2>
       
       {/* Social media items without bullet points */}
       {socialMediaItems.length > 0 && (
@@ -42,7 +42,7 @@ export default function MediaList({ items, title }: MediaListProps) {
                 href={item.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 hover:underline"
+                className="spurs-text venue-link hover:underline"
               >
                 {item.title && item.title.trim() !== '' ? item.title : item.url}
               </a>{' '}
