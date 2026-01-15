@@ -81,13 +81,13 @@ export default function ProjectsContent() {
           title: 'Regicide',
           url: '/regicide',
           isExternal: false
-        },
+        }/*,
         {
           id: 'flappy',
           title: 'Flappy McFlapface',
           url: '../flappy',
           isExternal: false
-        }
+        }*/
       ]
     },
     {
