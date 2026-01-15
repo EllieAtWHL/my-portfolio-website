@@ -31,11 +31,7 @@ export default function RootLayout({
       </head>
       <body>
         <ThemeProvider>
-          <div className="wrapper">
-            <Header />
             {children}
-            <Footer />
-          </div>
         </ThemeProvider>
       </body>
     </html>

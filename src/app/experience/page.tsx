@@ -1,5 +1,5 @@
-import Footer from '@/components/Footer';
 import ExperienceContent from '@/components/ExperienceContent';
+import MainSitePage from '@/components/MainSitePage';
 
 export const metadata = {
   title: 'Experience',
@@ -20,12 +20,12 @@ export const metadata = {
 
 export default function Experience() {
   return (
-    <div className="content">
-      <div className="scrollable">
-        <ExperienceContent />
+    <MainSitePage>
+      <div className="content">
+        <div className="scrollable">
+          <ExperienceContent />
+        </div>
       </div>
-      
-      <Footer />
-    </div>
+    </MainSitePage>
   );
 }

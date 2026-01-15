@@ -414,6 +414,7 @@ Rationale:
   - Whether analytics or content management will be added later
   - Performance monitoring and optimization strategy
   - Testing automation approach for key user flows
+  - **Layout Architecture**: Consider introducing BlogTemplate pattern for structured content sections (e.g., London 2012 blog expansion) while maintaining MainSitePage for varied portfolio pages
 
 ## Explicit Non-Goals (for Now)
 The following are intentionally out of scope for MVP:

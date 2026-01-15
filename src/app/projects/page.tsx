@@ -1,5 +1,5 @@
-import Footer from '@/components/Footer';
 import ProjectsContent from '@/components/ProjectsContent';
+import MainSitePage from '@/components/MainSitePage';
 
 export const metadata = {
   title: 'Projects',
@@ -28,11 +28,12 @@ export const metadata = {
 
 export default function Projects() {
   return (
-    <div className="content">
-      <div className="scrollable">
-        <ProjectsContent />
+    <MainSitePage>
+      <div className="content">
+        <div className="scrollable">
+          <ProjectsContent />
+        </div>
       </div>
-      <Footer />
-    </div>
+    </MainSitePage>
   );
 }

@@ -1,5 +1,5 @@
-import Footer from '@/components/Footer';
 import LightningRolloutPart1 from '@/components/LightningRolloutPart1';
+import MainSitePage from '@/components/MainSitePage';
 
 export const metadata = {
   title: 'Salesforce Lightning Rollout | Part 1',
@@ -28,11 +28,12 @@ export const metadata = {
 
 export default function LightningRolloutPart1Page() {
   return (
-    <div className="content">
-      <div className="scrollable">
-        <LightningRolloutPart1 />
+    <MainSitePage>
+      <div className="content">
+        <div className="scrollable">
+          <LightningRolloutPart1 />
+        </div>
       </div>
-      <Footer />
-    </div>
+    </MainSitePage>
   );
 }
