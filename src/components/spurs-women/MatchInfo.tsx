@@ -29,7 +29,7 @@ export default function MatchInfo({ venue, attendance, notes, date, kickoff_time
   };
 
   return (
-    <Card variant="accent" padding="md">
+    <Card variant="spursAccent" padding="md">
       <div className="mb-6">
         {date && (
           <p className="mb-2">

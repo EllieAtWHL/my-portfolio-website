@@ -43,7 +43,7 @@ export default function MatchCard({ match }: MatchProps) {
 
   return (
     <Link href={`/spurs-women/matches/${match.id}`} className="block">
-      <Card variant="accent" padding="md">
+      <Card variant="spursAccent" padding="md">
         {/* Date at top center */}
         <div className="text-center text-sm text-gray-500 mb-2 flex justify-center items-center gap-4">
           {new Date(match.date).toLocaleDateString()}

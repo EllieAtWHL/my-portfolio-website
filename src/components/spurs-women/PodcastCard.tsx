@@ -18,7 +18,7 @@ interface PodcastCardProps {
 
 export default function PodcastCard({ episode }: PodcastCardProps) {
   return (
-    <Card variant="accent" padding="md">
+    <Card variant="spursAccent" padding="md">
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
           <h3 className="font-semibold text-lg text-spurs-navy mb-1">

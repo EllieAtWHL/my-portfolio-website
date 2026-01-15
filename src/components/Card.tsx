@@ -5,7 +5,7 @@ import React, { ReactNode } from 'react';
 interface CardProps {
   children: ReactNode;
   className?: string;
-  variant?: 'default' | 'highlight' | 'bordered' | 'accent';
+  variant?: 'default' | 'highlight' | 'bordered' | 'accent' | 'spursAccent';
   padding?: 'sm' | 'md' | 'lg';
   hover?: boolean;
   onClick?: () => void;
@@ -25,7 +25,8 @@ export function Card({
     default: 'bg-white dark:bg-gray-800 shadow-lg',
     highlight: 'highlight',
     bordered: 'bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 shadow-lg',
-    accent: 'accent-card'
+    accent: 'accent-card',
+    spursAccent: 'spurs-accent-card'
   };
   
   const paddingClasses = {

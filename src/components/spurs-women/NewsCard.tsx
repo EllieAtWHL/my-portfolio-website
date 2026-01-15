@@ -29,7 +29,7 @@ export default function NewsCard({ article }: NewsCardProps) {
   };
 
   return (
-    <Card variant="accent" padding="md">
+    <Card variant="spursAccent" padding="md">
       <div className="flex justify-between items-start mb-2">
         <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-300 line-clamp-2 flex-1 mr-2">
           <Link 

@@ -21,7 +21,7 @@ export default function Header() {
   const handleLinkClick = () => {
     setIsMenuOpen(false);
   };
-//${isDarkMode ? 'dark' : ''}
+
   return (
     <header className="spurs navbar">
       <div className="brand-title">

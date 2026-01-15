@@ -9,7 +9,7 @@ interface VideoCardProps {
 
 export default function VideoCard({ video }: VideoCardProps) {
   return (
-    <Card variant="accent" padding="md" className="overflow-hidden">
+    <Card variant="spursAccent" padding="md" className="overflow-hidden">
       <a 
         href={video.link} 
         target="_blank" 

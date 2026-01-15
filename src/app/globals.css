@@ -705,7 +705,8 @@ input:checked + .slider:before {
   margin-bottom: 0;
 }
 
-.accent-card {
+.accent-card,
+.spurs-accent-card {
   padding: 1.5rem;
   background: var(--bg-white);
   border-radius: 16px;
@@ -719,24 +720,28 @@ input:checked + .slider:before {
   box-sizing: border-box;
 }
 
-.accent-card:hover {
+.accent-card:hover,
+.spurs-accent-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
-.accent-card h3 {
+.accent-card h3,
+.spurs-accent-card h3 {
   font-size: 1.3rem;
   margin-bottom: 1rem;
   color: var(--brand-primary-dark);
 }
 
-.accent-card p {
+.accent-card p,
+.spurs-accent-card p {
   line-height: 1.7;
   color: var(--brand-primary-darkest);
   margin-bottom: 1rem;
 }
 
-.accent-card p:last-child {
+.accent-card p:last-child,
+.spurs-accent-card p:last-child {
   margin-bottom: 0;
 }
 
@@ -3380,4 +3385,17 @@ header.spurs.navbar .spurs-links li:hover a {
 .dark .spurs-wrapper a .spurs-text,
 .spurs-wrapper h2 {
   color: var(--spurs-dark-text);
+}
+
+.spurs-accent-card {
+  background: var(--spurs-dark-bg-1);
+  border-left: 4px solid var(--spurs-primary-light);
+}
+
+.spurs-accent-card h3 {
+  color: var(--spurs-primary-light);
+}
+
+.spurs-accent-card p {
+  color: var(--spurs-primary-light);
 }
