@@ -3403,6 +3403,20 @@ header.spurs.navbar .spurs-links li:hover a {
   text-decoration: none;
 }
 
+/* Remove underlines from all links within spurs-wrapper */
+.spurs-wrapper a:hover,
+.dark .spurs-wrapper a:hover {
+  text-decoration: none;
+}
+
+/* Or if you prefer white underlines instead of removing them:
+.spurs-wrapper a:hover,
+.dark .spurs-wrapper a:hover {
+  text-decoration-color: var(--spurs-primary-light);
+  text-decoration-thickness: 1px;
+}
+*/
+
 .spurs-accent-card {
   background: var(--spurs-dark-bg-1);
   border-left: 4px solid var(--spurs-primary-light);

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/utils/supabase';
+import { Card } from '@/components/Card';
 
 type Season = {
   id: number;
@@ -64,14 +65,16 @@ export default function SeasonsPage() {
             <Link
               key={season.id}
               href={`/spurs-women/seasons/${season.id}`}
-              className="border rounded-lg p-4 shadow hover:shadow-lg transition block"
+              className="block"
             >
-              <div className="flex justify-between items-start">
-                <h2 className="text-xl font-semibold">{season.name}</h2>
-                <p className="text-sm text-muted-foreground">
-                  {season.match_count === 0 ? 'No matches' : `${season.match_count} match${season.match_count === 1 ? '' : 'es'}`}
-                </p>
-              </div>
+              <Card variant="spursAccent" hover={true}>
+                <div className="flex justify-between items-start">
+                  <h2 className="text-xl font-semibold">{season.name}</h2>
+                  <p className="text-sm">
+                    {season.match_count === 0 ? 'No matches' : `${season.match_count} match${season.match_count === 1 ? '' : 'es'}`}
+                  </p>
+                </div>
+              </Card>
             </Link>
           ))}
         </div>
