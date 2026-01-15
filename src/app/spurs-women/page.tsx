@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { Button } from '@/components/Button';
 import MatchCard from '@/components/spurs-women/MatchCard';
 import NewsCard from '@/components/spurs-women/NewsCard';
 import PodcastCard from '@/components/spurs-women/PodcastCard';
@@ -190,12 +191,11 @@ export default function HomePage() {
 
       {/* Link to Seasons page */}
       <div className="mt-12 text-center">
-        <Link
-          href="/spurs-women/seasons"
-          className="inline-block bg-blue-900 text-white px-6 py-3 rounded hover:bg-blue-800 transition-colors"
-        >
-          View All Seasons
-        </Link>
+        <Button variant="spurs" asChild>
+          <Link href="/spurs-women/seasons">
+            View All Seasons
+          </Link>
+        </Button>
       </div>
 
       {/* News Sections */}

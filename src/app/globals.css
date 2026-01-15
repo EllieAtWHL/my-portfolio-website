@@ -3149,24 +3149,24 @@ input:checked + .slider:before {
 
 .dark button,
 .dark .button {
-  background: var(--dark-text) !important;
-  color: var(--dark-text-darker) !important;
+  background: var(--dark-text);
+  color: var(--dark-text-darker);
 }
 
 .dark button:hover,
 .dark .button:hover {
-  background: var(--button-hover-light) !important;
+  background: var(--button-hover-light);
 }
 
 .dark .content .button.secondary {
-  background: transparent !important;
-  color: var(--dark-text-darker) !important;
-  border-color: var(--dark-accent) !important;
+  background: transparent;
+  color: var(--dark-text-darker);
+  border-color: var(--dark-accent);
 }
 
 .dark .content .button.secondary:hover {
-  background: var(--dark-accent) !important;
-  color: var(--dark-text-darker) !important;
+  background: var(--dark-accent);
+  color: var(--dark-text-darker);
 }
 
 /* Dark Mode Switch Styles */
@@ -3418,4 +3418,50 @@ header.spurs.navbar .spurs-links li:hover a {
 
 .test {
   color: white;
+}
+
+.spurs-wrapper button.spurs-button,
+.spurs-wrapper a.spurs-button,
+.dark .spurs-wrapper button.spurs-button,
+.dark .spurs-wrapper a.spurs-button {
+  background: linear-gradient(135deg, var(--spurs-primary-dark) 0%, var(--spurs-primary-darker) 100%);
+  color: var(--spurs-primary-light);
+  border: 1px solid var(--spurs-primary-dark);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px var(--shadow-spurs);
+}
+
+.spurs-wrapper button.spurs-button:hover,
+.spurs-wrapper a.spurs-button:hover,
+.dark .spurs-wrapper button.spurs-button:hover,
+.dark .spurs-wrapper a.spurs-button:hover {
+  background: linear-gradient(135deg, var(--spurs-primary-darker) 0%, var(--spurs-primary-darkest) 100%);
+  color: var(--spurs-primary-light);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(120, 190, 232, 0.4);
+  text-decoration: none;
+}
+
+.spurs-wrapper button.spurs-button:focus-visible,
+.spurs-wrapper a.spurs-button:focus-visible,
+.dark .spurs-wrapper button.spurs-button:focus-visible,
+.dark .spurs-wrapper a.spurs-button:focus-visible {
+  outline: 2px solid var(--spurs-dark-accent);
+  outline-offset: 2px;
+}
+
+.dark .spurs-wrapper button.spurs-button,
+.dark .spurs-wrapper a.spurs-button {
+  background: linear-gradient(135deg, var(--spurs-dark-accent) 0%, var(--spurs-dark-accent-bright) 100%);
+  color: var(--spurs-dark-text-darker);
+  border-color: var(--spurs-dark-accent);
+  box-shadow: 0 4px 15px rgba(120, 190, 232, 0.2);
+}
+
+.dark .spurs-wrapper button.spurs-button:hover,
+.dark .spurs-wrapper a.spurs-button:hover {
+  background: linear-gradient(135deg, var(--spurs-dark-accent-bright) 0%, var(--spurs-primary-light) 100%);
+  color: var(--spurs-dark-text-darker);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(120, 190, 232, 0.3);
 }
