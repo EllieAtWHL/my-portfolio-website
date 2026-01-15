@@ -439,7 +439,7 @@ These may be revisited only if the project’s scope or audience changes signifi
 #### 1. CSS Variable Usage Violations
 **Issue**: The project context states "**ALWAYS use CSS variables (via Tailwind config and `:root`) for colors - never hardcode color values in CSS**", but there are numerous violations:
 
-- **`globals.css`**: Contains 101 instances of hardcoded `rgba()` values
+- **`globals.css`**: Contains 106 instances of hardcoded `rgba()` values
 - **Examples**: `rgba(45, 90, 45, 0.3)`, `rgba(120, 190, 232, 0.3)`, `rgba(0, 0, 0, 0.1)`
 
 **Required Action**: Replace all hardcoded `rgba()` values with CSS variables or Tailwind utilities per context guidelines (lines 140-148).
@@ -451,13 +451,15 @@ These may be revisited only if the project’s scope or audience changes signifi
 - **`contact-me/page.tsx`**: Line 152 shows `<Button className="button primary">` - mixing old and new patterns
 - **Migration guide exists** but many files still use old button patterns
 
+**Status**: ~70% complete - 11 files migrated, 6 files still need migration (see BUTTON_MIGRATION.md for details)
+
 **Required Action**: Complete button migration across all files listed in BUTTON_MIGRATION.md.
 
 #### 3. dangerouslySetInnerHTML Usage
 **Issue**: Two Spurs Women components use `dangerouslySetInnerHTML`:
 
 - **`MatchHeader.tsx`**: Line 33 renders `competition.icon_svg`
-- **`MatchCard.tsx`**: Line 53 renders `match.competitions.icon_svg`
+- **`MatchCard.tsx`**: Line 56 renders `match.competitions.icon_svg`
 
 **Required Action**: Find safer alternatives for SVG rendering to avoid security risks.
 
@@ -484,29 +486,32 @@ These may be revisited only if the project’s scope or audience changes signifi
 
 ### Current Todo List Integration
 
-From `reference/todo-list.md`:
+From `reference/todo-list.md` (Updated January 2026):
 
 **Main Site:**
-- [ ] Adjust width of cards for large screens on experience page
-- [ ] Lightning series is still showing a flicker of light mode when loading
+- ✅  Adjust width of cards for large screens on experience page
+- ✅  Lightning series is still showing a flicker of light mode when loading
 - [ ] Add London 2012 pages
 - [ ] Fix Regicide Game (Note: Game appears to have structure but is not functional)
 - [ ] Work on Salesforce Orgs page as sucks at the moment
 
 **Spurs Women Site:**
-- [ ] Fix the colour scheme in general
+- ✅  Fix the colour scheme in general
 - [ ] Ensure we have a backup primary and secondary colour in case they are not inut - and teamname probably too
 - [ ] Add players (starters, subds, unused bench)
 - [ ] Add match stats where available
 - [ ] Add external video media type
+- ✅ Button migration documentation updated with current status
+- ✅ Project context documentation reviewed and updated
+- ✅ Migration progress tracking established
 
 ### Priority Action Items
 
-1. **Fix CSS Variable Violations** (Critical)
-2. **Complete Button Migration** (High)
-3. **Address dangerouslySetInnerHTML** (High - Security)
-4. **Update Project Context** (Medium - Documentation)
-5. **Clean Up Tailwind Config** (Medium)
+1. **Fix CSS Variable Violations** (Critical) - 106 hardcoded rgba() values in globals.css
+2. **Complete Button Migration** (High) - ~70% complete, 6 files still need migration
+3. **Address dangerouslySetInnerHTML** (High - Security) - SVG rendering in MatchHeader.tsx and MatchCard.tsx
+4. **Clean Up Tailwind Config** (Medium) - Hardcoded color arrays contradict CSS variable approach
+5. **Standardize Component Styling** (Medium) - Mixed approaches between CSS classes and Tailwind utilities
 
 ---
 
