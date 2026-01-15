@@ -21,10 +21,10 @@ export default function PodcastCard({ episode }: PodcastCardProps) {
     <Card variant="spursAccent" padding="md">
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
-          <h3 className="font-semibold text-lg text-spurs-navy mb-1">
+          <h3 className="font-semibold text-lg spurs-text mb-1">
             {episode.episodeNumber}
           </h3>
-          <h4 className="text-md font-medium text-spurs-navy mb-2">
+          <h4 className="text-md font-medium spurs-text mb-2">
             {episode.title}
           </h4>
         </div>
@@ -43,7 +43,7 @@ export default function PodcastCard({ episode }: PodcastCardProps) {
         href={episode.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="spurs-button inline-flex items-center justify-center w-full"
+        className="spurs-text inline-flex items-center justify-center w-full text-sm font-medium"
       >
         Listen Now
         <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

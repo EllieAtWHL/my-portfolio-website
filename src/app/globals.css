@@ -3383,12 +3383,23 @@ header.spurs.navbar .spurs-links li:hover a {
 
 .spurs-wrapper a .spurs-text,
 .dark .spurs-wrapper a .spurs-text,
-.spurs-wrapper h2 {
+.spurs-wrapper h2,
+.spurs-wrapper h4,
+.spurs-wrapper a.spurs-text,
+.dark .spurs-wrapper a.spurs-text {
   color: var(--spurs-dark-text);
 }
 
-a.spurs-text:hover,
-.dark a.spurs-text:hover {
+.spurs-wrapper a.spurs-text:hover,
+.dark .spurs-wrapper a.spurs-text:hover {
+  color: var(--spurs-dark-text);
+  text-decoration-color: var(--spurs-dark-text);
+  text-decoration-thickness: 2px;
+}
+
+/* Remove underline from MatchCard links specifically */
+.spurs-wrapper .block.spurs-text:hover,
+.dark .spurs-wrapper .block.spurs-text:hover {
   text-decoration: none;
 }
 

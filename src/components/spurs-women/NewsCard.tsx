@@ -31,12 +31,12 @@ export default function NewsCard({ article }: NewsCardProps) {
   return (
     <Card variant="spursAccent" padding="md">
       <div className="flex justify-between items-start mb-2">
-        <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-300 line-clamp-2 flex-1 mr-2">
+        <h3 className="text-lg font-semibold spurs-text line-clamp-2 flex-1 mr-2">
           <Link 
             href={article.link} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="over:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            className="spurs-text"
           >
             {article.title}
           </Link>
@@ -65,7 +65,7 @@ export default function NewsCard({ article }: NewsCardProps) {
         href={article.link} 
         target="_blank" 
         rel="noopener noreferrer"
-        className="inline-block mt-4 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
+        className="inline-block mt-4 spurs-text text-sm font-medium"
       >
         Read more →
       </Link>

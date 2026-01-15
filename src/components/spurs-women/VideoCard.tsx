@@ -14,7 +14,7 @@ export default function VideoCard({ video }: VideoCardProps) {
         href={video.link} 
         target="_blank" 
         rel="noopener noreferrer"
-        className="block"
+        className="block spurs-text"
       >
         <div className="w-full bg-gray-200">
           {video.thumbnail ? (
@@ -36,7 +36,7 @@ export default function VideoCard({ video }: VideoCardProps) {
           )}
         </div>
         <div className="p-4">
-          <h3 className="font-semibold text-gray-900 line-clamp-2 text-sm mb-2">
+          <h3 className="font-semibold spurs-text line-clamp-2 text-sm mb-2">
             {video.title}
           </h3>
           <p className="text-xs text-gray-500">
