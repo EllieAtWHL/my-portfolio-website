@@ -494,6 +494,7 @@ From `reference/todo-list.md` (Updated January 2026):
 - [ ] Add London 2012 pages
 - [ ] Fix Regicide Game (Note: Game appears to have structure but is not functional)
 - [ ] Work on Salesforce Orgs page as sucks at the moment
+- [ ] **Configure Tailwind CSS to properly use CSS variables** - Currently CSS variables like `--brand-primary-dark` exist but aren't accessible via Tailwind classes, leading to confusion and inconsistent styling
 
 **Spurs Women Site:**
 - ✅  Fix the colour scheme in general

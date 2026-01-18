@@ -19,6 +19,7 @@ export default function Header() {
     { href: "/about-me", label: "About Me" },
     { href: "/experience", label: "Experience" },
     { href: "/projects", label: "Projects" },
+    { href: "/london-2012", label: "London 2012" },
     { href: "/spurs-women", label: "Spurs Women" },
     { href: "/contact-me", label: "Contact Me" },
   ];

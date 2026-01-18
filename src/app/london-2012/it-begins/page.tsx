@@ -1,130 +1,92 @@
-import { Metadata } from 'next'
+import MainSitePage from '@/components/MainSitePage';
+import London2012Layout from '@/components/London2012Layout';
+import Image from 'next/image';
+import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'My Olympic Journey - It Begins...',
+  title: 'EllieAtWHL - It Begins...',
   description: 'The journey of a volunteer performer at the Olympic Ceremonies',
   openGraph: {
     title: 'EllieAtWHL - My Olympic Journey',
     description: 'The journey of a volunteer performer at the Olympic Ceremonies',
     url: '/london-2012/it-begins',
     type: 'website',
-    images: ['/london-2012/Application.jpg'],
+    images: [
+      {
+        url: '/london-2012/Application.jpg',
+        width: 800,
+        height: 600,
+        alt: 'Confirmation email of application',
+      },
+    ],
   },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'EllieAtWHL - My Olympic Journey',
-    description: 'The journey of a volunteer performer at the Olympic Ceremonies',
-    images: ['/london-2012/Application.jpg'],
-  },
-}
+};
 
 export default function ItBeginsPage() {
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar */}
-          <aside className="lg:col-span-1">
-            <div className="sticky top-8">
-              <h2 className="text-xl font-semibold mb-4">My Olympic Journey</h2>
-              <nav className="space-y-2">
-                <a href="/london-2012" className="block py-2 px-4 rounded hover:bg-muted">
-                  ← Back to Gallery
-                </a>
-                <a href="/london-2012/it-begins" className="block py-2 px-4 rounded bg-muted font-semibold">
-                  It Begins...
-                </a>
-                <a href="/london-2012/an-invitation-to-audition" className="block py-2 px-4 rounded hover:bg-muted">
-                  An Invitation to Audition
-                </a>
-                <a href="/london-2012/my-first-audition" className="block py-2 px-4 rounded hover:bg-muted">
-                  My First Audition
-                </a>
-                <a href="/london-2012/drumming-audition" className="block py-2 px-4 rounded hover:bg-muted">
-                  Drumming Audition
-                </a>
-                <a href="/london-2012/costume-fitting" className="block py-2 px-4 rounded hover:bg-muted">
-                  Costume Fitting
-                </a>
-                <a href="/london-2012/my-first-rehearsal" className="block py-2 px-4 rounded hover:bg-muted">
-                  My First Rehearsal
-                </a>
-                <a href="/london-2012/1000-drummers" className="block py-2 px-4 rounded hover:bg-muted">
-                  1000 Drummers
-                </a>
-                <a href="/london-2012/the-decision-arrives" className="block py-2 px-4 rounded hover:bg-muted">
-                  The Decision Arrives
-                </a>
-              </nav>
-            </div>
-          </aside>
+    <MainSitePage>
+      <London2012Layout>
+        <article>
+          {/* Date with image */}
+          <div className="flex items-center gap-4 mb-6">
+            <time className="date italic text-gray-600 dark:text-gray-400" dateTime="2011-08-16">
+              16th August 2011
+            </time>
+            <Image
+              src="/london-2012/img/2011-08-16.png"
+              alt="16th August 2011"
+              width={100}
+              height={40}
+              className="h-auto"
+            />
+          </div>
 
-          {/* Main Content */}
-          <main className="lg:col-span-3">
-            <article className="prose prose-lg max-w-none">
-              <div className="flex items-center gap-4 mb-6">
-                <img 
-                  src="/london-2012/2011-08-16.png" 
-                  alt="16th August 2011" 
-                  className="w-16 h-16 object-cover rounded"
-                />
-                <div>
-                  <time className="text-sm text-muted-foreground">16th August 2011</time>
-                </div>
-              </div>
-              
-              <h1 className="text-3xl font-bold mb-6">It Begins...</h1>
-              
-              <p className="mb-4">
-                People often ask me how I got involved in the Olympic Ceremonies. In all honesty, I don't remember the exact moment, but this is what I do know...
-              </p>
-              
-              <p className="mb-4">
-                Even before applying, I was obsessed with the Olympics. I spent way too much time during my maternity leave taking to the internet for any leads I could on how to get my hands on some tickets. I had already been in communication with a group of Twitter users, that I soon become part of, now known as "the 2012 Tweeps". A year before the ceremony, and before I even applied, I posted how excited I was - a whole year out!
-              </p>
-              
-              <div className="bg-muted p-4 rounded-lg mb-4">
-                <p className="italic">
-                  "One year to go until the opening ceremony, I know some people are already bored of all the hype, but I don't think I ever will."
-                </p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Posted by Eleanor Matthewman on Wednesday, 27 July 2011
-                </p>
-              </div>
-              
-              <p className="mb-4">
-                As I said, I don't remember exactly how I came across it, but I suspect there was a link on one of the many email newsletters that I'd signed up to, looking for volunteers for the ceremonies, and on seeing the advert, I posted on Facebook how I was "tempted to apply".
-              </p>
-              
-              <div className="bg-muted p-4 rounded-lg mb-4">
-                <p className="italic">
-                  "So tempted to apply!"
-                </p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Posted by Eleanor Matthewman on Tuesday, 16 August 2011
-                </p>
-              </div>
-              
-              <p className="mb-6">
-                Apply I did, and from what I remember, I didn't really think much of it, but that is where my official journey to become "part of the cultural record of London" began...
-              </p>
-              
-              <div className="relative group mb-6">
-                <img 
-                  src="/london-2012/Application.jpg" 
-                  alt="Confirmation email of application"
-                  className="w-full max-w-2xl mx-auto rounded-lg shadow-lg"
-                />
-                <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white p-2 rounded">
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8.333 31.667v-10h2.792v7.208h7.208v2.792Zm20.542-13.334v-7.208h-7.208V8.333h10v10Z"/>
-                  </svg>
-                </div>
-              </div>
-            </article>
-          </main>
-        </div>
-      </div>
-    </div>
-  )
+          <h1 className="text-3xl font-bold mb-6">It Begins...</h1>
+
+          <div className="space-y-6 text-lg">
+            <p>
+              People often ask me how I got involved in the Olympic Ceremonies. In all honesty, I don't remember the exact moment, but this is what I do know...
+            </p>
+
+            <p>
+              Even before applying, I was obsessed with the Olympics. I spent way too much time during my maternity leave taking to the internet for any leads I could on how to get my hands on some tickets. I had already been in communication with a group of Twitter users, that I soon become part of, now known as "the 2012 Tweeps". A year before the ceremony, and before I even applied, I posted how excited I was - a whole year out!
+            </p>
+
+            {/* Facebook post placeholder - in real implementation, you might want to embed this properly */}
+            <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg border border-gray-300 dark:border-gray-600">
+              <p className="italic mb-2">Facebook post from 27 July 2011:</p>
+              <p>"One year to go until the opening ceremony, I know some people are already bored of all the hype, but I don't think I ever will."</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Posted by Eleanor Matthewman</p>
+            </div>
+
+            <p>
+              As I said, I don't remember exactly how I came across it, but I suspect there was a link on one of the many email newsletters that I'd signed up to, looking for volunteers for the ceremonies, and on seeing the advert, I posted on Facebook how I was "tempted to apply".
+            </p>
+
+            {/* Another Facebook post placeholder */}
+            <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg border border-gray-300 dark:border-gray-600">
+              <p className="italic mb-2">Facebook post from 16 August 2011:</p>
+              <p>"So tempted to apply!"</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Posted by Eleanor Matthewman</p>
+            </div>
+
+            <p>
+              Apply I did, and from what I remember, I didn't really think much of it, but that is where my official journey to become "part of the cultural record of London" began...
+            </p>
+
+            {/* Application confirmation image */}
+            <div className="relative">
+              <Image
+                src="/london-2012/Application.jpg"
+                alt="Confirmation email of application"
+                width={800}
+                height={600}
+                className="w-full rounded-lg shadow-lg"
+              />
+            </div>
+          </div>
+        </article>
+      </London2012Layout>
+    </MainSitePage>
+  );
 }
