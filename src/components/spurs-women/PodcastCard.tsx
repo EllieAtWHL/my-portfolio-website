@@ -10,6 +10,7 @@ interface PodcastEpisode {
   duration: string;
   publishDate: string;
   url: string;
+  podcastName: string;
 }
 
 interface PodcastCardProps {
@@ -17,9 +18,29 @@ interface PodcastCardProps {
 }
 
 export default function PodcastCard({ episode }: PodcastCardProps) {
+  const getLogoSrc = () => {
+    switch (episode.podcastName) {
+      case 'N17 Women':
+        return '/spurs-women/N17WomenLogo.jpg';
+      case 'Hometown Glory':
+        return '/spurs-women/HometownGloryLogo.jpeg';
+      default:
+        return null;
+    }
+  };
+
+  const logoSrc = getLogoSrc();
+
   return (
     <Card variant="spursAccent" padding="md">
-      <div className="flex items-start justify-between mb-3">
+      <div className="flex items-start space-x-4 mb-3">
+        {logoSrc && (
+          <img 
+            src={logoSrc} 
+            alt={`${episode.podcastName} logo`}
+            className="w-16 h-16 object-contain flex-shrink-0"
+          />
+        )}
         <div className="flex-1">
           <h3 className="font-semibold text-lg spurs-text mb-1">
             {episode.episodeNumber}

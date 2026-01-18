@@ -84,6 +84,7 @@ html[data-theme-loading] {
 /* Prevent flash of incorrect theme */
 html {
   transition: opacity 0.3s ease-in-out;
+  overflow-x: hidden;
 }
 
 /* Base styles */
@@ -102,7 +103,6 @@ html {
   font-family: 'Nokora', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 16px;
   line-height: 1.6;
-  overflow-x: hidden;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -113,8 +113,11 @@ html {
   color: var(--bg-light-1);
   padding: 0;
   box-shadow: 0 2px 20px var(--shadow-dark);
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
   z-index: 100;
   display: flex;
   justify-content: space-between;
@@ -127,6 +130,28 @@ html {
   flex: 1;
   background: linear-gradient(135deg, var(--bg-light-1) 0%, var(--bg-light-2) 100%);
   position: relative;
+  padding-top: 80px;
+}
+
+/* CSS Classes for Brand Colors (to use instead of Tailwind) */
+.brand-primary-dark {
+  color: var(--brand-primary-dark);
+}
+
+.brand-primary-darker {
+  color: var(--brand-primary-darker);
+}
+
+.neutral-gray {
+  color: var(--neutral-gray);
+}
+
+.dark-border {
+  color: var(--dark-border);
+}
+
+.dark-gray-medium {
+  color: var(--dark-gray-medium);
 }
 
 .footer {
@@ -3343,6 +3368,7 @@ body:not(.dark) .button.primary:hover {
 .spurs-wrapper {
   background: linear-gradient(90deg, var(--spurs-dark-bg-2) 0%, var(--spurs-dark-bg-1) 25%, var(--spurs-bg-med) 50%, var(--spurs-dark-bg-1) 75%, var(--spurs-dark-bg-2) 100%);
   color: var(--spurs-dark-text);
+  padding-top: 80px; /* Add top padding to account for header height */
 }
 
 /* Add bottom padding to main content to account for fixed footer */
