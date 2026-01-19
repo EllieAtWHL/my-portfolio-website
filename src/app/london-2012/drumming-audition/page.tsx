@@ -1,5 +1,5 @@
 import MainSitePage from '@/components/MainSitePage';
-import London2012Sidebar from '@/components/London2012Sidebar';
+import London2012Layout from '@/components/London2012Layout';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -16,24 +16,12 @@ export const metadata: Metadata = {
 export default function DrummingAuditionPage() {
   return (
     <MainSitePage>
-      <div className="content min-h-screen bg-pale-green dark:bg-third-colour">
-        <div className="flex flex-col lg:flex-row">
-          {/* Sidebar */}
-          <aside className="w-full lg:w-1/4 lg:fixed lg:left-0 lg:top-0 lg:h-screen lg:border-r lg:border-pale-green dark:lg:border-third-colour lg:pr-4 lg:py-8">
-            <London2012Sidebar />
-          </aside>
-
-          {/* Main Content */}
-          <main className="w-full lg:w-3/4 lg:ml-[25%] lg:pl-8 p-6">
-            <article className="max-w-4xl mx-auto">
-              {/* Date */}
-              <div className="mb-6">
-                <time className="date italic text-gray-600 dark:text-gray-400" dateTime="2011-11-20">
-                  20th November 2011
-                </time>
-              </div>
-
-              <h1 className="text-3xl font-bold mb-6">Drumming?!?</h1>
+      <London2012Layout
+        date="20th November 2011"
+        dateTime="2011-11-20"
+      >
+        <article>
+          <h1 className="text-3xl font-bold mb-6">Drumming?!?</h1>
 
               <div className="space-y-6 text-lg">
                 <p>
@@ -68,10 +56,8 @@ export default function DrummingAuditionPage() {
                   The audition was over, and although I had had such a fun time, I was extremely nervous, as I wasn't ready for my journey to end yet. We were told that we would hear back within 6-8 weeks. While that seemed like a very long time to wait, at least I had Christmas to keep me occupied in the meantime.
                 </p>
               </div>
-            </article>
-          </main>
-        </div>
-      </div>
+        </article>
+      </London2012Layout>
     </MainSitePage>
   );
 }

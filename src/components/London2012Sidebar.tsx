@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import UpdateBanner from './UpdateBanner';
 
 const BLOGPOST_MAP = [
   { title: 'It Begins...', url: '/london-2012/it-begins' },
@@ -28,6 +29,11 @@ export default function London2012Sidebar({ mode = 'small' }: London2012SidebarP
       ) : (
         <h3 className="text-xl font-bold mb-2">My Olympic Journey</h3>
       )}
+      <UpdateBanner 
+        message="blog is currently being expanded with more stories and memories from my Olympic journey. Additional content and photos are being added regularly."
+        highlightedText="London 2012"
+        type="info"
+      />
       <h4 className="text-lg font-semibold mb-4">Posts</h4>
       
       <ul className="space-y-2">

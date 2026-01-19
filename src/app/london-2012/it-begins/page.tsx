@@ -25,22 +25,11 @@ export const metadata: Metadata = {
 export default function ItBeginsPage() {
   return (
     <MainSitePage>
-      <London2012Layout>
+      <London2012Layout
+        date="16th August 2011"
+        dateTime="2011-08-16"
+      >
         <article>
-          {/* Date with image */}
-          <div className="flex items-center gap-4 mb-6">
-            <time className="date italic text-gray-600 dark:text-gray-400" dateTime="2011-08-16">
-              16th August 2011
-            </time>
-            <Image
-              src="/london-2012/img/2011-08-16.png"
-              alt="16th August 2011"
-              width={100}
-              height={40}
-              className="h-auto"
-            />
-          </div>
-
           <h1 className="text-3xl font-bold mb-6">It Begins...</h1>
 
           <div className="space-y-6 text-lg">

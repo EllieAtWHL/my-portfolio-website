@@ -1,5 +1,5 @@
 import MainSitePage from '@/components/MainSitePage';
-import London2012Sidebar from '@/components/London2012Sidebar';
+import London2012Layout from '@/components/London2012Layout';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -16,24 +16,12 @@ export const metadata: Metadata = {
 export default function CostumeFittingPage() {
   return (
     <MainSitePage>
-      <div className="content min-h-screen bg-pale-green dark:bg-third-colour">
-        <div className="flex flex-col lg:flex-row">
-          {/* Sidebar */}
-          <aside className="w-full lg:w-1/4 lg:fixed lg:left-0 lg:top-0 lg:h-screen lg:border-r lg:border-pale-green dark:lg:border-third-colour lg:pr-4 lg:py-8">
-            <London2012Sidebar />
-          </aside>
-
-          {/* Main Content */}
-          <main className="w-full lg:w-3/4 lg:ml-[25%] lg:pl-8 p-6">
-            <article className="max-w-4xl mx-auto">
-              {/* Date */}
-              <div className="mb-6">
-                <time className="date italic text-gray-600 dark:text-gray-400" dateTime="2012-05-29">
-                  29th May 2012
-                </time>
-              </div>
-
-              <h1 className="text-3xl font-bold mb-6">Costume Fittings & Goodbye to 3 Mills</h1>
+      <London2012Layout
+        date="29th May 2012"
+        dateTime="2012-05-29"
+      >
+        <article>
+          <h1 className="text-3xl font-bold mb-6">Costume Fittings & Goodbye to 3 Mills</h1>
 
               <div className="space-y-6 text-lg">
                 <p>
@@ -48,10 +36,8 @@ export default function CostumeFittingPage() {
                   I couldn't help but notice that most of the row next to me - the 70's - was missing. It was a strange and unexpected sight, and I found myself wondering what could have caused such a large number of people to be absent. Despite my curiosity, I never did find out the reason for their absence. Nevertheless, the rehearsal went on as planned, and I remained focused on my own role and responsibilities. It was just one of those little mysteries that added an element of surprise to the journey towards the Olympic Games.
                 </p>
               </div>
-            </article>
-          </main>
-        </div>
-      </div>
+        </article>
+      </London2012Layout>
     </MainSitePage>
   );
 }

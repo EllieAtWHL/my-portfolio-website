@@ -2,12 +2,15 @@
 
 import { useState } from 'react';
 import London2012Sidebar from './London2012Sidebar';
+import CalendarIcon from './CalendarIcon';
 
 interface London2012LayoutProps {
   children: React.ReactNode;
+  date?: string;
+  dateTime?: string;
 }
 
-export default function London2012Layout({ children }: London2012LayoutProps) {
+export default function London2012Layout({ children, date, dateTime }: London2012LayoutProps) {
   const [isNavigationOpen, setIsNavigationOpen] = useState(false);
 
   return (
@@ -57,6 +60,15 @@ export default function London2012Layout({ children }: London2012LayoutProps) {
         {/* Main Content */}
         <main className="w-full lg:w-3/4 lg:ml-[25%] lg:pl-8 p-4 lg:p-6">
           <div className="max-w-4xl mx-auto">
+            {/* Date with icon - only show if date is provided */}
+            {date && dateTime && (
+              <div className="flex items-center gap-2 mb-6">
+                <CalendarIcon />
+                <time className="date italic text-gray-600 dark:text-gray-400" dateTime={dateTime}>
+                  {date}
+                </time>
+              </div>
+            )}
             {children}
           </div>
         </main>

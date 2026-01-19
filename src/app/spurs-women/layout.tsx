@@ -22,7 +22,12 @@ export default function SpursWomenLayout({
   return (  
     <>
       <SpursHeader />
-      <UpdateBanner />
+      <UpdateBanner 
+        message="is currently being updated with more data and content. Some information may be incomplete while we work to make it comprehensive."
+        highlightedText="Spurs Women section"
+        type="warning"
+        className="mt-20"
+      />
       <div className="spurs-wrapper min-h-screen">
         {children}
         <SpursFooter />

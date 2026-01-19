@@ -1,5 +1,5 @@
 import MainSitePage from '@/components/MainSitePage';
-import London2012Sidebar from '@/components/London2012Sidebar';
+import London2012Layout from '@/components/London2012Layout';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -16,24 +16,12 @@ export const metadata: Metadata = {
 export default function TheDecisionArrivesPage() {
   return (
     <MainSitePage>
-      <div className="content min-h-screen bg-pale-green dark:bg-third-colour">
-        <div className="flex flex-col lg:flex-row">
-          {/* Sidebar */}
-          <aside className="w-full lg:w-1/4 lg:fixed lg:left-0 lg:top-0 lg:h-screen lg:border-r lg:border-pale-green dark:lg:border-third-colour lg:pr-4 lg:py-8">
-            <London2012Sidebar />
-          </aside>
-
-          {/* Main Content */}
-          <main className="w-full lg:w-3/4 lg:ml-[25%] lg:pl-8 p-6">
-            <article className="max-w-4xl mx-auto">
-              {/* Date */}
-              <div className="mb-6">
-                <time className="date italic text-gray-600 dark:text-gray-400" dateTime="2012-01-16">
-                  16th January 2012
-                </time>
-              </div>
-
-              <h1 className="text-3xl font-bold mb-6">The Decision Arrives</h1>
+      <London2012Layout
+        date="16th January 2012"
+        dateTime="2012-01-16"
+      >
+        <article>
+          <h1 className="text-3xl font-bold mb-6">The Decision Arrives</h1>
 
               <div className="space-y-6 text-lg">
                 <p>
@@ -68,10 +56,8 @@ export default function TheDecisionArrivesPage() {
                   For the next week, I found it difficult to sleep as I daydreamed about what the future held. This was a dream I hadn't even dared to dream, and although rehearsals weren't set to start for another four months, it would soon become a reality.
                 </p>
               </div>
-            </article>
-          </main>
-        </div>
-      </div>
+        </article>
+      </London2012Layout>
     </MainSitePage>
   );
 }

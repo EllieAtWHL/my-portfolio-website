@@ -1,5 +1,5 @@
 import MainSitePage from '@/components/MainSitePage';
-import London2012Sidebar from '@/components/London2012Sidebar';
+import London2012Layout from '@/components/London2012Layout';
 import Image from 'next/image';
 import { Metadata } from 'next';
 
@@ -25,31 +25,12 @@ export const metadata: Metadata = {
 export default function MyFirstAuditionPage() {
   return (
     <MainSitePage>
-      <div className="content min-h-screen bg-pale-green dark:bg-third-colour">
-        <div className="flex flex-col lg:flex-row">
-          {/* Sidebar */}
-          <aside className="w-full lg:w-1/4 lg:fixed lg:left-0 lg:top-0 lg:h-screen lg:border-r lg:border-pale-green dark:lg:border-third-colour lg:pr-4 lg:py-8">
-            <London2012Sidebar />
-          </aside>
-
-          {/* Main Content */}
-          <main className="w-full lg:w-3/4 lg:ml-[25%] lg:pl-8 p-6">
-            <article className="max-w-4xl mx-auto">
-              {/* Date with image */}
-              <div className="flex items-center gap-4 mb-6">
-                <time className="date italic text-gray-600 dark:text-gray-400" dateTime="2011-11-04">
-                  4th November 2011
-                </time>
-                <Image
-                  src="/london-2012/img/2011-11-04.png"
-                  alt="4th November 2011"
-                  width={100}
-                  height={40}
-                  className="h-auto"
-                />
-              </div>
-
-              <h1 className="text-3xl font-bold mb-6">My First Audition</h1>
+      <London2012Layout
+        date="4th November 2011"
+        dateTime="2011-11-04"
+      >
+        <article>
+          <h1 className="text-3xl font-bold mb-6">My First Audition</h1>
 
               <div className="space-y-6 text-lg">
                 <p>
@@ -125,10 +106,8 @@ export default function MyFirstAuditionPage() {
                   The atmosphere was electric, and I felt as though I had already become a part of the London 2012 experience, even if this was the end of my journey. As the audition came to a close, we were informed that we would receive a response within 48 hours. The anticipation was almost too much to bear, and I found myself checking my phone every few minutes, waiting for that all-important email. It was a day I will never forget.
                 </p>
               </div>
-            </article>
-          </main>
-        </div>
-      </div>
+        </article>
+      </London2012Layout>
     </MainSitePage>
   );
 }
