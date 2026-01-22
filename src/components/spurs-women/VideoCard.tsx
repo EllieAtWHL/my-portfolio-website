@@ -1,6 +1,6 @@
 'use client';
 
-import { YouTubeVideo } from '../lib/rss';
+import { YouTubeVideo } from '../../lib/rss';
 import { Card } from '@/components/Card';
 
 interface VideoCardProps {

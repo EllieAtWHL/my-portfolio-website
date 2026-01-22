@@ -1,4 +1,5 @@
 import Footer from '@/components/Footer';
+import MainSitePage from '@/components/MainSitePage';
 import RegicideGame from '@/components/RegicideGame';
 import { Card } from '@/components/Card';
 
@@ -54,8 +55,8 @@ export default function Regicide() {
                   We hope to get the game back up and running soon! Thank you for your patience and understanding.
                 </p>
               </div>
-            </div>
-          </Card>
+            </Card>
+          </div>
         </div>
         
         {/* Original game component - commented out during maintenance
@@ -63,6 +64,6 @@ export default function Regicide() {
         */}
       </div>
       <Footer />
-    </div>
+    </MainSitePage>
   );
 }

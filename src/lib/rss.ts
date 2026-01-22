@@ -157,7 +157,7 @@ export async function fetchSpursWomenVideos(): Promise<YouTubeVideo[]> {
       console.log(`Successfully fetched ${videos.length} videos from ${channelUrl}`);
       return videos;
     } catch (error) {
-      console.log(`Failed to fetch from ${channelUrl}:`, error.message);
+      console.log(`Failed to fetch from ${channelUrl}:`, error instanceof Error ? error.message : 'Unknown error');
       continue;
     }
   }

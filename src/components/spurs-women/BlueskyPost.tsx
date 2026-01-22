@@ -2,8 +2,8 @@
 
 import { useEffect, useRef } from 'react';
 
-export default function BlueskyPost({ url }) {
-  const containerRef = useRef(null);
+export default function BlueskyPost({ url }: { url: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!url) return;
@@ -19,7 +19,9 @@ export default function BlueskyPost({ url }) {
     const did = 'did:plc:cdc3vx72uppbg3v7hn7ftgp7';
 
     // Clear previous embed if it exists
-    containerRef.current.innerHTML = '';
+    if (containerRef.current) {
+      containerRef.current.innerHTML = '';
+    }
 
     // Create the blockquote
     const blockquote = document.createElement('blockquote');
@@ -30,14 +32,18 @@ export default function BlueskyPost({ url }) {
     );
     blockquote.setAttribute('data-bluesky-embed-color-mode', 'system');
     blockquote.innerHTML = `<p>Loading Bluesky post...</p>`;
-    containerRef.current.appendChild(blockquote);
+    if (containerRef.current) {
+      containerRef.current.appendChild(blockquote);
+    }
 
     // Load the Bluesky embed script
     const script = document.createElement('script');
     script.src = 'https://embed.bsky.app/static/embed.js';
     script.async = true;
     script.charset = 'utf-8';
-    containerRef.current.appendChild(script);
+    if (containerRef.current) {
+      containerRef.current.appendChild(script);
+    }
   }, [url]);
 
   return <div ref={containerRef}></div>;

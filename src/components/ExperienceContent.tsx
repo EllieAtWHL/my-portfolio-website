@@ -7,7 +7,7 @@ import Modal from '@/components/Modal';
 
 export default function ExperienceContent() {
   const [activeTab, setActiveTab] = useState('work');
-  const [selectedAward, setSelectedAward] = useState(null);
+  const [selectedAward, setSelectedAward] = useState<any>(null);
 
   const tabs = [
     { id: 'work', label: 'Work' },

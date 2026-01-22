@@ -8,6 +8,7 @@ interface CardProps {
   variant?: 'default' | 'highlight' | 'bordered' | 'accent' | 'spursAccent';
   padding?: 'sm' | 'md' | 'lg';
   hover?: boolean;
+  clickable?: boolean;
   onClick?: () => void;
 }
 
@@ -17,6 +18,7 @@ export function Card({
   variant = 'default',
   padding = 'md',
   hover = true,
+  clickable = false,
   onClick 
 }: CardProps) {
   const baseClasses = 'transition-all duration-300 w-full max-w-full box-border';

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { PhotoMedia } from '../types/media';
+import { PhotoMedia } from '../../types/media';
 
 type LightboxGalleryProps = {
   photos: PhotoMedia[];

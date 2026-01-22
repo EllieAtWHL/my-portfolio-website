@@ -1,11 +1,13 @@
 import Footer from '@/components/Footer';
+import MainSitePage from '@/components/MainSitePage';
 import Link from 'next/link';
 import { Button } from '@/components/Button';
 
 export default function ThankYou() {
   return (
-    <div className="content">
-      <div className="scrollable">
+    <MainSitePage>
+      <div className="content-with-footer">
+        <div className="scrollable">
           <div className="max-w-2xl mx-auto text-center">
             <div className="mb-8">
               <div className="w-20 h-20 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -70,8 +72,7 @@ export default function ThankYou() {
           </div>
         </div>
       </div>
-      
       <Footer />
-    </div>
+    </MainSitePage>
   );
 }

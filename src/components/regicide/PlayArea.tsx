@@ -127,8 +127,8 @@ export function PlayArea({ gameData, onShowStats, playCard, drawCard }: PlayArea
           </div>
           
           <div className="flex justify-center gap-2 flex-wrap">
-            {gameData.playerHand.map((card, index) => (
-              <Card
+            {gameData.playerHand.map((card: any, index: number) => (
+              <GameCard
                 key={index}
                 suit={card.suit as any}
                 rank={card.rank}

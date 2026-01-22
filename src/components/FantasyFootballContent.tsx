@@ -52,7 +52,7 @@ export default function FantasyFootballContent() {
 
           <p>Below is the final data model I went with.</p>
 
-          <div padding="sm" className="blog-image">
+          <div className="p-4">
             <img 
               src="/ghl/GHLdataModel.png" 
               alt="Data Model"
@@ -101,7 +101,7 @@ export default function FantasyFootballContent() {
             In summary, the draft board component simply listens for an event and refreshes the data when it is received.
           </p>
           
-          <div padding="sm" className="video-container">
+          <div className="p-4 video-container">
             <video controls className="video-iframe w-full rounded-lg">
               <source src="/ghl/videos/GHLDraft_watermarked.mkv" type="video/webm" />
               Your browser does not support the video tag.
@@ -118,7 +118,7 @@ export default function FantasyFootballContent() {
             The draft template was constructed in a similar manner for the commissioner view, but it was displayed differently on the screen to suit the commissioner's needs. The commissioner needed three input options: make pick, delete pick, and upload to website. 
           </p>  
           
-          <Card variant="accent" padding="sm" className="topic-block">
+          <Card variant="accent" className="p-4 topic-block">
             <h3 className="subsection-title">Pick</h3>
             <p>
               The Pick button displays a modal that the commissioner can use to search for the player chosen by the current owner. This screen only shows players who are still available to prevent duplicate selections. The list of available players is filtered by including a lookup to the Team Owner for each player when they are picked. The query to return the players to display simply uses a filter to return only players whose Team Owner field is empty.
@@ -128,21 +128,21 @@ export default function FantasyFootballContent() {
             </p>
           </Card>
 
-          <Card variant="accent" padding="sm" className="topic-block">  
+          <Card variant="accent" className="p-4 topic-block">  
             <h3 className="subsection-title">Undo</h3>
             <p>
               The Undo button removes the most recent Pick record (which has a flow triggered on delete that also clears the Team Owner field on the associated Player record, making the player available for selection again). As with the Pick button, a platform event is published to update the draft board with the removal of the pick.
             </p>
           </Card>
 
-          <Card variant="accent" padding="sm" className="topic-block">               
+          <Card variant="accent" className="p-4 topic-block">               
             <h3 className="subsection-title">Upload</h3> 
             <p>
               The Upload button is only enabled once all the picks have been made, at which point it transmits the picks to My Fantasy League through their API.
             </p>   
           </Card>
           
-          <div padding="sm" className="video-container">
+          <div className="p-4 video-container">
             <video controls className="video-iframe w-full rounded-lg">
               <source src="/ghl/videos/GHLController_watermarked.mkv" type="video/webm" />
               Your browser does not support the video tag.
@@ -166,7 +166,7 @@ export default function FantasyFootballContent() {
             With the remaining time before the draft, I added a few extra features to the application. One of these was a control panel within Salesforce that could be used to update the team and player listings from My Fantasy League to ensure that we had the most current information. I created buttons that called the existing Apex classes that performed the exports to accomplish this.
           </p>
           
-          <div padding="sm" className="blog-image">
+          <div className="p-4 blog-image">
             <img 
               src="/ghl/GHLControlPanel.png" 
               alt="Control Panel"
