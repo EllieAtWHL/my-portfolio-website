@@ -94,13 +94,13 @@ export default function LightboxGallery({
 
       {/* Main image container */}
       <div 
-        className="relative max-w-full overflow-hidden"
+        className="relative w-full h-full overflow-hidden flex items-center justify-center"
         onClick={(e) => e.stopPropagation()}
       >
         <img
           src={currentPhoto.url}
           alt={currentPhoto.caption || 'Match photo'}
-          className="max-w-full object-contain"
+          className="max-w-full max-h-full object-contain"
           onLoad={() => setIsLoading(false)}
           onContextMenu={(e) => e.preventDefault()}
           onDragStart={(e) => e.preventDefault()}
@@ -182,7 +182,7 @@ export default function LightboxGallery({
 
           {/* Thumbnail strip */}
           {photos.length > 1 && (
-            <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
+            <div className="flex gap-2 mt-4 overflow-x-auto pb-8">
               {photos.map((photo, index) => (
                 <button
                   key={photo.id}
