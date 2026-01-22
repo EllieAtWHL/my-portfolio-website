@@ -19,45 +19,11 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
+      data-theme-loading
     >
       <head>
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            (function() {
-              function getSystemPreference() {
-                return window.matchMedia('(prefers-color-scheme: dark)').matches;
-              }
-              
-              function getStoredTheme() {
-                try {
-                  return localStorage.getItem('theme');
-                } catch (e) {
-                  return null;
-                }
-              }
-              
-              function applyTheme() {
-                const stored = getStoredTheme();
-                const systemPreference = getSystemPreference();
-                const isDark = stored === 'dark' || (!stored && systemPreference);
-                
-                if (isDark) {
-                  document.documentElement.classList.add('dark');
-                  document.documentElement.classList.remove('light');
-                } else {
-                  document.documentElement.classList.add('light');
-                  document.documentElement.classList.remove('dark');
-                }
-                
-                // Remove the loading attribute to show content
-                document.documentElement.removeAttribute('data-theme-loading');
-              }
-              
-              // Apply theme immediately
-              applyTheme();
-            })();
-          `
-        }} />
+        <script src="/theme-script.js" suppressHydrationWarning />
+        <meta name="theme-color" content="#2d5a2d" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link
@@ -65,7 +31,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <ThemeProvider>
           {children}
         </ThemeProvider>

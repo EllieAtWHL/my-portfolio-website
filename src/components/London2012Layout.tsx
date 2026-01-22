@@ -20,7 +20,7 @@ export default function London2012Layout({ children, date, dateTime }: London201
         <div className="lg:hidden mb-6">
           <button
             onClick={() => setIsNavigationOpen(!isNavigationOpen)}
-            className="w-full flex items-center justify-between p-4 bg-white dark:bg-dark-bg-2 rounded-lg border border-brand-primary-dark dark:border-dark-border hover:bg-gray-50 dark:hover:bg-dark-bg-1 transition-colors"
+            className="w-full flex items-center justify-between p-4 mobile-nav-button rounded-lg border border-brand-primary-dark dark:border-dark-border hover:bg-gray-50 dark:hover:bg-dark-bg-2 transition-colors"
           >
             <div className="flex items-center gap-3">
               <h3 className="text-lg font-bold text-brand-primary-dark dark:text-dark-text">
@@ -44,14 +44,14 @@ export default function London2012Layout({ children, date, dateTime }: London201
             overflow-hidden transition-all duration-300 ease-in-out
             ${isNavigationOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}
           `}>
-            <div className="p-4 bg-white dark:bg-dark-bg-2 rounded-b-lg border-x border-b border-brand-primary-dark dark:border-dark-border">
-              <London2012Sidebar />
+            <div className="p-4 bg-white dark:bg-dark-bg-1 rounded-b-lg border-x border-b border-brand-primary-dark dark:border-dark-accent">
+              <London2012Sidebar showHeader={false} />
             </div>
           </div>
         </div>
 
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:block lg:w-1/4 lg:fixed lg:left-0 lg:top-20 lg:h-screen lg:border-r lg:border-pale-green dark:lg:border-third-colour lg:pr-4 lg:py-8">
+        <aside className="hidden lg:block lg:w-1/4 lg:fixed lg:left-0 lg:top-20 lg:h-screen lg:border-r lg:border-pale-green dark:lg:border-third-colour lg:pr-4 lg:py-8 lg:pl-6">
           <div className="lg:sticky lg:top-0">
             <London2012Sidebar />
           </div>

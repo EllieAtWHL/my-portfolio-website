@@ -159,6 +159,30 @@ html {
   color: var(--dark-gray-medium);
 }
 
+.dark-text {
+  color: var(--dark-text);
+}
+
+.active-page-text {
+  color: var(--brand-primary-dark);
+}
+
+.dark .active-page-text {
+  color: var(--dark-text);
+}
+
+.mobile-nav-button {
+  background-color: var(--bg-white) !important;
+  color: var(--brand-primary-dark) !important;
+  border: 1px solid var(--brand-primary-dark) !important;
+}
+
+.dark .mobile-nav-button {
+  background-color: var(--dark-bg-1) !important;
+  color: var(--dark-text) !important;
+  border: 1px solid var(--dark-border) !important;
+}
+
 .footer {
   background: linear-gradient(135deg, var(--brand-primary-dark) 0%, var(--brand-primary-light) 100%);
   color: var(--bg-light-1);

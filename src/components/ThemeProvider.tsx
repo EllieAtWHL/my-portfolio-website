@@ -47,6 +47,7 @@ export default function ThemeProvider({ children }: ThemeProviderProps) {
       setIsDarkMode(isDark);
     }
     
+    // Apply theme to state (DOM is already handled by external script)
     applyTheme();
     
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
