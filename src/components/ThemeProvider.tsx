@@ -23,24 +23,28 @@ export function useTheme() {
 
 export default function ThemeProvider({ children }: ThemeProviderProps) {
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
+    
     function getSystemPreference() {
       return window.matchMedia('(prefers-color-scheme: dark)').matches;
     }
     
-    function applyTheme() {
-      const systemPreference = getSystemPreference();
-      setIsDarkMode(systemPreference);
-      
-      // Apply class to document element
-      if (systemPreference) {
-        document.documentElement.classList.add('dark');
-        document.documentElement.classList.remove('light');
-      } else {
-        document.documentElement.classList.add('light');
-        document.documentElement.classList.remove('dark');
+    function getStoredTheme() {
+      try {
+        return localStorage.getItem('theme');
+      } catch (e) {
+        return null;
       }
+    }
+    
+    function applyTheme() {
+      const stored = getStoredTheme();
+      const systemPreference = getSystemPreference();
+      const isDark = stored === 'dark' || (!stored && systemPreference);
+      setIsDarkMode(isDark);
     }
     
     applyTheme();
@@ -54,6 +58,12 @@ export default function ThemeProvider({ children }: ThemeProviderProps) {
   const toggleDarkMode = () => {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
+    
+    try {
+      localStorage.setItem('theme', newMode ? 'dark' : 'light');
+    } catch (e) {
+      // Ignore localStorage errors
+    }
     
     if (newMode) {
       document.documentElement.classList.add('dark');

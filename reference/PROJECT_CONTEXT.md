@@ -486,7 +486,7 @@ These may be revisited only if the project’s scope or audience changes signifi
 
 ### Current Todo List Integration
 
-From `reference/todo-list.md` (Updated January 2026):
+# Todo List
 
 **Main Site:**
 - ✅  Adjust width of cards for large screens on experience page
@@ -498,13 +498,12 @@ From `reference/todo-list.md` (Updated January 2026):
 
 **Spurs Women Site:**
 - ✅  Fix the colour scheme in general
-- [ ] Ensure we have a backup primary and secondary colour in case they are not inut - and teamname probably too
-- [ ] Add players (starters, subds, unused bench)
+- [ ] Ensure we have a backup primary and secondary colour in case they are not input - and teamname probably too
+- [ ] Add players (starters, subs, unused bench)
 - [ ] Add match stats where available
+- [ ] Add goal scorers to match page
 - [ ] Add external video media type
-- ✅ Button migration documentation updated with current status
-- ✅ Project context documentation reviewed and updated
-- ✅ Migration progress tracking established
+- [ ] Cache database for api calls on Spurs women
 
 ### Priority Action Items
 

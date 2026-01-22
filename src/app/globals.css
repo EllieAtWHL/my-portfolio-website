@@ -9,6 +9,11 @@ html[data-theme-loading] {
   visibility: hidden;
 }
 
+/* Show content when theme is applied */
+html:not([data-theme-loading]) {
+  visibility: visible;
+}
+
 /* CSS Custom Properties for Color Management */
 :root {
   /* Primary Brand Colors */
