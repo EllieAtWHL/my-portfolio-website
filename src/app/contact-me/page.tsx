@@ -40,7 +40,7 @@ export default function ContactMe() {
 
   return (
     <MainSitePage>
-      <div className="content">
+      <div className="content-with-footer">
         <div className="scrollable">
           <div className="max-w-2xl mx-auto">
             <div className="text-center">

@@ -30,7 +30,7 @@ export const metadata = {
 export default function FantasyFootball() {
   return (
     <MainSitePage>
-      <div className="content">
+      <div className="content-with-footer">
         <FantasyFootballContent />
       </div>
     </MainSitePage>

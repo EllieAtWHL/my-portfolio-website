@@ -14,7 +14,7 @@ export default function London2012Layout({ children, date, dateTime }: London201
   const [isNavigationOpen, setIsNavigationOpen] = useState(false);
 
   return (
-    <div className="content min-h-screen bg-pale-green dark:bg-third-colour">
+    <div className="content-with-footer min-h-screen bg-pale-green dark:bg-third-colour">
       <div className="flex flex-col lg:flex-row">
         {/* Mobile Accordion Navigation */}
         <div className="lg:hidden -mt-4">
@@ -58,8 +58,8 @@ export default function London2012Layout({ children, date, dateTime }: London201
         </aside>
 
         {/* Main Content */}
-        <main className="w-full lg:w-3/4 lg:ml-[25%] lg:pl-8 p-4 lg:p-6">
-          <div className="max-w-4xl mx-auto">
+        <main className="w-full lg:w-3/4 lg:ml-[25%] lg:pl-8 p-4 pb-32 lg:p-6">
+          <div className="max-w-4xl mx-auto mb-48">
             {/* Date with icon - only show if date is provided */}
             {date && dateTime && (
               <div className="flex items-center gap-2 mb-6">

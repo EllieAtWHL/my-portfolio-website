@@ -191,10 +191,6 @@ html {
   background-color: var(--dark-bg-1) !important;
 }
 
-.test {
-  color: white;
-}
-
 .footer {
   background: linear-gradient(135deg, var(--brand-primary-dark) 0%, var(--brand-primary-light) 100%);
   color: var(--bg-light-1);
@@ -3415,6 +3411,16 @@ body:not(.dark) .button.primary:hover {
 /* Add bottom padding to main content to account for fixed footer */
 .spurs-wrapper main {
   padding-bottom: 6rem; /* 96px - adjust based on footer height */
+}
+
+.content-with-footer {
+  padding-top: 80px; /* Add top padding to account for header height */
+  padding-bottom: 6rem; /* 96px - adjust based on footer height */
+}
+
+.dark .content-with-footer {
+  background-color: var(--dark-bg-1);
+  color: var(--dark-text);
 }
 
 .spurs.navbar,

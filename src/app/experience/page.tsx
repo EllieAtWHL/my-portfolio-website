@@ -21,7 +21,7 @@ export const metadata = {
 export default function Experience() {
   return (
     <MainSitePage>
-      <div className="content">
+      <div className="content-with-footer">
         <div className="scrollable">
           <ExperienceContent />
         </div>

@@ -29,7 +29,7 @@ export const metadata = {
 export default function LightningRolloutPart2Page() {
   return (
     <MainSitePage>
-      <div className="content">
+      <div className="content-with-footer">
         <div className="scrollable">
           <LightningRolloutPart2 />
         </div>
