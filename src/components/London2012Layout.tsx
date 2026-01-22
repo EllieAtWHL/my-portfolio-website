@@ -17,10 +17,10 @@ export default function London2012Layout({ children, date, dateTime }: London201
     <div className="content min-h-screen bg-pale-green dark:bg-third-colour">
       <div className="flex flex-col lg:flex-row">
         {/* Mobile Accordion Navigation */}
-        <div className="lg:hidden mb-6">
+        <div className="lg:hidden -mt-4">
           <button
             onClick={() => setIsNavigationOpen(!isNavigationOpen)}
-            className="w-full flex items-center justify-between p-4 mobile-nav-button rounded-lg border border-brand-primary-dark dark:border-dark-border hover:bg-gray-50 dark:hover:bg-dark-bg-2 transition-colors"
+            className="w-full flex items-center justify-between p-4 mobile-nav-button rounded-lg hover:bg-gray-50 dark:hover:bg-dark-bg-2 transition-colors"
           >
             <div className="flex items-center gap-3">
               <h3 className="text-lg font-bold text-brand-primary-dark dark:text-dark-text">
@@ -44,7 +44,7 @@ export default function London2012Layout({ children, date, dateTime }: London201
             overflow-hidden transition-all duration-300 ease-in-out
             ${isNavigationOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}
           `}>
-            <div className="p-4 bg-white dark:bg-dark-bg-1 rounded-b-lg border-x border-b border-brand-primary-dark dark:border-dark-accent">
+            <div className="p-4 bg-white dark:bg-dark-bg-1 rounded-b-lg border-x border-b border-brand-primary-dark dark:border-dark-accent mobile-sidebar-content">
               <London2012Sidebar showHeader={false} />
             </div>
           </div>
