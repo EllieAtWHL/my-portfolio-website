@@ -7,6 +7,7 @@ import MatchHeader from '@/components/spurs-women/MatchHeader';
 import MatchInfo from '@/components/spurs-women/MatchInfo';
 import MediaGallery from '@/components/spurs-women/MediaGallery';
 import MediaList from '@/components/spurs-women/MediaList';
+import VideoGallery from '@/components/spurs-women/VideoGallery';
 import { Card } from '@/components/Card';
 import { Media, PhotoMedia } from '@/types/media';
 
@@ -50,6 +51,7 @@ export default function MatchDetail() {
   const [photos, setPhotos] = useState<PhotoMedia[]>([]);
   const [articles, setArticles] = useState<Media[]>([]);
   const [socialMedia, setSocialMedia] = useState<Media[]>([]);
+  const [videos, setVideos] = useState<Media[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -91,6 +93,7 @@ export default function MatchDetail() {
           setPhotos(mediaData.filter((m) => m.type === 'photo' || m.type === 'photo album') as PhotoMedia[]);
           setArticles(mediaData.filter((m) => m.type === 'article'));
           setSocialMedia(mediaData.filter((m) => m.type === 'social media'));
+          setVideos(mediaData.filter((m) => m.type === 'video-external'));
         }
       } catch (err) {
         console.error('Unexpected error:', err);
@@ -165,6 +168,13 @@ export default function MatchDetail() {
         ) : (
           <div className="grid gap-6">
             <MediaGallery photos={photos} fullWidth={true} />
+          </div>
+        )}
+
+        {/* Videos section */}
+        {videos.length > 0 && (
+          <div className="mb-6">
+            <VideoGallery videos={videos} />
           </div>
         )}
       </div>
