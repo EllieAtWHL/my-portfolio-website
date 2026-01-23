@@ -8,6 +8,7 @@ import MatchInfo from '@/components/spurs-women/MatchInfo';
 import MediaGallery from '@/components/spurs-women/MediaGallery';
 import MediaList from '@/components/spurs-women/MediaList';
 import VideoGallery from '@/components/spurs-women/VideoGallery';
+import ArticleCard from '@/components/spurs-women/ArticleCard';
 import { Card } from '@/components/Card';
 import { Media, PhotoMedia } from '@/types/media';
 
@@ -145,18 +146,26 @@ export default function MatchDetail() {
 
         {/* Top section: Match info and articles */}
         <div className="grid gap-6 lg:grid-cols-2 mb-6">
-          <MatchInfo 
-            venue={match.venue} 
-            attendance={match.attendance} 
-            notes={match.notes} 
-            date={match.date} 
-            kickoff_time={match.kickoff_time} 
-          />
+          <div>
+            <h2 className="text-2xl font-bold media-title mb-4">Game Info</h2>
+            <MatchInfo 
+              venue={match.venue} 
+              attendance={match.attendance} 
+              notes={match.notes} 
+              date={match.date} 
+              kickoff_time={match.kickoff_time} 
+            />
+          </div>
           {articles.length > 0 && (
-          <Card variant="spursAccent" padding="md">
-            <MediaList items={articles} title="Articles" />
-          </Card>
-        )}
+            <div>
+              <h2 className="text-2xl font-bold media-title mb-4">Articles</h2>
+              <div className="space-y-4">
+                {articles.map((article) => (
+                  <ArticleCard key={article.id} article={article} />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Bottom section: Photos and social media */}

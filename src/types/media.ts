@@ -1,8 +1,9 @@
 export type Media = {
-  id: number;
+  id: number | string;
   type: 'photo' | 'article' | 'social media' | 'photo album' | 'video-external';
   url: string;
   caption: string | null;
+  title?: string | null;
 };
 
 export type PhotoMedia = {
