@@ -2,11 +2,19 @@
 
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import MainSitePage from '@/components/MainSitePage';
 
 export default function ContactMe() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
   useEffect(() => {
+    // Only load reCAPTCHA for non-localhost environments
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+      return;
+    }
+
     // Load Google reCAPTCHA script
     const script = document.createElement('script');
     script.src = 'https://www.google.com/recaptcha/api.js';
@@ -33,10 +41,59 @@ export default function ContactMe() {
     document.head.appendChild(timestampScript);
 
     return () => {
-      document.head.removeChild(script);
-      document.head.removeChild(timestampScript);
+      if (document.head.contains(script)) {
+        document.head.removeChild(script);
+      }
+      if (document.head.contains(timestampScript)) {
+        document.head.removeChild(timestampScript);
+      }
     };
   }, []);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    const formData = new FormData(e.currentTarget);
+    
+    // For localhost, simulate form submission and redirect immediately
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+      // Simulate a brief delay for UX
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      window.location.href = '/contact-me/thank-you';
+      return;
+    }
+
+    // For production, submit to Salesforce normally
+    const form = e.currentTarget;
+    form.submit();
+  };
+
+  if (submitStatus === 'success') {
+    return (
+      <MainSitePage>
+        <div className="content-with-footer">
+          <div className="scrollable">
+            <div className="max-w-2xl mx-auto text-center">
+              <div className="mb-8">
+                <div className="w-20 h-20 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg className="w-10 h-10 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-green-600 to-green-400 bg-clip-text text-transparent">
+                  Thank You!
+                </h1>
+                <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
+                  Your message has been successfully submitted.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </MainSitePage>
+    );
+  }
 
   return (
     <MainSitePage>
@@ -57,12 +114,13 @@ export default function ContactMe() {
                 action="https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8" 
                 method="POST" 
                 className="space-y-6"
+                onSubmit={handleSubmit}
               >
                 <Card variant="accent" padding="md">
                   <input 
                     type="hidden" 
                     name='captcha_settings' 
-                    value='{"keyname":"EllieAtWHL","fallback":"true","orgId":"00D58000000YxlM","ts":""}'
+                    value={typeof window !== 'undefined' && window.location.hostname === 'localhost' ? '' : '{"keyname":"EllieAtWHL","fallback":"true","orgId":"00D58000000YxlM","ts":""}'}
                   />
                   <input 
                     type="hidden" 
@@ -72,7 +130,7 @@ export default function ContactMe() {
                   <input 
                     type="hidden" 
                     name="retURL" 
-                    value="/contact-me/thank-you"
+                    value={typeof window !== 'undefined' ? `${window.location.origin}/contact-me/thank-you` : '/contact-me/thank-you'}
                   />
                   
                   {/* NOTE: These fields are optional debugging elements. Please uncomment */}
@@ -141,16 +199,25 @@ export default function ContactMe() {
                     />
                   </div>
 
-                  <div className="flex justify-center p-8">
-                    <div 
-                      className="g-recaptcha" 
-                      data-sitekey="6LfUBQEfAAAAAOwXkILtp2Amwf_U6Ouoza-xsGZT"
-                    />
-                  </div>
+                  {typeof window === 'undefined' || window.location.hostname !== 'localhost' && (
+                    <div className="flex justify-center p-8">
+                      <div 
+                        className="g-recaptcha" 
+                        data-sitekey="6LfUBQEfAAAAAOwXkILtp2Amwf_U6Ouoza-xsGZT"
+                      />
+                    </div>
+                  )}
 
                   <div className="pt-4">
-                    <Button type="submit" variant="primary" size="lg" fullWidth className="button primary">
-                      Send Message
+                    <Button 
+                      type="submit" 
+                      variant="primary" 
+                      size="lg" 
+                      fullWidth 
+                      className="button primary"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? 'Sending...' : 'Send Message'}
                     </Button>
                   </div>
                 </Card>
