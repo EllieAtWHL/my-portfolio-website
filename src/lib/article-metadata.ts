@@ -56,7 +56,7 @@ export async function fetchArticleMetadata(url: string): Promise<ArticleMetadata
     const favicon = await fetchFavicon(url);
     
     // Try to get basic title from a simple approach
-    let title = null;
+    const title = null;
     let siteName = null;
     
     try {

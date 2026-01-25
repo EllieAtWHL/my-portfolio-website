@@ -1,11 +1,5 @@
 import BlueskyPost from './BlueskyPost';
-
-type Media = {
-  id: number;
-  url: string;
-  title?: string | null;
-  type?: string;
-};
+import { Media } from '@/types/media';
 
 type MediaListProps = {
   items: Media[];
