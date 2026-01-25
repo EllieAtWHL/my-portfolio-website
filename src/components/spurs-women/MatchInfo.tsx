@@ -11,7 +11,7 @@ type MatchInfoProps = {
 export default function MatchInfo({ venue, attendance, notes, date, kickoff_time }: MatchInfoProps) {
   if (!venue && !attendance && !notes && !date) return null;
 
-  const formatKickoffDateTime = (date: string, time: string) => {
+  const formatKickoffDateTime = (date: string, time: string | null) => {
     const dateObj = new Date(date);
     if (time) {
       const [hours, minutes] = time.split(':');
@@ -22,9 +22,7 @@ export default function MatchInfo({ venue, attendance, notes, date, kickoff_time
       year: 'numeric',
       month: 'short',
       day: 'numeric',
-      hour: 'numeric', 
-      minute: '2-digit',
-      hour12: true 
+      ...(time && { hour: 'numeric', minute: '2-digit', hour12: true })
     });
   };
 
@@ -33,7 +31,7 @@ export default function MatchInfo({ venue, attendance, notes, date, kickoff_time
       <div className="mb-6">
         {date && (
           <p className="mb-2">
-            <strong>Kickoff:</strong> {kickoff_time ? formatKickoffDateTime(date, kickoff_time) : new Date(date).toLocaleDateString()}
+            <strong>Kickoff:</strong> {formatKickoffDateTime(date, kickoff_time || null)}
           </p>
         )}
         {venue && (

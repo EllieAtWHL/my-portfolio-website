@@ -1,11 +1,5 @@
 import BlueskyPost from './BlueskyPost';
-
-type Media = {
-  id: number;
-  url: string;
-  title?: string | null;
-  type?: string;
-};
+import { Media } from '@/types/media';
 
 type MediaListProps = {
   items: Media[];
@@ -33,11 +27,11 @@ export default function MediaList({ items, title }: MediaListProps) {
         </div>
       )}
 
-      {/* Other media items with bullet points */}
+      {/* Other media items without bullet points */}
       {otherItems.length > 0 && (
-        <ul className="list-disc list-inside">
+        <div className="space-y-2">
           {otherItems.map((item) => (
-            <li key={item.id}>
+            <div key={item.id}>
               <a
                 href={item.url}
                 target="_blank"
@@ -47,9 +41,9 @@ export default function MediaList({ items, title }: MediaListProps) {
                 {item.title && item.title.trim() !== '' ? item.title : item.url}
               </a>{' '}
               <span className="text-gray-400 text-sm">↗</span>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );
