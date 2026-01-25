@@ -189,10 +189,43 @@ export default function MatchDetail() {
   };
 
   return (
-    <main className="p-4 -mt-12">
+    <main className="p-4">
       <div className="max-w-6xl mx-auto">
-        {/* Top row: Navigation buttons and match header */}
-        <div className="flex justify-between items-center gap-4 mb-1">
+        {/* Mobile navigation buttons - stacked and centered */}
+        <div className="flex flex-col gap-2 sm:hidden mb-4 items-center">
+          {/* Previous match button */}
+          <Button
+            variant="spurs"
+            onClick={() => navigateToMatch(previousMatch?.id.toString() || '')}
+            disabled={!previousMatch}
+            className="text-sm !px-4 !py-3 w-11/12 justify-start"
+          >
+            <div className="flex items-center">
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              {previousMatch ? `${previousMatch.home_team.short_name} vs ${previousMatch.away_team.short_name}` : 'No Previous Match'}
+            </div>
+          </Button>
+
+          {/* Next match button */}
+          <Button
+            variant="spurs"
+            onClick={() => navigateToMatch(nextMatch?.id.toString() || '')}
+            disabled={!nextMatch}
+            className="text-sm !px-4 !py-3 w-11/12 justify-end"
+          >
+            <div className="flex items-center">
+              {nextMatch ? `${nextMatch.home_team.short_name} vs ${nextMatch.away_team.short_name}` : 'No Next Match'}
+              <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </Button>
+        </div>
+
+        {/* Desktop navigation and header - side by side */}
+        <div className="hidden sm:flex justify-between items-center gap-4 mb-1">
           {/* Left navigation button */}
           <Button
             variant="spurs"
@@ -241,6 +274,23 @@ export default function MatchDetail() {
               </svg>
             </div>
           </Button>
+        </div>
+
+        {/* Mobile match header - centered below buttons */}
+        <div className="sm:hidden mb-4">
+          <h1 className={`spurs-text font-bold flex items-center justify-center gap-2 flex-wrap text-center ${getHeaderFontSize()}`}
+              style={{
+                fontSize: totalHeaderTextLength > 45 ? '1.5rem' : 
+                         totalHeaderTextLength > 38 ? '1.75rem' : '1.875rem'
+              }}>
+            <span>
+              {match.home_team.name}
+            </span>
+            <span className="text-gray-500">{homeScore} - {awayScore}</span>
+            <span>
+              {match.away_team.name}
+            </span>
+          </h1>
         </div>
 
         {/* Second row: Competition name and attended badge */}

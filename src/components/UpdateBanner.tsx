@@ -46,7 +46,7 @@ export default function UpdateBanner({
   highlightedText, 
   type = 'warning', 
   dismissible = true, 
-  className = '' 
+  className = ''
 }: BannerProps) {
   const [isVisible, setIsVisible] = useState(true);
 
