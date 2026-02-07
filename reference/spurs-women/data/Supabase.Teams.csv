@@ -1,0 +1,16 @@
+id,name,short_name,primary_color,secondary_color,is_tottenham,created_at,updated_at
+1,Tottenham Hotspur,Spurs,white,blue-900,true,2026-01-04 20:28:00.850488+00,2026-01-04 20:28:00.850488+00
+4,Arsenal,Arsenal,red-600,white,false,2026-01-04 20:28:00.850488+00,2026-01-04 20:28:00.850488+00
+3,Manchester United,Man Utd,red-600,black,false,2026-01-04 20:28:00.850488+00,2026-01-04 20:28:00.850488+00
+5,Chelsea,Chelsea,blue-600,white,false,2026-01-04 20:28:00.850488+00,2026-01-04 20:28:00.850488+00
+6,Liverpool,Liverpool,red-600,white,false,2026-01-04 20:28:00.850488+00,2026-01-04 20:28:00.850488+00
+8,Leicester City,Leicester City,blue-600,white,false,2026-01-04 20:31:50.098856+00,2026-01-04 20:31:50.098856+00
+9,Bristol City,Bristol City,white,red-600,false,2026-01-04 22:45:29.524247+00,2026-01-04 22:45:29.524247+00
+10,London City Lionesses,Lionesses,cyan-200,blue-900,false,2026-01-09 22:21:37.313436+00,2026-01-09 22:21:37.313436+00
+12,"Brighton & Hove Albion ",Brighton,blue-600,white,false,2026-01-09 22:37:15.86944+00,2026-01-09 22:37:15.86944+00
+13,Everton,Everton,blue-600,white,false,2026-01-09 23:38:27.592856+00,2026-01-09 23:38:27.592856+00
+7,Manchester City,Man City,sky-300,sky-900,false,2026-01-04 20:28:00.850488+00,2026-01-04 20:28:00.850488+00
+2,Aston Villa,Villa,rose-900,sky-200,false,2026-01-04 20:28:00.850488+00,2026-01-04 20:28:00.850488+00
+14,West Ham United,West Ham,rose-900,sky-200,false,2026-01-10 13:21:29.411959+00,2026-01-10 13:21:29.411959+00
+11,Birmingham City,Birmingham,blue-800,white,false,2026-01-09 22:32:43.693448+00,2026-01-09 22:32:43.693448+00
+15,Sevilla,Sevilla,white,red-600,false,2026-01-15 17:00:48.996772+00,2026-01-15 17:00:48.996772+00
