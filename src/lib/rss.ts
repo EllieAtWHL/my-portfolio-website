@@ -1,6 +1,11 @@
 import Parser from 'rss-parser';
 
-const parser = new Parser();
+const parser = new Parser({
+  timeout: 10000, // 10 second timeout for each RSS request
+  customFields: {
+    item: ['pubDate', 'content', 'contentSnippet']
+  }
+});
 
 export interface NewsArticle {
   title: string;
@@ -34,16 +39,21 @@ const spursSources = [
 ];
 
 export async function fetchSpursWomenNews(): Promise<NewsArticle[]> {
-  const allArticles: NewsArticle[] = [];
-  
-  for (const sourceUrl of spursSources) {
+  // Fetch all RSS feeds in parallel instead of sequentially
+  const feedPromises = spursSources.map(async (sourceUrl) => {
     try {
-      const feed = await parser.parseURL(sourceUrl);
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('RSS fetch timeout')), 8000)
+      );
+      
+      const feedPromise = parser.parseURL(sourceUrl);
+      const feed = await Promise.race([feedPromise, timeoutPromise]) as any;
       
       // Check if the feed is valid RSS
       if (!feed.items || feed.items.length === 0) {
         console.error(`Invalid or empty RSS feed from ${sourceUrl}`);
-        continue;
+        return [];
       }
       
       let sourceName = 'Unknown';
@@ -66,11 +76,16 @@ export async function fetchSpursWomenNews(): Promise<NewsArticle[]> {
         source: sourceName
       }));
       
-      allArticles.push(...articles);
+      return articles;
     } catch (error) {
       console.error(`Error fetching from ${sourceUrl}:`, error);
+      return [];
     }
-  }
+  });
+
+  // Wait for all feeds to complete in parallel
+  const allArticlesArrays = await Promise.all(feedPromises);
+  const allArticles = allArticlesArrays.flat();
   
   // Filter for Spurs women's content only
   const spursWomenNews = allArticles.filter(article => {
@@ -127,12 +142,13 @@ export async function fetchSpursWomenVideos(): Promise<YouTubeVideo[]> {
     'https://www.youtube.com/feeds/videos.xml?user=SpursWomen'
   ];
 
-  for (const channelUrl of channelUrls) {
+  // Try all channels in parallel, return the first successful one
+  const videoPromises = channelUrls.map(async (channelUrl) => {
     try {
       const feed = await parser.parseURL(channelUrl);
       
       if (!feed.items || feed.items.length === 0) {
-        continue;
+        return null;
       }
 
       const videos = feed.items.slice(0, 6).map(item => {
@@ -158,8 +174,16 @@ export async function fetchSpursWomenVideos(): Promise<YouTubeVideo[]> {
       return videos;
     } catch (error) {
       console.log(`Failed to fetch from ${channelUrl}:`, error instanceof Error ? error.message : 'Unknown error');
-      continue;
+      return null;
     }
+  });
+
+  // Wait for all requests and return the first successful result
+  const results = await Promise.all(videoPromises);
+  const successfulResult = results.find(result => result !== null);
+
+  if (successfulResult) {
+    return successfulResult;
   }
 
   console.error('All YouTube channel URLs failed');
