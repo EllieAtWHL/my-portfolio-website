@@ -498,11 +498,11 @@ These may be revisited only if the project’s scope or audience changes signifi
 
 **Spurs Women Site:**
 - ✅  Fix the colour scheme in general
+- ✅ Add external video media type
 - [ ] Ensure we have a backup primary and secondary colour in case they are not input - and teamname probably too
 - [ ] Add players (starters, subs, unused bench)
 - [ ] Add match stats where available
 - [ ] Add goal scorers to match page
-- [ ] Add external video media type
 - [ ] Cache database for api calls on Spurs women
 
 ### Priority Action Items
