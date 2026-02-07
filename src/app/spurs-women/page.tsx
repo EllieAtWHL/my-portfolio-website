@@ -7,17 +7,8 @@ import MatchCard from '@/components/spurs-women/MatchCard';
 import NewsCard from '@/components/spurs-women/NewsCard';
 import PodcastCard from '@/components/spurs-women/PodcastCard';
 import VideoCard from '@/components/spurs-women/VideoCard';
-import { supabase } from '@/utils/supabase';
-
-interface NewsArticle {
-  title: string;
-  link: string;
-  pubDate: string;
-  content: string;
-  contentSnippet: string;
-  guid: string;
-  isoDate: string;
-}
+import { getHomePageContentClient } from '@/lib/data/client';
+import { Match, NewsArticle, YouTubeVideo } from '@/lib/data/client';
 
 interface PodcastEpisode {
   title: string;
@@ -27,15 +18,6 @@ interface PodcastEpisode {
   publishDate: string;
   url: string;
   podcastName: string;
-}
-
-interface YouTubeVideo {
-  title: string;
-  link: string;
-  pubDate: string;
-  videoId: string;
-  thumbnail: string;
-  description: string;
 }
 
 export default function HomePage() {
@@ -51,98 +33,34 @@ export default function HomePage() {
     // Set page title
     document.title = 'Home - Tottenham Hotspur Women';
     
-    async function fetchMatches() {
-      const now = new Date().toISOString();
-      
+    async function fetchData() {
       try {
-        // Fetch upcoming matches (next 3)
-        const { data: upcoming, error: upcomingError } = await supabase
-          .from('matches')
-          .select(`
-            *,
-            home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-            away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-            competitions(name, icon_svg)
-          `)
-          .gte('date', now)
-          .order('date', { ascending: true })
-          .limit(3);
+        setMatchesLoading(true);
+        setNewsLoading(true);
         
-        // Fetch previous matches (last 3)
-        const { data: previous, error: previousError } = await supabase
-          .from('matches')
-          .select(`
-            *,
-            home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-            away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-            competitions(name, icon_svg)
-          `)
-          .lt('date', now)
-          .order('date', { ascending: false })
-          .limit(3);
+        // Fetch all data using the client-side data access layer
+        const contentData = await getHomePageContentClient();
         
-        if (upcomingError) {
-          console.error('Error fetching upcoming matches:', upcomingError);
-          setUpcomingMatches([]);
-        } else {
-          setUpcomingMatches(upcoming || []);
-        }
-        
-        if (previousError) {
-          console.error('Error fetching previous matches:', previousError);
-          setPreviousMatches([]);
-        } else {
-          setPreviousMatches(previous || []);
-        }
+        setUpcomingMatches(contentData.upcoming);
+        setPreviousMatches(contentData.previous);
+        setSpursNews(contentData.news);
+        setPodcastEpisodes(contentData.podcasts);
+        setVideos(contentData.videos);
       } catch (error) {
-        console.error('Error fetching matches:', error);
+        console.error('Error fetching data:', error);
+        // Set empty arrays on error to prevent infinite loading
         setUpcomingMatches([]);
         setPreviousMatches([]);
-      }
-      
-      setMatchesLoading(false);
-    }
-
-    async function fetchNews() {
-      try {
-        const spursResponse = await fetch('/api/spurs-women-news');
-        const spursData = await spursResponse.json();
-        
-        setSpursNews(spursData.news || []);
-      } catch (error) {
-        console.error('Error fetching news:', error);
+        setSpursNews([]);
+        setPodcastEpisodes([]);
+        setVideos([]);
       } finally {
+        setMatchesLoading(false);
         setNewsLoading(false);
       }
     }
 
-    async function fetchPodcasts() {
-      try {
-        const response = await fetch('/api/podcasts');
-        const data = await response.json();
-        
-        setPodcastEpisodes(data.episodes || []);
-      } catch (error) {
-        console.error('Error fetching podcasts:', error);
-      }
-    }
-
-    async function fetchVideos() {
-      try {
-        const response = await fetch('/api/spurs-women-videos');
-        const data = await response.json();
-        
-        setVideos(data.videos || []);
-      } catch (error) {
-        console.error('Error fetching videos:', error);
-      }
-    }
-
-    // Start all fetches in parallel
-    fetchMatches();
-    fetchNews();
-    fetchPodcasts();
-    fetchVideos();
+    fetchData();
   }, []);
 
   return (

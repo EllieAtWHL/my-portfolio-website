@@ -2,17 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/utils/supabase';
 import { Card } from '@/components/Card';
-
-type Season = {
-  id: number;
-  name: string;
-  match_count?: number;
-};
+import { getSeasonsList } from '@/lib/data';
+import { SeasonWithMatchCount } from '@/lib/data';
 
 export default function SeasonsPage() {
-  const [seasons, setSeasons] = useState<Season[]>([]);
+  const [seasons, setSeasons] = useState<SeasonWithMatchCount[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,35 +15,15 @@ export default function SeasonsPage() {
     document.title = 'Seasons - Tottenham Hotspur Women';
     
     async function fetchSeasons() {
-      // Fetch seasons first
-      const { data: seasonsData, error: seasonsError } = await supabase
-        .from('seasons')
-        .select('*')
-        .order('id', { ascending: false });
-
-      if (seasonsError) {
-        console.error('Supabase error fetching seasons:', seasonsError);
+      try {
+        const seasonsData = await getSeasonsList();
+        setSeasons(seasonsData);
+      } catch (error) {
+        console.error('Error fetching seasons:', error);
+        setSeasons([]);
+      } finally {
         setLoading(false);
-        return;
       }
-
-      // Fetch match counts for each season
-      const seasonsWithCounts = await Promise.all(
-        (seasonsData as Season[]).map(async (season) => {
-          const { count, error: countError } = await supabase
-            .from('matches')
-            .select('*', { count: 'exact', head: true })
-            .eq('season_id', season.id);
-
-          return {
-            ...season,
-            match_count: countError ? 0 : count || 0
-          };
-        })
-      );
-
-      setSeasons(seasonsWithCounts);
-      setLoading(false);
     }
 
     fetchSeasons();

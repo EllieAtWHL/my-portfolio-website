@@ -3,37 +3,9 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import MatchCard from '@/components/spurs-women/MatchCard';
-import { supabase } from '@/utils/supabase';
 import { Button } from '@/components/Button';
-
-type Match = {
-  id: number;
-  date: string;
-  home_team: {
-    id: number;
-    name: string;
-    short_name: string;
-    primary_color: string;
-    secondary_color: string;
-    is_tottenham: boolean;
-  };
-  away_team: {
-    id: number;
-    name: string;
-    short_name: string;
-    primary_color: string;
-    secondary_color: string;
-    is_tottenham: boolean;
-  };
-  spurs_score: number;
-  opponent_score: number;
-  attended: boolean;
-  is_home_match: boolean;
-  competitions?: {
-    name: string;
-    icon_svg?: string;
-  };
-};
+import { getMatchesWithFilter } from '@/lib/data';
+import { Match } from '@/lib/data';
 
 export default function MatchesPage() {
   const [allMatches, setAllMatches] = useState<Match[]>([]);
@@ -47,36 +19,12 @@ export default function MatchesPage() {
         setLoading(true);
         setError(null);
         
-        const now = new Date().toISOString();
-        
-        let query = supabase
-          .from('matches')
-          .select(`
-            *,
-            home_team:home_team_id (*),
-            away_team:away_team_id (*),
-            competitions:competition_id (*)
-          `)
-          .order('date', { ascending: false });
-
-        // Apply filter if not showing all matches
-        if (filter === 'upcoming') {
-          query = query.gte('date', now);
-        } else if (filter === 'previous') {
-          query = query.lt('date', now);
-        }
-
-        const { data, error } = await query;
-        
-        if (error) {
-          console.error('Error fetching matches:', error);
-          setError('Failed to load matches');
-        } else {
-          setAllMatches(data as Match[] || []);
-        }
+        const matches = await getMatchesWithFilter(filter);
+        setAllMatches(matches);
       } catch (err) {
         console.error('Unexpected error:', err);
         setError('An unexpected error occurred');
+        setAllMatches([]);
       } finally {
         setLoading(false);
       }
