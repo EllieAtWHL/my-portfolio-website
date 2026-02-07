@@ -10,14 +10,14 @@ import { CACHE_TAGS } from './cache-utils';
  * Revalidates cache by tag - server only
  */
 export function revalidateCacheTag(tag: string) {
-  revalidateTag(tag);
+  revalidateTag(tag, {});
 }
 
 /**
  * Revalidates multiple cache tags - server only
  */
 export function revalidateCacheTags(tags: string[]) {
-  tags.forEach(tag => revalidateTag(tag));
+  tags.forEach(tag => revalidateTag(tag, {}));
 }
 
 /**
@@ -25,6 +25,6 @@ export function revalidateCacheTags(tags: string[]) {
  */
 export function revalidateAllCache() {
   const allTags = Object.values(CACHE_TAGS);
-  revalidateCacheTags(all);
+  revalidateCacheTags(allTags);
   return allTags;
 }

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Card } from '@/components/Card';
+import { Match } from '@/lib/data/matches';
 
 // Simple function to generate Tailwind classes from database colors with fallbacks
 function getColorClasses(primaryColor: string | null | undefined, secondaryColor: string | null | undefined) {
@@ -10,39 +11,12 @@ function getColorClasses(primaryColor: string | null | undefined, secondaryColor
 }
 
 type MatchProps = {
-  match: {
-    id: number;
-    date: string;
-    home_team: {
-      id: number;
-      name: string;
-      short_name: string;
-      primary_color: string | null;
-      secondary_color: string | null;
-      is_tottenham: boolean;
-    } | null;
-    away_team: {
-      id: number;
-      name: string;
-      short_name: string;
-      primary_color: string | null;
-      secondary_color: string | null;
-      is_tottenham: boolean;
-    } | null;
-    spurs_score: number;
-    opponent_score: number;
-    attended: boolean;
-    is_home_match: boolean;
-    competitions?: {
-      name: string;
-      icon_svg?: string;
-    };
-  };
+  match: Match;
 };
 
 export default function MatchCard({ match }: MatchProps) {
-  const homeScore = match.is_home_match ? match.spurs_score : match.opponent_score;
-  const awayScore = match.is_home_match ? match.opponent_score : match.spurs_score;
+  const homeScore = match.is_home_match ? (match.spurs_score ?? 0) : (match.opponent_score ?? 0);
+  const awayScore = match.is_home_match ? (match.opponent_score ?? 0) : (match.spurs_score ?? 0);
 
   return (
     <Link href={`/spurs-women/matches/${match.id}`} className="block spurs-text">

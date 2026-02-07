@@ -65,7 +65,7 @@ export async function fetchSpursWomenNews(): Promise<NewsArticle[]> {
       else if (sourceUrl.includes('theguardian')) sourceName = 'The Guardian';
       else if (sourceUrl.includes('football.london')) sourceName = 'Football London';
 
-      const articles = feed.items.map(item => ({
+      const articles = feed.items.map((item: any) => ({
         title: item.title || '',
         link: item.link || '',
         pubDate: item.pubDate || '',
