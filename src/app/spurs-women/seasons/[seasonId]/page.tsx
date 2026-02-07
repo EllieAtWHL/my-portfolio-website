@@ -2,42 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { supabase } from '@/utils/supabase';
 import MatchCard from '@/components/spurs-women/MatchCard';
-
-type Match = {
-  id: number;
-  date: string;
-  home_team: {
-    id: number;
-    name: string;
-    short_name: string;
-    primary_color: string;
-    secondary_color: string;
-    is_tottenham: boolean;
-  };
-  away_team: {
-    id: number;
-    name: string;
-    short_name: string;
-    primary_color: string;
-    secondary_color: string;
-    is_tottenham: boolean;
-  };
-  spurs_score: number;
-  opponent_score: number;
-  attended: boolean;
-  is_home_match: boolean;
-  competitions?: {
-    name: string;
-    icon_svg?: string;
-  };
-};
-
-type Season = {
-  id: number;
-  name: string;
-};
+import { getMatchesBySeason, getSeasonDetails } from '@/lib/data';
+import { Match, Season } from '@/lib/data';
 
 export default function SeasonDetail() {
   const params = useParams();
@@ -51,38 +18,26 @@ export default function SeasonDetail() {
     document.title = 'Season Details - Tottenham Hotspur Women';
     
     async function fetchData() {
-      // Fetch season name
-      const { data: seasonData, error: seasonError } = await supabase
-        .from('seasons')
-        .select('*')
-        .eq('id', seasonId)
-        .single();
-
-      if (seasonError) {
-        console.error('Error fetching season:', seasonError);
-      } else {
-        setSeason(seasonData as Season);
+      try {
+        setLoading(true);
+        
+        const seasonIdNum = parseInt(seasonId as string);
+        
+        // Fetch season name and matches in parallel
+        const [seasonData, matchData] = await Promise.all([
+          getSeasonDetails(seasonIdNum),
+          getMatchesBySeason(seasonIdNum)
+        ]);
+        
+        setSeason(seasonData);
+        setMatches(matchData);
+      } catch (error) {
+        console.error('Error fetching season data:', error);
+        setSeason(null);
+        setMatches([]);
+      } finally {
+        setLoading(false);
       }
-
-      // Fetch matches for this season
-      const { data: matchData, error: matchError } = await supabase
-        .from('matches')
-        .select(`
-          *,
-          home_team:home_team_id (*),
-          away_team:away_team_id (*),
-          competitions:competition_id (*)
-        `)
-        .eq('season_id', seasonId)
-        .order('date', { ascending: true });
-
-      if (matchError) {
-        console.error('Error fetching matches:', matchError);
-      } else {
-        setMatches(matchData as Match[]);
-      }
-
-      setLoading(false);
     }
 
     fetchData();
