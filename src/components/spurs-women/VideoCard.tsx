@@ -1,6 +1,7 @@
 'use client';
 
 import { YouTubeVideo } from '../../lib/rss';
+import { formatDateForCard } from '@/lib/utils/date';
 import { Card } from '@/components/Card';
 
 interface VideoCardProps {
@@ -54,7 +55,7 @@ export default function VideoCard({ video }: VideoCardProps) {
           </div>
           <div className="flex items-center justify-between">
             <p className="text-xs text-gray-500">
-              {new Date(video.pubDate).toLocaleDateString()}
+              {formatDateForCard(video.pubDate)}
             </p>
             <span className="text-xs text-gray-500 font-medium flex items-center">
               <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24">

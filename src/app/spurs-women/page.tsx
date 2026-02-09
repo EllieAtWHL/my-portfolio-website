@@ -1,22 +1,18 @@
-'use client';
-
-import { useEffect, useState } from 'react';
+import { Metadata } from 'next';
 import Link from 'next/link';
 import { Button } from '@/components/Button';
 import MatchCard from '@/components/spurs-women/MatchCard';
 import NewsCard from '@/components/spurs-women/NewsCard';
 import PodcastCard from '@/components/spurs-women/PodcastCard';
 import VideoCard from '@/components/spurs-women/VideoCard';
-import { supabase } from '@/utils/supabase';
+import { getHomePageContent } from '@/lib/data';
+import { Match, NewsArticle, YouTubeVideo } from '@/lib/data';
 
-interface NewsArticle {
-  title: string;
-  link: string;
-  pubDate: string;
-  content: string;
-  contentSnippet: string;
-  guid: string;
-  isoDate: string;
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Home - Tottenham Hotspur Women',
+    description: 'Latest news, matches, videos, and podcasts for Tottenham Hotspur Women FC',
+  };
 }
 
 interface PodcastEpisode {
@@ -29,121 +25,10 @@ interface PodcastEpisode {
   podcastName: string;
 }
 
-interface YouTubeVideo {
-  title: string;
-  link: string;
-  pubDate: string;
-  videoId: string;
-  thumbnail: string;
-  description: string;
-}
-
-export default function HomePage() {
-  const [upcomingMatches, setUpcomingMatches] = useState<any[]>([]);
-  const [previousMatches, setPreviousMatches] = useState<any[]>([]);
-  const [spursNews, setSpursNews] = useState<NewsArticle[]>([]);
-  const [podcastEpisodes, setPodcastEpisodes] = useState<PodcastEpisode[]>([]);
-  const [videos, setVideos] = useState<YouTubeVideo[]>([]);
-  const [matchesLoading, setMatchesLoading] = useState(true);
-  const [newsLoading, setNewsLoading] = useState(true);
-
-  useEffect(() => {
-    // Set page title
-    document.title = 'Home - Tottenham Hotspur Women';
-    
-    async function fetchMatches() {
-      const now = new Date().toISOString();
-      
-      try {
-        // Fetch upcoming matches (next 3)
-        const { data: upcoming, error: upcomingError } = await supabase
-          .from('matches')
-          .select(`
-            *,
-            home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-            away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-            competitions(name, icon_svg)
-          `)
-          .gte('date', now)
-          .order('date', { ascending: true })
-          .limit(3);
-        
-        // Fetch previous matches (last 3)
-        const { data: previous, error: previousError } = await supabase
-          .from('matches')
-          .select(`
-            *,
-            home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-            away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-            competitions(name, icon_svg)
-          `)
-          .lt('date', now)
-          .order('date', { ascending: false })
-          .limit(3);
-        
-        if (upcomingError) {
-          console.error('Error fetching upcoming matches:', upcomingError);
-          setUpcomingMatches([]);
-        } else {
-          setUpcomingMatches(upcoming || []);
-        }
-        
-        if (previousError) {
-          console.error('Error fetching previous matches:', previousError);
-          setPreviousMatches([]);
-        } else {
-          setPreviousMatches(previous || []);
-        }
-      } catch (error) {
-        console.error('Error fetching matches:', error);
-        setUpcomingMatches([]);
-        setPreviousMatches([]);
-      }
-      
-      setMatchesLoading(false);
-    }
-
-    async function fetchNews() {
-      try {
-        const spursResponse = await fetch('/api/spurs-women-news');
-        const spursData = await spursResponse.json();
-        
-        setSpursNews(spursData.news || []);
-      } catch (error) {
-        console.error('Error fetching news:', error);
-      } finally {
-        setNewsLoading(false);
-      }
-    }
-
-    async function fetchPodcasts() {
-      try {
-        const response = await fetch('/api/podcasts');
-        const data = await response.json();
-        
-        setPodcastEpisodes(data.episodes || []);
-      } catch (error) {
-        console.error('Error fetching podcasts:', error);
-      }
-    }
-
-    async function fetchVideos() {
-      try {
-        const response = await fetch('/api/spurs-women-videos');
-        const data = await response.json();
-        
-        setVideos(data.videos || []);
-      } catch (error) {
-        console.error('Error fetching videos:', error);
-      }
-    }
-
-    // Start all fetches in parallel
-    fetchMatches();
-    fetchNews();
-    fetchPodcasts();
-    fetchVideos();
-  }, []);
+export default async function HomePage() {
+  // Fetch data on server side using cached functions
+  const contentData = await getHomePageContent();
+  const { upcoming, previous, news, videos, podcasts } = contentData;
 
   return (
     <main className="p-8">
@@ -154,13 +39,8 @@ export default function HomePage() {
         <section>
             <h2 className="text-2xl font-semibold mb-4">Next 3 Matches</h2>
             <div className="space-y-4">
-              {matchesLoading ? (
-                <div className="flex justify-center items-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  <span className="ml-2 text-gray-600">Loading matches...</span>
-                </div>
-              ) : upcomingMatches.length > 0 ? (
-                upcomingMatches.map((match) => (
+              {upcoming.length > 0 ? (
+                upcoming.map((match: Match) => (
                   <MatchCard key={match.id} match={match} />
                 ))
               ) : (
@@ -173,18 +53,13 @@ export default function HomePage() {
         <section>
           <h2 className="text-2xl font-semibold mb-4">Previous 3 Matches</h2>
           <div className="space-y-4">
-            {matchesLoading ? (
-            <div className="flex justify-center items-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
-                <span className="ml-2 text-spurs-gray">Loading matches...</span>
-              </div>
-            ) : previousMatches.length > 0 ? (
-              previousMatches.map((match) => (
+            {previous.length > 0 ? (
+              previous.map((match: Match) => (
                 <MatchCard key={match.id} match={match} />
               ))
             ) : (
               <p className="text-gray-500 italic">No previous matches</p>
-            )}
+              )}
           </div>
         </section>
       </div>
@@ -209,13 +84,8 @@ export default function HomePage() {
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {newsLoading ? (
-              <div className="col-span-full flex justify-center items-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                <span className="ml-2 text-spurs-gray">Loading news...</span>
-              </div>
-            ) : spursNews.length > 0 ? (
-              spursNews.slice(0, 6).map((article, index) => (
+            {news.length > 0 ? (
+              news.map((article: NewsArticle, index: number) => (
                 <NewsCard key={`${article.guid}-${index}`} article={article} />
               ))
             ) : (
@@ -235,8 +105,8 @@ export default function HomePage() {
             </p>
           </div>
           <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-6">
-            {podcastEpisodes.length > 0 ? (
-              podcastEpisodes.slice(0, 2).map((episode, index) => (
+            {podcasts.length > 0 ? (
+              podcasts.map((episode: PodcastEpisode, index: number) => (
                 <PodcastCard key={`${episode.episodeNumber}-${index}`} episode={episode} />
               ))
             ) : (
@@ -268,7 +138,7 @@ export default function HomePage() {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {videos.length > 0 ? (
-              videos.map((video, index) => (
+              videos.map((video: YouTubeVideo, index: number) => (
                 <VideoCard key={`${video.videoId}-${index}`} video={video} />
               ))
             ) : (

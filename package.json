@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:live": "env $(cat .env.local | xargs) next dev",
+    "dev:dev": "env $(cat .env.dev | xargs) next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"

@@ -1,6 +1,11 @@
 import Parser from 'rss-parser';
 
-const parser = new Parser();
+const parser = new Parser({
+  timeout: 10000, // 10 second timeout for each RSS request
+  customFields: {
+    item: ['pubDate', 'content', 'contentSnippet']
+  }
+});
 
 export interface NewsArticle {
   title: string;
@@ -34,16 +39,21 @@ const spursSources = [
 ];
 
 export async function fetchSpursWomenNews(): Promise<NewsArticle[]> {
-  const allArticles: NewsArticle[] = [];
-  
-  for (const sourceUrl of spursSources) {
+  // Fetch all RSS feeds in parallel instead of sequentially
+  const feedPromises = spursSources.map(async (sourceUrl) => {
     try {
-      const feed = await parser.parseURL(sourceUrl);
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('RSS fetch timeout')), 8000)
+      );
+      
+      const feedPromise = parser.parseURL(sourceUrl);
+      const feed = await Promise.race([feedPromise, timeoutPromise]) as any;
       
       // Check if the feed is valid RSS
       if (!feed.items || feed.items.length === 0) {
         console.error(`Invalid or empty RSS feed from ${sourceUrl}`);
-        continue;
+        return [];
       }
       
       let sourceName = 'Unknown';
@@ -55,7 +65,7 @@ export async function fetchSpursWomenNews(): Promise<NewsArticle[]> {
       else if (sourceUrl.includes('theguardian')) sourceName = 'The Guardian';
       else if (sourceUrl.includes('football.london')) sourceName = 'Football London';
 
-      const articles = feed.items.map(item => ({
+      const articles = feed.items.map((item: any) => ({
         title: item.title || '',
         link: item.link || '',
         pubDate: item.pubDate || '',
@@ -66,11 +76,16 @@ export async function fetchSpursWomenNews(): Promise<NewsArticle[]> {
         source: sourceName
       }));
       
-      allArticles.push(...articles);
+      return articles;
     } catch (error) {
       console.error(`Error fetching from ${sourceUrl}:`, error);
+      return [];
     }
-  }
+  });
+
+  // Wait for all feeds to complete in parallel
+  const allArticlesArrays = await Promise.all(feedPromises);
+  const allArticles = allArticlesArrays.flat();
   
   // Filter for Spurs women's content only
   const spursWomenNews = allArticles.filter(article => {
@@ -119,20 +134,18 @@ export async function fetchSpursWomenNews(): Promise<NewsArticle[]> {
 }
 
 export async function fetchSpursWomenVideos(): Promise<YouTubeVideo[]> {
-  // Real implementation with the correct channel ID
+  // Only keep the working YouTube channel
   const channelUrls = [
-    'https://www.youtube.com/feeds/videos.xml?channel_id=UCMl-nJrOKm3oRJprlb27Ptw',
-    'https://www.youtube.com/feeds/videos.xml?channel_id=@SpursWomen',
-    'https://www.youtube.com/feeds/videos.xml?channel_id=UCSpursWomen',
-    'https://www.youtube.com/feeds/videos.xml?user=SpursWomen'
+    'https://www.youtube.com/feeds/videos.xml?channel_id=UCMl-nJrOKm3oRJprlb27Ptw'
   ];
 
-  for (const channelUrl of channelUrls) {
+  // Fetch videos from the working channel
+  const videoPromises = channelUrls.map(async (channelUrl) => {
     try {
       const feed = await parser.parseURL(channelUrl);
       
       if (!feed.items || feed.items.length === 0) {
-        continue;
+        return null;
       }
 
       const videos = feed.items.slice(0, 6).map(item => {
@@ -158,8 +171,16 @@ export async function fetchSpursWomenVideos(): Promise<YouTubeVideo[]> {
       return videos;
     } catch (error) {
       console.log(`Failed to fetch from ${channelUrl}:`, error instanceof Error ? error.message : 'Unknown error');
-      continue;
+      return null;
     }
+  });
+
+  // Wait for all requests and return the first successful result
+  const results = await Promise.all(videoPromises);
+  const successfulResult = results.find(result => result !== null);
+
+  if (successfulResult) {
+    return successfulResult;
   }
 
   console.error('All YouTube channel URLs failed');

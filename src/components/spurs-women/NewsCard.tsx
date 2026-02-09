@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { formatDateForCard } from '@/lib/utils/date';
 import { Card } from '@/components/Card';
 
 export interface NewsArticle {
@@ -19,15 +20,6 @@ interface NewsCardProps {
 }
 
 export default function NewsCard({ article }: NewsCardProps) {
-  const formatDate = (dateString: string) => {
-    if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
   return (
     <Card variant="spursAccent" padding="md">
       <div className="flex justify-between items-start mb-2">
@@ -56,7 +48,7 @@ export default function NewsCard({ article }: NewsCardProps) {
         )}
       </div>
       <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-        {formatDate(article.isoDate)}
+        {formatDateForCard(article.isoDate)}
       </p>
       <p className="text-gray-700 dark:text-gray-300 line-clamp-3">
         {article.contentSnippet}
