@@ -6,13 +6,13 @@ import { getMatchesWithFilter } from '@/lib/data';
 import { Match } from '@/lib/data';
 
 interface MatchesPageProps {
-  searchParams: {
+  searchParams: Promise<{
     filter?: 'all' | 'upcoming' | 'previous';
-  };
+  }>;
 }
 
 export default async function MatchesPage({ searchParams }: MatchesPageProps) {
-  const filter = searchParams.filter || 'all';
+  const { filter = 'all' } = await searchParams;
   
   // Fetch matches server-side with caching
   const matches = await getMatchesWithFilter(filter);
