@@ -31,6 +31,15 @@ export interface PodcastEpisode {
   podcastName: string;
 }
 
+export interface Season {
+  id: number;
+  name: string;
+}
+
+export interface SeasonWithMatchCount extends Season {
+  match_count?: number;
+}
+
 export interface Match {
   id: number;
   date: string;
@@ -149,4 +158,19 @@ export async function getHomePageContentClient() {
     videos,
     podcasts: podcasts.slice(0, 2)
   };
+}
+
+// Seasons client-side function
+export async function getSeasonsListClient(): Promise<SeasonWithMatchCount[]> {
+  try {
+    const response = await fetch('/api/seasons');
+    if (!response.ok) {
+      throw new Error(`Failed to fetch seasons: ${response.status}`);
+    }
+    const data = await response.json();
+    return data.seasons || [];
+  } catch (error) {
+    console.error('Error fetching seasons:', error);
+    return [];
+  }
 }
