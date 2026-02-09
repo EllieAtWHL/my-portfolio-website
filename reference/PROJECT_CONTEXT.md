@@ -329,6 +329,22 @@ Explicitly out of scope:
 This is appropriate for a fan site.
 
 ## Development Workflow
+### Git Commands & File Handling
+
+**Important Note for Files with Square Brackets:**
+When working with Next.js dynamic routes that contain square brackets (e.g., `[matchId]`, `[seasonId]`), always wrap the file path in quotes when using git commands:
+
+```bash
+# ✅ Correct - with quotes
+git add "src/app/spurs-women/matches/[matchId]/page.tsx"
+git add "src/app/spurs-women/seasons/[seasonId]/page.tsx"
+
+# ❌ Incorrect - without quotes (shell interprets brackets as pattern matching)
+git add src/app/spurs-women/matches/[matchId]/page.tsx
+```
+
+This prevents the shell from interpreting the square brackets as pattern matching characters and ensures the correct files are staged.
+
 ### Automated Testing
 
 Decision:
