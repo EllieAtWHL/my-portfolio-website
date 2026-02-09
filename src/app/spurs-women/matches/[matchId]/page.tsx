@@ -1,14 +1,11 @@
 import { notFound } from 'next/navigation';
 import { getMatchById, getAdjacentMatches } from '@/lib/data/matches';
 import { getPhotosByMatch, getArticlesByMatch, getSocialMediaByMatch, getVideosByMatch } from '@/lib/data/media';
-import MatchHeader from '@/components/spurs-women/MatchHeader';
 import MatchInfo from '@/components/spurs-women/MatchInfo';
 import MediaGallery from '@/components/spurs-women/MediaGallery';
 import MediaList from '@/components/spurs-women/MediaList';
 import VideoGallery from '@/components/spurs-women/VideoGallery';
 import ArticleCard from '@/components/spurs-women/ArticleCard';
-import { Card } from '@/components/Card';
-import { Button } from '@/components/Button';
 import MatchNavigation from '@/components/spurs-women/MatchNavigation';
 import { Media, PhotoMedia } from '@/types/media';
 
