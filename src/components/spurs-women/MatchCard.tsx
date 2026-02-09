@@ -15,8 +15,8 @@ type MatchProps = {
 };
 
 export default function MatchCard({ match }: MatchProps) {
-  const homeScore = match.is_home_match ? (match.spurs_score ?? '-') : (match.opponent_score ?? '-');
-  const awayScore = match.is_home_match ? (match.opponent_score ?? '-') : (match.spurs_score ?? '-');
+  const homeScore = match.is_home_match ? (match.spurs_score ?? '') : (match.opponent_score ?? '');
+  const awayScore = match.is_home_match ? (match.opponent_score ?? '') : (match.spurs_score ?? '');
 
   return (
     <Link href={`/spurs-women/matches/${match.id}`} className="block spurs-text">
