@@ -448,6 +448,36 @@ These may be revisited only if the project’s scope or audience changes signifi
 
 ---
 
+## Code Review Findings (February 2026)
+
+### Caching Feature Production Readiness Assessment
+
+**Status**: ✅ PRODUCTION READY with configuration requirements
+
+**Summary**: The caching implementation is well-architected and follows best practices, but requires security and monitoring improvements for full production deployment.
+
+**Key Findings**:
+- **Architecture**: Proper use of Next.js `unstable_cache` with tag-based invalidation
+- **Coverage**: All data access points properly cached with appropriate TTLs
+- **Error Handling**: Graceful fallback to fresh data on cache failures
+- **Security**: API key protection for cache invalidation endpoints
+
+**Production Requirements**:
+1. **API Key Security**: Remove default dev key `'default-cache-key-for-dev'` for production
+2. **Monitoring**: Add cache hit rate metrics and performance monitoring
+3. **Code Quality**: Consolidate duplicate authentication logic across routes
+
+**Tech Debt Items Added to Todo List**:
+- Remove default dev API key from cache routes (High Priority)
+- Add cache monitoring and metrics collection (High Priority)
+- Consolidate duplicate API key authentication logic (Medium Priority)
+- Add cache size monitoring and memory usage visibility (Medium Priority)
+- Improve error context in cache failures (Medium Priority)
+- Add automated tests for cache behavior (Low Priority)
+- Use more granular TTL values where appropriate (Low Priority)
+
+---
+
 ## Code Review Findings (January 2026)
 
 ### Critical Compliance Issues
@@ -515,19 +545,30 @@ These may be revisited only if the project’s scope or audience changes signifi
 **Spurs Women Site:**
 - ✅  Fix the colour scheme in general
 - ✅ Add external video media type
+- ✅ Cache database for api calls on Spurs women
 - [ ] Ensure we have a backup primary and secondary colour in case they are not input - and teamname probably too
 - [ ] Add players (starters, subs, unused bench)
 - [ ] Add match stats where available
 - [ ] Add goal scorers to match page
-- [ ] Cache database for api calls on Spurs women
+
+**Caching Tech Debt:**
+- [ ] Remove default dev API key from cache routes for production security
+- [ ] Add cache monitoring and metrics collection for hit rates and performance
+- [ ] Consolidate duplicate API key authentication logic across cache routes
+- [ ] Add cache size monitoring and memory usage visibility
+- [ ] Improve error context in cache failures with better debugging info
+- [ ] Add automated tests for cache behavior and invalidation
+- [ ] Use more granular TTL values instead of generic STATIC_CONTENT where appropriate
 
 ### Priority Action Items
 
 1. **Fix CSS Variable Violations** (Critical) - 106 hardcoded rgba() values in globals.css
 2. **Complete Button Migration** (High) - ~70% complete, 6 files still need migration
 3. **Address dangerouslySetInnerHTML** (High - Security) - SVG rendering in MatchHeader.tsx and MatchCard.tsx
-4. **Clean Up Tailwind Config** (Medium) - Hardcoded color arrays contradict CSS variable approach
-5. **Standardize Component Styling** (Medium) - Mixed approaches between CSS classes and Tailwind utilities
+4. **Remove Default Cache API Key** (High - Security) - Production security vulnerability
+5. **Clean Up Tailwind Config** (Medium) - Hardcoded color arrays contradict CSS variable approach
+6. **Standardize Component Styling** (Medium) - Mixed approaches between CSS classes and Tailwind utilities
+7. **Add Cache Monitoring** (Medium) - No visibility into cache performance or hit rates
 
 ---
 
