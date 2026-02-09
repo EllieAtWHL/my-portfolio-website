@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Card } from '@/components/Card';
+import { formatDateForCard } from '@/lib/utils/date';
 import { Match } from '@/lib/data/matches';
 
 // Simple function to generate Tailwind classes from database colors with fallbacks
@@ -23,7 +24,7 @@ export default function MatchCard({ match }: MatchProps) {
       <Card variant="spursAccent" padding="md">
         {/* Date at top center */}
         <div className="text-center text-sm spurs-text mb-2 flex justify-center items-center gap-4">
-          {new Date(match.date).toLocaleDateString()}
+          {formatDateForCard(match.date)}
           {match.competitions?.name && (
             <span className="spurs-text" title={match.competitions.name}>
               {match.competitions.icon_svg ? (
