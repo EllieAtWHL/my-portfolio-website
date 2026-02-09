@@ -8,6 +8,7 @@ export const CACHE_TTL = {
   PAST_SEASONS: 7 * 24 * 60 * 60, // 7 days
   YOUTUBE_VIDEOS: 60 * 60, // 1 hour
   RSS_FEEDS: 24 * 60 * 60, // 24 hours
+  MEDIA: 6 * 60 * 60, // 6 hours
 } as const;
 
 // Cache tags for revalidation
@@ -19,6 +20,7 @@ export const CACHE_TAGS = {
   NEWS: 'news',
   VIDEOS: 'videos',
   PODCASTS: 'podcasts',
+  MEDIA: 'media',
 } as const;
 
 // Cache key patterns following the brief: <entity>:<season>:<competition>:<variant>

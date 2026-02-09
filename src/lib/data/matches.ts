@@ -4,6 +4,7 @@ import { createCachedFunction, CACHE_TTL, CACHE_TAGS, CACHE_KEYS } from './cache
 export interface Match {
   id: number;
   date: string;
+  kickoff_time: string | null;
   home_team: {
     id: number;
     name: string;
@@ -24,6 +25,9 @@ export interface Match {
   opponent_score?: number | null;
   attended: boolean;
   is_home_match: boolean;
+  venue: string | null;
+  attendance: number | null;
+  notes: string | null;
   competitions?: {
     name: string;
     icon_svg?: string;
@@ -234,3 +238,78 @@ export async function getMatchesWithFilter(filter?: 'all' | 'upcoming' | 'previo
 export async function getMatchesBySeason(seasonId: number) {
   return getSeasonMatches(seasonId);
 }
+
+// Raw database fetch functions for match details
+async function fetchMatchByIdFromDB(matchId: number): Promise<Match | null> {
+  const { data, error } = await supabase
+    .from('matches')
+    .select(`
+      *,
+      home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
+      away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
+      competitions:competition_id(name, icon_svg)
+    `)
+    .eq('id', matchId)
+    .single();
+
+  if (error) {
+    console.error('Error fetching match:', error);
+    return null;
+  }
+
+  return data as Match;
+}
+
+async function fetchAdjacentMatchesFromDB(matchId: number, currentMatchDate: string): Promise<{ previous: Match | null; next: Match | null }> {
+  // Fetch previous match
+  const { data: previousData } = await supabase
+    .from('matches')
+    .select(`
+      *,
+      home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
+      away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
+      competitions:competition_id(name, icon_svg)
+    `)
+    .lt('date', currentMatchDate)
+    .order('date', { ascending: false })
+    .limit(1)
+    .single();
+
+  // Fetch next match
+  const { data: nextData } = await supabase
+    .from('matches')
+    .select(`
+      *,
+      home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
+      away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
+      competitions:competition_id(name, icon_svg)
+    `)
+    .gt('date', currentMatchDate)
+    .order('date', { ascending: true })
+    .limit(1)
+    .single();
+
+  return {
+    previous: previousData as Match | null,
+    next: nextData as Match | null,
+  };
+}
+
+// Cached functions for match details
+export const getMatchById = createCachedFunction(
+  fetchMatchByIdFromDB,
+  {
+    keyParts: ['match', 'id'],
+    tags: [CACHE_TAGS.MATCHES],
+    revalidate: CACHE_TTL.CURRENT_SEASON_MATCHES, // 1 hour for current season matches
+  }
+);
+
+export const getAdjacentMatches = createCachedFunction(
+  fetchAdjacentMatchesFromDB,
+  {
+    keyParts: ['match', 'adjacent'],
+    tags: [CACHE_TAGS.MATCHES],
+    revalidate: CACHE_TTL.CURRENT_SEASON_MATCHES, // 1 hour for navigation
+  }
+);
