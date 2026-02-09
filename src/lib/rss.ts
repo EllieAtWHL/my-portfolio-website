@@ -134,15 +134,12 @@ export async function fetchSpursWomenNews(): Promise<NewsArticle[]> {
 }
 
 export async function fetchSpursWomenVideos(): Promise<YouTubeVideo[]> {
-  // Real implementation with the correct channel ID
+  // Only keep the working YouTube channel
   const channelUrls = [
-    'https://www.youtube.com/feeds/videos.xml?channel_id=UCMl-nJrOKm3oRJprlb27Ptw',
-    'https://www.youtube.com/feeds/videos.xml?channel_id=@SpursWomen',
-    'https://www.youtube.com/feeds/videos.xml?channel_id=UCSpursWomen',
-    'https://www.youtube.com/feeds/videos.xml?user=SpursWomen'
+    'https://www.youtube.com/feeds/videos.xml?channel_id=UCMl-nJrOKm3oRJprlb27Ptw'
   ];
 
-  // Try all channels in parallel, return the first successful one
+  // Fetch videos from the working channel
   const videoPromises = channelUrls.map(async (channelUrl) => {
     try {
       const feed = await parser.parseURL(channelUrl);
