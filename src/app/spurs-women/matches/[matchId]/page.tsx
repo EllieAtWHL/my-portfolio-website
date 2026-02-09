@@ -19,9 +19,9 @@ interface PageProps {
 }
 
 export default async function MatchDetailPage({ params }: PageProps) {
-  const matchId = parseInt(params.matchId);
+  const { matchId } = await params;
 
-  if (isNaN(matchId)) {
+  if (!matchId) {
     notFound();
   }
 
@@ -32,7 +32,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  // Fetch remaining data in parallel using the match data
+  // Fetch remaining data in parallel using match data
   const [adjacentMatches, photos, articles, socialMedia, videos] = await Promise.all([
     getAdjacentMatches(matchId, match.date),
     getPhotosByMatch(matchId),

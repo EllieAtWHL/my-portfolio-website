@@ -240,7 +240,7 @@ export async function getMatchesBySeason(seasonId: number) {
 }
 
 // Raw database fetch functions for match details
-async function fetchMatchByIdFromDB(matchId: number): Promise<Match | null> {
+async function fetchMatchByIdFromDB(matchId: string): Promise<Match | null> {
   const { data, error } = await supabase
     .from('matches')
     .select(`
@@ -260,7 +260,7 @@ async function fetchMatchByIdFromDB(matchId: number): Promise<Match | null> {
   return data as Match;
 }
 
-async function fetchAdjacentMatchesFromDB(matchId: number, currentMatchDate: string): Promise<{ previous: Match | null; next: Match | null }> {
+async function fetchAdjacentMatchesFromDB(matchId: string, currentMatchDate: string): Promise<{ previous: Match | null; next: Match | null }> {
   // Fetch previous match
   const { data: previousData } = await supabase
     .from('matches')

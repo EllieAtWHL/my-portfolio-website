@@ -23,7 +23,7 @@ export interface PhotoMedia extends Media {
 }
 
 // Raw database fetch functions
-async function fetchMediaByMatchFromDB(matchId: number): Promise<Media[]> {
+async function fetchMediaByMatchFromDB(matchId: string): Promise<Media[]> {
   const { data, error } = await supabase
     .from('media')
     .select('*')
@@ -49,25 +49,25 @@ export const getMediaByMatch = createCachedFunction(
 );
 
 // Helper functions to filter media by type
-export function getPhotosByMatch(matchId: number): Promise<PhotoMedia[]> {
+export function getPhotosByMatch(matchId: string): Promise<PhotoMedia[]> {
   return getMediaByMatch(matchId).then(media => 
     media.filter((m): m is PhotoMedia => m.type === 'photo' || m.type === 'photo album')
   );
 }
 
-export function getArticlesByMatch(matchId: number): Promise<Media[]> {
+export function getArticlesByMatch(matchId: string): Promise<Media[]> {
   return getMediaByMatch(matchId).then(media => 
     media.filter(m => m.type === 'article')
   );
 }
 
-export function getSocialMediaByMatch(matchId: number): Promise<Media[]> {
+export function getSocialMediaByMatch(matchId: string): Promise<Media[]> {
   return getMediaByMatch(matchId).then(media => 
     media.filter(m => m.type === 'social media')
   );
 }
 
-export function getVideosByMatch(matchId: number): Promise<Media[]> {
+export function getVideosByMatch(matchId: string): Promise<Media[]> {
   return getMediaByMatch(matchId).then(media => 
     media.filter(m => m.type === 'video-external')
   );
