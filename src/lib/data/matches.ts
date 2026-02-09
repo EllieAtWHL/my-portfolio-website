@@ -161,7 +161,7 @@ async function fetchAllMatchesFromDB(filter?: 'upcoming' | 'previous'): Promise<
   return data as Match[] || [];
 }
 
-async function fetchSeasonMatchesFromDB(seasonId: number): Promise<Match[]> {
+async function fetchSeasonMatchesFromDB(seasonId: string): Promise<Match[]> {
   const { data, error } = await supabase
     .from('matches')
     .select(`
@@ -235,7 +235,7 @@ export async function getMatchesWithFilter(filter?: 'all' | 'upcoming' | 'previo
   return getAllMatches(filter === 'all' ? undefined : filter);
 }
 
-export async function getMatchesBySeason(seasonId: number) {
+export async function getMatchesBySeason(seasonId: string) {
   return getSeasonMatches(seasonId);
 }
 

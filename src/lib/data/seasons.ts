@@ -55,7 +55,7 @@ async function fetchSeasonsWithMatchCountsFromDB(): Promise<SeasonWithMatchCount
   return seasonsWithCounts;
 }
 
-async function fetchSeasonByIdFromDB(seasonId: number): Promise<Season | null> {
+async function fetchSeasonByIdFromDB(seasonId: string): Promise<Season | null> {
   const { data, error } = await supabase
     .from('seasons')
     .select('*')
@@ -103,6 +103,6 @@ export async function getSeasonsList() {
   return getSeasonsWithMatchCounts();
 }
 
-export async function getSeasonDetails(seasonId: number) {
+export async function getSeasonDetails(seasonId: string) {
   return getSeasonById(seasonId);
 }

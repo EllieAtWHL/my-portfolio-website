@@ -10,7 +10,7 @@ interface SeasonDetailPageProps {
 }
 
 export async function generateMetadata({ params }: SeasonDetailPageProps) {
-  const seasonId = parseInt((await params).seasonId);
+  const seasonId = (await params).seasonId;
   const season = await getSeasonDetails(seasonId);
   
   return {
@@ -19,9 +19,9 @@ export async function generateMetadata({ params }: SeasonDetailPageProps) {
 }
 
 export default async function SeasonDetailPage({ params }: SeasonDetailPageProps) {
-  const seasonId = parseInt((await params).seasonId);
+  const seasonId = (await params).seasonId;
 
-  if (isNaN(seasonId)) {
+  if (!seasonId) {
     notFound();
   }
 
