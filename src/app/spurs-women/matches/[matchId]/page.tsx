@@ -25,21 +25,21 @@ export default async function MatchDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  // Fetch all data in parallel using cached functions
-  const [match, adjacentMatches, photos, articles, socialMedia, videos] = await Promise.all([
-    getMatchById(matchId),
-    getMatchById(matchId).then(match => 
-      match ? getAdjacentMatches(matchId, match.date) : { previous: null, next: null }
-    ),
+  // Fetch match data first
+  const match = await getMatchById(matchId);
+
+  if (!match) {
+    notFound();
+  }
+
+  // Fetch remaining data in parallel using the match data
+  const [adjacentMatches, photos, articles, socialMedia, videos] = await Promise.all([
+    getAdjacentMatches(matchId, match.date),
     getPhotosByMatch(matchId),
     getArticlesByMatch(matchId),
     getSocialMediaByMatch(matchId),
     getVideosByMatch(matchId),
   ]);
-
-  if (!match) {
-    notFound();
-  }
 
   const { previous: previousMatch, next: nextMatch } = adjacentMatches;
 
