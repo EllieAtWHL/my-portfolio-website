@@ -7,7 +7,8 @@ import MediaList from '@/components/spurs-women/MediaList';
 import VideoGallery from '@/components/spurs-women/VideoGallery';
 import ArticleCard from '@/components/spurs-women/ArticleCard';
 import MatchNavigation from '@/components/spurs-women/MatchNavigation';
-import { Media, PhotoMedia } from '@/types/media';
+import { Media } from '@/types/media';
+import { PhotoMedia } from '@/lib/data/media';
 
 interface PageProps {
   params: {
