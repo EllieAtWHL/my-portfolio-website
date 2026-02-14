@@ -1,4 +1,5 @@
 import { PhotoManifest, FolderKey } from '@/types/photo-manifest';
+import { Media } from '@/lib/data/media';
 
 /**
  * External Repository Photo Loading System
@@ -68,9 +69,12 @@ export function loadPhotosFromExternalRepo(folderKey: FolderKey, manifest: Photo
  * @param photo - The photo media record
  * @returns Boolean indicating if external repository
  */
-export function isExternalRepoPhoto(photo: any): boolean {
-  return photo.storage_source === 'external' || 
-         (photo.url && photo.url.startsWith('https://cdn.'));
+export function isExternalRepoPhoto(photo: Media): boolean {
+  const isGithubSource = photo.storage_source === 'github';
+  const hasCdnUrl = Boolean(photo.url && photo.url.startsWith('https://cdn.'));
+  const isNotSupabase = photo.storage_source !== 'supabase';
+  
+  return isGithubSource || (isNotSupabase && hasCdnUrl);
 }
 
 /**
@@ -80,7 +84,7 @@ export function isExternalRepoPhoto(photo: any): boolean {
  * @returns Promise resolving to array of image URLs
  */
 export async function loadPhotosHybridWithExternal(
-  photo: any, 
+  photo: Media, 
   manifest: PhotoManifest
 ): Promise<string[]> {
   // Use explicit storage_source field if available
@@ -111,7 +115,7 @@ export async function loadPhotosHybridWithExternal(
  * @param photos - Array of photo media records
  * @returns Array of SQL statements
  */
-export function generateExternalRepoMigration(photos: any[]): string[] {
+export function generateExternalRepoMigration(photos: Media[]): string[] {
   const statements: string[] = [];
   
   photos.forEach(photo => {
@@ -120,7 +124,7 @@ export function generateExternalRepoMigration(photos: any[]): string[] {
       let storageSource = 'supabase'; // Default to supabase for existing records
       
       if (photo.url && photo.url.startsWith('https://cdn.')) {
-        storageSource = 'external';
+        storageSource = 'github';
       } else if (photo.url && !photo.url.includes('storage') && !photo.url.includes('/')) {
         storageSource = 'github';
       }

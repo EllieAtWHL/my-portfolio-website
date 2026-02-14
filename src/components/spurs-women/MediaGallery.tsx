@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { PhotoMedia } from '../../lib/data/media';
-import { PhotoAlbumMedia } from '../../types/photo-manifest';
 import { fetchPhotoManifest } from '@/lib/photo-manifest';
 import { loadPhotosHybridWithExternal, generateExternalRepoMigration } from '@/lib/external-photo-loader';
 import LightboxGallery from './LightboxGallery';
@@ -16,7 +15,6 @@ type MediaGalleryProps = {
 export default function MediaGallery({ photos, fullWidth = false }: MediaGalleryProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [initialIndex, setInitialIndex] = useState(0);
-  const [photoManifest, setPhotoManifest] = useState<Record<string, string[]>>({});
   const [albumPhotos, setAlbumPhotos] = useState<Record<string, string[]>>({});
   const [isLoadingManifest, setIsLoadingManifest] = useState(true);
   const [isLoadingAlbums, setIsLoadingAlbums] = useState(true);
@@ -30,7 +28,6 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
         
         // Load manifest for GitHub-based photos
         const manifest = await fetchPhotoManifest();
-        setPhotoManifest(manifest);
         
         // Load photos for all albums using hybrid approach (supports both Supabase and external)
         const photoAlbums = photos.filter(photo => photo.type === 'photo album');
@@ -178,7 +175,7 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
                   onContextMenu={(e) => e.preventDefault()}
                   onDragStart={(e) => e.preventDefault()}
                   draggable={false}
-                  onError={(e) => {
+                  onError={() => {
                     console.error('Failed to load image:', photo.url);
                   }}
                 />
