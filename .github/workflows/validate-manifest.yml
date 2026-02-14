@@ -28,11 +28,16 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         EXTERNAL_REPO_OWNER: ${{ secrets.EXTERNAL_REPO_OWNER || 'EllieAtWHL' }}
         EXTERNAL_REPO_NAME: ${{ secrets.EXTERNAL_REPO_NAME || 'spurs-women-photo-gallery' }}
+        NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
       run: |
         npm run validate-manifest
         
     - name: Build project
       if: success()
+      env:
+        NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
       run: npm run build
       
     - name: Upload manifest as artifact
