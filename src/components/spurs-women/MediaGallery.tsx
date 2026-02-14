@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/utils/supabase';
-import { PhotoMedia } from '../../types/media';
+import { PhotoMedia } from '../../lib/data/media';
+import { fetchPhotoManifest } from '@/lib/photo-manifest';
+import { loadPhotosHybridWithExternal, generateExternalRepoMigration } from '@/lib/external-photo-loader';
 import LightboxGallery from './LightboxGallery';
 import { Button } from '@/components/Button';
 
@@ -14,91 +15,116 @@ type MediaGalleryProps = {
 export default function MediaGallery({ photos, fullWidth = false }: MediaGalleryProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [initialIndex, setInitialIndex] = useState(0);
-  const [albumPhotos, setAlbumPhotos] = useState<{ [key: string]: string[] }>({});
+  const [albumPhotos, setAlbumPhotos] = useState<Record<string, string[]>>({});
+  const [isLoadingManifest, setIsLoadingManifest] = useState(true);
+  const [isLoadingAlbums, setIsLoadingAlbums] = useState(true);
 
-  // Fetch photos from storage for photo albums
+  // Fetch photo manifest and load album photos on component mount
   useEffect(() => {
-    async function fetchAlbumPhotos() {
-      const photoAlbums = photos.filter(photo => photo.type === 'photo album');
-      
-      const albumData: { [key: string]: string[] } = {};
-      
-      for (const album of photoAlbums) {
-        // Try different approaches to get storage path
-        let storagePath = '';
+    async function loadPhotoData() {
+      try {
+        setIsLoadingManifest(true);
+        setIsLoadingAlbums(true);
         
-        if (album.url && album.url.startsWith('storage/')) {
-          storagePath = album.url.replace('storage/', '');
-        } else if (album.url && !album.url.startsWith('http')) {
-          // If it's not a full URL, treat it as a storage path directly
-          storagePath = album.url;
-        } else {
-          continue; // Skip unrecognized formats
+        // Load manifest for GitHub-based photos
+        const manifest = await fetchPhotoManifest();
+        
+        // Load photos for all albums using hybrid approach (supports both Supabase and external)
+        const photoAlbums = photos.filter(photo => photo.type === 'photo album');
+        const albumData: Record<string, string[]> = {};
+        
+        // Generate migration SQL for debugging
+        const migrationSQL = generateExternalRepoMigration(photoAlbums);
+        if (migrationSQL.length > 0) {
+          console.log('=== Storage Source Migration SQL ===');
+          migrationSQL.forEach(sql => console.log(sql));
+          console.log('=== End Migration SQL ===');
         }
         
-        if (storagePath) {
-          try {
-            // List the album folder directly
-            const { data: photos, error } = await supabase.storage
-              .from('match-photos')
-              .list(storagePath);
-            
-            if (!error && photos && photos.length > 0) {
-              const photoUrls = photos.map(file => {
-                const { data: { publicUrl } } = supabase.storage
-                  .from('match-photos')
-                  .getPublicUrl(`${storagePath}/${file.name}`);
-                return publicUrl;
-              });
-              
-              albumData[storagePath] = photoUrls;
-            } else if (error) {
-              console.error(`Error loading album ${storagePath}:`, error);
+        for (const album of photoAlbums) {
+          if (album.url) {
+            const albumPhotos = await loadPhotosHybridWithExternal(album, manifest);
+            if (albumPhotos.length > 0) {
+              albumData[album.url] = albumPhotos;
             }
-          } catch (err) {
-            console.error(`Error accessing album ${storagePath}:`, err);
           }
         }
+        
+        setAlbumPhotos(albumData);
+        
+      } catch (error) {
+        console.error('Error loading photo data:', error);
+      } finally {
+        setIsLoadingManifest(false);
+        setIsLoadingAlbums(false);
       }
-      
-      setAlbumPhotos(albumData);
     }
 
-    fetchAlbumPhotos();
+    loadPhotoData();
   }, [photos]);
 
   if (!photos || photos.length === 0) return null;
 
-  // Combine individual photos with album photos
+  // Show loading state while data is being fetched
+  if (isLoadingManifest || isLoadingAlbums) {
+    return (
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold mb-4">Photos</h2>
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-400"></div>
+          <span className="ml-2 text-gray-500">
+            {isLoadingManifest ? 'Loading photo gallery...' : 'Loading photos...'}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  // Combine individual photos with album photos using hybrid approach (supports both Supabase and external)
   const allPhotos = photos.reduce((acc: PhotoMedia[], photo) => {
     if (photo.type === 'photo album') {
-      // Try different approaches to get storage path
-      let storagePath = '';
+      const storageKey = photo.url;
       
-      if (photo.url && photo.url.startsWith('storage/')) {
-        storagePath = photo.url.replace('storage/', '');
-      } else if (photo.url && !photo.url.startsWith('http')) {
-        // If it's not a full URL, treat it as a storage path directly
-        storagePath = photo.url;
-      }
+      console.log('Processing photo album:', {
+        id: photo.id,
+        url: photo.url,
+        storageSource: photo.storage_source,
+        storageKey,
+        hasAlbumPhotos: !!albumPhotos[storageKey],
+        albumPhotosCount: albumPhotos[storageKey]?.length || 0
+      });
       
-      // Add all photos from the album
-      if (storagePath && albumPhotos[storagePath]) {
-        const albumImages = albumPhotos[storagePath].map((url, index) => ({
+      if (storageKey && albumPhotos[storageKey]) {
+        const albumImages = albumPhotos[storageKey].map((url, index) => ({
           id: `${photo.id}-${index}`,
+          match_id: photo.match_id,
           url,
           caption: photo.caption,
-          type: 'photo' as const
+          type: 'photo' as const,
+          title: photo.title,
+          thumbnail_url: photo.thumbnail_url,
+          description: photo.description,
+          source: photo.source,
+          date: photo.date,
+          sort_order: photo.sort_order,
+          created_at: photo.created_at,
+          storage_source: photo.storage_source
         }));
+        console.log('Adding album images:', albumImages.length);
         return [...acc, ...albumImages];
+      } else {
+        console.log('No photos found for album:', storageKey);
       }
     } else if (photo.type === 'photo') {
       // Add individual photo (skip photo album entries)
+      console.log('Adding individual photo:', photo.id);
       return [...acc, photo];
     }
     // Skip photo album entries from final display
     return acc;
   }, []);
+  
+  console.log('Final allPhotos count:', allPhotos.length);
 
   const openLightbox = (index: number) => {
     setInitialIndex(index);
@@ -119,7 +145,7 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
     <>
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold">Photos</h2>
+          <h2 className="text-2xl font-bold mb-4">Photos</h2>
           {allPhotos.length > 0 && (
             <Button
               onClick={openGalleryFromStart}
@@ -149,7 +175,7 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
                   onContextMenu={(e) => e.preventDefault()}
                   onDragStart={(e) => e.preventDefault()}
                   draggable={false}
-                  onError={(e) => {
+                  onError={() => {
                     console.error('Failed to load image:', photo.url);
                   }}
                 />
