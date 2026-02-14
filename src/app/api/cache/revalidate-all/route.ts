@@ -4,7 +4,15 @@ import { revalidateAllCache } from '@/lib/data/cache-server';
 // Simple API key authentication for cache operations
 function validateApiKey(request: Request): boolean {
   const authHeader = request.headers.get('authorization');
-  const expectedKey = `Bearer ${process.env.CACHE_API_KEY || 'default-cache-key-for-dev'}`;
+  const cacheApiKey = process.env.CACHE_API_KEY;
+  
+  // Fail securely - no default fallback for production safety
+  if (!cacheApiKey) {
+    console.error('CACHE_API_KEY environment variable is not set');
+    return false;
+  }
+  
+  const expectedKey = `Bearer ${cacheApiKey}`;
   
   if (!authHeader || authHeader !== expectedKey) {
     console.warn('Unauthorized cache revalidation-all attempt', {
