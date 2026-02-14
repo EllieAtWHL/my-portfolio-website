@@ -552,7 +552,7 @@ These may be revisited only if the project’s scope or audience changes signifi
 - [ ] Add goal scorers to match page
 
 **Caching Tech Debt:**
-- [ ] Remove default dev API key from cache routes for production security
+- ✅ Remove default dev API key from cache routes for production security
 - [ ] Add cache monitoring and metrics collection for hit rates and performance
 - [ ] Consolidate duplicate API key authentication logic across cache routes
 - [ ] Add cache size monitoring and memory usage visibility
@@ -565,10 +565,9 @@ These may be revisited only if the project’s scope or audience changes signifi
 1. **Fix CSS Variable Violations** (Critical) - 106 hardcoded rgba() values in globals.css
 2. **Complete Button Migration** (High) - ~70% complete, 6 files still need migration
 3. **Address dangerouslySetInnerHTML** (High - Security) - SVG rendering in MatchHeader.tsx and MatchCard.tsx
-4. **Remove Default Cache API Key** (High - Security) - Production security vulnerability
-5. **Clean Up Tailwind Config** (Medium) - Hardcoded color arrays contradict CSS variable approach
-6. **Standardize Component Styling** (Medium) - Mixed approaches between CSS classes and Tailwind utilities
-7. **Add Cache Monitoring** (Medium) - No visibility into cache performance or hit rates
+4. **Clean Up Tailwind Config** (Medium) - Hardcoded color arrays contradict CSS variable approach
+5. **Standardize Component Styling** (Medium) - Mixed approaches between CSS classes and Tailwind utilities
+6. **Add Cache Monitoring** (Medium) - No visibility into cache performance or hit rates
 
 ---
 
