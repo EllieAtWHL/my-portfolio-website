@@ -1,0 +1,44 @@
+name: Validate Photo Manifest
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-manifest:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Validate photo manifest
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        EXTERNAL_REPO_OWNER: ${{ secrets.EXTERNAL_REPO_OWNER || 'EllieAtWHL' }}
+        EXTERNAL_REPO_NAME: ${{ secrets.EXTERNAL_REPO_NAME || 'spurs-women-photo-gallery' }}
+      run: |
+        npm run validate-manifest
+        
+    - name: Build project
+      if: success()
+      run: npm run build
+      
+    - name: Upload manifest as artifact
+      if: success()
+      uses: actions/upload-artifact@v4
+      with:
+        name: photo-manifest
+        path: public/spurs-women/photo-gallery.manifest.json
+        retention-days: 30
