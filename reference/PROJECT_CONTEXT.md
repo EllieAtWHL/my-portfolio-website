@@ -448,6 +448,128 @@ These may be revisited only if the project’s scope or audience changes signifi
 
 ---
 
+## Photo Gallery Manifest Workflow
+
+### Overview
+
+The Spurs Women photo gallery uses an external repository (`spurs-women-photo-gallery`) to store images, with an automated manifest generation system to make those images available to the main website.
+
+### Architecture
+
+**Two-Repository System:**
+1. **External Photo Repository** (`spurs-women-photo-gallery`): Contains all image files organized by match/season
+2. **Main Website Repository** (`my-portfolio-website`): Contains a generated manifest file with CDN URLs
+
+**Manifest File:** `public/spurs-women/photo-gallery.manifest.json`
+
+### Automated Workflow
+
+**GitHub Action (External Repo):**
+- **Trigger**: When image files are pushed to `spurs-women-photo-gallery` main branch
+- **Action**: `.github/workflows/update-manifest.yml`
+- **Process**:
+  1. Checks out both repositories
+  2. Runs `npm run generate-external-manifest` in main repo
+  3. Generates manifest with CDN URLs for all images
+  4. Commits and pushes manifest to `my-portfolio-website` main branch
+
+**Local Development:**
+- **Commit Hook**: Automatically runs `generate-external-manifest` when committing changes
+- **Purpose**: Ensures local development has latest manifest
+- **Note**: This is a backup mechanism - primary updates should come from GitHub Action
+
+### Common Scenarios & Solutions
+
+#### Scenario 1: "Manifest shows as modified locally after adding photos"
+**Cause**: GitHub Action updated manifest remotely, but local repo hasn't pulled latest changes
+**Timeline**:
+1. Photos added to external repo → GitHub Action triggers
+2. GitHub Action generates and pushes manifest to remote main
+3. Local repo still has old manifest version
+4. Git shows local changes when you try to pull
+
+**Solution**:
+```bash
+# Discard local changes (they're duplicates of remote changes)
+git restore public/spurs-women/photo-gallery.manifest.json
+# Pull latest remote changes
+git pull origin main
+```
+
+#### Scenario 2: "Why does my local commit regenerate the manifest?"
+**Cause**: Commit hook runs `generate-external-manifest` for any commit
+**Expected Behavior**: This is normal - it's a backup mechanism
+**When to Worry**: Only if the manifest content is actually different from remote
+
+#### Scenario 3: "GitHub Action failed to update manifest"
+**Troubleshooting**:
+1. Check Actions tab in `spurs-women-photo-gallery` repo
+2. Verify `PORTFOLIO_REPO_TOKEN` secret is configured
+3. Check for API rate limits or authentication issues
+4. Manual fallback: Run `npm run generate-external-manifest` locally and commit
+
+### Best Practices
+
+**When Adding Photos:**
+1. Add images to `spurs-women-photo-gallery` repo
+2. Commit and push to main branch
+3. GitHub Action will automatically update manifest
+4. Pull latest changes in main website repo if needed
+
+**When Working on Main Website:**
+1. Don't manually edit the manifest file
+2. If Git shows manifest changes, check if GitHub Action already updated remote
+3. Use `git restore` + `git pull` to sync with remote version
+4. Only commit manifest changes if GitHub Action failed
+
+**Verification:**
+- Manifest should contain all folders from external repo
+- Total image count should match external repo
+- URLs should use CDN format: `https://cdn.jsdelivr.net/gh/EllieAtWHL/spurs-women-photo-gallery@main/...`
+
+### File Structure
+
+**External Repo Structure:**
+```
+spurs-women-photo-gallery/
+├── 2023-24/
+│   └── 20231216 WSL Spurs vs Arsenal/
+│       ├── PXL_20231216_080505678.webp
+│       └── ...
+├── 2024-25/
+└── 2025-26/
+```
+
+**Generated Manifest Structure:**
+```json
+{
+  "2023-24/20231216 WSL Spurs vs Arsenal": [
+    "https://cdn.jsdelivr.net/gh/EllieAtWHL/spurs-women-photo-gallery@main/2023-24/20231216 WSL Spurs vs Arsenal/PXL_20231216_080505678.webp",
+    "..."
+  ]
+}
+```
+
+### Troubleshooting Checklist
+
+**If manifest seems outdated:**
+1. Check external repo for new images
+2. Verify GitHub Action ran successfully
+3. Pull latest changes in main repo
+4. Run `npm run generate-external-manifest` locally if needed
+
+**If Git conflicts occur:**
+1. Check if GitHub Action already pushed updates
+2. Use `git restore` to discard local duplicates
+3. Pull remote changes with `git pull`
+
+**If images don't load:**
+1. Verify CDN URLs are accessible
+2. Check external repo structure matches manifest keys
+3. Ensure image files exist in external repo
+
+---
+
 ## Code Review Findings (February 2026)
 
 ### Caching Feature Production Readiness Assessment
