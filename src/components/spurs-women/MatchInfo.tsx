@@ -37,14 +37,18 @@ export default function MatchInfo({ venue, attendance, notes, date, kickoff_time
         {venue && (
           <p className="mb-2">
             <strong>Venue:</strong>{' '}
-            <a
-              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="venue-link spurs-text underline decoration-2 hover:opacity-80"
-            >
-              {venue}
-            </a>
+            {venue === 'Behind-Closed-Doors' ? (
+              <span className="spurs-text">{venue}</span>
+            ) : (
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="venue-link spurs-text underline decoration-2 hover:opacity-80"
+              >
+                {venue}
+              </a>
+            )}
           </p>
         )}
         {attendance && <p className="mb-2"><strong>Attendance:</strong> {attendance.toLocaleString()}</p>}

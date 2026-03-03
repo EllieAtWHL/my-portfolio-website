@@ -23,6 +23,10 @@ export default function MatchNavigation({
     router.push(`/spurs-women/matches/${matchId}`);
   };
 
+  const getTeamDisplayName = (team: any) => {
+    return team?.short_name || team?.name || 'Unknown Team';
+  };
+
   const homeScore = currentMatch.is_home_match ? (currentMatch.spurs_score ?? '') : (currentMatch.opponent_score ?? '');
   const awayScore = currentMatch.is_home_match ? (currentMatch.opponent_score ?? '') : (currentMatch.spurs_score ?? '');
 
@@ -41,7 +45,7 @@ export default function MatchNavigation({
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            {previousMatch ? `${previousMatch.home_team?.short_name} vs ${previousMatch.away_team?.short_name}` : 'No Previous Match'}
+            {previousMatch ? `${getTeamDisplayName(previousMatch.home_team)} vs ${getTeamDisplayName(previousMatch.away_team)}` : 'No Previous Match'}
           </div>
         </Button>
 
@@ -53,7 +57,7 @@ export default function MatchNavigation({
           className="text-sm !px-4 !py-3 w-11/12 justify-end"
         >
           <div className="flex items-center">
-            {nextMatch ? `${nextMatch.home_team?.short_name} vs ${nextMatch.away_team?.short_name}` : 'No Next Match'}
+            {nextMatch ? `${getTeamDisplayName(nextMatch.home_team)} vs ${getTeamDisplayName(nextMatch.away_team)}` : 'No Next Match'}
             <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
@@ -76,7 +80,7 @@ export default function MatchNavigation({
             <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            {previousMatch ? `${previousMatch.home_team?.short_name} vs ${previousMatch.away_team?.short_name}` : 'No Previous Match'}
+            {previousMatch ? `${getTeamDisplayName(previousMatch.home_team)} vs ${getTeamDisplayName(previousMatch.away_team)}` : 'No Previous Match'}
           </div>
         </Button>
 
@@ -105,7 +109,7 @@ export default function MatchNavigation({
           style={{ padding: '0.25rem 0.5rem !important', fontSize: '0.75rem !important' }}
         >
           <div className="flex items-center">
-            {nextMatch ? `${nextMatch.home_team?.short_name} vs ${nextMatch.away_team?.short_name}` : 'No Next Match'}
+            {nextMatch ? `${getTeamDisplayName(nextMatch.home_team)} vs ${getTeamDisplayName(nextMatch.away_team)}` : 'No Next Match'}
             <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
