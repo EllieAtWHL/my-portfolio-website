@@ -24,6 +24,28 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Analytics & Monitoring
+
+This site uses FullStory for user session recording and analytics:
+
+### 📊 FullStory Implementation
+
+- **Overview**: [`reference/fullstory/README.md`](./reference/fullstory/README.md) - Documentation index and quick start
+- **Documentation**: [`reference/fullstory/fullstory-implementation.md`](./reference/fullstory/fullstory-implementation.md) - Complete implementation guide
+- **Technical Guide**: [`reference/fullstory/fullstory-technical-guide.md`](./reference/fullstory/fullstory-technical-guide.md) - Developer documentation  
+- **Quick Reference**: [`reference/fullstory/fullstory-quick-reference.md`](./reference/fullstory/fullstory-quick-reference.md) - Common tasks and troubleshooting
+
+#### Key Features
+- Session recording and replay
+- User behavior analytics
+- Custom event tracking
+- Environment-based data separation
+- Privacy-compliant data collection
+
+#### Files Involved
+- `/public/fullstory-init.js` - FullStory initialization script
+- `/src/app/layout.tsx` - Root layout with script integration
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import ThemeProvider from "../components/ThemeProvider";
 import { Analytics } from "@vercel/analytics/next";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "EllieAtWHL",
@@ -23,6 +24,10 @@ export default function RootLayout({
       data-theme-loading
     >
       <head>
+        <Script
+          src="/fullstory-init.js"
+          strategy="beforeInteractive"
+        />
         <script src="/theme-script.js" suppressHydrationWarning />
         <meta name="theme-color" content="#2d5a2d" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />

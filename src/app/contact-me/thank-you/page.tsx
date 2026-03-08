@@ -1,9 +1,25 @@
+'use client';
+
 import Footer from '@/components/Footer';
 import MainSitePage from '@/components/MainSitePage';
 import Link from 'next/link';
 import { Button } from '@/components/Button';
+import { useEffect } from 'react';
+import { trackEvent, trackPageView } from '@/lib/fullstory';
 
 export default function ThankYou() {
+  useEffect(() => {
+    // Track thank you page view
+    trackPageView('/contact-me/thank-you', 'Contact Thank You');
+    
+    // Track successful form submission
+    trackEvent('Form Completed', {
+      formType: 'contact',
+      step: 'thank_you_page',
+      timestamp: new Date().toISOString()
+    });
+  }, []);
+
   return (
     <MainSitePage>
       <div className="content-with-footer">
