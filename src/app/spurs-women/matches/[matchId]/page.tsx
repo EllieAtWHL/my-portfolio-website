@@ -4,10 +4,10 @@ import { getPhotosByMatch, getArticlesByMatch, getSocialMediaByMatch, getVideosB
 import MatchInfo from '@/components/spurs-women/MatchInfo';
 import MediaGallery from '@/components/spurs-women/MediaGallery';
 import MediaList from '@/components/spurs-women/MediaList';
-import VideoGallery from '@/components/spurs-women/VideoGallery';
+import VideoGrid from '@/components/spurs-women/VideoGrid';
 import ArticleCard from '@/components/spurs-women/ArticleCard';
 import MatchNavigation from '@/components/spurs-women/MatchNavigation';
-import { Media } from '@/types/media';
+import { Media } from '@/lib/data/media';
 import { PhotoMedia } from '@/lib/data/media';
 
 interface PageProps {
@@ -133,9 +133,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
 
         {/* Videos section */}
         {videos.length > 0 && (
-          <div className="mb-6">
-            <VideoGallery videos={videos as Media[]} />
-          </div>
+          <VideoGrid videos={videos} />
         )}
       </div>
     </main>

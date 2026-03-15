@@ -41,7 +41,7 @@ export function formatDateWithMonthName(dateString: string): string {
  * Format date for display in cards (short format)
  */
 export function formatDateForCard(dateString: string): string {
-  return formatDateConsistent(dateString);
+  return formatDateWithMonthName(dateString);
 }
 
 /**

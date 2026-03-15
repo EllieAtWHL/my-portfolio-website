@@ -5,6 +5,7 @@ export interface YouTubeVideoMetadata {
   channelName: string;
   thumbnail: string;
   videoId: string;
+  publishDate?: string;
 }
 
 // Function to extract video ID from YouTube URL
@@ -36,11 +37,29 @@ export async function fetchYouTubeMetadata(url: string): Promise<YouTubeVideoMet
 
     const data = await response.json();
     
+    // Try to get publish date from YouTube Data API
+    let publishDate: string | undefined;
+    try {
+      const apiUrl = `https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`;
+      const apiResponse = await fetch(apiUrl);
+      if (apiResponse.ok) {
+        const apiData = await apiResponse.json();
+        // noembed provides publish_date in some cases
+        if (apiData.publish_date) {
+          publishDate = apiData.publish_date;
+        }
+      }
+    } catch (apiError) {
+      // If API call fails, continue without publish date
+      console.warn('Could not fetch publish date from API:', apiError);
+    }
+    
     return {
       title: data.title || `YouTube Video: ${videoId}`,
       channelName: data.author_name || 'Unknown Channel',
       thumbnail: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
-      videoId
+      videoId,
+      publishDate
     };
   } catch (error) {
     console.error('Error fetching YouTube metadata:', error);
