@@ -5,10 +5,11 @@ import { formatDateForCard } from '@/lib/utils/date';
 import { Card } from '@/components/Card';
 
 interface VideoCardProps {
-  video: YouTubeVideo;
+  video: YouTubeVideo & { channel?: string };
+  showDate?: boolean;
 }
 
-export default function VideoCard({ video }: VideoCardProps) {
+export default function VideoCard({ video, showDate = true }: VideoCardProps) {
   return (
     <Card variant="spursAccent" padding="md" className="overflow-hidden">
       <a 
@@ -45,8 +46,8 @@ export default function VideoCard({ video }: VideoCardProps) {
           )}
         </div>
         <div className="p-4">
-          <div className="flex items-start justify-between mb-2">
-            <h3 className="font-semibold spurs-text line-clamp-2 text-sm flex-1">
+          <div className="flex items-start justify-between mb-3" style={{minHeight: '3rem'}}>
+            <h3 className="font-semibold spurs-text line-clamp-2 text-sm flex-1 leading-5">
               {video.title}
             </h3>
             <svg className="w-4 h-4 text-gray-400 ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,14 +55,16 @@ export default function VideoCard({ video }: VideoCardProps) {
             </svg>
           </div>
           <div className="flex items-center justify-between">
-            <p className="text-xs text-gray-500">
-              {formatDateForCard(video.pubDate)}
-            </p>
+            {showDate && (
+              <p className="text-xs text-gray-500">
+                {formatDateForCard(video.pubDate)}
+              </p>
+            )}
             <span className="text-xs text-gray-500 font-medium flex items-center">
               <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
               </svg>
-              YouTube
+              {video.channel || 'YouTube'}
             </span>
           </div>
         </div>
