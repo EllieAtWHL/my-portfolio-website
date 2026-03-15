@@ -205,17 +205,41 @@ Guiding principles:
 
 **Future Phases:**
   - Performance optimization and bundle analysis
-  - Testing strategy implementation
   - Documentation and deployment setup
+  - E2E testing with Playwright for critical user flows
 
 ## Testing Strategy
 
-  - Focus on confidence rather than coverage.
+  - Comprehensive automated testing is now standard practice.
   - Primary emphasis on:
-    - Manual testing during development.
-    - TypeScript for correctness.
-  - Introduce lightweight tooling if needed later (for example Playwright for key flows).
-  - No over-engineering of tests at this stage.
+    - Unit tests for all new components and utilities
+    - Component testing with React Testing Library
+    - TypeScript for compile-time correctness
+    - Jest for test runner and coverage
+  - **MANDATORY**: All new components and utilities must include tests
+  - Coverage targets: Aim for >90% coverage on new code
+  - Manual testing still important for integration flows
+
+### Testing Requirements for New Development
+
+**All new features MUST include:**
+1. **Unit Tests** - For utility functions and pure logic
+2. **Component Tests** - For React components using React Testing Library
+3. **Edge Case Testing** - Error states, missing props, invalid inputs
+4. **Accessibility Testing** - ARIA labels, semantic structure
+5. **TypeScript Coverage** - Proper typing for all new code
+
+**Test File Organization:**
+- Place tests in `__tests__` directories alongside source code
+- Follow naming convention: `ComponentName.test.tsx` or `utilityName.test.ts`
+- Use descriptive test names that explain the behavior
+- Group related tests with `describe` blocks
+
+**Quality Standards:**
+- Tests must pass before deployment (CI/CD gate)
+- New code should not reduce overall test coverage
+- Tests should be maintainable and easy to understand
+- Use proper assertions and avoid brittle selectors
 
 ## Performance & Optimisation
 
@@ -440,9 +464,9 @@ Rationale:
 The following are intentionally out of scope for MVP:
   - Multi-language support
   - Enterprise-grade CI/CD pipelines
-  - Comprehensive automated testing
   - Advanced analytics or tracking
   - Full CMS integration
+  - Automated testing - NOW IMPLEMENTED (see Testing Strategy above)
 
 These may be revisited only if the project’s scope or audience changes significantly.
 
