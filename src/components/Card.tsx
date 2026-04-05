@@ -37,7 +37,7 @@ export function Card({
     lg: variant === 'accent' ? '!pt-8 !pr-8 !pb-8 !pl-8' : 'p-8'
   };
   
-  const hoverClasses = hover ? 'hover:shadow-xl hover:-translate-y-1' : '';
+  const hoverClasses = hover ? 'hover:shadow-xl hover:-translate-y-1 hover-enabled' : 'no-hover';
   const interactiveClasses = onClick ? 'cursor-pointer' : '';
   
   const classes = [
