@@ -171,7 +171,7 @@ async function fetchSeasonMatchesFromDB(seasonId: string): Promise<Match[]> {
       competitions:competition_id (*)
     `)
     .eq('season_id', seasonId)
-    .order('date', { ascending: false });
+    .order('date', { ascending: true });
 
   if (error) {
     console.error('Error fetching season matches:', error);
