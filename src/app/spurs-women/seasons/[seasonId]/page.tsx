@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
-import MatchCard from '@/components/spurs-women/MatchCard';
+import SeasonFilterClient from './SeasonFilterClient';
 import { getMatchesBySeason, getSeasonDetails } from '@/lib/data';
-import { Match, Season } from '@/lib/data';
 
 interface SeasonDetailPageProps {
   params: {
@@ -35,23 +34,5 @@ export default async function SeasonDetailPage({ params }: SeasonDetailPageProps
     notFound();
   }
 
-  return (
-    <main className="p-8">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="spurs-text text-3xl font-bold mb-6">
-          Matches for {season.name}
-        </h1>
-
-        {matches.length === 0 ? (
-          <p className="text-gray-500 italic">No matches found for this season.</p>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
-            {matches.map((match) => (
-              <MatchCard key={match.id} match={match} />
-            ))}
-          </div>
-        )}
-      </div>
-    </main>
-  );
+  return <SeasonFilterClient matches={matches} seasonName={season.name} />;
 }

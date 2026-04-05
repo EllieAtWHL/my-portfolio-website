@@ -2898,6 +2898,16 @@ input:checked + .slider:before {
   color: var(--neutral-light-gray);
 }
 
+/* Fix for date input calendar icons in dark mode */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.8;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
 .dark .blog-meta a {
   color: var(--dark-accent);
 }
