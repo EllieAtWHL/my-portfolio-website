@@ -1,7 +1,8 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Button } from '@/components/Button';
+import { Card } from '@/components/Card';
+import SpursSelect from '@/components/spurs-women/SpursSelect';
 import { Suspense } from 'react';
 
 function MatchFiltersInner() {
@@ -20,37 +21,45 @@ function MatchFiltersInner() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row justify-center items-center gap-4 mb-6">
-      <Button
-        variant={currentFilter === 'all' ? 'spurs' : 'secondary'}
-        onClick={() => handleFilterChange('all')}
-      >
-        All Matches
-      </Button>
-      <Button
-        variant={currentFilter === 'upcoming' ? 'spurs' : 'secondary'}
-        onClick={() => handleFilterChange('upcoming')}
-      >
-        Upcoming Only
-      </Button>
-      <Button
-        variant={currentFilter === 'previous' ? 'spurs' : 'secondary'}
-        onClick={() => handleFilterChange('previous')}
-      >
-        Previous Only
-      </Button>
-    </div>
+    <Card variant="spursAccent" padding="md" className="mb-6" hover={false}>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h2 className="spurs-text text-lg font-semibold">Match Filters</h2>
+        <div className="flex items-center gap-4">
+          <label className="spurs-text text-sm font-medium">
+            Filter:
+          </label>
+          <SpursSelect
+            value={currentFilter}
+            onChange={(e) => handleFilterChange(e.target.value as 'all' | 'upcoming' | 'previous')}
+          >
+            <option value="all">All Matches</option>
+            <option value="upcoming">Upcoming Only</option>
+            <option value="previous">Previous Only</option>
+          </SpursSelect>
+        </div>
+      </div>
+    </Card>
   );
 }
 
 export default function MatchFilters() {
   return (
     <Suspense fallback={
-      <div className="flex flex-col md:flex-row justify-center items-center gap-4 mb-6">
-        <Button variant="spurs" disabled>All Matches</Button>
-        <Button variant="secondary" disabled>Upcoming Only</Button>
-        <Button variant="secondary" disabled>Previous Only</Button>
-      </div>
+      <Card variant="spursAccent" padding="md" className="mb-6" hover={false}>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <h2 className="spurs-text text-lg font-semibold">Match Filters</h2>
+          <div className="flex items-center gap-4">
+            <label className="spurs-text text-sm font-medium">
+              Filter:
+            </label>
+            <SpursSelect value="all" disabled>
+              <option value="all">All Matches</option>
+              <option value="upcoming">Upcoming Only</option>
+              <option value="previous">Previous Only</option>
+            </SpursSelect>
+          </div>
+        </div>
+      </Card>
     }>
       <MatchFiltersInner />
     </Suspense>
