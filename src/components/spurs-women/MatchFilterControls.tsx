@@ -140,19 +140,20 @@ export default function MatchFilterControls({
     <Card variant="spursAccent" padding="md" className="mb-6" hover={false}>
       {/* Header with toggle and clear buttons */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 mb-4">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <span className="spurs-text text-sm">
             {filteredMatches.length} of {matches.length} matches
             {hasActiveFilters && ` (${filterCount} filter${filterCount !== 1 ? 's' : ''})`}
           </span>
         </div>
-        <div className="flex items-center gap-1 sm:gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 justify-end sm:justify-start w-full sm:w-auto">
           {hasActiveFilters && (
             <Button
               variant="spurs"
               size="sm"
               onClick={clearFilters}
               className="spurs-text px-1 sm:px-3"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
               <svg 
                 className="w-3 h-3 sm:w-4 sm:h-4 transform scale-200" 
@@ -173,6 +174,7 @@ export default function MatchFilterControls({
             onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
             className="spurs-text p-1 sm:px-3"
             title={`Sort by date ${sortOrder === 'asc' ? 'descending' : 'ascending'}`}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
             <svg 
               className="w-3 h-3 sm:w-4 sm:h-4 transform scale-200" 
@@ -188,6 +190,7 @@ export default function MatchFilterControls({
             size="sm"
             onClick={() => setIsExpanded(!isExpanded)}
             className="spurs-text p-1 sm:px-3"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
             <svg 
               className="w-3 h-3 sm:w-4 sm:h-4 transform scale-200 transition-transform duration-200" 
