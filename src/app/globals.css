@@ -782,10 +782,16 @@ input:checked + .slider:before {
   box-sizing: border-box;
 }
 
-.accent-card:hover,
-.spurs-accent-card:hover {
+.accent-card.hover-enabled:hover,
+.spurs-accent-card.hover-enabled:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.accent-card.no-hover:hover,
+.spurs-accent-card.no-hover:hover {
+  transform: none;
+  box-shadow: none;
 }
 
 .accent-card h3,
@@ -2890,6 +2896,16 @@ input:checked + .slider:before {
 
 .dark .blog-meta {
   color: var(--neutral-light-gray);
+}
+
+/* Fix for date input calendar icons in dark mode */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.8;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
 }
 
 .dark .blog-meta a {
