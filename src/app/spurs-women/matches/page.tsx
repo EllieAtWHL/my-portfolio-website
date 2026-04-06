@@ -59,7 +59,6 @@ export default function MatchesPage({ searchParams }: MatchesPageProps) {
           <MatchFilterControls
             matches={allMatches}
             onFilteredMatchesChange={setFilteredMatches}
-            title="Match Filters"
           />
         </div>
 
