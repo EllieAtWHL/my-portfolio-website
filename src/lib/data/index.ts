@@ -5,6 +5,8 @@ export * from './cache-invalidation';
 export * from './matches';
 export * from './news';
 export * from './seasons';
+export * from './stadiums';
+export * from '../rss';
 
 // Re-export commonly used types
 export type { Match } from './matches';

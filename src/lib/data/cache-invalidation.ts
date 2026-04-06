@@ -1,22 +1,14 @@
 import { revalidateCacheTags } from './cache-server';
 import { CACHE_TAGS } from './cache-utils';
 
-/**
- * Automatic cache invalidation utilities
- * These should be called when data is modified in the database
- */
-
 export function invalidateMatchCache(seasonId?: string, competitionId?: string) {
   const tagsToInvalidate = [CACHE_TAGS.MATCHES];
   
-  // Add specific tags based on what changed
   if (seasonId) {
-    // In a real implementation, you might have season-specific tags
     console.log(`Invalidating match cache for season ${seasonId}`);
   }
   
   if (competitionId) {
-    // In a real implementation, you might have competition-specific tags
     console.log(`Invalidating match cache for competition ${competitionId}`);
   }
   
@@ -44,18 +36,12 @@ export function invalidateVideoCache() {
   console.log('Invalidated video cache');
 }
 
-/**
- * Invalidate all related caches when content is updated
- */
 export function invalidateAllRelatedCaches() {
   const allTags = Object.values(CACHE_TAGS);
   revalidateCacheTags(allTags);
   console.log('Invalidated all cache tags:', allTags);
 }
 
-/**
- * Selective cache invalidation based on entity type
- */
 export function invalidateCacheByEntityType(entityType: 'match' | 'season' | 'media' | 'news' | 'video') {
   switch (entityType) {
     case 'match':
