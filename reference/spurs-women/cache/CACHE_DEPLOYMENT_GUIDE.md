@@ -29,7 +29,7 @@ The cache revalidation endpoints are now protected:
 curl -X POST https://your-domain.com/api/cache/revalidate \
   -H "Authorization: Bearer $CACHE_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"tags": ["matches", "news"]}'
+  -d '{"tags": ["matches", "news", "stadiums", "stadium-names"]}'
 
 # Revalidate all caches
 curl -X POST https://your-domain.com/api/cache/revalidate-all \
@@ -44,12 +44,16 @@ Use the `cache-invalidation.ts` utilities when data changes:
 
 ```typescript
 import { invalidateMatchCache, invalidateNewsCache } from '@/lib/data';
+import { invalidateStadiumCache } from '@/lib/data/stadiums';
 
 // When a match is updated
 invalidateMatchCache(seasonId, competitionId);
 
 // When news is updated
 invalidateNewsCache();
+
+// When stadium information is updated
+invalidateStadiumCache(stadiumId);
 ```
 
 ### Manual Invalidation

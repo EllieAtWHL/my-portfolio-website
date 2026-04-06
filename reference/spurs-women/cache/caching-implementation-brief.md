@@ -34,6 +34,7 @@ Cache **derived, read-only data**, not raw user input.
 ### 4. Navigation Data
 - Season lists
 - Competition lists
+- **Stadium information** (newly cached)
 
 ### Do Not Cache
 - Admin or edit views
@@ -73,6 +74,8 @@ Cache keys must be **explicit and deterministic**.
 - matches:2024-25:fa-cup:recent
 - article:slug:spurs-v-arsenal-away
 - season-summary:2024-25
+- **stadium:by-slug:tottenham-hotspur-stadium** (newly added)
+- **stadium-names:by-stadium-id:123** (newly added)
 
 ---
 
@@ -81,11 +84,11 @@ Cache keys must be **explicit and deterministic**.
 Use **time-based revalidation**, with different TTLs per data type.
 
 ### Suggested defaults
-
 - Static content (articles, history): 24 hours
 - Current season match lists: 10–30 minutes
 - Live or same-day match data: 1–5 minutes
 - Past seasons: 7 days or effectively static
+- **Stadium data: 24 hours** (newly added)
 
 ---
 
