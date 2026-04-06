@@ -26,7 +26,6 @@ export default function SeasonFilterClient({ matches, seasonName }: SeasonFilter
         <MatchFilterControls
           matches={matches}
           onFilteredMatchesChange={setFilteredMatches}
-          title={`Filters - ${seasonName}`}
         />
 
         {/* Matches Grid */}
