@@ -15,7 +15,7 @@ async function fetchSeasonsFromDB(): Promise<Season[]> {
   const { data, error } = await supabase
     .from('seasons')
     .select('*')
-    .order('id', { ascending: false });
+    .order('start_date', { ascending: true });
 
   if (error) {
     console.error('Error fetching seasons:', error);
@@ -30,7 +30,7 @@ async function fetchSeasonsWithMatchCountsFromDB(): Promise<SeasonWithMatchCount
   const { data: seasonsData, error: seasonsError } = await supabase
     .from('seasons')
     .select('*')
-    .order('id', { ascending: false });
+    .order('start_date', { ascending: true });
 
   if (seasonsError) {
     console.error('Error fetching seasons:', seasonsError);
