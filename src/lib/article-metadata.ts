@@ -19,7 +19,7 @@ export async function fetchFavicon(url: string): Promise<string | null> {
       if (response.ok) {
         return googleFavicon;
       }
-    } catch (error) {
+    } catch {
       // Continue to fallback options
     }
 
@@ -36,7 +36,7 @@ export async function fetchFavicon(url: string): Promise<string | null> {
         if (response.ok) {
           return faviconUrl;
         }
-      } catch (error) {
+      } catch {
         // Continue to next favicon URL
         continue;
       }

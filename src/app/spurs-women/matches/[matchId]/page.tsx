@@ -23,14 +23,12 @@ export default async function MatchDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  // Fetch match data first
   const match = await getMatchById(matchId);
 
   if (!match) {
     notFound();
   }
 
-  // Fetch remaining data in parallel using match data
   const [adjacentMatches, photos, articles, socialMedia, videos] = await Promise.all([
     getAdjacentMatches(matchId, match.date),
     getPhotosByMatch(matchId),
@@ -41,7 +39,6 @@ export default async function MatchDetailPage({ params }: PageProps) {
 
   const { previous: previousMatch, next: nextMatch } = adjacentMatches;
 
-  // Calculate total character count for complete header display
   const homeScore = match.is_home_match ? (match.spurs_score ?? '') : (match.opponent_score ?? '');
   const awayScore = match.is_home_match ? (match.opponent_score ?? '') : (match.spurs_score ?? '');
   const homeScoreStr = homeScore?.toString() || '0';
@@ -53,9 +50,9 @@ export default async function MatchDetailPage({ params }: PageProps) {
                                 7; // +7 for " vs " and " - " and spaces
   
   const getHeaderFontSize = () => {
-    let fontSize = 'text-2xl'; // default
-    if (totalHeaderTextLength > 45) fontSize = 'text-lg';      // Very long headers
-    else if (totalHeaderTextLength > 38) fontSize = 'text-xl';   // Long headers
+    let fontSize = 'text-2xl';
+    if (totalHeaderTextLength > 45) fontSize = 'text-lg';
+    else if (totalHeaderTextLength > 38) fontSize = 'text-xl';
     
     return fontSize;
   };
@@ -63,7 +60,6 @@ export default async function MatchDetailPage({ params }: PageProps) {
   return (
     <main className="p-4">
       <div className="max-w-6xl mx-auto">
-        {/* Match Navigation */}
         <MatchNavigation 
           previousMatch={previousMatch} 
           nextMatch={nextMatch}
@@ -71,7 +67,6 @@ export default async function MatchDetailPage({ params }: PageProps) {
           headerFontSize={getHeaderFontSize()}
         />
 
-        {/* Second row: Competition name and attended badge */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-4">
           {match.competitions && (
             <div className="flex items-center gap-2">
@@ -95,12 +90,13 @@ export default async function MatchDetailPage({ params }: PageProps) {
           )}
         </div>
 
-        {/* Top section: Match info and articles */}
         <div className="grid gap-6 lg:grid-cols-2 mb-6">
           <div>
             <h2 className="text-2xl font-bold media-title mb-4">Game Info</h2>
             <MatchInfo 
               venue={match.venue} 
+              stadium_display_name={match.stadium_display_name}
+              stadium_slug={match.stadium_slug}
               attendance={match.attendance} 
               notes={match.notes} 
               date={match.date} 
@@ -119,7 +115,6 @@ export default async function MatchDetailPage({ params }: PageProps) {
           )}
         </div>
 
-        {/* Bottom section: Photos and social media */}
         {socialMedia.length > 0 ? (
           <div className="grid gap-6 lg:grid-cols-2">
             <MediaGallery photos={photos as PhotoMedia[]} />
@@ -131,7 +126,6 @@ export default async function MatchDetailPage({ params }: PageProps) {
           </div>
         )}
 
-        {/* Videos section */}
         {videos.length > 0 && (
           <VideoGrid videos={videos} />
         )}

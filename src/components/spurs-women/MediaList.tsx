@@ -16,7 +16,6 @@ export default function MediaList({ items, title }: MediaListProps) {
     <div>
       <h2 className="text-2xl font-bold media-title">{title}</h2>
       
-      {/* Social media items without bullet points */}
       {socialMediaItems.length > 0 && (
         <div className="mb-4">
           {socialMediaItems.map((item) => (
@@ -27,7 +26,6 @@ export default function MediaList({ items, title }: MediaListProps) {
         </div>
       )}
 
-      {/* Other media items without bullet points */}
       {otherItems.length > 0 && (
         <div className="space-y-2">
           {otherItems.map((item) => (

@@ -1,6 +1,5 @@
 import { unstable_cache } from 'next/cache';
 
-// Custom error class for cache failures
 export class CacheError extends Error {
   constructor(message: string, public readonly originalError?: Error) {
     super(message);
@@ -17,11 +16,11 @@ export const CACHE_TTL = {
   YOUTUBE_VIDEOS: 60 * 60, // 1 hour
   RSS_FEEDS: 24 * 60 * 60, // 24 hours
   MEDIA: 6 * 60 * 60, // 6 hours
+  STADIUM_DATA: 24 * 60 * 60, // 24 hours
 } as const;
 
 export type CacheTTLDuration = keyof typeof CACHE_TTL;
 
-// Cache tags for revalidation
 export const CACHE_TAGS = {
   MATCHES: 'matches',
   UPCOMING_MATCHES: 'upcoming-matches',
@@ -31,11 +30,12 @@ export const CACHE_TAGS = {
   VIDEOS: 'videos',
   PODCASTS: 'podcasts',
   MEDIA: 'media',
+  STADIUMS: 'stadiums',
+  STADIUM_NAMES: 'stadium-names',
 } as const;
 
 export type CacheTag = typeof CACHE_TAGS[keyof typeof CACHE_TAGS];
 
-// Cache key patterns following the brief: <entity>:<season>:<competition>:<variant>
 export const CACHE_KEYS = {
   matches: (season?: string, competition?: string, variant?: string) => 
     `matches${season ? `:${season}` : ''}${competition ? `:${competition}` : ''}${variant ? `:${variant}` : ''}`,
@@ -44,6 +44,8 @@ export const CACHE_KEYS = {
   news: (source?: string) => `news${source ? `:${source}` : ''}`,
   videos: () => 'videos:spurs-women',
   podcasts: () => 'podcasts:spurs-related',
+  stadium: (slug: string) => `stadium:${slug}`,
+  stadiumNames: (stadiumId: string) => `stadium-names:${stadiumId}`,
 } as const;
 
 export interface CacheOptions {
@@ -53,9 +55,6 @@ export interface CacheOptions {
   ttl?: CacheTTLDuration;
 }
 
-/**
- * Creates a cached function with proper error handling and stale-while-revalidate behavior
- */
 export function createCachedFunction<T extends (...args: any[]) => Promise<any>>(
   fn: T,
   options: CacheOptions
@@ -70,13 +69,11 @@ export function createCachedFunction<T extends (...args: any[]) => Promise<any>>
     const cacheKey = options.keyParts.join(':');
     
     try {
-      // Only use cache on server side
       if (typeof window === 'undefined') {
         const result = await cachedFn(...args);
         console.log(`Cache HIT: ${cacheKey} in ${Date.now() - startTime}ms`);
         return result;
       } else {
-        // On client side, call the function directly
         console.log(`Cache BYPASS (client-side): ${cacheKey}`);
         const result = await fn(...args);
         return result;
@@ -85,7 +82,6 @@ export function createCachedFunction<T extends (...args: any[]) => Promise<any>>
       const duration = Date.now() - startTime;
       console.error(`Cache ERROR: ${cacheKey} after ${duration}ms:`, error);
       
-      // Try to fetch fresh data as fallback
       try {
         console.log(`Cache FALLBACK: Fetching fresh data for ${cacheKey}`);
         const result = await fn(...args);

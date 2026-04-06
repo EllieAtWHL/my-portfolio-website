@@ -1,9 +1,5 @@
 import { PhotoManifest } from '@/types/photo-manifest';
 
-/**
- * Fetches the photo manifest from the external GitHub repository
- * This manifest contains mappings of folder keys to CDN URLs
- */
 export async function fetchPhotoManifest(): Promise<PhotoManifest> {
   try {
     const response = await fetch('/spurs-women/photo-gallery.manifest.json');
@@ -22,9 +18,6 @@ export async function fetchPhotoManifest(): Promise<PhotoManifest> {
   }
 }
 
-/**
- * Checks if the photo manifest is available
- */
 export async function isPhotoManifestAvailable(): Promise<boolean> {
   try {
     const response = await fetch('/spurs-women/photo-gallery.manifest.json', { 
@@ -36,9 +29,6 @@ export async function isPhotoManifestAvailable(): Promise<boolean> {
   }
 }
 
-/**
- * Gets the CDN URLs for a specific folder key
- */
 export async function getFolderPhotos(folderKey: string): Promise<string[]> {
   const manifest = await fetchPhotoManifest();
   return manifest[folderKey] || [];
