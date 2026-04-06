@@ -179,7 +179,6 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
                     console.error('Failed to load image:', photo.url);
                   }}
                 />
-                {/* Protection overlay */}
                 <div 
                   className="absolute inset-0 pointer-events-auto"
                   style={{ backgroundColor: 'transparent' }}
@@ -204,7 +203,6 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
         )}
       </div>
 
-      {/* Lightbox Gallery */}
       <LightboxGallery
         photos={allPhotos}
         initialIndex={initialIndex}
