@@ -2,14 +2,17 @@ import { Card } from '@/components/Card';
 
 type MatchInfoProps = {
   venue?: string | null;
+  stadium_display_name?: string | null;
+  stadium_slug?: string | null;
   attendance?: number | null;
   notes?: string | null;
   date?: string | null;
   kickoff_time?: string | null;
 };
 
-export default function MatchInfo({ venue, attendance, notes, date, kickoff_time }: MatchInfoProps) {
-  if (!venue && !attendance && !notes && !date) return null;
+export default function MatchInfo({ venue, stadium_display_name, stadium_slug, attendance, notes, date, kickoff_time }: MatchInfoProps) {
+  const displayVenue = stadium_display_name || venue;
+  if (!displayVenue && !attendance && !notes && !date) return null;
 
   const formatKickoffDateTime = (date: string, time: string | null) => {
     const dateObj = new Date(date);
@@ -34,19 +37,26 @@ export default function MatchInfo({ venue, attendance, notes, date, kickoff_time
             <strong>Kickoff:</strong> {formatKickoffDateTime(date, kickoff_time || null)}
           </p>
         )}
-        {venue && (
+        {displayVenue && (
           <p className="mb-2">
             <strong>Venue:</strong>{' '}
-            {venue === 'Behind-Closed-Doors' ? (
-              <span className="spurs-text">{venue}</span>
+            {displayVenue === 'Behind-Closed-Doors' ? (
+              <span className="spurs-text">{displayVenue}</span>
+            ) : stadium_slug ? (
+              <a
+                href={`/spurs-women/stadiums/${stadium_slug}`}
+                className="venue-link spurs-text underline decoration-2 hover:opacity-80"
+              >
+                {displayVenue}
+              </a>
             ) : (
               <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue)}`}
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(displayVenue)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="venue-link spurs-text underline decoration-2 hover:opacity-80"
               >
-                {venue}
+                {displayVenue}
               </a>
             )}
           </p>

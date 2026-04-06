@@ -1,5 +1,5 @@
 import { supabase } from '@/utils/supabase';
-import { createCachedFunction, CACHE_TTL, CACHE_TAGS, CACHE_KEYS } from './cache-utils';
+import { createCachedFunction, CACHE_TTL, CACHE_TAGS } from './cache-utils';
 
 export interface Match {
   id: number;
@@ -26,6 +26,8 @@ export interface Match {
   attended: boolean;
   is_home_match: boolean;
   venue: string | null;
+  stadium_display_name: string | null;
+  stadium_slug: string | null;
   attendance: number | null;
   notes: string | null;
   competitions?: {
@@ -35,7 +37,6 @@ export interface Match {
   season_id: number;
 }
 
-// Raw database fetch functions
 async function fetchUpcomingMatchesFromDB(limit: number = 3): Promise<Match[]> {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -43,7 +44,7 @@ async function fetchUpcomingMatchesFromDB(limit: number = 3): Promise<Match[]> {
   tomorrow.setDate(tomorrow.getDate() + 1);
   
   const { data, error } = await supabase
-    .from('matches')
+    .from('matches_with_stadium')
     .select(`
       *,
       home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
@@ -61,9 +62,8 @@ async function fetchUpcomingMatchesFromDB(limit: number = 3): Promise<Match[]> {
     throw error;
   }
 
-  // Also fetch future matches beyond today
   const { data: futureData, error: futureError } = await supabase
-    .from('matches')
+    .from('matches_with_stadium')
     .select(`
       *,
       home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
@@ -89,9 +89,8 @@ async function fetchPreviousMatchesFromDB(limit: number = 3): Promise<Match[]> {
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
   
-  // Fetch matches before today
   const { data, error } = await supabase
-    .from('matches')
+    .from('matches_with_stadium')
     .select(`
       *,
       home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
@@ -107,9 +106,8 @@ async function fetchPreviousMatchesFromDB(limit: number = 3): Promise<Match[]> {
     throw error;
   }
 
-  // Fetch today's matches that have scores
   const { data: todayData, error: todayError } = await supabase
-    .from('matches')
+    .from('matches_with_stadium')
     .select(`
       *,
       home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
@@ -134,7 +132,7 @@ async function fetchPreviousMatchesFromDB(limit: number = 3): Promise<Match[]> {
 
 async function fetchAllMatchesFromDB(filter?: 'upcoming' | 'previous'): Promise<Match[]> {
   let query = supabase
-    .from('matches')
+    .from('matches_with_stadium')
     .select(`
       *,
       home_team:home_team_id (*),
@@ -163,7 +161,7 @@ async function fetchAllMatchesFromDB(filter?: 'upcoming' | 'previous'): Promise<
 
 async function fetchSeasonMatchesFromDB(seasonId: string): Promise<Match[]> {
   const { data, error } = await supabase
-    .from('matches')
+    .from('matches_with_stadium')
     .select(`
       *,
       home_team:home_team_id (*),
@@ -181,7 +179,6 @@ async function fetchSeasonMatchesFromDB(seasonId: string): Promise<Match[]> {
   return data as Match[] || [];
 }
 
-// Cached functions using the cache utilities
 export const getUpcomingMatches = createCachedFunction(
   fetchUpcomingMatchesFromDB,
   {
@@ -218,7 +215,6 @@ export const getSeasonMatches = createCachedFunction(
   }
 );
 
-// Helper functions for specific use cases
 export async function getHomePageMatches() {
   const [upcoming, previous] = await Promise.all([
     getUpcomingMatches(3),
@@ -239,10 +235,9 @@ export async function getMatchesBySeason(seasonId: string) {
   return getSeasonMatches(seasonId);
 }
 
-// Raw database fetch functions for match details
 async function fetchMatchByIdFromDB(matchId: string): Promise<Match | null> {
   const { data, error } = await supabase
-    .from('matches')
+    .from('matches_with_stadium')
     .select(`
       *,
       home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
@@ -261,9 +256,8 @@ async function fetchMatchByIdFromDB(matchId: string): Promise<Match | null> {
 }
 
 async function fetchAdjacentMatchesFromDB(matchId: string, currentMatchDate: string): Promise<{ previous: Match | null; next: Match | null }> {
-  // Fetch previous match
   const { data: previousData } = await supabase
-    .from('matches')
+    .from('matches_with_stadium')
     .select(`
       *,
       home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
@@ -275,9 +269,8 @@ async function fetchAdjacentMatchesFromDB(matchId: string, currentMatchDate: str
     .limit(1)
     .single();
 
-  // Fetch next match
   const { data: nextData } = await supabase
-    .from('matches')
+    .from('matches_with_stadium')
     .select(`
       *,
       home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
@@ -295,7 +288,6 @@ async function fetchAdjacentMatchesFromDB(matchId: string, currentMatchDate: str
   };
 }
 
-// Cached functions for match details
 export const getMatchById = createCachedFunction(
   fetchMatchByIdFromDB,
   {

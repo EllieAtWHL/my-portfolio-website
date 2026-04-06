@@ -3,9 +3,7 @@ import { Card } from '@/components/Card';
 import { formatDateForCard } from '@/lib/utils/date';
 import { Match } from '@/lib/data/matches';
 
-// Simple function to generate Tailwind classes from database colors with fallbacks
 function getColorClasses(primaryColor: string | null | undefined, secondaryColor: string | null | undefined) {
-  // Fallback to gray/white if colors are null or undefined
   const primary = primaryColor || 'gray-500';
   const secondary = secondaryColor || 'white';
   return `bg-${primary} text-${secondary}`;
@@ -18,11 +16,11 @@ type MatchProps = {
 export default function MatchCard({ match }: MatchProps) {
   const homeScore = match.is_home_match ? (match.spurs_score ?? '') : (match.opponent_score ?? '');
   const awayScore = match.is_home_match ? (match.opponent_score ?? '') : (match.spurs_score ?? '');
+  const displayStadium = match.stadium_display_name || match.venue;
 
   return (
     <Link href={`/spurs-women/matches/${match.id}`} className="block spurs-text">
       <Card variant="spursAccent" padding="md">
-        {/* Date at top center */}
         <div className="text-center text-sm spurs-text mb-2 flex justify-center items-center gap-4">
           {formatDateForCard(match.date)}
           {match.competitions?.name && (
@@ -38,7 +36,6 @@ export default function MatchCard({ match }: MatchProps) {
           )}
         </div>
 
-        {/* Attendance indicator in top right */}
         {new Date(match.date) < new Date() && match.attended && (
           <span className="absolute top-2 right-2 spurs-text" title="Attended">
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -47,8 +44,7 @@ export default function MatchCard({ match }: MatchProps) {
           </span>
         )}
         
-        {/* Teams and Score - responsive layout */}
-        <div className="grid grid-cols-3 items-center gap-2 text-center mb-6">
+        <div className="grid grid-cols-3 items-center gap-2 text-center mb-4">
           <span className={`inline-flex items-center justify-center px-2 py-1 rounded-full text-xs sm:px-3 sm:py-1 sm:text-sm font-medium ${getColorClasses(match.home_team?.primary_color, match.home_team?.secondary_color)}`}>
             {match.home_team?.name || 'Unknown Team'}
           </span>
@@ -57,6 +53,12 @@ export default function MatchCard({ match }: MatchProps) {
             {match.away_team?.name || 'Unknown Team'}
           </span>
         </div>
+
+        {displayStadium && (
+          <div className="text-center text-xs spurs-text opacity-75">
+            {displayStadium}
+          </div>
+        )}
       </Card>
     </Link>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import SpursSelect from '@/components/spurs-women/SpursSelect';
@@ -9,25 +9,21 @@ import { Match } from '@/lib/data/matches';
 interface MatchFilterControlsProps {
   matches: Match[];
   onFilteredMatchesChange: (filteredMatches: Match[]) => void;
-  showSeasonFilter?: boolean;
   showCompetitionFilter?: boolean;
   showVenueFilter?: boolean;
   showAttendedFilter?: boolean;
   showResultFilter?: boolean;
   showMonthFilter?: boolean;
-  title?: string;
 }
 
 export default function MatchFilterControls({
   matches,
   onFilteredMatchesChange,
-  showSeasonFilter = false,
   showCompetitionFilter = true,
   showVenueFilter = true,
   showAttendedFilter = true,
   showResultFilter = true,
-  showMonthFilter = true,
-  title = "Filters"
+  showMonthFilter = true
 }: MatchFilterControlsProps) {
   const [competitionFilter, setCompetitionFilter] = useState<string[]>([]);
   const [venueFilter, setVenueFilter] = useState<string>('all');
@@ -38,16 +34,13 @@ export default function MatchFilterControls({
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  // Get unique competitions for filter dropdown
   const competitions = useMemo(() => {
     const uniqueCompetitions = [...new Set(matches.map(match => match.competitions?.name).filter(Boolean))];
     return uniqueCompetitions.sort();
   }, [matches]);
 
-  // Filter matches based on selected filters
   const filteredMatches = useMemo(() => {
     const filtered = matches.filter(match => {
-      // Competition filter
       if (showCompetitionFilter && competitionFilter.length > 0) {
         if (competitionFilter.includes('unknown')) {
           if (match.competitions?.name) return false;
@@ -56,35 +49,31 @@ export default function MatchFilterControls({
         }
       }
       
-      // Venue filter
       if (showVenueFilter && venueFilter !== 'all') {
         if (venueFilter === 'home' && !match.is_home_match) return false;
         if (venueFilter === 'away' && match.is_home_match) return false;
       }
       
-      // Attended filter
       if (showAttendedFilter && attendedFilter !== 'all') {
         if (attendedFilter === 'attended' && !match.attended) return false;
         if (attendedFilter === 'not-attended' && match.attended) return false;
       }
       
-      // Result filter
       if (showResultFilter && resultFilter !== 'all') {
         const hasScore = match.spurs_score !== null && match.opponent_score !== null;
         if (!hasScore) return false;
         
         const spursScore = match.spurs_score!;
         const opponentScore = match.opponent_score!;
-        const isWin = match.is_home_match ? spursScore > opponentScore : opponentScore > spursScore;
+        const isWin = spursScore > opponentScore;
         const isDraw = spursScore === opponentScore;
-        const isLoss = match.is_home_match ? spursScore < opponentScore : opponentScore < spursScore;
+        const isLoss = spursScore < opponentScore;
         
         if (resultFilter === 'won' && !isWin) return false;
         if (resultFilter === 'draw' && !isDraw) return false;
         if (resultFilter === 'lost' && !isLoss) return false;
       }
       
-      // Date range filter
       if (showMonthFilter && (dateFromFilter || dateToFilter)) {
         const matchDate = new Date(match.date);
         if (dateFromFilter) {
@@ -100,7 +89,6 @@ export default function MatchFilterControls({
       return true;
     });
     
-    // Apply sorting
     return filtered.sort((a, b) => {
       const dateA = new Date(a.date);
       const dateB = new Date(b.date);
@@ -108,9 +96,13 @@ export default function MatchFilterControls({
     });
   }, [matches, competitionFilter, venueFilter, attendedFilter, resultFilter, dateFromFilter, dateToFilter, showCompetitionFilter, showVenueFilter, showAttendedFilter, showResultFilter, showMonthFilter, sortOrder]);
 
-  // Notify parent component when filtered matches change
-  useMemo(() => {
-    onFilteredMatchesChange(filteredMatches);
+  const prevFilteredMatchesRef = useRef<Match[]>([]);
+  
+  useEffect(() => {
+    if (JSON.stringify(prevFilteredMatchesRef.current) !== JSON.stringify(filteredMatches)) {
+      onFilteredMatchesChange(filteredMatches);
+      prevFilteredMatchesRef.current = filteredMatches;
+    }
   }, [filteredMatches, onFilteredMatchesChange]);
 
   const clearFilters = () => {
@@ -138,7 +130,6 @@ export default function MatchFilterControls({
 
   return (
     <Card variant="spursAccent" padding="md" className="mb-6" hover={false}>
-      {/* Header with toggle and clear buttons */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 mb-4">
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <span className="spurs-text text-sm">
@@ -204,10 +195,8 @@ export default function MatchFilterControls({
         </div>
       </div>
 
-      {/* Collapsible filter content */}
       <div className={`transition-all duration-300 overflow-hidden ${isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
-          {/* Competition Filter - wider */}
           {showCompetitionFilter && (
             <div className="lg:col-span-2 xl:col-span-1">
               <label className="block spurs-text text-xs font-medium mb-1">
@@ -294,7 +283,6 @@ export default function MatchFilterControls({
             </div>
           )}
 
-          {/* Venue Filter - narrower */}
           {showVenueFilter && (
             <div className="xl:col-span-1">
               <label className="block spurs-text text-xs font-medium mb-1">
@@ -312,7 +300,6 @@ export default function MatchFilterControls({
             </div>
           )}
 
-          {/* Attended Filter - narrower */}
           {showAttendedFilter && (
             <div className="xl:col-span-1">
               <label className="block spurs-text text-xs font-medium mb-1">
@@ -329,7 +316,6 @@ export default function MatchFilterControls({
             </div>
           )}
 
-          {/* Result Filter - narrower */}
           {showResultFilter && (
             <div className="xl:col-span-1">
               <label className="block spurs-text text-xs font-medium mb-1">
@@ -347,7 +333,6 @@ export default function MatchFilterControls({
             </div>
           )}
 
-          {/* Date Range Filter - takes remaining space */}
           {showMonthFilter && (
             <div className="lg:col-span-2 xl:col-span-2">
               <label className="block spurs-text text-xs font-medium mb-1">
