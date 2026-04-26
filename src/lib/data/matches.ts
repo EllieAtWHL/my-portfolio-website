@@ -39,10 +39,11 @@ export interface Match {
 
 async function fetchUpcomingMatchesFromDB(limit: number = 3): Promise<Match[]> {
   const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  // Use UTC date to avoid timezone issues
+  const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const tomorrowUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
   
+  // First fetch: Get today's matches WITHOUT scores (unscored matches)
   const { data, error } = await supabase
     .from('matches_with_stadium')
     .select(`
@@ -51,9 +52,10 @@ async function fetchUpcomingMatchesFromDB(limit: number = 3): Promise<Match[]> {
       away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
       competitions(name, icon_svg)
     `)
-    .gte('date', today.toISOString())
-    .lt('date', tomorrow.toISOString())
-    .or('spurs_score.is.null,opponent_score.is.null')
+    .gte('date', todayUTC.toISOString())
+    .lt('date', tomorrowUTC.toISOString())
+    .is('spurs_score', null)
+    .is('opponent_score', null)
     .order('date', { ascending: true })
     .limit(limit);
 
@@ -62,6 +64,7 @@ async function fetchUpcomingMatchesFromDB(limit: number = 3): Promise<Match[]> {
     throw error;
   }
 
+  // Second fetch: Get future matches (after today)
   const { data: futureData, error: futureError } = await supabase
     .from('matches_with_stadium')
     .select(`
@@ -70,7 +73,7 @@ async function fetchUpcomingMatchesFromDB(limit: number = 3): Promise<Match[]> {
       away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
       competitions(name, icon_svg)
     `)
-    .gte('date', tomorrow.toISOString())
+    .gte('date', tomorrowUTC.toISOString())
     .order('date', { ascending: true })
     .limit(limit - (data?.length || 0));
 
@@ -79,33 +82,18 @@ async function fetchUpcomingMatchesFromDB(limit: number = 3): Promise<Match[]> {
     throw futureError;
   }
 
+  // Combine today's unscored matches and future matches
   const allMatches = [...(data as Match[] || []), ...(futureData as Match[] || [])];
   return allMatches.slice(0, limit);
 }
 
 async function fetchPreviousMatchesFromDB(limit: number = 3): Promise<Match[]> {
   const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  // Use UTC date to avoid timezone issues
+  const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const tomorrowUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
   
-  const { data, error } = await supabase
-    .from('matches_with_stadium')
-    .select(`
-      *,
-      home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-      away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-      competitions(name, icon_svg)
-    `)
-    .lt('date', today.toISOString())
-    .order('date', { ascending: false })
-    .limit(limit);
-
-  if (error) {
-    console.error('Error fetching previous matches:', error);
-    throw error;
-  }
-
+  // First fetch: Get today's matches that have scores (completed matches)
   const { data: todayData, error: todayError } = await supabase
     .from('matches_with_stadium')
     .select(`
@@ -114,19 +102,38 @@ async function fetchPreviousMatchesFromDB(limit: number = 3): Promise<Match[]> {
       away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
       competitions(name, icon_svg)
     `)
-    .gte('date', today.toISOString())
-    .lt('date', tomorrow.toISOString())
+    .gte('date', todayUTC.toISOString())
+    .lt('date', tomorrowUTC.toISOString())
     .not('spurs_score', 'is', null)
     .not('opponent_score', 'is', null)
     .order('date', { ascending: false })
-    .limit(limit - (data?.length || 0));
+    .limit(limit);
 
   if (todayError) {
     console.error('Error fetching today\'s completed matches:', todayError);
     throw todayError;
   }
 
-  const allMatches = [...(data as Match[] || []), ...(todayData as Match[] || [])];
+  // Second fetch: Get matches before today (only if we still need more matches)
+  const { data, error } = await supabase
+    .from('matches_with_stadium')
+    .select(`
+      *,
+      home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
+      away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
+      competitions(name, icon_svg)
+    `)
+    .lt('date', todayUTC.toISOString())
+    .order('date', { ascending: false })
+    .limit(limit - (todayData?.length || 0));
+
+  if (error) {
+    console.error('Error fetching previous matches:', error);
+    throw error;
+  }
+
+  // Combine both sets of matches with today's matches first (more recent), then limit
+  const allMatches = [...(todayData as Match[] || []), ...(data as Match[] || [])];
   return allMatches.slice(0, limit);
 }
 
