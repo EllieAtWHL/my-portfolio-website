@@ -20,7 +20,7 @@ export default function MatchCard({ match }: MatchProps) {
 
   return (
     <Link href={`/spurs-women/matches/${match.id}`} className="block spurs-text">
-      <Card variant="spursAccent" padding="md">
+      <Card variant="spursAccent" padding="md" clickable={true}>
         <div className="text-center text-sm spurs-text mb-2 flex justify-center items-center gap-4">
           {formatDateForCard(match.date)}
           {match.competitions?.name && (

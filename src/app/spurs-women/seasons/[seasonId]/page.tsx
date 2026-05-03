@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import SeasonFilterClient from './SeasonFilterClient';
-import { getMatchesBySeason, getSeasonDetails } from '@/lib/data';
+import { getMatchesBySeason, getSeasonDetails, getSeasonReviewDetails } from '@/lib/data';
 
 interface SeasonDetailPageProps {
   params: {
@@ -24,15 +24,22 @@ export default async function SeasonDetailPage({ params }: SeasonDetailPageProps
     notFound();
   }
 
-  // Fetch season name and matches in parallel with caching
-  const [season, matches] = await Promise.all([
+  // Fetch season name, matches, and review in parallel with caching
+  const [season, matches, seasonReview] = await Promise.all([
     getSeasonDetails(seasonId),
-    getMatchesBySeason(seasonId)
+    getMatchesBySeason(seasonId),
+    getSeasonReviewDetails(seasonId)
   ]);
 
   if (!season) {
     notFound();
   }
 
-  return <SeasonFilterClient matches={matches} seasonName={season.name} />;
+  return (
+    <SeasonFilterClient 
+      matches={matches} 
+      seasonName={season.name} 
+      seasonReview={seasonReview}
+    />
+  );
 }
