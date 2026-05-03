@@ -33,6 +33,10 @@ export default function MatchFilterControls({
   const [dateToFilter, setDateToFilter] = useState<string>('');
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
 
   const competitions = useMemo(() => {
     const uniqueCompetitions = [...new Set(matches.map(match => match.competitions?.name).filter(Boolean))];
@@ -104,6 +108,47 @@ export default function MatchFilterControls({
       prevFilteredMatchesRef.current = filteredMatches;
     }
   }, [filteredMatches, onFilteredMatchesChange]);
+
+  // Update dropdown position on scroll
+  useEffect(() => {
+    if (!isDropdownOpen || !dropdownRef.current || !triggerRef.current) return;
+
+    const updatePosition = () => {
+      if (triggerRef.current && dropdownRef.current) {
+        const rect = triggerRef.current.getBoundingClientRect();
+        dropdownRef.current.style.top = `${rect.bottom + window.scrollY + 4}px`;
+        dropdownRef.current.style.left = `${rect.left + window.scrollX}px`;
+      }
+    };
+
+    const handleScroll = () => {
+      updatePosition();
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    updatePosition(); // Initial position
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [isDropdownOpen]);
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    if (!isDropdownOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
+          triggerRef.current && !triggerRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   const clearFilters = () => {
     setCompetitionFilter([]);
@@ -205,20 +250,12 @@ export default function MatchFilterControls({
                 </label>
                 <div className="relative">
                   <div 
+                    ref={triggerRef}
                     className="w-full px-2 py-1.5 text-sm bg-gray-800 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:bg-gray-700 transition-colors duration-200 cursor-pointer"
                     onClick={(e) => {
-                      const dropdown = document.getElementById('competition-dropdown');
-                      const trigger = e.currentTarget;
-                      if (dropdown && trigger) {
-                        const rect = trigger.getBoundingClientRect();
-                        dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
-                        
-                        if (dropdown.style.display === 'block') {
-                          dropdown.style.top = `${rect.bottom + window.scrollY + 4}px`;
-                          dropdown.style.left = `${rect.left + window.scrollX}px`;
-                          dropdown.style.width = `${rect.width}px`;
-                        }
-                      }
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setIsDropdownOpen(!isDropdownOpen);
                     }}
                   >
                     <div className="flex justify-between items-center">
@@ -236,8 +273,8 @@ export default function MatchFilterControls({
                     </div>
                   </div>
                   <div 
-                    id="competition-dropdown"
-                    className="fixed bg-gray-800 border border-gray-600 rounded-md shadow-lg z-50 hidden"
+                    ref={dropdownRef}
+                    className={`fixed bg-gray-800 border border-gray-600 rounded-md shadow-lg z-50 ${isDropdownOpen ? 'block' : 'hidden'}`}
                     style={{ 
                       maxHeight: '200px', 
                       overflowY: 'auto',
@@ -250,6 +287,7 @@ export default function MatchFilterControls({
                           type="checkbox"
                           checked={competitionFilter.length === 0}
                           onChange={(e) => {
+                            e.stopPropagation();
                             if (e.target.checked) {
                               setCompetitionFilter([]);
                             }
@@ -264,6 +302,7 @@ export default function MatchFilterControls({
                             type="checkbox"
                             checked={competitionFilter.includes(competition || 'unknown')}
                             onChange={(e) => {
+                              e.stopPropagation();
                               const value = competition || 'unknown';
                               if (e.target.checked) {
                                 setCompetitionFilter([...competitionFilter.filter(c => c !== 'unknown'), value]);

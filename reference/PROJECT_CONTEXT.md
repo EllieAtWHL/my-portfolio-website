@@ -696,6 +696,7 @@ spurs-women-photo-gallery/
 - [ ] Add players (starters, subs, unused bench)
 - [ ] Add match stats where available
 - [ ] Add goal scorers to match page
+- [ ] **Improve competition dropdown UX** (Low Priority) - Current implementation has minor issues with event handling and positioning that could be optimized for better user experience
 
 **Caching Tech Debt:**
 - ✅ Remove default dev API key from cache routes for production security
