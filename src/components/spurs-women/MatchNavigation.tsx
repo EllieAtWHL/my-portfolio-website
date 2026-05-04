@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/Button';
 import { Match } from '@/lib/data/matches';
+import TeamPill from '@/components/spurs-women/TeamPill';
 
 interface MatchNavigationProps {
   previousMatch: Match | null;
@@ -90,13 +91,17 @@ export default function MatchNavigation({
               fontSize: headerFontSize === 'text-lg' ? '1.625rem' : 
                        headerFontSize === 'text-xl' ? '1.875rem' : '2rem'
             }}>
-          <span>
-            {currentMatch.home_team?.name}
-          </span>
+          <TeamPill 
+            teamName={currentMatch.home_team?.name || 'Unknown Team'}
+            primaryColor={currentMatch.home_team?.primary_color}
+            secondaryColor={currentMatch.home_team?.secondary_color}
+          />
           <span className="text-gray-500">{homeScore} - {awayScore}</span>
-          <span>
-            {currentMatch.away_team?.name}
-          </span>
+          <TeamPill 
+            teamName={currentMatch.away_team?.name || 'Unknown Team'}
+            primaryColor={currentMatch.away_team?.primary_color}
+            secondaryColor={currentMatch.away_team?.secondary_color}
+          />
         </h1>
 
         {/* Right navigation button */}

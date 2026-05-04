@@ -89,8 +89,6 @@ export async function loadPhotosHybridWithExternal(
 ): Promise<string[]> {
   // Use explicit storage_source field if available
   if (photo.storage_source) {
-    console.log(`Loading photos from ${photo.storage_source}:`, photo.url);
-    
     if (photo.storage_source === 'github') {
       return loadPhotosFromExternalRepo(photo.url, manifest);
     } else if (photo.storage_source === 'supabase') {

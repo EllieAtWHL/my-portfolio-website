@@ -2,12 +2,7 @@ import Link from 'next/link';
 import { Card } from '@/components/Card';
 import { formatDateForCard } from '@/lib/utils/date';
 import { Match } from '@/lib/data/matches';
-
-function getColorClasses(primaryColor: string | null | undefined, secondaryColor: string | null | undefined) {
-  const primary = primaryColor || 'gray-500';
-  const secondary = secondaryColor || 'white';
-  return `bg-${primary} text-${secondary}`;
-}
+import TeamPill from '@/components/spurs-women/TeamPill';
 
 type MatchProps = {
   match: Match;
@@ -45,13 +40,19 @@ export default function MatchCard({ match }: MatchProps) {
         )}
         
         <div className="grid grid-cols-3 items-center gap-2 text-center mb-4">
-          <span className={`inline-flex items-center justify-center px-2 py-1 rounded-full text-xs sm:px-3 sm:py-1 sm:text-sm font-medium ${getColorClasses(match.home_team?.primary_color, match.home_team?.secondary_color)}`}>
-            {match.home_team?.name || 'Unknown Team'}
-          </span>
+          <TeamPill 
+            teamName={match.home_team?.name || 'Unknown Team'}
+            primaryColor={match.home_team?.primary_color}
+            secondaryColor={match.home_team?.secondary_color}
+            className="inline-flex items-center justify-center px-2 py-1 rounded-full text-xs sm:px-3 sm:py-1 sm:text-sm font-medium transition-colors"
+          />
           <span className="spurs-text text-lg sm:text-xl font-semibold">{homeScore} - {awayScore}</span>
-          <span className={`inline-flex items-center justify-center px-2 py-1 rounded-full text-xs sm:px-3 sm:py-1 sm:text-sm font-medium ${getColorClasses(match.away_team?.primary_color, match.away_team?.secondary_color)}`}>
-            {match.away_team?.name || 'Unknown Team'}
-          </span>
+          <TeamPill 
+            teamName={match.away_team?.name || 'Unknown Team'}
+            primaryColor={match.away_team?.primary_color}
+            secondaryColor={match.away_team?.secondary_color}
+            className="inline-flex items-center justify-center px-2 py-1 rounded-full text-xs sm:px-3 sm:py-1 sm:text-sm font-medium transition-colors"
+          />
         </div>
 
         {displayStadium && (
