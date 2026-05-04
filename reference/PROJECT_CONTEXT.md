@@ -692,7 +692,7 @@ spurs-women-photo-gallery/
 - ✅  Fix the colour scheme in general
 - ✅ Add external video media type
 - ✅ Cache database for api calls on Spurs women
-- [ ] Ensure we have a backup primary and secondary colour in case they are not input - and teamname probably too
+- ✅ Ensure we have a backup primary and secondary colour in case they are not input - and teamname probably too
 - [ ] Add players (starters, subs, unused bench)
 - [ ] Add match stats where available
 - [ ] Add goal scorers to match page
