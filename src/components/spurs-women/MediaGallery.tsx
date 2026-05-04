@@ -85,14 +85,6 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
     if (photo.type === 'photo album') {
       const storageKey = photo.url;
       
-      console.log('Processing photo album:', {
-        id: photo.id,
-        url: photo.url,
-        storageSource: photo.storage_source,
-        storageKey,
-        hasAlbumPhotos: !!albumPhotos[storageKey],
-        albumPhotosCount: albumPhotos[storageKey]?.length || 0
-      });
       
       if (storageKey && albumPhotos[storageKey]) {
         const albumImages = albumPhotos[storageKey].map((url, index) => ({
@@ -110,21 +102,17 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
           created_at: photo.created_at,
           storage_source: photo.storage_source
         }));
-        console.log('Adding album images:', albumImages.length);
         return [...acc, ...albumImages];
       } else {
-        console.log('No photos found for album:', storageKey);
       }
     } else if (photo.type === 'photo') {
       // Add individual photo (skip photo album entries)
-      console.log('Adding individual photo:', photo.id);
       return [...acc, photo];
     }
     // Skip photo album entries from final display
     return acc;
   }, []);
   
-  console.log('Final allPhotos count:', allPhotos.length);
 
   const openLightbox = (index: number) => {
     setInitialIndex(index);
@@ -138,7 +126,7 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
 
   // Determine grid layout based on fullWidth prop
   const gridClass = fullWidth 
-    ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
+    ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
     : "grid grid-cols-2 md:grid-cols-3 gap-4";
 
   return (

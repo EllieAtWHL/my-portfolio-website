@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { getMatchById, getAdjacentMatches } from '@/lib/data/matches';
 import { getPhotosByMatch, getArticlesByMatch, getSocialMediaByMatch, getVideosByMatch } from '@/lib/data/media';
 import MatchInfo from '@/components/spurs-women/MatchInfo';
+import MatchStats from '@/components/spurs-women/MatchStats';
 import MediaGallery from '@/components/spurs-women/MediaGallery';
 import MediaList from '@/components/spurs-women/MediaList';
 import VideoGrid from '@/components/spurs-women/VideoGrid';
@@ -9,6 +10,7 @@ import ArticleCard from '@/components/spurs-women/ArticleCard';
 import MatchNavigation from '@/components/spurs-women/MatchNavigation';
 import { Media } from '@/lib/data/media';
 import { PhotoMedia } from '@/lib/data/media';
+
 
 interface PageProps {
   params: {
@@ -24,6 +26,18 @@ export default async function MatchDetailPage({ params }: PageProps) {
   }
 
   const match = await getMatchById(matchId);
+  
+  // Debug team color data
+  if (match) {
+    console.log('Team Color Debug:', {
+      homeTeamName: match.home_team?.name,
+      awayTeamName: match.away_team?.name,
+      homeTeamColor: match.home_team?.primary_color,
+      awayTeamColor: match.away_team?.primary_color,
+      homeTeamColorType: typeof match.home_team?.primary_color,
+      awayTeamColorType: typeof match.away_team?.primary_color
+    });
+  }
 
   if (!match) {
     notFound();
@@ -90,42 +104,70 @@ export default async function MatchDetailPage({ params }: PageProps) {
           )}
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2 mb-6">
-          <div>
-            <h2 className="text-2xl font-bold media-title mb-4">Game Info</h2>
-            <MatchInfo 
-              venue={match.venue} 
-              stadium_display_name={match.stadium_display_name}
-              stadium_slug={match.stadium_slug}
-              attendance={match.attendance} 
-              notes={match.notes} 
-              date={match.date} 
-              kickoff_time={match.kickoff_time} 
-            />
-          </div>
-          {articles.length > 0 && (
-            <div>
-              <h2 className="text-2xl font-bold media-title mb-4">Articles</h2>
-              <div className="space-y-4">
-                {articles.map((article) => (
-                  <ArticleCard key={article.id} article={article} />
-                ))}
-              </div>
-            </div>
-          )}
+        {/* Match Info Section - Always Full Width */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold media-title mb-4">Match Info</h2>
+          <MatchInfo 
+            venue={match.venue} 
+            stadium_display_name={match.stadium_display_name}
+            stadium_slug={match.stadium_slug}
+            attendance={match.attendance} 
+            notes={match.notes} 
+            date={match.date} 
+            kickoff_time={match.kickoff_time} 
+          />
         </div>
 
-        {socialMedia.length > 0 ? (
-          <div className="grid gap-6 lg:grid-cols-2">
-            <MediaGallery photos={photos as PhotoMedia[]} />
-            <MediaList items={socialMedia as Media[]} title="Social Media" />
-          </div>
-        ) : (
-          <div className="grid gap-6">
-            <MediaGallery photos={photos as PhotoMedia[]} fullWidth={true} />
+        {/* Articles Section - Full Width when present */}
+        {articles.length > 0 && (
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold media-title mb-4">Articles</h2>
+            <div className="space-y-4">
+              {articles.map((article) => (
+                <ArticleCard key={article.id} article={article} />
+              ))}
+            </div>
           </div>
         )}
 
+        
+        {/* Match Stats Section - New Feature */}
+        <MatchStats 
+          homeTeam={match.home_team?.name}
+          awayTeam={match.away_team?.name}
+          homeTeamColor={match.home_team?.primary_color || 'blue'}
+          awayTeamColor={match.away_team?.primary_color || 'gray'}
+          possession={
+            match.home_possession !== null && match.away_possession !== null
+              ? { home: match.home_possession, away: match.away_possession }
+              : undefined
+          }
+          shots={
+            match.home_total_shots !== null && match.away_total_shots !== null &&
+            match.home_shots_on_target !== null && match.away_shots_on_target !== null
+              ? { 
+                  home: { total: match.home_total_shots, onTarget: match.home_shots_on_target }, 
+                  away: { total: match.away_total_shots, onTarget: match.away_shots_on_target } 
+                }
+              : undefined
+          }
+          corners={
+            match.home_corners !== null && match.away_corners !== null
+              ? { home: match.home_corners, away: match.away_corners }
+              : undefined
+          }
+        />
+
+        {/* Staggered Media Sections - Photos first, then Social Media */}
+        {photos.length > 0 && (
+          <MediaGallery photos={photos as PhotoMedia[]} fullWidth={true} />
+        )}
+
+        {socialMedia.length > 0 && (
+          <MediaList items={socialMedia as Media[]} title="Social Media" layout="two-column" />
+        )}
+
+        {/* Videos Section */}
         {videos.length > 0 && (
           <VideoGrid videos={videos} />
         )}

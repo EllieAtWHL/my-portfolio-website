@@ -35,6 +35,15 @@ export interface Match {
     icon_svg?: string;
   } | null;
   season_id: number;
+  // Match statistics
+  home_possession: number | null;
+  away_possession: number | null;
+  home_total_shots: number | null;
+  away_total_shots: number | null;
+  home_shots_on_target: number | null;
+  away_shots_on_target: number | null;
+  home_corners: number | null;
+  away_corners: number | null;
 }
 
 async function fetchUpcomingMatchesFromDB(limit: number = 3): Promise<Match[]> {
@@ -243,16 +252,57 @@ export async function getMatchesBySeason(seasonId: string) {
 }
 
 async function fetchMatchByIdFromDB(matchId: string): Promise<Match | null> {
-  const { data, error } = await supabase
-    .from('matches_with_stadium')
+  // First try matches table with stats
+  let { data, error } = await supabase
+    .from('matches')
     .select(`
       *,
+      home_possession,
+      away_possession,
+      home_total_shots,
+      away_total_shots,
+      home_shots_on_target,
+      away_shots_on_target,
+      home_corners,
+      away_corners,
       home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
       away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
       competitions:competition_id(name, icon_svg)
     `)
     .eq('id', matchId)
     .single();
+
+  // If not found in matches, try matches_with_stadium as fallback
+  if (error || !data) {
+    const result = await supabase
+      .from('matches_with_stadium')
+      .select(`
+        *,
+        home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
+        away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
+        competitions:competition_id(name, icon_svg)
+      `)
+      .eq('id', matchId)
+      .single();
+    
+    data = result.data;
+    error = result.error;
+    
+    if (data) {
+      // Add null stats for compatibility
+      data = {
+        ...data,
+        home_possession: null,
+        away_possession: null,
+        home_total_shots: null,
+        away_total_shots: null,
+        home_shots_on_target: null,
+        away_shots_on_target: null,
+        home_corners: null,
+        away_corners: null,
+      };
+    }
+  }
 
   if (error) {
     console.error('Error fetching match:', error);
@@ -267,6 +317,14 @@ async function fetchAdjacentMatchesFromDB(matchId: string, currentMatchDate: str
     .from('matches_with_stadium')
     .select(`
       *,
+      home_possession,
+      away_possession,
+      home_total_shots,
+      away_total_shots,
+      home_shots_on_target,
+      away_shots_on_target,
+      home_corners,
+      away_corners,
       home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
       away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
       competitions:competition_id(name, icon_svg)
@@ -280,6 +338,14 @@ async function fetchAdjacentMatchesFromDB(matchId: string, currentMatchDate: str
     .from('matches_with_stadium')
     .select(`
       *,
+      home_possession,
+      away_possession,
+      home_total_shots,
+      away_total_shots,
+      home_shots_on_target,
+      away_shots_on_target,
+      home_corners,
+      away_corners,
       home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
       away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
       competitions:competition_id(name, icon_svg)

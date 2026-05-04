@@ -10,7 +10,6 @@ export async function fetchPhotoManifest(): Promise<PhotoManifest> {
     }
     
     const manifest = await response.json();
-    console.log('Loaded photo manifest with', Object.keys(manifest).length, 'folders');
     return manifest;
   } catch (error) {
     console.error('Error fetching photo manifest:', error);
