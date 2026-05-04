@@ -17,9 +17,9 @@ export default function TeamPill({
     <span 
       className={className}
       style={{ 
-        backgroundColor: getTeamColor(primaryColor),
-        color: getTeamColor(secondaryColor) || '#ffffff',
-        WebkitTextFillColor: getTeamColor(secondaryColor) || '#ffffff'
+        backgroundColor: getTeamColor(primaryColor || undefined),
+        color: getTeamColor(secondaryColor || undefined) || '#ffffff',
+        WebkitTextFillColor: getTeamColor(secondaryColor || undefined) || '#ffffff'
       }}
     >
       {teamName}

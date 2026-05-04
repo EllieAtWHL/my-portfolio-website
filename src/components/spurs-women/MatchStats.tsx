@@ -37,21 +37,9 @@ export default function MatchStats({
   possession, 
   shots, 
   corners,
-  homeTeam = "Home Team",
-  awayTeam = "Away Team",
-  homeTeamColor = "blue",
-  awayTeamColor = "gray"
+  homeTeamColor,
+  awayTeamColor
 }: MatchStatsProps) {
-  // Debug team colors
-  console.log('MatchStats Debug:', {
-    homeTeam,
-    awayTeam,
-    homeTeamColor,
-    awayTeamColor,
-    homeTeamColorType: typeof homeTeamColor,
-    awayTeamColorType: typeof awayTeamColor
-  });
-
   // If no stats data, don't render
   if (!possession && !shots && !corners) {
     return null;

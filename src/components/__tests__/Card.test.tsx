@@ -13,7 +13,7 @@ describe('Card Component', () => {
     const card = screen.getByText('Card content').closest('.rounded-xl')
     expect(card).toBeInTheDocument()
     expect(card).toHaveClass('transition-all', 'duration-300', 'w-full', 'max-w-full', 'box-border')
-    expect(card).toHaveClass('bg-white', 'dark:bg-gray-800', 'shadow-lg', 'p-6', 'hover:shadow-xl', 'hover:-translate-y-1')
+    expect(card).toHaveClass('bg-white', 'dark:bg-gray-800', 'shadow-lg', 'p-6', 'no-hover')
   })
 
   it('applies variant classes correctly', () => {
