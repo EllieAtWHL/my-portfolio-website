@@ -35,12 +35,14 @@ export default function NewsCard({ article }: NewsCardProps) {
         </h3>
         {article.source && (
           <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${
-            article.source === 'BBC Sport' 
-              ? 'bg-yellow-100 text-yellow-800' 
-              : article.source === 'Football London'
-              ? 'bg-purple-100 text-purple-800'
-              : article.source === 'Spurs Women Blog'
-              ? 'bg-green-100 text-green-800'
+            article.source === 'BBC Sport' || article.source === 'Spurs Women Blog'
+              ? 'bg-yellow-500 text-black'
+              : article.source === 'The Guardian' || article.source === 'Cartilage Free Captain'
+              ? 'bg-blue-900 text-white'
+              : article.source === 'WSL Full-Time'
+              ? 'bg-teal-400 text-black'
+              : article.source === 'She Kicks' || article.source === 'Girls on the Ball'
+              ? 'bg-purple-700 text-white'
               : 'bg-gray-100 text-gray-800'
           }`}>
             {article.source}
