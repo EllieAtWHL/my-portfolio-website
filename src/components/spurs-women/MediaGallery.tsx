@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { PhotoMedia } from '../../lib/data/media';
 import { fetchPhotoManifest } from '@/lib/photo-manifest';
-import { loadPhotosHybridWithExternal, generateExternalRepoMigration } from '@/lib/external-photo-loader';
+import { loadPhotosFromGitHub } from '@/lib/external-photo-loader';
 import LightboxGallery from './LightboxGallery';
 import { Button } from '@/components/Button';
 
@@ -29,19 +29,13 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
         // Load manifest for GitHub-based photos
         const manifest = await fetchPhotoManifest();
         
-        // Load photos for all albums using hybrid approach (supports both Supabase and external)
+        // Load photos for all albums using GitHub
         const photoAlbums = photos.filter(photo => photo.type === 'photo album');
         const albumData: Record<string, string[]> = {};
         
-        // Generate migration SQL for debugging
-        const migrationSQL = generateExternalRepoMigration(photoAlbums);
-        if (migrationSQL.length > 0) {
-          migrationSQL.forEach(sql => console.log(sql));
-        }
-        
         for (const album of photoAlbums) {
           if (album.url) {
-            const albumPhotos = await loadPhotosHybridWithExternal(album, manifest);
+            const albumPhotos = loadPhotosFromGitHub(album, manifest);
             if (albumPhotos.length > 0) {
               albumData[album.url] = albumPhotos;
             }
@@ -78,7 +72,7 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
     );
   }
 
-  // Combine individual photos with album photos using hybrid approach (supports both Supabase and external)
+  // Combine individual photos with album photos using GitHub
   const allPhotos = photos.reduce((acc: PhotoMedia[], photo) => {
     if (photo.type === 'photo album') {
       const storageKey = photo.url;

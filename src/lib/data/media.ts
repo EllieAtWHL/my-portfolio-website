@@ -7,7 +7,7 @@ export interface Media {
   type: 'photo' | 'photo album' | 'article' | 'social media' | 'video-external';
   title: string | null;
   url: string;
-  storage_source?: 'supabase' | 'github' | null; // NEW: Explicit storage source
+  storage_source?: 'github' | null; // GitHub storage source
   thumbnail_url: string | null;
   description: string | null;
   source: string | null;
@@ -21,7 +21,7 @@ export interface PhotoMedia extends Media {
   url: string;
   caption: string | null;
   type: 'photo' | 'photo album';
-  storage_source?: 'supabase' | 'github' | null; // Include storage_source in PhotoMedia too
+  storage_source?: 'github' | null; // Include storage_source in PhotoMedia too
 }
 
 // Raw database fetch functions
