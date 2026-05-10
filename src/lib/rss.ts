@@ -3,7 +3,7 @@ import Parser from 'rss-parser';
 const parser = new Parser({
   timeout: 10000, // 10 second timeout for each RSS request
   customFields: {
-    item: ['pubDate', 'content', 'contentSnippet']
+    item: ['pubDate', 'content', 'contentSnippet', 'categories']
   }
 });
 
@@ -17,6 +17,7 @@ export interface NewsArticle {
   isoDate: string;
   source?: string;
   isSpursRelated?: boolean;
+  categories?: string[];
 }
 
 export interface YouTubeVideo {
@@ -31,11 +32,12 @@ export interface YouTubeVideo {
 // Sources for Spurs women's (prioritize dedicated sources but include professional coverage)
 const spursSources = [
   'https://spurswomen.uk/feed/',
-  'https://www.bbc.com/sport/football/womens-super-league/rss.xml',
-  'https://equalizersoccer.com/feed/',
+  'https://feeds.bbci.co.uk/sport/football/womens-super-league/rss.xml',
   'https://fawslfulltime.co.uk/feed/',
   'https://shekicks.net/feed/',
-  'https://www.theguardian.com/football/womensfootball/rss',
+  'https://www.theguardian.com/football/tottenham-hotspur-women/rss',
+  'https://cartilagefreecaptain.sbnation.com/rss/index.xml',
+  'https://girlsontheball.com/feed/',
 ];
 
 export async function fetchSpursWomenNews(): Promise<NewsArticle[]> {
@@ -59,12 +61,12 @@ export async function fetchSpursWomenNews(): Promise<NewsArticle[]> {
       let sourceName = 'Unknown';
       if (sourceUrl.includes('spurswomen')) sourceName = 'Spurs Women Blog';
       else if (sourceUrl.includes('bbc')) sourceName = 'BBC Sport';
-      else if (sourceUrl.includes('equalizersoccer')) sourceName = 'Equalizer Soccer';
       else if (sourceUrl.includes('fawslfulltime')) sourceName = 'WSL Full-Time';
       else if (sourceUrl.includes('shekicks')) sourceName = 'She Kicks';
       else if (sourceUrl.includes('theguardian')) sourceName = 'The Guardian';
-      else if (sourceUrl.includes('football.london')) sourceName = 'Football London';
-
+      else if (sourceUrl.includes('cartilagefreecaptain')) sourceName = 'Cartilage Free Captain';
+      else if (sourceUrl.includes('girlsontheball')) sourceName = 'Girls on the Ball';
+    
       const articles = feed.items.map((item: any) => ({
         title: item.title || '',
         link: item.link || '',
@@ -73,7 +75,8 @@ export async function fetchSpursWomenNews(): Promise<NewsArticle[]> {
         contentSnippet: item.contentSnippet || '',
         guid: item.guid || '',
         isoDate: item.isoDate || '',
-        source: sourceName
+        source: sourceName,
+        categories: item.categories?.map((cat: any) => cat.term) || []
       }));
       
       return articles;
@@ -98,20 +101,45 @@ export async function fetchSpursWomenNews(): Promise<NewsArticle[]> {
       return true;
     }
     
-    // Priority 2: Other sources - require explicit Tottenham/Spurs mentions
+    // Priority 2: Cartilage Free Captain with Tottenham Hotspur Women category - include automatically
+    if (article.source === 'Cartilage Free Captain' && 
+        article.categories?.includes('Tottenham Hotspur Women')) {
+      return true;
+    }
+    
+    // Priority 3: Other sources - require explicit women's content indicators
     const spursKeywords = [
       'tottenham', 'spurs', 'hotspur', 'n17', 'lilywhite',
       'bethany england', 'martin ho', 'clare hunt', 'signe gaupset', 
       'hanna wijk', 'matilda nilden', 'maika hamano'
     ];
     
+    // Women's-specific keywords that must be present
+    const womensKeywords = [
+      'women', 'wsl', 'women\'s', 'ladies', 'female', 'barclays women\'s',
+      'super league women', 'wsl', 'women\'s super league'
+    ];
+    
     // Strong men's indicators to exclude
     const strongMensKeywords = [
-      'premier league', 'men\'s team',
-      'men\'s', 'male', 'premier', 'championship'
+      'men\'s team', 'men\'s squad', 'men\'s side', 'premier league men',
+      'male team', 'premier league', 'championship', 'loan', 'transfer fee',
+      'purchase option', 'hearts striker', 'de zerbi', 'palhinha'
+    ];
+    
+    // General content to exclude (open threads, roundups, etc.)
+    const generalContentKeywords = [
+      'open thread', 'hoddle of coffee', 'news and links', 'roundup',
+      'transfer rumours', 'match preview', 'match report'
     ];
     
     const hasSpursKeywords = spursKeywords.some(keyword => 
+      title.includes(keyword) || 
+      content.includes(keyword) || 
+      contentText.includes(keyword)
+    );
+    
+    const hasWomensKeywords = womensKeywords.some(keyword => 
       title.includes(keyword) || 
       content.includes(keyword) || 
       contentText.includes(keyword)
@@ -123,14 +151,22 @@ export async function fetchSpursWomenNews(): Promise<NewsArticle[]> {
       contentText.includes(keyword)
     );
     
-    // Include if: (dedicated source) OR (has spurs keywords AND no strong men's indicators)
-    return article.source === 'Spurs Women Blog' || (hasSpursKeywords && !hasStrongMensKeywords);
+    const hasGeneralContentKeywords = generalContentKeywords.some(keyword => 
+      title.includes(keyword) || 
+      content.includes(keyword) || 
+      contentText.includes(keyword)
+    );
+    
+    // Include if: (dedicated source) OR (CFC with women's category) OR (has spurs keywords AND has womens keywords AND no men's indicators AND no general content)
+    return article.source === 'Spurs Women Blog' || 
+           (article.source === 'Cartilage Free Captain' && article.categories?.includes('Tottenham Hotspur Women')) ||
+           (hasSpursKeywords && hasWomensKeywords && !hasStrongMensKeywords && !hasGeneralContentKeywords);
   });
 
-  // Sort by date (newest first) and limit to 10
+  // Sort by date (newest first) and limit to 20 to include more content
   return spursWomenNews
     .sort((a, b) => new Date(b.isoDate).getTime() - new Date(a.isoDate).getTime())
-    .slice(0, 10);
+    .slice(0, 20);
 }
 
 export async function fetchSpursWomenVideos(): Promise<YouTubeVideo[]> {
