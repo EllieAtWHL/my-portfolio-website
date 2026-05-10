@@ -24,7 +24,7 @@ export default function RootLayout({
       data-theme-loading
     >
       <head>
-        <script
+        <Script
           src="/fullstory-init.js"
           strategy="beforeInteractive"
         />
