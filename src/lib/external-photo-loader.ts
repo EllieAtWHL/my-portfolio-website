@@ -4,50 +4,8 @@ import { Media } from '@/lib/data/media';
 /**
  * External Repository Photo Loading System
  * 
- * Supports loading images from external GitHub repository via CDN
+ * Loads images from external GitHub repository via CDN
  */
-
-/**
- * Simple inline Supabase loader
- */
-async function loadPhotosFromSupabase(storagePath: string): Promise<string[]> {
-  try {
-    
-    // Remove "storage/" prefix if present
-    const cleanPath = storagePath.replace(/^storage\//, '');
-    
-    // Import Supabase dynamically to avoid circular dependency
-    const { supabase } = await import('@/utils/supabase');
-    
-    const { data: files, error } = await supabase.storage
-      .from('match-photos')
-      .list(cleanPath);
-    
-    if (error) {
-      console.error(`Error loading Supabase photos from ${cleanPath}:`, error);
-      return [];
-    }
-    
-    if (!files || files.length === 0) {
-      return [];
-    }
-    
-    
-    const photoUrls = files
-      .filter(file => file.name !== '.emptyFolderPlaceholder')
-      .map(file => {
-        const { data: { publicUrl } } = supabase.storage
-          .from('match-photos')
-          .getPublicUrl(`${cleanPath}/${file.name}`);
-        return publicUrl;
-      });
-    
-    return photoUrls;
-  } catch (error) {
-    console.error(`Error accessing Supabase storage for ${storagePath}:`, error);
-    return [];
-  }
-}
 
 /**
  * Loads photos from external repository manifest
@@ -60,79 +18,18 @@ export function loadPhotosFromExternalRepo(folderKey: FolderKey, manifest: Photo
 }
 
 /**
- * Determines if a photo album uses external repository
- * @param photo - The photo media record
- * @returns Boolean indicating if external repository
- */
-export function isExternalRepoPhoto(photo: Media): boolean {
-  const isGithubSource = photo.storage_source === 'github';
-  const hasCdnUrl = Boolean(photo.url && photo.url.startsWith('https://cdn.'));
-  const isNotSupabase = photo.storage_source !== 'supabase';
-  
-  return isGithubSource || (isNotSupabase && hasCdnUrl);
-}
-
-/**
- * Hybrid photo loading function that supports both Supabase and external repository
+ * Loads photos from GitHub repository
  * @param photo - The photo media record
  * @param manifest - The photo manifest
- * @returns Promise resolving to array of image URLs
+ * @returns Array of image URLs
  */
-export async function loadPhotosHybridWithExternal(
+export function loadPhotosFromGitHub(
   photo: Media, 
   manifest: PhotoManifest
-): Promise<string[]> {
-  // Use explicit storage_source field if available
-  if (photo.storage_source) {
-    if (photo.storage_source === 'github') {
-      return loadPhotosFromExternalRepo(photo.url, manifest);
-    } else if (photo.storage_source === 'supabase') {
-      return await loadPhotosFromSupabase(photo.url);
-    } else if (photo.storage_source === 'external') {
-      return loadPhotosFromExternalRepo(photo.url, manifest);
-    }
-  }
-  
-  // Fallback to URL-based detection for backward compatibility
-  console.warn('No storage_source field, falling back to URL detection');
-  
-  if (photo.url && photo.url.startsWith('https://cdn.')) {
-    return loadPhotosFromExternalRepo(photo.url, manifest);
-  }
-  
-  return [];
+): string[] {
+  return loadPhotosFromExternalRepo(photo.url, manifest);
 }
 
-/**
- * Migration helper to set external repository storage source
- * @param photos - Array of photo media records
- * @returns Array of SQL statements
- */
-export function generateExternalRepoMigration(photos: Media[]): string[] {
-  const statements: string[] = [];
-  
-  photos.forEach(photo => {
-    if (photo.type === 'photo album' && !photo.storage_source) {
-      // Determine storage source based on URL pattern
-      let storageSource = 'supabase'; // Default to supabase for existing records
-      
-      if (photo.url && photo.url.startsWith('https://cdn.')) {
-        storageSource = 'github';
-      } else if (photo.url && !photo.url.includes('storage') && !photo.url.includes('/')) {
-        storageSource = 'github';
-      }
-      
-      const sql = `-- Update storage source for album ${photo.id}
-UPDATE media 
-SET storage_source = '${storageSource}' 
-WHERE id = ${photo.id} AND type = 'photo album';`;
-      
-      statements.push(sql);
-    }
-  });
-  
-  return statements;
-}
 
 /**
  * Validates external repository configuration

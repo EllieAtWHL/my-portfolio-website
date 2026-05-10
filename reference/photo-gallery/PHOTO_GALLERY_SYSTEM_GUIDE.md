@@ -2,14 +2,13 @@
 
 ## Overview
 
-This guide covers the complete photo gallery system that supports both Supabase storage and external GitHub repository hosting with CDN delivery.
+This guide covers the complete photo gallery system that uses GitHub repository hosting with CDN delivery for optimal performance and reliability.
 
 ## Table of Contents
 
 1. [Technical Architecture](#technical-architecture)
 2. [User Workflow](#user-workflow)
-3. [Migration Guide](#migration-guide)
-4. [Troubleshooting](#troubleshooting)
+3. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -17,10 +16,11 @@ This guide covers the complete photo gallery system that supports both Supabase 
 
 ### System Components
 
-#### 1. Hybrid Storage System
-The photo gallery supports two storage sources:
-- **Supabase Storage**: Legacy storage for existing photos
-- **GitHub Repository + CDN**: New system for external photo hosting
+#### 1. GitHub Storage System
+The photo gallery uses GitHub repository as the single storage source:
+- **GitHub Repository**: External repository for image hosting
+- **CDN Delivery**: Global CDN through jsDelivr or configured provider
+- **Manifest System**: Automatic URL mapping for efficient loading
 
 #### 2. Photo Manifest System
 - **Location**: `/public/spurs-women/photo-gallery.manifest.json`
@@ -42,10 +42,9 @@ The photo gallery supports two storage sources:
 
 ### Data Flow
 
-1. **Database**: Stores photo metadata with folder keys as URLs
-2. **Manifest**: Maps folder keys to actual image URLs
-3. **MediaGallery Component**: Loads manifest and displays images
-4. **CDN**: Serves optimized images from GitHub repository
+1. **Manifest**: Maps folder keys to actual image URLs
+2. **MediaGallery Component**: Loads manifest and displays images
+3. **CDN**: Serves optimized images from GitHub repository
 
 ### Key Files
 
@@ -53,9 +52,8 @@ The photo gallery supports two storage sources:
 |------|---------|
 | `src/components/spurs-women/MediaGallery.tsx` | Main gallery component |
 | `src/lib/photo-manifest.ts` | Manifest loading utilities |
-| `src/lib/external-photo-loader.ts` | Hybrid photo loading logic |
+| `src/lib/external-photo-loader.ts` | GitHub photo loading logic |
 | `scripts/generate-external-manifest.js` | Manifest generation script |
-| `scripts/validate-manifest.js` | Manifest validation |
 | `public/spurs-women/photo-gallery.manifest.json` | Generated manifest file |
 
 ---
@@ -136,7 +134,7 @@ git commit -m "Add Chelsea vs Spurs photos"
 git push origin main
 ```
 
-### Step 3: Update Supabase Database
+### Step 3: Update Database
 
 #### Database Schema
 ```sql
@@ -154,7 +152,7 @@ CREATE TABLE media (
   date DATE,
   sort_order INTEGER,
   created_at TIMESTAMP DEFAULT NOW(),
-  storage_source TEXT CHECK (storage_source IN ('supabase', 'github', NULL))
+  storage_source TEXT CHECK (storage_source IN ('github', NULL))
 );
 ```
 
@@ -264,45 +262,6 @@ CDN_BASE_URL=https://cdn.jsdelivr.net
 
 ---
 
-## Migration Guide
-
-### From Supabase to GitHub Storage
-
-#### 1. Identify Supabase Photos
-```sql
--- Find all photo albums using Supabase storage
-SELECT id, match_id, url, caption 
-FROM media 
-WHERE type = 'photo album' 
-  AND (storage_source = 'supabase' OR storage_source IS NULL);
-```
-
-#### 2. Create GitHub Folders
-Follow the repository structure guidelines and upload photos to GitHub.
-
-#### 3. Update Database Records
-```sql
--- Update records to point to GitHub folders
-UPDATE media 
-SET 
-  storage_source = 'github',
-  url = 'new-github-folder-key'
-WHERE id IN ('photo-album-id-1', 'photo-album-id-2');
-```
-
-#### 4. Verify Migration
-```sql
--- Check migration status
-SELECT 
-  storage_source,
-  COUNT(*) as count
-FROM media 
-WHERE type = 'photo album'
-GROUP BY storage_source;
-```
-
----
-
 ## Troubleshooting
 
 ### Common Issues
@@ -393,7 +352,7 @@ magick mogrify \
 ### Database Management
 1. **Use descriptive captions for accessibility**
 2. **Set proper sort_order for display sequence**
-3. **Update storage_source when migrating**
+3. **Use GitHub folder keys for URL field**
 4. **Test changes in development first**
 
 ### Deployment
