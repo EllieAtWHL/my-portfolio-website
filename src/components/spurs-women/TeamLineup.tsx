@@ -40,8 +40,8 @@ export default function TeamLineup({ lineup, teamColor = '#081521' }: TeamLineup
     };
 
     return players.sort((a, b) => {
-      const aPos = a.preferred_position?.toLowerCase().trim() || '';
-      const bPos = b.preferred_position?.toLowerCase().trim() || '';
+      const aPos = a.position?.toLowerCase().trim() || '';
+      const bPos = b.position?.toLowerCase().trim() || '';
       
       // Try exact match first (case-insensitive)
       let aOrder = positionOrder[aPos] ?? positionOrder[aPos.charAt(0).toUpperCase() + aPos.slice(1)];

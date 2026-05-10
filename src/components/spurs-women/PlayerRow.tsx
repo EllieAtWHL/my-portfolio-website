@@ -9,28 +9,9 @@ export default function PlayerRow({ player }: PlayerRowProps) {
   const stats = player.player_stats;
   
   const getJerseyNumber = () => {
-    // This would come from player_history table
-    // Return null to hide jersey number column if no number is available
-    return null;
-  };
-
-  const getParticipationIcon = () => {
-    if (!stats) return null;
-    
-    if (stats.started) {
-      return (
-        <div className="w-2 h-2 bg-[#78BEE8] rounded-full" title="Started" />
-      );
-    } else if (stats.was_substitute) {
-      return (
-        <div className="w-2 h-2 bg-[#78BEE8] rounded-full" title="Substitute" />
-      );
-    } else if (stats.was_unused_substitute) {
-      return (
-        <div className="w-2 h-2 bg-[#94a3b8] rounded-full" title="Unused Substitute" />
-      );
-    }
-    return null;
+    // Use squad_number from player data
+    // Hide jersey number column if no number is available
+    return player.squad_number;
   };
 
   const getQuickStats = () => {
@@ -65,16 +46,11 @@ export default function PlayerRow({ player }: PlayerRowProps) {
         </div>
       )}
 
-      {/* Participation Indicator */}
-      <div className="w-4 flex items-center justify-center">
-        {getParticipationIcon()}
-      </div>
-
       {/* Player Info */}
       <div className="flex-1 min-w-0">
         <div className="font-medium text-[#f5f7fa] truncate">{fullName}</div>
         <div className="text-sm text-[#78BEE8] truncate">
-          {player.preferred_position || '—'} • {player.nationality || '—'}
+          {player.position || '—'} • {player.nationality || '—'}
         </div>
       </div>
 

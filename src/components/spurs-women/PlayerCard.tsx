@@ -49,7 +49,7 @@ export default function PlayerCard({ player, teamColor = 'gray', showStats = tru
               <h3 className="font-semibold text-gray-900">{fullName}</h3>
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <span className="px-2 py-1 bg-gray-100 rounded text-xs font-medium">
-                  {getPositionDisplay(player.preferred_position)}
+                  {getPositionDisplay(player.position)}
                 </span>
                 {player.nationality && (
                   <span className="text-xs">{player.nationality}</span>

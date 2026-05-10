@@ -7,10 +7,11 @@ export interface Player {
   last_name: string;
   date_of_birth: string | null;
   nationality: string | null;
-  preferred_position: string | null;
+  position: string | null;
   height_cm: number | null;
   weight_kg: number | null;
   profile_image_url: string | null;
+  squad_number: number | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -57,6 +58,17 @@ export interface TeamLineup {
   players: PlayerWithStats[];
 }
 
+// Helper function to find the correct squad number from player_history
+function getSquadNumberFromHistory(player: any): number | null {
+  // Find the correct player_history record for this team (team_id = 1 for Tottenham)
+  const relevantHistory = player?.player_history?.find((history: any) => 
+    history.team_id === 1 && 
+    (!history.left_on || new Date(history.left_on) > new Date())
+  );
+  
+  return relevantHistory?.squad_number || null;
+}
+
 async function fetchPlayersByMatchFromDB(matchId: string): Promise<PlayerWithStats[]> {
   const { data, error } = await supabase
     .from('player_stats')
@@ -75,6 +87,7 @@ async function fetchPlayersByMatchFromDB(matchId: string): Promise<PlayerWithSta
 
   return data.map((stat: any) => ({
     ...stat.player,
+    squad_number: getSquadNumberFromHistory(stat.player),
     player_stats: {
       id: stat.id,
       player_id: stat.player_id,
@@ -119,11 +132,38 @@ export const getPlayersByMatch = createCachedFunction(
 );
 
 async function fetchTeamLineupsByMatchFromDB(matchId: string): Promise<TeamLineup[]> {
+  // Check player_history table directly - get ALL records
+  const { data: allPlayerHistory, error: historyError } = await supabase
+    .from('player_history')
+    .select('*');
+  
+  console.log('DEBUG: All player_history records count:', allPlayerHistory?.length);
+  console.log('DEBUG: Player history error:', historyError);
+  
+  // Log first few records individually to see structure
+  if (allPlayerHistory && allPlayerHistory.length > 0) {
+    console.log('DEBUG: First player_history record:', allPlayerHistory[0]);
+    console.log('DEBUG: Second player_history record:', allPlayerHistory[1]);
+    console.log('DEBUG: Sample records:', JSON.stringify(allPlayerHistory.slice(0, 3), null, 2));
+  }
+  
+  // Try with just squad_number field
+  const { data: squadNumbers, error: squadError } = await supabase
+    .from('player_history')
+    .select('player_id, squad_number');
+    
+  console.log('DEBUG: Squad numbers count:', squadNumbers?.length);
+  console.log('DEBUG: Squad numbers error:', squadError);
+  if (squadNumbers && squadNumbers.length > 0) {
+    console.log('DEBUG: First squad number record:', squadNumbers[0]);
+  }
+
+  // Also try the join query again
   const { data, error } = await supabase
     .from('player_stats')
     .select(`
       *,
-      player:players(*)
+      player:players(*, player_history:player_history(*))
     `)
     .eq('match_id', matchId)
     .order('team_id')
@@ -133,6 +173,13 @@ async function fetchTeamLineupsByMatchFromDB(matchId: string): Promise<TeamLineu
   if (error) {
     console.error('Error fetching team lineups by match:', error);
     throw error;
+  }
+
+  // Debug the join results
+  console.log('DEBUG: Join query results count:', data?.length);
+  if (data && data.length > 0) {
+    console.log('DEBUG: First join result player_history:', data[0]?.player?.player_history);
+    console.log('DEBUG: First join result player_history length:', data[0]?.player?.player_history?.length);
   }
 
   // Group players by team
@@ -178,11 +225,12 @@ async function fetchTeamLineupsByMatchFromDB(matchId: string): Promise<TeamLineu
         player_rating: number | null;
         player_of_the_match: boolean;
         created_at: string;
-        player: Player;
+        player: Player & { player_history?: { squad_number: number | null }[] | null };
       };
       
       return {
         ...statRecord.player,
+        squad_number: getSquadNumberFromHistory(statRecord.player),
         player_stats: {
           id: statRecord.id,
           player_id: statRecord.player_id,
@@ -239,6 +287,10 @@ async function fetchPlayerByIdFromDB(playerId: string): Promise<Player | null> {
     console.error('Error fetching player by ID:', error);
     return null;
   }
+
+  // Debug log to see what data we're getting from the database
+  console.log('DEBUG: Player by ID data from database:', data);
+  console.log('DEBUG: Player by ID squad number:', data?.squad_number);
 
   return data;
 }
