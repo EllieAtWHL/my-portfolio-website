@@ -7,11 +7,10 @@ import PlayerModal from './PlayerModal';
 
 interface TeamLineupProps {
   lineup: TeamLineup;
-  teamName: string;
   teamColor?: string;
 }
 
-export default function TeamLineup({ lineup, teamName, teamColor = '#081521' }: TeamLineupProps) {
+export default function TeamLineup({ lineup, teamColor = '#081521' }: TeamLineupProps) {
   const [selectedPlayer, setSelectedPlayer] = useState<null | typeof lineup.players[0]>(null);
 
   const sortByPosition = (players: typeof lineup.players) => {
@@ -75,14 +74,6 @@ export default function TeamLineup({ lineup, teamName, teamColor = '#081521' }: 
 
   return (
     <div className="mb-8">
-      <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-[#081521]">
-        <div 
-          className="w-4 h-4 rounded-full"
-          style={{ backgroundColor: teamColor }}
-        />
-        {teamName}
-      </h3>
-
       {/* Starting XI */}
       {sortedStarters.length > 0 && (
         <div className="mb-6">
