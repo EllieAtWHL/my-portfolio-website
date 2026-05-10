@@ -50,7 +50,6 @@ export default function SeasonStats({ matches, seasonName }: SeasonStatsProps) {
     const leagueMatches = matches.filter(match => {
       const hasScore = match.spurs_score !== null && match.opponent_score !== null;
       const isWSL = match.competitions?.name?.toLowerCase().includes('super league');
-      console.log(`Match ${match.id}: competition="${match.competitions?.name}", hasScore=${hasScore}, isWSL=${isWSL}`);
       return hasScore && isWSL;
     });
     
@@ -61,9 +60,6 @@ export default function SeasonStats({ matches, seasonName }: SeasonStatsProps) {
       !match.competitions.name.toLowerCase().includes('super league') &&
       !match.competitions.name.toLowerCase().includes('friendly')
     );
-    
-    console.log('Filtered league matches:', leagueMatches.length);
-    console.log('Filtered cup matches:', cupMatches.length);
     
     // For main stats, use only league matches (WSL)
     const completedMatches = leagueMatches;

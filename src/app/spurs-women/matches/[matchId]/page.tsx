@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { getMatchById, getAdjacentMatches } from '@/lib/data/matches';
 import { getPhotosByMatch, getArticlesByMatch, getSocialMediaByMatch, getVideosByMatch } from '@/lib/data/media';
+import { getTeamLineupsByMatch } from '@/lib/data/players';
 import MatchInfo from '@/components/spurs-women/MatchInfo';
 import MatchStats from '@/components/spurs-women/MatchStats';
 import MediaGallery from '@/components/spurs-women/MediaGallery';
@@ -8,6 +9,7 @@ import MediaList from '@/components/spurs-women/MediaList';
 import VideoGrid from '@/components/spurs-women/VideoGrid';
 import ArticleCard from '@/components/spurs-women/ArticleCard';
 import MatchNavigation from '@/components/spurs-women/MatchNavigation';
+import TeamLineup from '@/components/spurs-women/TeamLineup';
 import { Media } from '@/lib/data/media';
 import { PhotoMedia } from '@/lib/data/media';
 
@@ -26,29 +28,18 @@ export default async function MatchDetailPage({ params }: PageProps) {
   }
 
   const match = await getMatchById(matchId);
-  
-  // Debug team color data
-  if (match) {
-    console.log('Team Color Debug:', {
-      homeTeamName: match.home_team?.name,
-      awayTeamName: match.away_team?.name,
-      homeTeamColor: match.home_team?.primary_color,
-      awayTeamColor: match.away_team?.primary_color,
-      homeTeamColorType: typeof match.home_team?.primary_color,
-      awayTeamColorType: typeof match.away_team?.primary_color
-    });
-  }
 
   if (!match) {
     notFound();
   }
 
-  const [adjacentMatches, photos, articles, socialMedia, videos] = await Promise.all([
+  const [adjacentMatches, photos, articles, socialMedia, videos, teamLineups] = await Promise.all([
     getAdjacentMatches(matchId, match.date),
     getPhotosByMatch(matchId),
     getArticlesByMatch(matchId),
     getSocialMediaByMatch(matchId),
     getVideosByMatch(matchId),
+    getTeamLineupsByMatch(matchId).catch(() => []), // Gracefully handle if player data not available
   ]);
 
   const { previous: previousMatch, next: nextMatch } = adjacentMatches;
@@ -157,6 +148,30 @@ export default async function MatchDetailPage({ params }: PageProps) {
               : undefined
           }
         />
+
+        {/* Team Lineups Section - Player Information */}
+        {teamLineups && teamLineups.length > 0 && (
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold media-title mb-4">Team Lineup</h2>
+            <div className="space-y-8">
+              {teamLineups.map((lineup) => {
+                const teamColor = lineup.team_id === match.home_team?.id 
+                  ? match.home_team?.primary_color || 'blue'
+                  : lineup.team_id === match.away_team?.id 
+                    ? match.away_team?.primary_color || 'gray'
+                    : 'gray';
+
+                return (
+                  <TeamLineup
+                    key={lineup.team_id}
+                    lineup={lineup}
+                    teamColor={teamColor}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Staggered Media Sections - Photos first, then Social Media */}
         {photos.length > 0 && (

@@ -17,6 +17,8 @@ export const CACHE_TTL = {
   RSS_FEEDS: 24 * 60 * 60, // 24 hours
   MEDIA: 6 * 60 * 60, // 6 hours
   STADIUM_DATA: 24 * 60 * 60, // 24 hours
+  PLAYER_DATA: 60 * 60, // 1 hour
+  PLAYER_STATS: 30 * 60, // 30 minutes
 } as const;
 
 export type CacheTTLDuration = keyof typeof CACHE_TTL;
@@ -32,6 +34,8 @@ export const CACHE_TAGS = {
   MEDIA: 'media',
   STADIUMS: 'stadiums',
   STADIUM_NAMES: 'stadium-names',
+  PLAYERS: 'players',
+  PLAYER_STATS: 'player-stats',
 } as const;
 
 export type CacheTag = typeof CACHE_TAGS[keyof typeof CACHE_TAGS];

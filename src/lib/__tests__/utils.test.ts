@@ -96,7 +96,6 @@ describe('Utility Functions', () => {
         {
           'bg-blue-500': isActive,
           'bg-gray-300': !isActive,
-          'px-4 py-2': size === 'small',
           'px-8 py-4': size === 'large'
         },
         isActive && 'text-white'

@@ -12,11 +12,9 @@ import { Media } from '@/lib/data/media';
  */
 async function loadPhotosFromSupabase(storagePath: string): Promise<string[]> {
   try {
-    console.log('Loading photos from Supabase:', storagePath);
     
     // Remove "storage/" prefix if present
     const cleanPath = storagePath.replace(/^storage\//, '');
-    console.log('Clean path for Supabase:', cleanPath);
     
     // Import Supabase dynamically to avoid circular dependency
     const { supabase } = await import('@/utils/supabase');
@@ -31,11 +29,9 @@ async function loadPhotosFromSupabase(storagePath: string): Promise<string[]> {
     }
     
     if (!files || files.length === 0) {
-      console.log(`No photos found in Supabase path: ${cleanPath}`);
       return [];
     }
     
-    console.log('Found files in Supabase:', files.map(f => f.name));
     
     const photoUrls = files
       .filter(file => file.name !== '.emptyFolderPlaceholder')
@@ -46,7 +42,6 @@ async function loadPhotosFromSupabase(storagePath: string): Promise<string[]> {
         return publicUrl;
       });
     
-    console.log('Generated Supabase URLs:', photoUrls.length);
     return photoUrls;
   } catch (error) {
     console.error(`Error accessing Supabase storage for ${storagePath}:`, error);

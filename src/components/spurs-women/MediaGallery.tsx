@@ -36,9 +36,7 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
         // Generate migration SQL for debugging
         const migrationSQL = generateExternalRepoMigration(photoAlbums);
         if (migrationSQL.length > 0) {
-          console.log('=== Storage Source Migration SQL ===');
           migrationSQL.forEach(sql => console.log(sql));
-          console.log('=== End Migration SQL ===');
         }
         
         for (const album of photoAlbums) {
