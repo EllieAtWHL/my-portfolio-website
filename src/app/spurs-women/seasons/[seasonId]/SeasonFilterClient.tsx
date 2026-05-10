@@ -19,8 +19,6 @@ interface SeasonFilterClientProps {
 export default function SeasonFilterClient({ matches, seasonName, seasonReview }: SeasonFilterClientProps) {
   const [filteredMatches, setFilteredMatches] = useState<Match[]>(matches);
 
-  console.log('SeasonFilterClient received seasonReview:', seasonReview);
-
   return (
     <main className="p-8">
       <div className="max-w-6xl mx-auto">
