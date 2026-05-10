@@ -402,6 +402,110 @@ stadia (
 )
 ```
 
+#### Players
+```sql
+players (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  first_name TEXT,
+  last_name TEXT NOT NULL,
+  date_of_birth DATE,
+  nationality TEXT,
+  preferred_position TEXT,
+  height_cm INTEGER,
+  weight_kg INTEGER,
+  profile_image_url TEXT,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+)
+
+-- Index for performance
+CREATE INDEX players_last_name_idx ON players(last_name);
+```
+
+#### Player History
+```sql
+player_history (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  player_id UUID NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+  team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE RESTRICT,
+  squad_number INTEGER,
+  joined_on DATE NOT NULL,
+  left_on DATE,
+  is_loan BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+)
+
+-- Indexes for performance
+CREATE INDEX player_history_player_idx ON player_history(player_id);
+CREATE INDEX player_history_team_idx ON player_history(team_id);
+```
+
+#### Player Statistics
+```sql
+player_stats (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  player_id UUID NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+  match_id UUID NOT NULL REFERENCES matches(id) ON DELETE CASCADE,
+  team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE RESTRICT,
+  
+  -- Squad participation
+  started BOOLEAN NOT NULL DEFAULT false,
+  was_substitute BOOLEAN NOT NULL DEFAULT false,
+  was_unused_substitute BOOLEAN NOT NULL DEFAULT false,
+  
+  -- Match timing
+  minute_on INTEGER,
+  minute_off INTEGER,
+  minutes_played INTEGER NOT NULL DEFAULT 0,
+  
+  -- Attacking stats
+  goals INTEGER NOT NULL DEFAULT 0,
+  assists INTEGER NOT NULL DEFAULT 0,
+  
+  -- Discipline
+  yellow_cards INTEGER NOT NULL DEFAULT 0,
+  red_cards INTEGER NOT NULL DEFAULT 0,
+  
+  -- Goalkeeping / defensive
+  clean_sheet BOOLEAN,
+  saves INTEGER,
+  
+  -- General stats
+  shots INTEGER NOT NULL DEFAULT 0,
+  shots_on_target INTEGER NOT NULL DEFAULT 0,
+  passes_completed INTEGER,
+  passes_attempted INTEGER,
+  tackles INTEGER,
+  interceptions INTEGER,
+  clearances INTEGER,
+  fouls_committed INTEGER,
+  fouls_won INTEGER,
+  offsides INTEGER,
+  
+  -- Optional ratings / awards
+  player_rating NUMERIC(3,1),
+  player_of_the_match BOOLEAN NOT NULL DEFAULT false,
+  
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  
+  CONSTRAINT player_stats_unique_player_match UNIQUE(player_id, match_id),
+  CONSTRAINT player_stats_minutes_chk CHECK (minutes_played >= 0),
+  CONSTRAINT player_stats_minute_on_chk CHECK (minute_on IS NULL OR minute_on >= 0),
+  CONSTRAINT player_stats_minute_off_chk CHECK (minute_off IS NULL OR minute_off >= 0)
+)
+
+-- Indexes for performance
+CREATE INDEX player_stats_player_idx ON player_stats(player_id);
+CREATE INDEX player_stats_match_idx ON player_stats(match_id);
+CREATE INDEX player_stats_team_idx ON player_stats(team_id);
+CREATE UNIQUE INDEX player_stats_single_potm_per_match_idx ON player_stats(match_id) WHERE player_of_the_match = true;
+
+-- Row Level Security
+ALTER TABLE player_stats ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Player stats are viewable by everyone" ON player_stats FOR SELECT USING (true);
+```
+
 ### Views and Functions
 
 #### matches_with_stadium View
@@ -511,48 +615,116 @@ Automated cache clearing when data changes.
 - **Build Process**: Optimized production builds
 - **Monitoring**: Error tracking and performance monitoring
 
-## TODO List
+## Development Roadmap
 
-### High Priority
-- [ ] **Match Statistics Enhancement**: Add more detailed statistics (fouls, cards, offsides)
-- [ ] **Live Score Integration**: Real-time match score updates
-- [ ] **Mobile App Optimization**: Improve mobile performance and UX
-- [ ] **Search Functionality**: Global search across matches, news, and media
+### Phase 1: Foundation & Core Features (Weeks 1-4)
 
-### Medium Priority
-- [ ] **Player Profiles**: Individual player statistics and profiles
-- [ ] **Interactive Charts**: Enhanced data visualization with Chart.js or similar
-- [ ] **Social Sharing**: Share buttons for matches and news articles
-- [ ] **Dark Mode**: Implement dark theme support
-- [ ] **Accessibility Improvements**: WCAG 2.1 compliance audit
+#### Priority 1 - Critical Infrastructure
+1. **Player Statistics Integration** - Implement player profiles and match statistics using new `player_stats` table
+2. **Player History Management** - Build player career history pages using `player_history` table
+3. **Database Performance Optimization** - Implement proper indexing and query optimization for new player tables
+4. **Enhanced Match Statistics** - Add detailed match statistics (fouls, cards, offsides) to existing match system
 
-### Low Priority
-- [ ] **Notification System**: Email/push notifications for match updates
-- [ ] **Fan Integration**: User accounts for favorite teams/matches
-- [ ] **Historical Data**: Import historical seasons data
-- [ ] **Multi-language Support**: Internationalization setup
-- [ ] **API Documentation**: OpenAPI specification for data endpoints
+#### Priority 2 - User Experience
+5. **Mobile Performance Optimization** - Improve mobile site speed and touch interactions
+6. **Search Implementation** - Build global search functionality across matches, players, and news
+7. **Loading States & Skeletons** - Add proper loading indicators for all async operations
+8. **Error Boundary Implementation** - Add comprehensive error handling and user feedback
 
-### Technical Debt
-- [ ] **Database Optimization**: Review and optimize database queries
-- [ ] **Component Refactoring**: Consolidate similar components
-- [ ] **Error Boundaries**: Implement better error handling
-- [ ] **Performance Monitoring**: Set up detailed performance tracking
-- [ ] **Documentation**: API documentation and developer guides
+### Phase 2: Data & Content Enhancement (Weeks 5-8)
 
-### Content Management
-- [ ] **Season Reviews**: Write comprehensive season reviews for past seasons
-- [ ] **Stadium Information**: Complete stadium data and historical information
-- [ ] **Team Colors**: Verify and update team color schemes
-- [ ] **Competition Icons**: Create or source competition icons
-- [ ] **News Sources**: Expand news source integration
+#### Priority 3 - Data Visualization
+9. **Interactive Charts Dashboard** - Implement Chart.js for season statistics, player performance trends
+10. **Advanced Filtering System** - Enhanced match filtering with player statistics filters
+11. **Head-to-Head Analysis** - Detailed team and player comparison tools
+12. **Season Review System** - Automated season summary generation with key statistics
 
-### Security and Compliance
-- [ ] **Security Audit**: Conduct security review of data handling
-- [ ] **GDPR Compliance**: Ensure data privacy compliance
-- [ ] **Content Security Policy**: Implement CSP headers
-- [ ] **Rate Limiting**: Add API rate limiting for external integrations
-- [ ] **Data Backup**: Implement automated database backup strategy
+#### Priority 4 - Content Management
+13. **Content Management Interface** - Admin panel for managing player data and match statistics
+14. **Historical Data Migration** - Import and validate historical seasons and player data
+15. **Stadium Information Enhancement** - Complete stadium database with historical venues
+16. **Team Color Verification** - Audit and update all team color schemes and branding
+
+### Phase 3: User Engagement & Social Features (Weeks 9-12)
+
+#### Priority 5 - Social Integration
+17. **Social Sharing System** - Share buttons for matches, player profiles, and statistics
+18. **User Account System** - Fan accounts for favorites, notifications, and personalized content
+19. **Notification Infrastructure** - Match reminders and score update notifications
+20. **Fan Engagement Features** - Comments, discussions, and community features
+
+#### Priority 6 - Accessibility & Internationalization
+21. **WCAG 2.1 Compliance** - Full accessibility audit and implementation
+22. **Multi-language Support** - Internationalization setup for global audience
+
+### Phase 4: Advanced Features & Optimization (Weeks 13-16)
+
+#### Future Enhancements
+- **Live Score Integration** - Real-time match data integration
+- **Dark Mode Implementation** - Theme system with user preferences
+- **API Documentation** - OpenAPI specification for public data endpoints
+- **Mobile App Development** - React Native or PWA implementation
+- **Machine Learning Integration** - Predictive analytics for match outcomes
+
+## Technical Debt Management
+
+### Database Optimization
+- **Query Performance**: Implement query optimization for complex player statistics joins
+- **Index Strategy**: Review and optimize database indexes for new player tables
+- **Connection Pooling**: Optimize Supabase connection management
+- **Data Archival**: Implement archival strategy for historical data
+
+### Code Quality
+- **Component Refactoring**: Consolidate duplicate components and improve reusability
+- **Type Safety**: Enhance TypeScript interfaces for new player data structures
+- **Testing Coverage**: Increase unit and integration test coverage to 80%+
+- **Code Documentation**: Implement comprehensive JSDoc documentation
+
+### Performance Monitoring
+- **Real User Monitoring**: Implement RUM for performance tracking
+- **Database Query Monitoring**: Track slow queries and optimization opportunities
+- **Cache Hit Rate Analysis**: Monitor and optimize caching strategy effectiveness
+- **Bundle Size Optimization**: Reduce JavaScript bundle size through code splitting
+
+## Security & Compliance
+
+### Security Measures
+- **Content Security Policy**: Implement comprehensive CSP headers
+- **Rate Limiting**: Add API rate limiting for external integrations
+- **Input Validation**: Enhance form validation and sanitization
+- **Authentication Security**: Implement secure session management
+
+### Data Privacy
+- **GDPR Compliance**: Ensure data privacy compliance for user accounts
+- **Data Minimization**: Review data collection and retention policies
+- **Cookie Management**: Implement compliant cookie consent system
+- **Data Backup Strategy**: Automated database backup with disaster recovery
+
+### Dependencies & Risk Management
+- **Third-party Dependencies**: Regular security audits of npm packages
+- **External API Dependencies**: Implement fallback mechanisms for YouTube/RSS feeds
+- **Supabase Dependencies**: Monitor database performance and availability
+- **CDN Reliability**: Implement fallback for static asset delivery
+
+## Content Management Strategy
+
+### Data Quality
+- **Player Data Validation**: Implement automated validation for player statistics
+- **Match Data Consistency**: Ensure data consistency across competitions and seasons
+- **Historical Data Accuracy**: Verify and clean historical match and player data
+- **Image Asset Management**: Organize and optimize player and team images
+
+### Content Workflows
+- **Automated Data Ingestion**: Build systems for automated match result imports
+- **Content Review Process**: Implement editorial workflow for season reviews
+- **Media Asset Management**: Systematic organization of photos and videos
+- **User-Generated Content**: Moderate and manage community contributions
+
+### SEO & Discovery
+- **Structured Data Implementation**: Add schema.org markup for matches and players
+- **XML Sitemaps**: Generate comprehensive sitemaps for all content types
+- **Open Graph Tags**: Optimize social media sharing metadata
+- **Search Engine Optimization**: Improve organic search visibility
 
 ---
 
