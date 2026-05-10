@@ -410,7 +410,7 @@ players (
   last_name TEXT NOT NULL,
   date_of_birth DATE,
   nationality TEXT,
-  preferred_position TEXT,
+  position TEXT, (enum)
   height_cm INTEGER,
   weight_kg INTEGER,
   profile_image_url TEXT,

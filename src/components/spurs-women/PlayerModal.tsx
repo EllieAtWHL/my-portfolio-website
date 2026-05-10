@@ -57,7 +57,7 @@ export default function PlayerModal({ player, onClose, teamColor = '#081521' }: 
               <div>
                 <h2 className="text-xl font-bold text-[#081521]">{fullName}</h2>
                 <div className="text-[#64748b]">
-                  {player.preferred_position || '—'} • {player.nationality || '—'}
+                  {player.position || '—'} • {player.nationality || '—'}
                 </div>
                 {player.height_cm && (
                   <div className="text-sm text-[#94a3b8]">
