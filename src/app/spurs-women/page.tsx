@@ -30,6 +30,20 @@ export default async function HomePage() {
   const contentData = await getHomePageContent();
   const { upcoming, previous, news, videos, podcasts } = contentData;
 
+  // Helper function to generate dynamic header text
+  const getMatchesHeaderText = (matches: Match[], isUpcoming: boolean) => {
+    const count = matches.length;
+    const type = isUpcoming ? 'Next' : 'Previous';
+    
+    if (count === 0) {
+      return `No ${isUpcoming ? 'upcoming' : 'previous'} matches`;
+    }
+    if (count === 1) {
+      return `${type} Match`;
+    }
+    return `${type} ${count} Matches`;
+  };
+
   return (
     <main className="p-8">
       <h1 className="spurs-text text-3xl font-bold mb-8 text-center">Tottenham Hotspur Women</h1>
@@ -37,7 +51,7 @@ export default async function HomePage() {
       <div className="lg:grid lg:grid-cols-2 lg:gap-8 space-y-8 lg:space-y-0">
         {/* Upcoming Matches Section */}
         <section>
-            <h2 className="text-2xl font-semibold mb-4">Next 3 Matches</h2>
+            <h2 className="text-2xl font-semibold mb-4">{getMatchesHeaderText(upcoming, true)}</h2>
             <div className="space-y-4">
               {upcoming.length > 0 ? (
                 upcoming.map((match: Match) => (
@@ -51,7 +65,7 @@ export default async function HomePage() {
 
         {/* Previous Matches Section */}
         <section>
-          <h2 className="text-2xl font-semibold mb-4">Previous 3 Matches</h2>
+          <h2 className="text-2xl font-semibold mb-4">{getMatchesHeaderText(previous, false)}</h2>
           <div className="space-y-4">
             {previous.length > 0 ? (
               previous.map((match: Match) => (
