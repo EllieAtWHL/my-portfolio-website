@@ -203,6 +203,20 @@ src/
 - Duration and publication date
 - External link handling
 
+#### LightboxGallery
+**File**: `src/components/spurs-women/LightboxGallery.tsx`
+- Image gallery viewer
+- Full-screen lightbox mode
+- Navigation between images
+- Touch gesture support
+
+#### SeasonReviewCard
+**File**: `src/components/spurs-women/SeasonReviewCard.tsx`
+- Season review display
+- Key statistics summary
+- Navigation to full season review
+- Responsive layout
+
 ### Utility Components
 
 #### TeamPill
@@ -218,6 +232,29 @@ src/
 - Geographic visualization
 - Integration with stadium data
 
+### Player Components
+
+#### PlayerCard
+**File**: `src/components/spurs-women/PlayerCard.tsx`
+- Player profile display with image
+- Statistics summary
+- Position and squad number
+- Team color integration
+
+#### PlayerModal
+**File**: `src/components/spurs-women/PlayerModal.tsx`
+- Detailed player information modal
+- Complete statistics dashboard
+- Match history display
+- Career timeline
+
+#### TeamLineup
+**File**: `src/components/spurs-women/TeamLineup.tsx`
+- Match lineup display
+- Formation visualization
+- Player positions
+- Substitution indicators
+
 ## Data Layer
 
 ### Database Integration
@@ -231,17 +268,19 @@ src/
 **Location**: `src/lib/data/cache-utils.ts`
 
 **Features**:
-- Custom caching implementation
+- Next.js unstable_cache implementation
 - TTL-based expiration
 - Tag-based invalidation
 - Memory-efficient storage
-- Server-side caching
+- Server-side caching with fallback mechanisms
 
 **Cache Categories**:
-- Matches: 1-hour TTL for current season
+- Matches: 30-minute TTL for current season
 - Static content: 24-hour TTL
-- RSS feeds: 30-minute TTL
-- YouTube videos: 2-hour TTL
+- RSS feeds: 24-hour TTL
+- YouTube videos: 1-hour TTL
+- Player data: 1-hour TTL
+- Player statistics: 30-minute TTL
 
 ### Data Access Functions
 
@@ -270,6 +309,13 @@ src/
 - `getAllStadiums()` - Complete stadium list
 - `getStadiumNames()` - Historical stadium names
 - `getMatchesAtStadium()` - Stadium-specific matches
+
+#### Players (`src/lib/data/players.ts`)
+- `getPlayers()` - All active players with statistics
+- `getPlayerById()` - Individual player details
+- `getPlayerStats()` - Player match statistics
+- `getPlayersByMatch()` - Players from specific matches
+- `getPlayerHistory()` - Player career history
 
 ## Features
 
@@ -589,6 +635,16 @@ Automated cache clearing when data changes.
 - Duration formatting
 - Link generation to episode pages
 
+### API Routes
+**Endpoints**:
+- `/api/spurs-women-news/` - News aggregation and caching
+- `/api/spurs-women-videos/` - YouTube video metadata fetching
+**Features**:
+- Server-side data processing
+- Error handling and fallbacks
+- Response caching
+- CORS handling
+
 ## Development Workflow
 
 ### Environment Setup
@@ -617,13 +673,13 @@ Automated cache clearing when data changes.
 
 ## Development Roadmap
 
-### Phase 1: Foundation & Core Features (Weeks 1-4)
+### Phase 1: Foundation & Core Features (Weeks 1-4) ✅ COMPLETED
 
-#### Priority 1 - Critical Infrastructure
-1. **Player Statistics Integration** - Implement player profiles and match statistics using new `player_stats` table
-2. **Player History Management** - Build player career history pages using `player_history` table
-3. **Database Performance Optimization** - Implement proper indexing and query optimization for new player tables
-4. **Enhanced Match Statistics** - Add detailed match statistics (fouls, cards, offsides) to existing match system
+#### Priority 1 - Critical Infrastructure ✅
+1. **Player Statistics Integration** ✅ - Player profiles and match statistics implemented using `player_stats` table
+2. **Player History Management** ✅ - Player career history pages built using `player_history` table  
+3. **Database Performance Optimization** ✅ - Proper indexing and query optimization implemented for player tables
+4. **Enhanced Match Statistics** ✅ - Detailed match statistics (fouls, cards, offsides) added to match system
 
 #### Priority 2 - User Experience
 5. **Mobile Performance Optimization** - Improve mobile site speed and touch interactions
