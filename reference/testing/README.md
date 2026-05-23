@@ -238,17 +238,26 @@ jest.mock('@/lib/fullstory', () => ({
 
 ## Coverage
 
-Current coverage: **98.87% statements, 98.41% branches, 95.65% functions, 98.83% lines**
+Current coverage: **88.2% statements, 79.57% branches, 89.13% functions, 87.81% lines**
 
 Coverage reports are generated in the `coverage/` directory when running `npm run test:coverage`.
 
 **Breakdown**:
 - Components: 100% coverage (Button, Card, Modal, Header)
-- Utilities: 100% coverage  
-- Pages: 90% coverage (some tracking functions not fully tested)
+- Utilities: 100% coverage (utils.ts, date.ts, team-colors.ts)
+- Pages: 90% coverage (page.tsx)
+- lib: 97.05% statements, 93.33% branches, 100% functions, 100% lines
+  - admin-api.ts: 90% statements, 100% branches, 100% functions, 100% lines
+  - api-client.ts: 100% statements, 88.88% branches, 100% functions, 100% lines
+  - utils.ts: 100% coverage
+- lib/data: 71.42% statements, 52.94% branches, 76.47% functions, 68.57% lines
+  - cache-utils.ts: 89.74% statements, 87.5% branches, 100% functions, 88.88% lines
+  - stadiums.ts: 52.63% statements, 22.22% branches, 33.33% functions, 47.05% lines
+- lib/utils: 100% coverage (date.ts, team-colors.ts)
+- utils: 90.9% statements, 54.54% branches, 100% functions, 88.88% lines (supabase.ts)
 - API routes: Not currently tested (see API Testing Status above)
 
-**Test Count**: 91 tests across 7 test suites
+**Test Count**: 156 tests across 14 test suites
 **Build Status**: ✅ Production ready - builds successfully
 **Lint Status**: ✅ Only minor optimization warnings (no blocking errors)
 

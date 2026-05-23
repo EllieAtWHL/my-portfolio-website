@@ -412,4 +412,4 @@ WHERE match_id = 'your-match-id'
   AND type = 'photo album';
 ```
 
-This guide covers the complete workflow from photo optimization to deployment. Follow these steps to ensure your photo gallery works reliably with the hybrid storage system.
+This guide covers the complete workflow from photo optimization to deployment. Follow these steps to ensure your photo gallery works reliably with the GitHub-based storage system.

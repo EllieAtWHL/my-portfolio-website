@@ -29,7 +29,7 @@ The Tottenham Hotspur Women website is a comprehensive web application built wit
 ## Architecture
 
 ### Technology Stack
-- **Framework**: Next.js 14 with App Router
+- **Framework**: Next.js 16.2.6 with App Router
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS with custom Spurs-themed design system
 - **Database**: Supabase (PostgreSQL)
@@ -733,7 +733,7 @@ Automated cache clearing when data changes.
 ### Code Quality
 - **Component Refactoring**: Consolidate duplicate components and improve reusability
 - **Type Safety**: Enhance TypeScript interfaces for new player data structures
-- **Testing Coverage**: Increase unit and integration test coverage to 80%+
+- **Testing Coverage**: Achieved 88.2% statement coverage (target: 80%+)
 - **Code Documentation**: Implement comprehensive JSDoc documentation
 
 ### Performance Monitoring
