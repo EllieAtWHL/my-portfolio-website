@@ -447,9 +447,19 @@ export default function AdminPage() {
     setLoading(true);
 
     try {
-      const { error } = await supabaseAdmin.from('media').insert(mediaForm);
+      const response = await fetch('/api/admin/media', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(mediaForm),
+      });
 
-      if (error) throw error;
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create media');
+      }
 
       showMessage('Media created successfully', 'success');
       setMediaForm({
@@ -463,23 +473,31 @@ export default function AdminPage() {
       
       // Reload recent media records
       try {
-        console.log('Reloading recent media after creation...');
-        const mediaRes = await supabaseAdmin.from('media').select('*').order('created_at', { ascending: false }).limit(10);
-        console.log('Media reload response:', mediaRes);
-        console.log('Media reload data:', mediaRes.data);
-        console.log('Media reload error:', mediaRes.error);
-        if (mediaRes.data) {
-          console.log('Setting recent media after reload:', mediaRes.data);
-          setRecentMedia(mediaRes.data);
-        } else {
-          console.log('No media data found after reload');
+        const mediaResponse = await fetch('/api/admin/media');
+        const mediaResult = await mediaResponse.json();
+        if (mediaResult.data) {
+          setRecentMedia(mediaResult.data);
         }
       } catch (error) {
         console.error('Error reloading recent media:', error);
       }
     } catch (error) {
-      showMessage('Error creating media', 'error');
       console.error('Error creating media:', error);
+      
+      let errorMessage = 'Error creating media';
+      if (error && typeof error === 'object') {
+        if ('message' in error) {
+          errorMessage = `Error creating media: ${error.message}`;
+        } else if ('code' in error) {
+          errorMessage = `Error creating media: ${error.code}`;
+        } else {
+          errorMessage = `Error creating media: ${JSON.stringify(error)}`;
+        }
+      } else if (typeof error === 'string') {
+        errorMessage = `Error creating media: ${error}`;
+      }
+      
+      showMessage(errorMessage, 'error');
     } finally {
       setLoading(false);
     }
