@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { supabaseAdmin } from '@/utils/supabase';
 import { callAdminApi, createEntityAndReload } from '@/lib/api-client';
 import { getTeamColor } from '@/lib/utils/team-colors';
 import { createClient } from '@/lib/supabase/client';
@@ -216,36 +215,14 @@ export default function AdminPage() {
     const loadDropdownData = async () => {
       setLoading(true);
       try {
-        // Try different stadium table names
-        let stadiumsRes: { data: Stadium[] | null; error: any } = { data: null, error: null };
-        const stadiumTables = ['stadia', 'stadiums', 'stadium'];
-        
-        for (const tableName of stadiumTables) {
-          try {
-            const result = await supabaseAdmin.from(tableName).select('*').order('name');
-            if (result.data && result.data.length > 0) {
-              stadiumsRes = result;
-              break;
-            } else if (result.error) {
-              console.warn(`Error with table ${tableName}:`, result.error);
-            }
-          } catch (error) {
-            console.warn(`Failed to query table ${tableName}:`, error);
-          }
-        }
-
-        const [matchesResponse, playersRes] = await Promise.all([
-          fetch('/api/admin/matches'),
-          supabaseAdmin.from('players').select('*').order('last_name'),
-        ]);
-
-        const matchesResult = await matchesResponse.json();
-        const matchesRes = { data: matchesResult.data, error: matchesResult.error };
-
-        const [teamsRes, competitionsRes, seasonsRes] = await Promise.all([
-          supabaseAdmin.from('teams').select('*').order('name'),
-          supabaseAdmin.from('competitions').select('*').order('name'),
-          supabaseAdmin.from('seasons').select('*').order('start_date', { ascending: false }),
+        // Load all dropdown data via API calls
+        const [matchesRes, teamsRes, competitionsRes, seasonsRes, playersRes, stadiumsRes] = await Promise.all([
+          callAdminApi('matches', 'GET'),
+          callAdminApi('teams', 'GET'),
+          callAdminApi('competitions', 'GET'),
+          callAdminApi('seasons', 'GET'),
+          callAdminApi('players', 'GET'),
+          callAdminApi('stadia', 'GET'),
         ]);
 
         if (teamsRes.data) setTeams(teamsRes.data);
@@ -255,7 +232,7 @@ export default function AdminPage() {
         if (stadiumsRes.data) {
           setStadiums(stadiumsRes.data);
         } else {
-          console.warn('No stadiums data:', stadiumsRes.error);
+          console.warn('No stadiums data');
         }
         if (playersRes.data) setPlayers(playersRes.data);
       } catch (error) {
@@ -283,7 +260,6 @@ export default function AdminPage() {
       
       // Determine which table to fetch based on active tab
       let tableName = '';
-      let orderByColumn = 'created_at';
       
       switch (activeTab) {
         case 'media':
@@ -306,7 +282,6 @@ export default function AdminPage() {
           break;
         case 'stadium_names':
           tableName = 'stadium_names';
-          orderByColumn = 'updated_at';
           break;
         case 'stadiums':
           tableName = 'stadia';
@@ -318,47 +293,42 @@ export default function AdminPage() {
       }
 
       if (tableName) {
-        // Fetch both data and count
-        const [dataRes, countRes] = await Promise.all([
-          supabaseAdmin
-            .from(tableName)
-            .select('*')
-            .order(orderByColumn, { ascending: false })
-            .range(offset, offset + recordsPerPage - 1),
-          supabaseAdmin
-            .from(tableName)
-            .select('*', { count: 'exact', head: true })
-        ]);
+        // Fetch data via API
+        const apiEndpoint = tableName === 'stadia' ? 'stadia' : tableName;
+        const dataRes = await callAdminApi(apiEndpoint, 'GET');
+        
+        // Apply pagination client-side
+        const paginatedData = dataRes.data ? dataRes.data.slice(offset, offset + recordsPerPage) : [];
+        const totalCount = dataRes.data ? dataRes.data.length : 0;
 
         console.log(`${tableName} response:`, dataRes);
-        console.log(`${tableName} data:`, dataRes.data);
-        console.log(`${tableName} error:`, dataRes.error);
-        console.log(`${tableName} count:`, countRes.count);
+        console.log(`${tableName} data:`, paginatedData);
+        console.log(`${tableName} count:`, totalCount);
         
         // Set the appropriate state based on the active tab
-        if (dataRes.data) {
-          console.log(`Setting recent ${tableName}:`, dataRes.data);
+        if (paginatedData) {
+          console.log(`Setting recent ${tableName}:`, paginatedData);
           switch (activeTab) {
             case 'media':
-              setRecentMedia(dataRes.data as Media[]);
+              setRecentMedia(paginatedData as Media[]);
               break;
             case 'teams':
-              setRecentTeams(dataRes.data as Team[]);
+              setRecentTeams(paginatedData as Team[]);
               break;
             case 'players':
-              setRecentPlayers(dataRes.data as Player[]);
+              setRecentPlayers(paginatedData as Player[]);
               break;
             case 'player_stats':
-              setRecentPlayerStats(dataRes.data as PlayerStats[]);
+              setRecentPlayerStats(paginatedData as PlayerStats[]);
               break;
             case 'player_history':
-              setRecentPlayerHistory(dataRes.data as PlayerHistory[]);
+              setRecentPlayerHistory(paginatedData as PlayerHistory[]);
               break;
             case 'stadiums':
-              setRecentStadiums(dataRes.data as Stadium[]);
+              setRecentStadiums(paginatedData as Stadium[]);
               break;
             case 'stadium_names':
-              setRecentStadiumNames(dataRes.data as StadiumName[]);
+              setRecentStadiumNames(paginatedData as StadiumName[]);
               break;
           }
         } else {
@@ -388,9 +358,9 @@ export default function AdminPage() {
           }
         }
         
-        if (countRes.count !== null) {
-          setTotalCount(countRes.count);
-          setTotalPages(Math.ceil(countRes.count / recordsPerPage));
+        if (totalCount !== null) {
+          setTotalCount(totalCount);
+          setTotalPages(Math.ceil(totalCount / recordsPerPage));
         }
       }
     } catch (error) {
@@ -1070,8 +1040,8 @@ export default function AdminPage() {
                 
                 // Reload recent teams records
                 try {
-                  const teamsRes = await supabaseAdmin.from('teams').select('*').order('created_at', { ascending: false }).limit(10);
-                  if (teamsRes.data) setRecentTeams(teamsRes.data);
+                  const teamsRes = await callAdminApi('teams', 'GET');
+                  if (teamsRes.data) setRecentTeams(teamsRes.data.slice(0, 10));
                 } catch (error) {
                   console.error('Error reloading recent teams:', error);
                 }
@@ -1173,8 +1143,8 @@ export default function AdminPage() {
                 
                 // Reload recent players records
                 try {
-                  const playersRes = await supabaseAdmin.from('players').select('*').order('created_at', { ascending: false }).limit(10);
-                  if (playersRes.data) setRecentPlayers(playersRes.data);
+                  const playersRes = await callAdminApi('players', 'GET');
+                  if (playersRes.data) setRecentPlayers(playersRes.data.slice(0, 10));
                 } catch (error) {
                   console.error('Error reloading recent players:', error);
                 }
@@ -1316,8 +1286,8 @@ export default function AdminPage() {
                 
                 // Reload recent stadiums records
                 try {
-                  const stadiumsRes = await supabaseAdmin.from('stadia').select('*').order('created_at', { ascending: false }).limit(10);
-                  if (stadiumsRes.data) setRecentStadiums(stadiumsRes.data);
+                  const stadiumsRes = await callAdminApi('stadia', 'GET');
+                  if (stadiumsRes.data) setRecentStadiums(stadiumsRes.data.slice(0, 10));
                 } catch (error) {
                   console.error('Error reloading recent stadiums:', error);
                 }
@@ -1489,8 +1459,8 @@ export default function AdminPage() {
               
               // Reload recent player stats records
               try {
-                const playerStatsRes = await supabaseAdmin.from('player_stats').select('*').order('created_at', { ascending: false }).limit(10);
-                if (playerStatsRes.data) setRecentPlayerStats(playerStatsRes.data);
+                const playerStatsRes = await callAdminApi('player-stats', 'GET');
+                if (playerStatsRes.data) setRecentPlayerStats(playerStatsRes.data.slice(0, 10));
               } catch (error) {
                 console.error('Error reloading recent player stats:', error);
               }
@@ -1728,8 +1698,8 @@ export default function AdminPage() {
               
               // Reload recent player history records
               try {
-                const playerHistoryRes = await supabaseAdmin.from('player_history').select('*').order('created_at', { ascending: false }).limit(10);
-                if (playerHistoryRes.data) setRecentPlayerHistory(playerHistoryRes.data);
+                const playerHistoryRes = await callAdminApi('player-history', 'GET');
+                if (playerHistoryRes.data) setRecentPlayerHistory(playerHistoryRes.data.slice(0, 10));
               } catch (error) {
                 console.error('Error reloading recent player history:', error);
               }
