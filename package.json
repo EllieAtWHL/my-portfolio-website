@@ -20,6 +20,7 @@
     "init-external-local": "node scripts/generate-external-manifest.js --init-local"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.90.1",
     "@vercel/analytics": "^1.6.1",
     "clsx": "^2.1.1",

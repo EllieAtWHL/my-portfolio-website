@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabaseAdmin } from '@/utils/supabase';
 import { callAdminApi, createEntityAndReload } from '@/lib/api-client';
 import { getTeamColor } from '@/lib/utils/team-colors';
+import { createClient } from '@/lib/supabase/client';
+import { useRouter } from 'next/navigation';
 
 // Types for our data
 interface Team {
@@ -129,6 +131,9 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<'matches' | 'media' | 'teams' | 'players' | 'player_stats' | 'player_history' | 'stadiums' | 'stadium_names'>('matches');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [user, setUser] = useState<{ email: string } | null>(null);
+  const router = useRouter();
+  const supabase = createClient();
 
   // Dropdown data
   const [teams, setTeams] = useState<Team[]>([]);
@@ -181,6 +186,22 @@ export default function AdminPage() {
   // Season filter states
   const [playerStatsSeason, setPlayerStatsSeason] = useState('');
   const [mediaSeason, setMediaSeason] = useState('');
+
+  // Fetch user on mount
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUser({ email: user.email! });
+      }
+    };
+    fetchUser();
+  }, [supabase]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
+  };
 
   // Load dropdown data
   useEffect(() => {
@@ -507,8 +528,21 @@ export default function AdminPage() {
   return (
     <div className="spurs-wrapper min-h-screen p-4">
       <div className="max-w-6xl mx-auto">
-        <h1 className="spurs-text text-3xl font-bold mb-8">Supabase Admin Interface</h1>
-        
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="spurs-text text-3xl font-bold">Supabase Admin Interface</h1>
+          {user && (
+            <div className="flex items-center gap-4">
+              <span className="text-gray-300 text-sm">{user.email}</span>
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm transition-colors"
+              >
+                Sign Out
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* Message Display */}
         {message && (
           <div className={`mb-4 p-4 rounded ${
