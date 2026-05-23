@@ -46,7 +46,7 @@ These considerations may influence design, styling, and content decisions and sh
 **Completed Infrastructure:**
   - ✅ Next.js project with App Router is set up and running
   - ✅ TypeScript configuration implemented
-  - ✅ Tailwind CSS v4 with extensive configuration (7832 lines in config)
+  - ✅ Tailwind CSS v4
   - ✅ Component architecture established with proper folder structure
   - ✅ Shared Button component with TypeScript variants and migration guide
   - ✅ Basic personal site pages migrated (about-me, experience, projects, contact-me, etc.)
@@ -73,7 +73,7 @@ These considerations may influence design, styling, and content decisions and sh
 
 ### Core Technology Stack
 
-  - Framework: Next.js 16.1.1 (App Router)
+  - Framework: Next.js 16.2.6 (App Router)
   - Styling: Tailwind CSS v4
   - Language: TypeScript 5
   - Deployment: Vercel (or equivalent static-first hosting)
@@ -693,9 +693,9 @@ spurs-women-photo-gallery/
 - ✅ Add external video media type
 - ✅ Cache database for api calls on Spurs women
 - ✅ Ensure we have a backup primary and secondary colour in case they are not input - and teamname probably too
-- [ ] Add players (starters, subs, unused bench)
-- [ ] Add match stats where available
-- [ ] Add goal scorers to match page
+- ✅ Add players (starters, subs, unused bench)
+- ✅ Add match stats where available
+- ✅ Add goal scorers to match page
 - [ ] **Improve competition dropdown UX** (Low Priority) - Current implementation has minor issues with event handling and positioning that could be optimized for better user experience
 
 **Caching Tech Debt:**
