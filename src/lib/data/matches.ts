@@ -252,9 +252,9 @@ export async function getMatchesBySeason(seasonId: string) {
 }
 
 async function fetchMatchByIdFromDB(matchId: string): Promise<Match | null> {
-  // First try matches table with stats
-  let { data, error } = await supabase
-    .from('matches')
+  // Use matches_with_stadium to get stadium information
+  const { data, error } = await supabase
+    .from('matches_with_stadium')
     .select(`
       *,
       home_possession,
@@ -272,42 +272,24 @@ async function fetchMatchByIdFromDB(matchId: string): Promise<Match | null> {
     .eq('id', matchId)
     .single();
 
-  // If not found in matches, try matches_with_stadium as fallback
-  if (error || !data) {
-    const result = await supabase
-      .from('matches_with_stadium')
-      .select(`
-        *,
-        home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-        away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-        competitions:competition_id(name, icon_svg)
-      `)
-      .eq('id', matchId)
-      .single();
-    
-    data = result.data;
-    error = result.error;
-    
-    if (data) {
-      // Add null stats for compatibility
-      data = {
-        ...data,
-        home_possession: null,
-        away_possession: null,
-        home_total_shots: null,
-        away_total_shots: null,
-        home_shots_on_target: null,
-        away_shots_on_target: null,
-        home_corners: null,
-        away_corners: null,
-      };
-    }
-  }
-
   if (error) {
     console.error('Error fetching match:', error);
     return null;
   }
+
+  if (!data) {
+    return null;
+  }
+
+  // Ensure stats fields exist for compatibility
+  if (data.home_possession === undefined) data.home_possession = null;
+  if (data.away_possession === undefined) data.away_possession = null;
+  if (data.home_total_shots === undefined) data.home_total_shots = null;
+  if (data.away_total_shots === undefined) data.away_total_shots = null;
+  if (data.home_shots_on_target === undefined) data.home_shots_on_target = null;
+  if (data.away_shots_on_target === undefined) data.away_shots_on_target = null;
+  if (data.home_corners === undefined) data.home_corners = null;
+  if (data.away_corners === undefined) data.away_corners = null;
 
   return data as Match;
 }
