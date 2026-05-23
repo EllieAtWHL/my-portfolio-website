@@ -127,6 +127,14 @@ interface Stadium {
   home_team_id: number | null;
 }
 
+interface StadiumName {
+  id: string;
+  stadium_id: string;
+  name: string;
+  valid_from: string | null;
+  valid_to: string | null;
+}
+
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<'matches' | 'media' | 'teams' | 'players' | 'player_stats' | 'player_history' | 'stadiums' | 'stadium_names'>('matches');
   const [loading, setLoading] = useState(false);
@@ -150,7 +158,7 @@ export default function AdminPage() {
   const [recentPlayerStats, setRecentPlayerStats] = useState<PlayerStats[]>([]);
   const [recentPlayerHistory, setRecentPlayerHistory] = useState<PlayerHistory[]>([]);
   const [recentStadiums, setRecentStadiums] = useState<Stadium[]>([]);
-  const [recentStadiumNames, setRecentStadiumNames] = useState<string[]>([]);
+  const [recentStadiumNames, setRecentStadiumNames] = useState<StadiumName[]>([]);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -275,42 +283,33 @@ export default function AdminPage() {
       
       // Determine which table to fetch based on active tab
       let tableName = '';
-      let setStateFunction: React.Dispatch<React.SetStateAction<Media[] | Team[] | Player[] | PlayerStats[] | PlayerHistory[] | Stadium[] | string[]>> = () => {};
       let orderByColumn = 'created_at';
       
       switch (activeTab) {
         case 'media':
           tableName = 'media';
-          setStateFunction = setRecentMedia;
           break;
         case 'teams':
           tableName = 'teams';
-          setStateFunction = setRecentTeams;
           break;
         case 'players':
           tableName = 'players';
-          setStateFunction = setRecentPlayers;
           break;
         case 'player_stats':
           tableName = 'player_stats';
-          setStateFunction = setRecentPlayerStats;
           break;
         case 'player_history':
           tableName = 'player_history';
-          setStateFunction = setRecentPlayerHistory;
           break;
         case 'stadiums':
           tableName = 'stadiums';
-          setStateFunction = setRecentStadiums;
           break;
         case 'stadium_names':
           tableName = 'stadium_names';
-          setStateFunction = setRecentStadiumNames;
           orderByColumn = 'updated_at';
           break;
         case 'stadiums':
           tableName = 'stadia';
-          setStateFunction = setRecentStadiums;
           break;
         case 'matches':
         default:
@@ -336,12 +335,57 @@ export default function AdminPage() {
         console.log(`${tableName} error:`, dataRes.error);
         console.log(`${tableName} count:`, countRes.count);
         
+        // Set the appropriate state based on the active tab
         if (dataRes.data) {
           console.log(`Setting recent ${tableName}:`, dataRes.data);
-          setStateFunction(dataRes.data);
+          switch (activeTab) {
+            case 'media':
+              setRecentMedia(dataRes.data as Media[]);
+              break;
+            case 'teams':
+              setRecentTeams(dataRes.data as Team[]);
+              break;
+            case 'players':
+              setRecentPlayers(dataRes.data as Player[]);
+              break;
+            case 'player_stats':
+              setRecentPlayerStats(dataRes.data as PlayerStats[]);
+              break;
+            case 'player_history':
+              setRecentPlayerHistory(dataRes.data as PlayerHistory[]);
+              break;
+            case 'stadiums':
+              setRecentStadiums(dataRes.data as Stadium[]);
+              break;
+            case 'stadium_names':
+              setRecentStadiumNames(dataRes.data as StadiumName[]);
+              break;
+          }
         } else {
           console.log(`No ${tableName} data found`);
-          setStateFunction([]);
+          switch (activeTab) {
+            case 'media':
+              setRecentMedia([]);
+              break;
+            case 'teams':
+              setRecentTeams([]);
+              break;
+            case 'players':
+              setRecentPlayers([]);
+              break;
+            case 'player_stats':
+              setRecentPlayerStats([]);
+              break;
+            case 'player_history':
+              setRecentPlayerHistory([]);
+              break;
+            case 'stadiums':
+              setRecentStadiums([]);
+              break;
+            case 'stadium_names':
+              setRecentStadiumNames([]);
+              break;
+          }
         }
         
         if (countRes.count !== null) {
@@ -352,7 +396,7 @@ export default function AdminPage() {
     } catch (error) {
       console.error('Error fetching recent records:', error);
     }
-  }, [activeTab, recordsPerPage, setRecentMedia, setRecentTeams, setRecentPlayers, setRecentPlayerStats, setRecentPlayerHistory, setRecentStadiums, setTotalCount, setTotalPages]);
+  }, [activeTab, recordsPerPage, setRecentMedia, setRecentTeams, setRecentPlayers, setRecentPlayerStats, setRecentPlayerHistory, setRecentStadiums, setRecentStadiumNames, setTotalCount, setTotalPages]);
 
   // Reset pagination when tab changes
   useEffect(() => {
@@ -2040,7 +2084,7 @@ export default function AdminPage() {
                   </tr>
                 ))}
                 {activeTab === 'player_stats' && recentPlayerStats.map(stat => {
-                  const player = players.find(p => p.id === parseInt(stat.player_id) || p.id === stat.player_id);
+                  const player = players.find(p => p.id === parseInt(stat.player_id));
                   const match = matches.find(m => m.id === stat.match_id);
                   const homeTeam = teams.find(t => t.id === match?.home_team_id);
                   const awayTeam = teams.find(t => t.id === match?.away_team_id);
@@ -2068,8 +2112,8 @@ export default function AdminPage() {
                   console.log('First player history record:', recentPlayerHistory[0]);
                   
                   return recentPlayerHistory.map(history => {
-                    // Match by UUID string directly
-                    const player = players.find(p => p.id === history.player_id);
+                    // Match by converting string IDs to numbers where needed
+                    const player = players.find(p => p.id === parseInt(history.player_id));
                     const team = teams.find(t => t.id === history.team_id);
                     return (
                       <tr key={history.id} className="border-b border-gray-600">
