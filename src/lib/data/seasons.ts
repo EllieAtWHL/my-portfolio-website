@@ -77,13 +77,11 @@ async function fetchSeasonByIdFromDB(seasonId: string): Promise<Season | null> {
     throw error;
   }
 
-  console.log('Returning season data:', data);
   return data as Season;
 }
 
 async function fetchSeasonReviewFromDB(seasonId: string): Promise<SeasonReview | null> {
   try {
-    console.log('Fetching season review for seasonId:', seasonId);
     
     // Query seasons table for season_review column
     const { data, error } = await supabase
@@ -92,10 +90,8 @@ async function fetchSeasonReviewFromDB(seasonId: string): Promise<SeasonReview |
       .eq('id', seasonId)
       .single();
 
-    console.log('Season review fetch result:', { data, error });
-
     if (error) {
-      console.log('Season review fetch error details:', {
+      console.warn('Season review fetch error details:', {
         code: error.code,
         message: error.message,
         details: error.details,
@@ -107,7 +103,6 @@ async function fetchSeasonReviewFromDB(seasonId: string): Promise<SeasonReview |
 
     // If season_review exists and is not null/empty, return it
     if (data && data.season_review) {
-      console.log('Returning season review:', data.season_review);
       return {
         season_id: parseInt(seasonId),
         title: 'Season Review', // Default title
@@ -116,10 +111,9 @@ async function fetchSeasonReviewFromDB(seasonId: string): Promise<SeasonReview |
       } as SeasonReview;
     }
 
-    console.log('No season review data found for seasonId:', seasonId);
     return null;
   } catch (err) {
-    console.log('Unexpected error fetching season review:', err);
+    console.error('Unexpected error fetching season review:', err);
     return null;
   }
 }

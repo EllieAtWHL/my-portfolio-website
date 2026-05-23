@@ -24,6 +24,47 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Admin System
+
+This project includes a web-based admin interface for managing Spurs Women's football data in the Supabase database.
+
+### 🛠️ Admin Features
+
+- **Admin UI**: Located at `/admin` - A React-based interface with tabbed navigation for managing different data entities
+- **Authentication**: Supabase Auth with email-based authorization (restricted to a single admin email)
+- **API Routes**: Server-side API endpoints for CRUD operations on all data entities
+- **Data Management**: Manage matches, media, teams, players, player stats, player history, stadiums, and stadium names
+
+### 📚 Admin Documentation
+
+For detailed information about the admin system, see:
+- **Complete Guide**: [`reference/spurs-women/admin/ADMIN_SYSTEM_DOCUMENTATION.md`](./reference/spurs-women/admin/ADMIN_SYSTEM_DOCUMENTATION.md) - Full documentation including architecture, API routes, data entities, and security considerations
+
+### Key Capabilities
+
+- **Match Management**: Create and view match records with scores, venues, and attendance
+- **Media Management**: Link photos, articles, and social media content to matches
+- **Team & Player Data**: Manage team information and player profiles with statistics
+- **Stadium Information**: Maintain stadium details and historical name changes
+- **Secure Operations**: All admin operations require authentication and authorization checks
+
+## Environment Variables
+
+Required environment variables (see `.env.local` for reference):
+
+```bash
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
+# Admin Authorization
+ADMIN_EMAIL=admin@example.com
+
+# FullStory (optional)
+NEXT_PUBLIC_FULLSTORY_ORG=your_fullstory_org_id
+```
+
 ## Analytics & Monitoring
 
 This site uses FullStory for user session recording and analytics:
@@ -32,7 +73,7 @@ This site uses FullStory for user session recording and analytics:
 
 - **Overview**: [`reference/fullstory/README.md`](./reference/fullstory/README.md) - Documentation index and quick start
 - **Documentation**: [`reference/fullstory/fullstory-implementation.md`](./reference/fullstory/fullstory-implementation.md) - Complete implementation guide
-- **Technical Guide**: [`reference/fullstory/fullstory-technical-guide.md`](./reference/fullstory/fullstory-technical-guide.md) - Developer documentation  
+- **Technical Guide**: [`reference/fullstory/fullstory-technical-guide.md`](./reference/fullstory/fullstory-technical-guide.md) - Developer documentation
 - **Quick Reference**: [`reference/fullstory/fullstory-quick-reference.md`](./reference/fullstory/fullstory-quick-reference.md) - Common tasks and troubleshooting
 
 #### Key Features
