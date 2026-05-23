@@ -137,26 +137,10 @@ async function fetchTeamLineupsByMatchFromDB(matchId: string): Promise<TeamLineu
     .from('player_history')
     .select('*');
   
-  console.log('DEBUG: All player_history records count:', allPlayerHistory?.length);
-  console.log('DEBUG: Player history error:', historyError);
-  
-  // Log first few records individually to see structure
-  if (allPlayerHistory && allPlayerHistory.length > 0) {
-    console.log('DEBUG: First player_history record:', allPlayerHistory[0]);
-    console.log('DEBUG: Second player_history record:', allPlayerHistory[1]);
-    console.log('DEBUG: Sample records:', JSON.stringify(allPlayerHistory.slice(0, 3), null, 2));
-  }
-  
   // Try with just squad_number field
   const { data: squadNumbers, error: squadError } = await supabase
     .from('player_history')
     .select('player_id, squad_number');
-    
-  console.log('DEBUG: Squad numbers count:', squadNumbers?.length);
-  console.log('DEBUG: Squad numbers error:', squadError);
-  if (squadNumbers && squadNumbers.length > 0) {
-    console.log('DEBUG: First squad number record:', squadNumbers[0]);
-  }
 
   // Also try the join query again
   const { data, error } = await supabase
@@ -173,13 +157,6 @@ async function fetchTeamLineupsByMatchFromDB(matchId: string): Promise<TeamLineu
   if (error) {
     console.error('Error fetching team lineups by match:', error);
     throw error;
-  }
-
-  // Debug the join results
-  console.log('DEBUG: Join query results count:', data?.length);
-  if (data && data.length > 0) {
-    console.log('DEBUG: First join result player_history:', data[0]?.player?.player_history);
-    console.log('DEBUG: First join result player_history length:', data[0]?.player?.player_history?.length);
   }
 
   // Group players by team
@@ -287,10 +264,6 @@ async function fetchPlayerByIdFromDB(playerId: string): Promise<Player | null> {
     console.error('Error fetching player by ID:', error);
     return null;
   }
-
-  // Debug log to see what data we're getting from the database
-  console.log('DEBUG: Player by ID data from database:', data);
-  console.log('DEBUG: Player by ID squad number:', data?.squad_number);
 
   return data;
 }

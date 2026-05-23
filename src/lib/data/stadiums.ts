@@ -158,12 +158,7 @@ export async function invalidateStadiumCache(stadiumId?: string, stadiumSlug?: s
   cacheKeys.push('stadiums');
   
   cacheKeys.push('stadium-names');
-  
-  // Note: Cache invalidation should be handled via API routes or server actions
-  // Log the cache keys that would be invalidated
-  cacheKeys.forEach(key => {
-    console.log(`Cache invalidation requested: ${key}`);
-  });
+
 }
 
 export async function invalidateAllStadiumCaches() {
@@ -172,9 +167,4 @@ export async function invalidateAllStadiumCaches() {
     'stadium-names'
   ];
   
-  // Note: Cache invalidation should be handled via API routes or server actions
-  // Log the cache keys that would be invalidated
-  cacheKeys.forEach(key => {
-    console.log(`Cache invalidation requested: ${key}`);
-  });
 }
