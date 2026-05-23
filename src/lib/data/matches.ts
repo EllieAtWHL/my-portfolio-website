@@ -23,6 +23,10 @@ export interface Match {
   } | null;
   spurs_score?: number | null;
   opponent_score?: number | null;
+  spurs_score_aet?: number | null;
+  opponent_score_aet?: number | null;
+  spurs_score_pens?: number | null;
+  opponent_score_pens?: number | null;
   attended: boolean;
   is_home_match: boolean;
   venue: string | null;
@@ -57,6 +61,10 @@ async function fetchUpcomingMatchesFromDB(limit: number = 3): Promise<Match[]> {
     .from('matches_with_stadium')
     .select(`
       *,
+      spurs_score_aet,
+      opponent_score_aet,
+      spurs_score_pens,
+      opponent_score_pens,
       home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
       away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
       competitions(name, icon_svg)
@@ -78,6 +86,10 @@ async function fetchUpcomingMatchesFromDB(limit: number = 3): Promise<Match[]> {
     .from('matches_with_stadium')
     .select(`
       *,
+      spurs_score_aet,
+      opponent_score_aet,
+      spurs_score_pens,
+      opponent_score_pens,
       home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
       away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
       competitions(name, icon_svg)
@@ -107,6 +119,10 @@ async function fetchPreviousMatchesFromDB(limit: number = 3): Promise<Match[]> {
     .from('matches_with_stadium')
     .select(`
       *,
+      spurs_score_aet,
+      opponent_score_aet,
+      spurs_score_pens,
+      opponent_score_pens,
       home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
       away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
       competitions(name, icon_svg)
@@ -128,6 +144,10 @@ async function fetchPreviousMatchesFromDB(limit: number = 3): Promise<Match[]> {
     .from('matches_with_stadium')
     .select(`
       *,
+      spurs_score_aet,
+      opponent_score_aet,
+      spurs_score_pens,
+      opponent_score_pens,
       home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
       away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
       competitions(name, icon_svg)
@@ -151,6 +171,10 @@ async function fetchAllMatchesFromDB(filter?: 'upcoming' | 'previous'): Promise<
     .from('matches_with_stadium')
     .select(`
       *,
+      spurs_score_aet,
+      opponent_score_aet,
+      spurs_score_pens,
+      opponent_score_pens,
       home_team:home_team_id (*),
       away_team:away_team_id (*),
       competitions:competition_id (*)
@@ -180,6 +204,10 @@ async function fetchSeasonMatchesFromDB(seasonId: string): Promise<Match[]> {
     .from('matches_with_stadium')
     .select(`
       *,
+      spurs_score_aet,
+      opponent_score_aet,
+      spurs_score_pens,
+      opponent_score_pens,
       home_team:home_team_id (*),
       away_team:away_team_id (*),
       competitions:competition_id (*)
@@ -265,6 +293,10 @@ async function fetchMatchByIdFromDB(matchId: string): Promise<Match | null> {
       away_shots_on_target,
       home_corners,
       away_corners,
+      spurs_score_aet,
+      opponent_score_aet,
+      spurs_score_pens,
+      opponent_score_pens,
       home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
       away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
       competitions:competition_id(name, icon_svg)
@@ -307,6 +339,10 @@ async function fetchAdjacentMatchesFromDB(matchId: string, currentMatchDate: str
       away_shots_on_target,
       home_corners,
       away_corners,
+      spurs_score_aet,
+      opponent_score_aet,
+      spurs_score_pens,
+      opponent_score_pens,
       home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
       away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
       competitions:competition_id(name, icon_svg)
@@ -328,6 +364,10 @@ async function fetchAdjacentMatchesFromDB(matchId: string, currentMatchDate: str
       away_shots_on_target,
       home_corners,
       away_corners,
+      spurs_score_aet,
+      opponent_score_aet,
+      spurs_score_pens,
+      opponent_score_pens,
       home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
       away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
       competitions:competition_id(name, icon_svg)
@@ -348,7 +388,7 @@ export const getMatchById = createCachedFunction(
   {
     keyParts: ['match', 'id'],
     tags: [CACHE_TAGS.MATCHES],
-    revalidate: CACHE_TTL.CURRENT_SEASON_MATCHES, // 1 hour for current season matches
+    revalidate: CACHE_TTL.CURRENT_SEASON_MATCHES,
   }
 );
 
@@ -357,6 +397,6 @@ export const getAdjacentMatches = createCachedFunction(
   {
     keyParts: ['match', 'adjacent'],
     tags: [CACHE_TAGS.MATCHES],
-    revalidate: CACHE_TTL.CURRENT_SEASON_MATCHES, // 1 hour for navigation
+    revalidate: CACHE_TTL.CURRENT_SEASON_MATCHES,
   }
 );

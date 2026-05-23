@@ -11,7 +11,33 @@ type MatchProps = {
 export default function MatchCard({ match }: MatchProps) {
   const homeScore = match.is_home_match ? (match.spurs_score ?? '') : (match.opponent_score ?? '');
   const awayScore = match.is_home_match ? (match.opponent_score ?? '') : (match.spurs_score ?? '');
+  const homeScoreAet = match.is_home_match ? (match.spurs_score_aet ?? null) : (match.opponent_score_aet ?? null);
+  const awayScoreAet = match.is_home_match ? (match.opponent_score_aet ?? null) : (match.spurs_score_aet ?? null);
+  const homeScorePens = match.is_home_match ? (match.spurs_score_pens ?? null) : (match.opponent_score_pens ?? null);
+  const awayScorePens = match.is_home_match ? (match.opponent_score_pens ?? null) : (match.spurs_score_pens ?? null);
+  
   const displayStadium = match.stadium_display_name || match.venue;
+  
+  // Determine if we need to show AET/PENS bracket scores
+  const hasAetScores = homeScoreAet !== null && awayScoreAet !== null;
+  const hasPensScores = homeScorePens !== null && awayScorePens !== null;
+  
+  // Build the score display string with individual brackets
+  let homeDisplay = homeScore;
+  let awayDisplay = awayScore;
+  
+  if (hasPensScores) {
+    homeDisplay = `(${homeScorePens}) ${homeScore}`;
+    awayDisplay = `${awayScore} (${awayScorePens})`;
+  } else if (hasAetScores) {
+    homeDisplay = `(${homeScoreAet}) ${homeScore}`;
+    awayDisplay = `${awayScore} (${awayScoreAet})`;
+  }
+  
+  const scoreDisplay = `${homeDisplay} - ${awayDisplay}`;
+  
+  // Determine the label to show under the score
+  const scoreLabel = hasPensScores ? 'PENS' : (hasAetScores ? 'AET' : null);
 
   return (
     <Link href={`/spurs-women/matches/${match.id}`} className="block spurs-text">
@@ -46,7 +72,12 @@ export default function MatchCard({ match }: MatchProps) {
             secondaryColor={match.home_team?.secondary_color}
             className="inline-flex items-center justify-center px-2 py-1 rounded-full text-xs sm:px-3 sm:py-1 sm:text-sm font-medium transition-colors"
           />
-          <span className="spurs-text text-lg sm:text-xl font-semibold">{homeScore} - {awayScore}</span>
+          <div className="flex flex-col items-center">
+            <span className="spurs-text text-lg sm:text-xl font-semibold">{scoreDisplay}</span>
+            {scoreLabel && (
+              <span className="text-xs spurs-text opacity-75 mt-1">{scoreLabel}</span>
+            )}
+          </div>
           <TeamPill 
             teamName={match.away_team?.name || 'Unknown Team'}
             primaryColor={match.away_team?.primary_color}

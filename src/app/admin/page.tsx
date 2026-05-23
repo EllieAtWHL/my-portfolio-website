@@ -5,6 +5,7 @@ import { callAdminApi, createEntityAndReload } from '@/lib/api-client';
 import { getTeamColor } from '@/lib/utils/team-colors';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/Button';
 
 // Types for our data
 interface Team {
@@ -39,11 +40,25 @@ interface Match {
   is_home_match: boolean;
   spurs_score: number | null;
   opponent_score: number | null;
+  spurs_score_aet: number | null;
+  opponent_score_aet: number | null;
+  spurs_score_pens: number | null;
+  opponent_score_pens: number | null;
   venue: string;
+  stadium_display_name: string | null;
   attended: boolean;
   notes: string;
   home_team_id: number;
   away_team_id: number;
+  attendance: number | null;
+  home_possession: number | null;
+  away_possession: number | null;
+  home_total_shots: number | null;
+  away_total_shots: number | null;
+  home_shots_on_target: number | null;
+  away_shots_on_target: number | null;
+  home_corners: number | null;
+  away_corners: number | null;
 }
 
 interface Media {
@@ -148,6 +163,7 @@ export default function AdminPage() {
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
   const [stadiums, setStadiums] = useState<Stadium[]>([]);
+  const [stadiumNames, setStadiumNames] = useState<StadiumName[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
 
   // Recent records for each entity type
@@ -165,6 +181,22 @@ export default function AdminPage() {
   const [totalCount, setTotalCount] = useState(0);
   const recordsPerPage = 20;
 
+  // Matches-specific pagination state
+  const [matchesCurrentPage, setMatchesCurrentPage] = useState(1);
+  const [matchesTotalPages, setMatchesTotalPages] = useState(1);
+  const matchesPerPage = 20;
+
+  // Search state for matches
+  const [matchSearch, setMatchSearch] = useState('');
+
+  // Edit mode state
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingMatchId, setEditingMatchId] = useState<string | null>(null);
+
+  // Collapsible section state
+  const [showExtraTimeSection, setShowExtraTimeSection] = useState(false);
+  const [showStatsSection, setShowStatsSection] = useState(false);
+
   // Form states
   const [matchForm, setMatchForm] = useState<Partial<Match>>({
     season_id: '',
@@ -174,11 +206,24 @@ export default function AdminPage() {
     is_home_match: true,
     spurs_score: null,
     opponent_score: null,
+    spurs_score_aet: null,
+    opponent_score_aet: null,
+    spurs_score_pens: null,
+    opponent_score_pens: null,
     venue: '',
     attended: false,
     notes: '',
     home_team_id: 1, // Default to Tottenham
     away_team_id: 1,
+    attendance: null,
+    home_possession: null,
+    away_possession: null,
+    home_total_shots: null,
+    away_total_shots: null,
+    home_shots_on_target: null,
+    away_shots_on_target: null,
+    home_corners: null,
+    away_corners: null,
   });
 
   const [mediaForm, setMediaForm] = useState<Partial<Media>>({
@@ -210,19 +255,54 @@ export default function AdminPage() {
     router.push('/login');
   };
 
+  // Helper function to get current stadium display name based on date
+  const getCurrentStadiumName = (stadiumId: string, matchDate: string): string => {
+    const stadium = stadiums.find(s => s.id === stadiumId);
+    if (!stadium) return '';
+    
+    // Find stadium names that were valid on the match date
+    const validNames = stadiumNames.filter(sn => {
+      if (sn.stadium_id !== stadiumId) return false;
+      
+      const validFrom = sn.valid_from ? new Date(sn.valid_from) : null;
+      const validTo = sn.valid_to ? new Date(sn.valid_to) : null;
+      const matchDateTime = new Date(matchDate);
+      
+      // Check if match date falls within the validity period
+      if (validFrom && matchDateTime < validFrom) return false;
+      if (validTo && matchDateTime > validTo) return false;
+      
+      return true;
+    });
+    
+    // Return the most recent valid name, or fall back to base stadium name
+    if (validNames.length > 0) {
+      // Sort by valid_from descending to get the most recent
+      validNames.sort((a, b) => {
+        const dateA = a.valid_from ? new Date(a.valid_from).getTime() : 0;
+        const dateB = b.valid_from ? new Date(b.valid_from).getTime() : 0;
+        return dateB - dateA;
+      });
+      return validNames[0].name;
+    }
+    
+    return stadium.name;
+  };
+
   // Load dropdown data
   useEffect(() => {
     const loadDropdownData = async () => {
       setLoading(true);
       try {
         // Load all dropdown data via API calls
-        const [matchesRes, teamsRes, competitionsRes, seasonsRes, playersRes, stadiumsRes] = await Promise.all([
+        const [matchesRes, teamsRes, competitionsRes, seasonsRes, playersRes, stadiumsRes, stadiumNamesRes] = await Promise.all([
           callAdminApi('matches', 'GET'),
           callAdminApi('teams', 'GET'),
           callAdminApi('competitions', 'GET'),
           callAdminApi('seasons', 'GET'),
           callAdminApi('players', 'GET'),
           callAdminApi('stadia', 'GET'),
+          callAdminApi('stadium-names', 'GET'),
         ]);
 
         if (teamsRes.data) setTeams(teamsRes.data);
@@ -234,6 +314,7 @@ export default function AdminPage() {
         } else {
           console.warn('No stadiums data');
         }
+        if (stadiumNamesRes.data) setStadiumNames(stadiumNamesRes.data);
         if (playersRes.data) setPlayers(playersRes.data);
       } catch (error) {
         showMessage('Error loading data', 'error');
@@ -373,6 +454,8 @@ export default function AdminPage() {
     setCurrentPage(1);
     setTotalPages(1);
     setTotalCount(0);
+    setMatchesCurrentPage(1);
+    setMatchesTotalPages(1);
     fetchRecentRecords(1);
   }, [activeTab]);
 
@@ -382,6 +465,155 @@ export default function AdminPage() {
       setCurrentPage(page);
       fetchRecentRecords(page);
     }
+  };
+
+  // Helper function for filtering matches (searches across ALL matches)
+  const getFilteredMatches = useCallback(() => {
+    return matches.filter(match => {
+      if (!matchSearch) return true;
+      const searchTerm = matchSearch.toLowerCase();
+      const homeTeam = teams.find(t => t.id === match.home_team_id);
+      const awayTeam = teams.find(t => t.id === match.away_team_id);
+      const homeTeamShortName = homeTeam?.short_name || '';
+      const homeTeamFullName = homeTeam?.name || '';
+      const awayTeamShortName = awayTeam?.short_name || '';
+      const awayTeamFullName = awayTeam?.name || '';
+      return (
+        match.date?.toLowerCase().includes(searchTerm) ||
+        homeTeamShortName.toLowerCase().includes(searchTerm) ||
+        homeTeamFullName.toLowerCase().includes(searchTerm) ||
+        awayTeamShortName.toLowerCase().includes(searchTerm) ||
+        awayTeamFullName.toLowerCase().includes(searchTerm) ||
+        match.venue?.toLowerCase().includes(searchTerm)
+      );
+    });
+  }, [matches, teams, matchSearch]);
+
+  // Get paginated matches (applies pagination to filtered results)
+  const getPaginatedMatches = () => {
+    const filtered = getFilteredMatches();
+    const startIndex = (matchesCurrentPage - 1) * matchesPerPage;
+    const endIndex = startIndex + matchesPerPage;
+    return filtered.slice(startIndex, endIndex);
+  };
+
+  // Update matches pagination when search or data changes
+  useEffect(() => {
+    const filtered = getFilteredMatches();
+    const newTotalPages = Math.ceil(filtered.length / matchesPerPage);
+    setMatchesTotalPages(newTotalPages);
+    // Reset to page 1 if current page is beyond new total
+    if (matchesCurrentPage > newTotalPages && newTotalPages > 0) {
+      setMatchesCurrentPage(1);
+    }
+  }, [getFilteredMatches, matchesCurrentPage, matchesPerPage]);
+
+  const handleDeleteMatch = async (matchId: string) => {
+    setLoading(true);
+    try {
+      await callAdminApi('matches', 'DELETE', { id: matchId });
+      showMessage('Match deleted successfully', 'success');
+
+      // Reload matches data
+      try {
+        const matchesResponse = await callAdminApi('matches', 'GET');
+        if (matchesResponse.data) setMatches(matchesResponse.data);
+      } catch (error) {
+        console.error('Error reloading matches:', error);
+      }
+    } catch (error) {
+      console.error('Error deleting match:', error);
+      showMessage('Error deleting match', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditMatch = (match: Match) => {
+    setIsEditMode(true);
+    setEditingMatchId(match.id);
+    
+    // Try to match the venue by comparing current stadium names with stadium_display_name
+    const matchedStadium = stadiums.find(s => {
+      const currentName = getCurrentStadiumName(s.id, match.date);
+      const displayNameLower = match.stadium_display_name?.toLowerCase() || '';
+      const currentNameLower = currentName.toLowerCase();
+      const venueLower = match.venue?.toLowerCase() || '';
+      
+      return (
+        currentName === match.stadium_display_name ||
+        currentNameLower === displayNameLower ||
+        s.name === match.venue ||
+        venueLower === currentNameLower ||
+        displayNameLower.includes(currentNameLower) ||
+        currentNameLower.includes(displayNameLower)
+      );
+    });
+    
+    // Use the current stadium name for the form value
+    const venueValue = matchedStadium ? getCurrentStadiumName(matchedStadium.id, match.date) : match.stadium_display_name || match.venue;
+    
+    setMatchForm({
+      season_id: match.season_id,
+      competition_id: match.competition_id,
+      date: match.date,
+      kickoff_time: match.kickoff_time || '',
+      is_home_match: match.is_home_match,
+      spurs_score: match.spurs_score,
+      opponent_score: match.opponent_score,
+      spurs_score_aet: match.spurs_score_aet,
+      opponent_score_aet: match.opponent_score_aet,
+      spurs_score_pens: match.spurs_score_pens,
+      opponent_score_pens: match.opponent_score_pens,
+      venue: venueValue,
+      attended: match.attended,
+      notes: match.notes || '',
+      home_team_id: match.home_team_id,
+      away_team_id: match.away_team_id,
+      attendance: match.attendance,
+      home_possession: match.home_possession,
+      away_possession: match.away_possession,
+      home_total_shots: match.home_total_shots,
+      away_total_shots: match.away_total_shots,
+      home_shots_on_target: match.home_shots_on_target,
+      away_shots_on_target: match.away_shots_on_target,
+      home_corners: match.home_corners,
+      away_corners: match.away_corners,
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditMode(false);
+    setEditingMatchId(null);
+    setShowExtraTimeSection(false);
+    setShowStatsSection(false);
+    setMatchForm({
+      season_id: '',
+      competition_id: '',
+      date: '',
+      kickoff_time: '',
+      is_home_match: true,
+      spurs_score: null,
+      opponent_score: null,
+      spurs_score_aet: null,
+      opponent_score_aet: null,
+      spurs_score_pens: null,
+      opponent_score_pens: null,
+      venue: '',
+      attended: false,
+      notes: '',
+      home_team_id: 1,
+      away_team_id: 1,
+      attendance: null,
+      home_possession: null,
+      away_possession: null,
+      home_total_shots: null,
+      away_total_shots: null,
+      home_shots_on_target: null,
+      away_shots_on_target: null,
+      home_corners: null,
+      away_corners: null,
+    });
   };
 
   const handleMatchSubmit = async (e: React.FormEvent) => {
@@ -410,42 +642,57 @@ export default function AdminPage() {
         is_home_match: matchForm.is_home_match,
         spurs_score: matchForm.spurs_score || 0,
         opponent_score: matchForm.opponent_score || 0,
+        spurs_score_aet: matchForm.spurs_score_aet !== null && matchForm.spurs_score_aet !== undefined ? matchForm.spurs_score_aet : null,
+        opponent_score_aet: matchForm.opponent_score_aet !== null && matchForm.opponent_score_aet !== undefined ? matchForm.opponent_score_aet : null,
+        spurs_score_pens: matchForm.spurs_score_pens !== null && matchForm.spurs_score_pens !== undefined ? matchForm.spurs_score_pens : null,
+        opponent_score_pens: matchForm.opponent_score_pens !== null && matchForm.opponent_score_pens !== undefined ? matchForm.opponent_score_pens : null,
         venue: matchForm.venue || '',
         attended: matchForm.attended || false,
         notes: matchForm.notes || '',
-        home_team_id: matchForm.is_home_match ? spursTeam.id : matchForm.away_team_id,
-        away_team_id: matchForm.is_home_match ? matchForm.away_team_id : spursTeam.id,
+        home_team_id: matchForm.is_home_match ? spursTeam.id : (matchForm.home_team_id || matchForm.away_team_id),
+        away_team_id: matchForm.is_home_match ? (matchForm.away_team_id || matchForm.home_team_id) : spursTeam.id,
+        attendance: matchForm.attendance !== null && matchForm.attendance !== undefined ? matchForm.attendance : null,
+        home_possession: matchForm.home_possession !== null && matchForm.home_possession !== undefined ? matchForm.home_possession : null,
+        away_possession: matchForm.away_possession !== null && matchForm.away_possession !== undefined ? matchForm.away_possession : null,
+        home_total_shots: matchForm.home_total_shots !== null && matchForm.home_total_shots !== undefined ? matchForm.home_total_shots : null,
+        away_total_shots: matchForm.away_total_shots !== null && matchForm.away_total_shots !== undefined ? matchForm.away_total_shots : null,
+        home_shots_on_target: matchForm.home_shots_on_target !== null && matchForm.home_shots_on_target !== undefined ? matchForm.home_shots_on_target : null,
+        away_shots_on_target: matchForm.away_shots_on_target !== null && matchForm.away_shots_on_target !== undefined ? matchForm.away_shots_on_target : null,
+        home_corners: matchForm.home_corners !== null && matchForm.home_corners !== undefined ? matchForm.home_corners : null,
+        away_corners: matchForm.away_corners !== null && matchForm.away_corners !== undefined ? matchForm.away_corners : null,
       };
 
-      const response = await fetch('/api/admin/matches', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+      let response;
+      if (isEditMode && editingMatchId) {
+        // Update existing match
+        response = await fetch('/api/admin/matches', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ id: editingMatchId, ...payload }),
+        });
+      } else {
+        // Create new match
+        response = await fetch('/api/admin/matches', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+      }
 
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to create match');
+        throw new Error(result.error || `Failed to ${isEditMode ? 'update' : 'create'} match`);
       }
 
-      showMessage('Match created successfully', 'success');
-      setMatchForm({
-        season_id: '',
-        competition_id: '',
-        date: '',
-        kickoff_time: '',
-        is_home_match: true,
-        spurs_score: null,
-        opponent_score: null,
-        venue: '',
-        attended: false,
-        notes: '',
-        home_team_id: 1,
-        away_team_id: 1,
-      });
+      showMessage(isEditMode ? 'Match updated successfully' : 'Match created successfully', 'success');
+      
+      // Reset form and edit mode
+      handleCancelEdit();
       
       // Reload matches data
       try {
@@ -456,19 +703,19 @@ export default function AdminPage() {
         console.error('Error reloading matches:', error);
       }
     } catch (error) {
-      console.error('Error creating match:', error);
+      console.error(`Error ${isEditMode ? 'updating' : 'creating'} match:`, error);
       
-      let errorMessage = 'Error creating match';
+      let errorMessage = isEditMode ? 'Error updating match' : 'Error creating match';
       if (error && typeof error === 'object') {
         if ('message' in error) {
-          errorMessage = `Error creating match: ${error.message}`;
+          errorMessage = `${isEditMode ? 'Error updating match' : 'Error creating match'}: ${error.message}`;
         } else if ('code' in error) {
-          errorMessage = `Error creating match: ${error.code}`;
+          errorMessage = `${isEditMode ? 'Error updating match' : 'Error creating match'}: ${error.code}`;
         } else {
-          errorMessage = `Error creating match: ${JSON.stringify(error)}`;
+          errorMessage = `${isEditMode ? 'Error updating match' : 'Error creating match'}: ${JSON.stringify(error)}`;
         }
       } else if (typeof error === 'string') {
-        errorMessage = `Error creating match: ${error}`;
+        errorMessage = `${isEditMode ? 'Error updating match' : 'Error creating match'}: ${error}`;
       }
       
       showMessage(errorMessage, 'error');
@@ -547,12 +794,13 @@ export default function AdminPage() {
           {user && (
             <div className="flex items-center gap-4">
               <span className="text-gray-300 text-sm">{user.email}</span>
-              <button
+              <Button
+                variant="spurs"
+                size="sm"
                 onClick={handleLogout}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm transition-colors"
               >
                 Sign Out
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -703,7 +951,33 @@ export default function AdminPage() {
         {/* Match Form */}
         {activeTab === 'matches' && (
           <div className="spurs-accent-card rounded-lg p-6">
-            <h2 className="text-2xl font-semibold mb-6 spurs-text">Add New Match</h2>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-semibold spurs-text">
+                {isEditMode ? 'Edit Match' : 'Add New Match'}
+              </h2>
+              {isEditMode && (
+                <div className="flex gap-2">
+                  <Button
+                    variant="spurs"
+                    size="sm"
+                    onClick={() => {
+                      if (confirm('Are you sure you want to delete this match?')) {
+                        handleDeleteMatch(editingMatchId!);
+                      }
+                    }}
+                  >
+                    Delete
+                  </Button>
+                  <Button
+                    variant="spurs"
+                    size="sm"
+                    onClick={handleCancelEdit}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
+            </div>
             
             <form onSubmit={handleMatchSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -797,8 +1071,8 @@ export default function AdminPage() {
                     Opponent {matchForm.is_home_match ? 'Away' : 'Home'} Team
                   </label>
                   <select
-                    value={matchForm.away_team_id || ''}
-                    onChange={(e) => setMatchForm({ ...matchForm, away_team_id: parseInt(e.target.value) })}
+                    value={matchForm.is_home_match ? (matchForm.away_team_id?.toString() || '') : (matchForm.home_team_id?.toString() || '')}
+                    onChange={(e) => setMatchForm({ ...matchForm, [matchForm.is_home_match ? 'away_team_id' : 'home_team_id']: parseInt(e.target.value) })}
                     className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
                     required
                   >
@@ -821,11 +1095,14 @@ export default function AdminPage() {
                     required
                   >
                     <option value="">Select stadium</option>
-                    {stadiums.map(stadium => (
-                      <option key={stadium.id} value={stadium.name}>
-                        {stadium.name} {stadium.city && `(${stadium.city})`}
-                      </option>
-                    ))}
+                    {stadiums.map(stadium => {
+                      const currentName = getCurrentStadiumName(stadium.id, matchForm.date || new Date().toISOString().split('T')[0]);
+                      return (
+                        <option key={stadium.id} value={currentName}>
+                          {currentName} {stadium.city && currentName !== stadium.name ? `(${stadium.city})` : ''}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
 
@@ -865,11 +1142,23 @@ export default function AdminPage() {
                     I attended this match
                   </label>
                 </div>
+
+                {/* Attendance */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Attendance</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={matchForm.attendance === null || matchForm.attendance === undefined ? '' : matchForm.attendance}
+                    onChange={(e) => setMatchForm({ ...matchForm, attendance: e.target.value !== '' ? parseInt(e.target.value) : null })}
+                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+                  />
+                </div>
               </div>
 
               {/* Notes */}
               <div>
-                <label className="block text-sm font-medium mb-2">Notes</label>
+                <label className="block text-sm font-medium mb-2 spurs-text">Notes</label>
                 <textarea
                   value={matchForm.notes || ''}
                   onChange={(e) => setMatchForm({ ...matchForm, notes: e.target.value })}
@@ -879,13 +1168,205 @@ export default function AdminPage() {
                 />
               </div>
 
-              <button
+              {/* Stats Collapsible Section */}
+              <div className="border border-gray-600 rounded-lg overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setShowStatsSection(!showStatsSection)}
+                  className="w-full px-4 py-3 bg-gray-800 hover:bg-gray-700 flex items-center justify-between transition-colors"
+                  style={{
+                    backgroundColor: showStatsSection ? 'var(--spurs-dark-bg-1)' : 'rgba(8, 21, 33, 0.3)',
+                    borderColor: showStatsSection ? 'var(--spurs-dark-accent)' : 'transparent',
+                    borderWidth: showStatsSection ? '2px' : '0',
+                  }}
+                >
+                  <span className="font-medium text-white">Match Stats</span>
+                  <span className="text-gray-400 transform transition-transform">
+                    {showStatsSection ? '▼' : '▶'}
+                  </span>
+                </button>
+                
+                {showStatsSection && (
+                  <div className="p-4 space-y-4 bg-gray-800/50">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Possession */}
+                      <div>
+                        <label className="block text-sm font-medium mb-2 spurs-text">Home Possession (%)</label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="0.1"
+                          value={matchForm.home_possession === null || matchForm.home_possession === undefined ? '' : matchForm.home_possession}
+                          onChange={(e) => setMatchForm({ ...matchForm, home_possession: e.target.value ? parseFloat(e.target.value) : null })}
+                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2 spurs-text">Away Possession (%)</label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="0.1"
+                          value={matchForm.away_possession === null || matchForm.away_possession === undefined ? '' : matchForm.away_possession}
+                          onChange={(e) => setMatchForm({ ...matchForm, away_possession: e.target.value ? parseFloat(e.target.value) : null })}
+                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+                        />
+                      </div>
+
+                      {/* Total Shots */}
+                      <div>
+                        <label className="block text-sm font-medium mb-2 spurs-text">Home Total Shots</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={matchForm.home_total_shots === null || matchForm.home_total_shots === undefined ? '' : matchForm.home_total_shots}
+                          onChange={(e) => setMatchForm({ ...matchForm, home_total_shots: e.target.value !== '' ? parseInt(e.target.value) : null })}
+                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2 spurs-text">Away Total Shots</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={matchForm.away_total_shots === null || matchForm.away_total_shots === undefined ? '' : matchForm.away_total_shots}
+                          onChange={(e) => setMatchForm({ ...matchForm, away_total_shots: e.target.value !== '' ? parseInt(e.target.value) : null })}
+                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+                        />
+                      </div>
+
+                      {/* Shots On Target */}
+                      <div>
+                        <label className="block text-sm font-medium mb-2 spurs-text">Home Shots On Target</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={matchForm.home_shots_on_target === null || matchForm.home_shots_on_target === undefined ? '' : matchForm.home_shots_on_target}
+                          onChange={(e) => setMatchForm({ ...matchForm, home_shots_on_target: e.target.value !== '' ? parseInt(e.target.value) : null })}
+                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2 spurs-text">Away Shots On Target</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={matchForm.away_shots_on_target === null || matchForm.away_shots_on_target === undefined ? '' : matchForm.away_shots_on_target}
+                          onChange={(e) => setMatchForm({ ...matchForm, away_shots_on_target: e.target.value !== '' ? parseInt(e.target.value) : null })}
+                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+                        />
+                      </div>
+
+                      {/* Corners */}
+                      <div>
+                        <label className="block text-sm font-medium mb-2 spurs-text">Home Corners</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={matchForm.home_corners === null || matchForm.home_corners === undefined ? '' : matchForm.home_corners}
+                          onChange={(e) => setMatchForm({ ...matchForm, home_corners: e.target.value !== '' ? parseInt(e.target.value) : null })}
+                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2 spurs-text">Away Corners</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={matchForm.away_corners === null || matchForm.away_corners === undefined ? '' : matchForm.away_corners}
+                          onChange={(e) => setMatchForm({ ...matchForm, away_corners: e.target.value !== '' ? parseInt(e.target.value) : null })}
+                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Extra Time & Penalties Collapsible Section */}
+              <div className="border border-gray-600 rounded-lg overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setShowExtraTimeSection(!showExtraTimeSection)}
+                  className="w-full px-4 py-3 bg-gray-800 hover:bg-gray-700 flex items-center justify-between transition-colors"
+                  style={{
+                    backgroundColor: showExtraTimeSection ? 'var(--spurs-dark-bg-1)' : 'rgba(8, 21, 33, 0.3)',
+                    borderColor: showExtraTimeSection ? 'var(--spurs-dark-accent)' : 'transparent',
+                    borderWidth: showExtraTimeSection ? '2px' : '0',
+                  }}
+                >
+                  <span className="font-medium text-white">Extra Time</span>
+                  <span className="text-gray-400 transform transition-transform">
+                    {showExtraTimeSection ? '▼' : '▶'}
+                  </span>
+                </button>
+                
+                {showExtraTimeSection && (
+                  <div className="p-4 space-y-4 bg-gray-800/50">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2 spurs-text">Spurs Score (AET)</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={matchForm.spurs_score_aet ?? ''}
+                          onChange={(e) => setMatchForm({ ...matchForm, spurs_score_aet: e.target.value ? parseInt(e.target.value) : null })}
+                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+                          placeholder="After extra time"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2 spurs-text">Opponent Score (AET)</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={matchForm.opponent_score_aet ?? ''}
+                          onChange={(e) => setMatchForm({ ...matchForm, opponent_score_aet: e.target.value ? parseInt(e.target.value) : null })}
+                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+                          placeholder="After extra time"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2 spurs-text">Spurs Score (Penalties)</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={matchForm.spurs_score_pens ?? ''}
+                          onChange={(e) => setMatchForm({ ...matchForm, spurs_score_pens: e.target.value ? parseInt(e.target.value) : null })}
+                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+                          placeholder="Penalty shootout"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2 spurs-text">Opponent Score (Penalties)</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={matchForm.opponent_score_pens ?? ''}
+                          onChange={(e) => setMatchForm({ ...matchForm, opponent_score_pens: e.target.value ? parseInt(e.target.value) : null })}
+                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+                          placeholder="Penalty shootout"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <Button
                 type="submit"
+                variant="spurs"
                 disabled={loading}
-                className="spurs-button w-full md:w-auto px-6 py-2 rounded font-medium"
+                loading={loading}
+                fullWidth
               >
-                {loading ? 'Creating...' : 'Create Match'}
-              </button>
+                {loading ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Match' : 'Create Match')}
+              </Button>
             </form>
           </div>
         )}
@@ -1883,16 +2364,30 @@ export default function AdminPage() {
 
         {/* Recent Records Preview */}
         <div className="mt-8 spurs-accent-card rounded-lg p-6">
-          <h3 className="text-xl font-semibold mb-4 spurs-text">
-            Recent {activeTab === 'matches' ? 'Matches' : 
-                    activeTab === 'media' ? 'Media' :
-                    activeTab === 'teams' ? 'Teams' :
-                    activeTab === 'players' ? 'Players' :
-                    activeTab === 'player_stats' ? 'Player Stats' :
-                    activeTab === 'player_history' ? 'Player History' :
-                    activeTab === 'stadiums' ? 'Stadiums' :
-                    activeTab === 'stadium_names' ? 'Stadium Names' : 'Records'}
-          </h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-semibold spurs-text">
+              {activeTab === 'matches' 
+                ? (matchSearch ? `All Matches (${getFilteredMatches().length} filtered)` : 'All Matches')
+                : activeTab === 'media' ? 'Recent Media' :
+                activeTab === 'teams' ? 'Recent Teams' :
+                activeTab === 'players' ? 'Recent Players' :
+                activeTab === 'player_stats' ? 'Recent Player Stats' :
+                activeTab === 'player_history' ? 'Recent Player History' :
+                activeTab === 'stadiums' ? 'Recent Stadiums' :
+                activeTab === 'stadium_names' ? 'Recent Stadium Names' : 'Recent Records'}
+            </h3>
+          </div>
+          {activeTab === 'matches' && (
+            <div className="mb-4">
+              <input
+                type="text"
+                placeholder="Search matches by date, opponent, or venue..."
+                value={matchSearch}
+                onChange={(e) => setMatchSearch(e.target.value)}
+                className="w-full px-4 py-2 rounded border border-gray-600 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          )}
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -1965,18 +2460,23 @@ export default function AdminPage() {
                 </tr>
               </thead>
               <tbody>
-                {activeTab === 'matches' && matches.slice(0, 10).map(match => {
+                {activeTab === 'matches' && getPaginatedMatches().map(match => {
                   const homeTeam = teams.find(t => t.id === match.home_team_id);
                   const awayTeam = teams.find(t => t.id === match.away_team_id);
                   const competition = competitions.find(c => c.id === match.competition_id);
-                  
+                  const displayVenue = match.stadium_display_name || match.venue;
+
                   return (
-                    <tr key={match.id} className="border-b border-gray-600">
+                    <tr 
+                      key={match.id} 
+                      className="border-b border-gray-600 cursor-pointer hover:bg-gray-700/50 transition-colors"
+                      onClick={() => handleEditMatch(match)}
+                    >
                       <td className="p-2 spurs-text">{match.date}</td>
                       <td className="p-2 spurs-text">{homeTeam?.short_name} vs {awayTeam?.short_name}</td>
                       <td className="p-2 spurs-text">{competition?.nickname}</td>
                       <td className="p-2 spurs-text">{match.spurs_score ?? '-'} - {match.opponent_score ?? '-'}</td>
-                      <td className="p-2 spurs-text">{match.venue}</td>
+                      <td className="p-2 spurs-text">{displayVenue}</td>
                     </tr>
                   );
                 })}
@@ -1986,7 +2486,7 @@ export default function AdminPage() {
                     {console.log('recentMedia length:', recentMedia.length)}
                     {recentMedia.length === 0 ? (
                       <tr>
-                        <td colSpan={3} className="p-2 text-center text-gray-400">
+                        <td colSpan={4} className="p-2 text-center text-gray-400">
                           No media records found
                         </td>
                       </tr>
@@ -1995,12 +2495,12 @@ export default function AdminPage() {
                         const match = matches.find(m => m.id === media.match_id);
                         const homeTeam = teams.find(t => t.id === match?.home_team_id);
                         const awayTeam = teams.find(t => t.id === match?.away_team_id);
-                        
+
                         return (
                           <tr key={media.id} className="border-b border-gray-600">
                             <td className="p-2 spurs-text">{media.type}</td>
                             <td className="p-2 spurs-text">
-                              {match && homeTeam && awayTeam 
+                              {match && homeTeam && awayTeam
                                 ? `${homeTeam.short_name} vs ${awayTeam.short_name} (${match.date})`
                                 : '-'
                               }
@@ -2012,68 +2512,84 @@ export default function AdminPage() {
                     )}
                   </>
                 )}
-                {activeTab === 'teams' && recentTeams.map(team => (
-                  <tr key={team.id} className="border-b border-gray-600">
-                    <td className="p-2 spurs-text">{team.name}</td>
-                    <td className="p-2 spurs-text">{team.short_name}</td>
-                    <td className="p-2 spurs-text">
-                      <div className="flex items-center space-x-2">
-                        {team.primary_color ? (
-                          <div 
-                            className="w-6 h-6 rounded border border-gray-400" 
-                            style={{ backgroundColor: getTeamColor(team.primary_color) }}
-                            title={team.primary_color}
-                          />
-                        ) : (
-                          <div className="w-6 h-6 rounded border border-gray-400 bg-gray-600" title="No color" />
-                        )}
-                        <span className="text-xs">{team.primary_color || '-'}</span>
-                      </div>
-                    </td>
-                    <td className="p-2 spurs-text">
-                      <div className="flex items-center space-x-2">
-                        {team.secondary_color ? (
-                          <div 
-                            className="w-6 h-6 rounded border border-gray-400" 
-                            style={{ backgroundColor: getTeamColor(team.secondary_color) }}
-                            title={team.secondary_color}
-                          />
-                        ) : (
-                          <div className="w-6 h-6 rounded border border-gray-400 bg-gray-600" title="No color" />
-                        )}
-                        <span className="text-xs">{team.secondary_color || '-'}</span>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {activeTab === 'players' && recentPlayers.map(player => (
-                  <tr key={player.id} className="border-b border-gray-600">
-                    <td className="p-2 spurs-text">{player.first_name} {player.last_name}</td>
-                    <td className="p-2 spurs-text">{player.position || '-'}</td>
-                    <td className="p-2 spurs-text">{player.nationality || '-'}</td>
-                  </tr>
-                ))}
-                {activeTab === 'player_stats' && recentPlayerStats.map(stat => {
-                  const player = players.find(p => p.id === parseInt(stat.player_id));
-                  const match = matches.find(m => m.id === stat.match_id);
-                  const homeTeam = teams.find(t => t.id === match?.home_team_id);
-                  const awayTeam = teams.find(t => t.id === match?.away_team_id);
-                  return (
-                    <tr key={stat.id} className="border-b border-gray-600">
-                      <td className="p-2 spurs-text">{player?.first_name} {player?.last_name}</td>
-                      <td className="p-2 spurs-text">
-                        {match && homeTeam && awayTeam 
-                          ? `${homeTeam.short_name} vs ${awayTeam.short_name} (${match.date})`
-                          : match?.date || '-'
-                        }
-                      </td>
-                      <td className="p-2 spurs-text">{stat.started ? 'Yes' : 'No'}</td>
-                      <td className="p-2 spurs-text">{stat.captain ? 'Yes' : 'No'}</td>
-                      <td className="p-2 spurs-text">{stat.player_of_the_match ? 'Yes' : 'No'}</td>
-                      <td className="p-2 spurs-text">{stat.goals}</td>
-                    </tr>
-                  );
-                })}
+                {activeTab === 'teams' && (
+                  <>
+                    {recentTeams.map(team => {
+                      return (
+                        <tr key={team.id} className="border-b border-gray-600">
+                          <td className="p-2 spurs-text">{team.name}</td>
+                          <td className="p-2 spurs-text">{team.short_name}</td>
+                          <td className="p-2 spurs-text">
+                            <div className="flex items-center space-x-2">
+                              {team.primary_color ? (
+                                <div
+                                  className="w-6 h-6 rounded border border-gray-400"
+                                  style={{ backgroundColor: getTeamColor(team.primary_color) }}
+                                  title={team.primary_color}
+                                />
+                              ) : (
+                                <div className="w-6 h-6 rounded border border-gray-400 bg-gray-600" title="No color" />
+                              )}
+                              <span className="text-xs">{team.primary_color || '-'}</span>
+                            </div>
+                          </td>
+                          <td className="p-2 spurs-text">
+                            <div className="flex items-center space-x-2">
+                              {team.secondary_color ? (
+                                <div
+                                  className="w-6 h-6 rounded border border-gray-400"
+                                  style={{ backgroundColor: getTeamColor(team.secondary_color) }}
+                                  title={team.secondary_color}
+                                />
+                              ) : (
+                                <div className="w-6 h-6 rounded border border-gray-400 bg-gray-600" title="No color" />
+                              )}
+                              <span className="text-xs">{team.secondary_color || '-'}</span>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </>
+                )}
+                {activeTab === 'players' && (
+                  <>
+                    {recentPlayers.map(player => {
+                      return (
+                        <tr key={player.id} className="border-b border-gray-600">
+                          <td className="p-2 spurs-text">{player.first_name} {player.last_name}</td>
+                          <td className="p-2 spurs-text">{player.position || '-'}</td>
+                          <td className="p-2 spurs-text">{player.nationality || '-'}</td>
+                        </tr>
+                      );
+                    })}
+                  </>
+                )}
+                {activeTab === 'player_stats' && (
+                  <>
+                    {recentPlayerStats.map(stat => {
+                      const player = players.find(p => p.id === parseInt(stat.player_id));
+                      const match = matches.find(m => m.id === stat.match_id);
+                      const homeTeam = teams.find(t => t.id === match?.home_team_id);
+                      const awayTeam = teams.find(t => t.id === match?.away_team_id);
+                      return (
+                        <tr key={stat.id} className="border-b border-gray-600">
+                          <td className="p-2 spurs-text">{player?.first_name} {player?.last_name}</td>
+                          <td className="p-2 spurs-text">
+                            {match && homeTeam && awayTeam
+                              ? `${homeTeam.short_name} vs ${awayTeam.short_name} (${match.date})`
+                              : match?.date || '-'
+                            }
+                          </td>
+                          <td className="p-2 spurs-text">{stat.started ? 'Yes' : 'No'}</td>
+                          <td className="p-2 spurs-text">{stat.captain ? 'Yes' : 'No'}</td>
+                          <td className="p-2 spurs-text">{stat.player_of_the_match ? 'Yes' : 'No'}</td>
+                          <td className="p-2 spurs-text">{stat.goals}</td>
+                        </tr>
+                      );
+                    })}
+                  </>
+                )}
                 {(() => {
                   console.log('=== PLAYER HISTORY DEBUG ===');
                   console.log('Total recentPlayerHistory records:', recentPlayerHistory.length);
@@ -2106,18 +2622,20 @@ export default function AdminPage() {
                     if (!b.opened_date) return -1;
                     return new Date(b.opened_date).getTime() - new Date(a.opened_date).getTime();
                   })
-                  .map(stadium => (
-                  <tr key={stadium.id} className="border-b border-gray-600">
-                    <td className="p-2 spurs-text">{stadium.name}</td>
-                    <td className="p-2 spurs-text">{stadium.city || '-'}</td>
-                    <td className="p-2 spurs-text">{stadium.capacity || '-'}</td>
-                  </tr>
-                  ))}
+                  .map(stadium => {
+                    return (
+                      <tr key={stadium.id} className="border-b border-gray-600">
+                        <td className="p-2 spurs-text">{stadium.name}</td>
+                        <td className="p-2 spurs-text">{stadium.city || '-'}</td>
+                        <td className="p-2 spurs-text">{stadium.capacity || '-'}</td>
+                      </tr>
+                    );
+                  })}
                 {activeTab === 'stadium_names' && (
                   <>
                     {recentStadiumNames.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="p-2 text-center text-gray-400">
+                        <td colSpan={5} className="p-2 text-center text-gray-400">
                           No stadium names found
                         </td>
                       </tr>
@@ -2141,6 +2659,32 @@ export default function AdminPage() {
           </div>
           
           {/* Pagination Controls */}
+          {activeTab === 'matches' && matchesTotalPages > 1 && (
+            <div className="mt-4 flex items-center justify-between">
+              <div className="text-sm text-gray-400">
+                Showing {((matchesCurrentPage - 1) * matchesPerPage) + 1} to {Math.min(matchesCurrentPage * matchesPerPage, getFilteredMatches().length)} of {getFilteredMatches().length} matches
+              </div>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => setMatchesCurrentPage(matchesCurrentPage - 1)}
+                  disabled={matchesCurrentPage === 1}
+                  className="px-3 py-1 text-sm bg-gray-700 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600"
+                >
+                  Previous
+                </button>
+                <span className="px-3 py-1 text-sm text-gray-300">
+                  Page {matchesCurrentPage} of {matchesTotalPages}
+                </span>
+                <button
+                  onClick={() => setMatchesCurrentPage(matchesCurrentPage + 1)}
+                  disabled={matchesCurrentPage === matchesTotalPages}
+                  className="px-3 py-1 text-sm bg-gray-700 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
           {activeTab !== 'matches' && activeTab !== 'stadium_names' && totalPages > 1 && (
             <div className="mt-4 flex items-center justify-between">
               <div className="text-sm text-gray-400">

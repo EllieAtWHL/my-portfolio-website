@@ -24,12 +24,37 @@ export default function MatchNavigation({
     router.push(`/spurs-women/matches/${matchId}`);
   };
 
-  const getTeamDisplayName = (team: any) => {
+  const getTeamDisplayName = (team: { short_name?: string; name?: string } | null) => {
     return team?.short_name || team?.name || 'Unknown Team';
   };
 
   const homeScore = currentMatch.is_home_match ? (currentMatch.spurs_score ?? '') : (currentMatch.opponent_score ?? '');
   const awayScore = currentMatch.is_home_match ? (currentMatch.opponent_score ?? '') : (currentMatch.spurs_score ?? '');
+  const homeScoreAet = currentMatch.is_home_match ? (currentMatch.spurs_score_aet ?? null) : (currentMatch.opponent_score_aet ?? null);
+  const awayScoreAet = currentMatch.is_home_match ? (currentMatch.opponent_score_aet ?? null) : (currentMatch.spurs_score_aet ?? null);
+  const homeScorePens = currentMatch.is_home_match ? (currentMatch.spurs_score_pens ?? null) : (currentMatch.opponent_score_pens ?? null);
+  const awayScorePens = currentMatch.is_home_match ? (currentMatch.opponent_score_pens ?? null) : (currentMatch.spurs_score_pens ?? null);
+  
+  // Determine if we need to show AET/PENS bracket scores
+  const hasAetScores = homeScoreAet !== null && awayScoreAet !== null;
+  const hasPensScores = homeScorePens !== null && awayScorePens !== null;
+  
+  // Build the score display string with individual brackets
+  let homeDisplay = homeScore;
+  let awayDisplay = awayScore;
+  
+  if (hasPensScores) {
+    homeDisplay = `(${homeScorePens}) ${homeScore}`;
+    awayDisplay = `${awayScore} (${awayScorePens})`;
+  } else if (hasAetScores) {
+    homeDisplay = `(${homeScoreAet}) ${homeScore}`;
+    awayDisplay = `${awayScore} (${awayScoreAet})`;
+  }
+  
+  const scoreDisplay = `${homeDisplay} - ${awayDisplay}`;
+  
+  // Determine the label to show under the score
+  const scoreLabel = hasPensScores ? 'PENS' : (hasAetScores ? 'AET' : null);
 
   return (
     <>
@@ -96,7 +121,12 @@ export default function MatchNavigation({
             primaryColor={currentMatch.home_team?.primary_color}
             secondaryColor={currentMatch.home_team?.secondary_color}
           />
-          <span className="text-gray-500">{homeScore} - {awayScore}</span>
+          <div className="flex flex-col items-center">
+            <span className="text-gray-500">{scoreDisplay}</span>
+            {scoreLabel && (
+              <span className="text-xs text-gray-400 mt-1">{scoreLabel}</span>
+            )}
+          </div>
           <TeamPill 
             teamName={currentMatch.away_team?.name || 'Unknown Team'}
             primaryColor={currentMatch.away_team?.primary_color}
@@ -132,7 +162,12 @@ export default function MatchNavigation({
           <span>
             {currentMatch.home_team?.name}
           </span>
-          <span className="text-gray-500">{homeScore} - {awayScore}</span>
+          <div className="flex flex-col items-center">
+            <span className="text-gray-500">{scoreDisplay}</span>
+            {scoreLabel && (
+              <span className="text-xs text-gray-400 mt-1">{scoreLabel}</span>
+            )}
+          </div>
           <span>
             {currentMatch.away_team?.name}
           </span>

@@ -78,3 +78,35 @@ export async function GET() {
     return NextResponse.json(handleApiError(error, 'Internal server error'), { status: 500 });
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const user = await getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const adminEmail = process.env.ADMIN_EMAIL;
+    if (!adminEmail || user.email !== adminEmail) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const body = await request.json();
+    const { id } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: 'ID is required' }, { status: 400 });
+    }
+
+    const { error } = await supabaseAdmin.from('media').delete().eq('id', id);
+
+    if (error) {
+      return NextResponse.json(handleApiError(error, 'Failed to delete media'), { status: 400 });
+    }
+
+    return NextResponse.json({ success: true, message: 'Media deleted successfully' });
+  } catch (error) {
+    return NextResponse.json(handleApiError(error, 'Internal server error'), { status: 500 });
+  }
+}
