@@ -1,5 +1,5 @@
-import { supabase } from '@/utils/supabase';
 import { createCachedFunction, CACHE_TTL, CACHE_TAGS } from './cache-utils';
+import { buildMatchQuery } from './query-builders';
 
 export interface Match {
   id: string;
@@ -58,19 +58,7 @@ async function fetchUpcomingMatchesFromDB(limit: number = 3): Promise<Match[]> {
   const tomorrowUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
   
   // First fetch: Get today's matches WITHOUT scores (unscored matches)
-  const { data, error } = await supabase
-    .from('matches_with_stadium')
-    .select(`
-      *,
-      is_neutral_venue,
-      spurs_score_aet,
-      opponent_score_aet,
-      spurs_score_pens,
-      opponent_score_pens,
-      home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-      away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-      competitions(name, icon_svg)
-    `)
+  const { data, error } = await buildMatchQuery()
     .gte('date', todayUTC.toISOString())
     .lt('date', tomorrowUTC.toISOString())
     .is('spurs_score', null)
@@ -84,19 +72,7 @@ async function fetchUpcomingMatchesFromDB(limit: number = 3): Promise<Match[]> {
   }
 
   // Second fetch: Get future matches (after today)
-  const { data: futureData, error: futureError } = await supabase
-    .from('matches_with_stadium')
-    .select(`
-      *,
-      is_neutral_venue,
-      spurs_score_aet,
-      opponent_score_aet,
-      spurs_score_pens,
-      opponent_score_pens,
-      home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-      away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-      competitions(name, icon_svg)
-    `)
+  const { data: futureData, error: futureError } = await buildMatchQuery()
     .gte('date', tomorrowUTC.toISOString())
     .order('date', { ascending: true })
     .limit(limit - (data?.length || 0));
@@ -118,19 +94,7 @@ async function fetchPreviousMatchesFromDB(limit: number = 3): Promise<Match[]> {
   const tomorrowUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
   
   // First fetch: Get today's matches that have scores (completed matches)
-  const { data: todayData, error: todayError } = await supabase
-    .from('matches_with_stadium')
-    .select(`
-      *,
-      is_neutral_venue,
-      spurs_score_aet,
-      opponent_score_aet,
-      spurs_score_pens,
-      opponent_score_pens,
-      home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-      away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-      competitions(name, icon_svg)
-    `)
+  const { data: todayData, error: todayError } = await buildMatchQuery()
     .gte('date', todayUTC.toISOString())
     .lt('date', tomorrowUTC.toISOString())
     .not('spurs_score', 'is', null)
@@ -144,19 +108,7 @@ async function fetchPreviousMatchesFromDB(limit: number = 3): Promise<Match[]> {
   }
 
   // Second fetch: Get matches before today (only if we still need more matches)
-  const { data, error } = await supabase
-    .from('matches_with_stadium')
-    .select(`
-      *,
-      is_neutral_venue,
-      spurs_score_aet,
-      opponent_score_aet,
-      spurs_score_pens,
-      opponent_score_pens,
-      home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-      away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-      competitions(name, icon_svg)
-    `)
+  const { data, error } = await buildMatchQuery()
     .lt('date', todayUTC.toISOString())
     .order('date', { ascending: false })
     .limit(limit - (todayData?.length || 0));
@@ -172,19 +124,7 @@ async function fetchPreviousMatchesFromDB(limit: number = 3): Promise<Match[]> {
 }
 
 async function fetchAllMatchesFromDB(filter?: 'upcoming' | 'previous'): Promise<Match[]> {
-  let query = supabase
-    .from('matches_with_stadium')
-    .select(`
-      *,
-      is_neutral_venue,
-      spurs_score_aet,
-      opponent_score_aet,
-      spurs_score_pens,
-      opponent_score_pens,
-      home_team:home_team_id (*),
-      away_team:away_team_id (*),
-      competitions:competition_id (*)
-    `)
+  let query = buildMatchQuery()
     .order('date', { ascending: false });
 
   const now = new Date().toISOString();
@@ -206,19 +146,7 @@ async function fetchAllMatchesFromDB(filter?: 'upcoming' | 'previous'): Promise<
 }
 
 async function fetchSeasonMatchesFromDB(seasonId: string): Promise<Match[]> {
-  const { data, error } = await supabase
-    .from('matches_with_stadium')
-    .select(`
-      *,
-      is_neutral_venue,
-      spurs_score_aet,
-      opponent_score_aet,
-      spurs_score_pens,
-      opponent_score_pens,
-      home_team:home_team_id (*),
-      away_team:away_team_id (*),
-      competitions:competition_id (*)
-    `)
+  const { data, error } = await buildMatchQuery()
     .eq('season_id', seasonId)
     .order('date', { ascending: true });
 
@@ -288,27 +216,7 @@ export async function getMatchesBySeason(seasonId: string) {
 
 async function fetchMatchByIdFromDB(matchId: string): Promise<Match | null> {
   // Use matches_with_stadium to get stadium information
-  const { data, error } = await supabase
-    .from('matches_with_stadium')
-    .select(`
-      *,
-      is_neutral_venue,
-      home_possession,
-      away_possession,
-      home_total_shots,
-      away_total_shots,
-      home_shots_on_target,
-      away_shots_on_target,
-      home_corners,
-      away_corners,
-      spurs_score_aet,
-      opponent_score_aet,
-      spurs_score_pens,
-      opponent_score_pens,
-      home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-      away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-      competitions:competition_id(name, icon_svg)
-    `)
+  const { data, error } = await buildMatchQuery()
     .eq('id', matchId)
     .single();
 
@@ -336,53 +244,13 @@ async function fetchMatchByIdFromDB(matchId: string): Promise<Match | null> {
 }
 
 async function fetchAdjacentMatchesFromDB(matchId: string, currentMatchDate: string): Promise<{ previous: Match | null; next: Match | null }> {
-  const { data: previousData } = await supabase
-    .from('matches_with_stadium')
-    .select(`
-      *,
-      is_neutral_venue,
-      home_possession,
-      away_possession,
-      home_total_shots,
-      away_total_shots,
-      home_shots_on_target,
-      away_shots_on_target,
-      home_corners,
-      away_corners,
-      spurs_score_aet,
-      opponent_score_aet,
-      spurs_score_pens,
-      opponent_score_pens,
-      home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-      away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-      competitions:competition_id(name, icon_svg)
-    `)
+  const { data: previousData } = await buildMatchQuery()
     .lt('date', currentMatchDate)
     .order('date', { ascending: false })
     .limit(1)
     .single();
 
-  const { data: nextData } = await supabase
-    .from('matches_with_stadium')
-    .select(`
-      *,
-      is_neutral_venue,
-      home_possession,
-      away_possession,
-      home_total_shots,
-      away_total_shots,
-      home_shots_on_target,
-      away_shots_on_target,
-      home_corners,
-      away_corners,
-      spurs_score_aet,
-      opponent_score_aet,
-      spurs_score_pens,
-      opponent_score_pens,
-      home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-      away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-      competitions:competition_id(name, icon_svg)
-    `)
+  const { data: nextData } = await buildMatchQuery()
     .gt('date', currentMatchDate)
     .order('date', { ascending: true })
     .limit(1)
