@@ -45,6 +45,8 @@ export default function MatchCard({ match }: MatchProps) {
           {match.competitions?.name && (
             <span className="spurs-text" title={match.competitions.name}>
               {match.competitions.icon_svg ? (
+                // SECURITY EXCEPTION: icon_svg comes from trusted Supabase database (admin-controlled only)
+                // Content is limited to SVG icons, not arbitrary HTML. No user-generated content.
                 <div className="w-4 h-4" dangerouslySetInnerHTML={{ __html: match.competitions.icon_svg }} />
               ) : (
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">

@@ -30,6 +30,8 @@ export default function MatchHeader({ home_team, away_team, homeScore, awayScore
       {competition && (
         <div className="flex items-center gap-2 mb-3">
           {competition.icon_svg ? (
+            // SECURITY EXCEPTION: icon_svg comes from trusted Supabase database (admin-controlled only)
+            // Content is limited to SVG icons, not arbitrary HTML. No user-generated content.
             <div className="w-5 h-5" dangerouslySetInnerHTML={{ __html: competition.icon_svg }} />
           ) : (
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">

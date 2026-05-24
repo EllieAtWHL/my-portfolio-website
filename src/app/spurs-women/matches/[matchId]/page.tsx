@@ -99,6 +99,8 @@ export default async function MatchDetailPage({ params }: PageProps) {
           {match.competitions && (
             <div className="flex items-center gap-2">
               {match.competitions.icon_svg ? (
+                // SECURITY EXCEPTION: icon_svg comes from trusted Supabase database (admin-controlled only)
+                // Content is limited to SVG icons, not arbitrary HTML. No user-generated content.
                 <div className="w-5 h-5" dangerouslySetInnerHTML={{ __html: match.competitions.icon_svg }} />
               ) : (
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
