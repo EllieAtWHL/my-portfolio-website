@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import { Card as UniversalCard } from '@/components/Card';
+import { Button } from '@/components/Button';
 
 interface GameStartProps {
   onStartGame: () => void;
@@ -9,8 +9,6 @@ interface GameStartProps {
 }
 
 export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
-  const [isHovered, setIsHovered] = useState(false);
-
   return (
     <div className="text-center py-8">
       {/* Title Section */}
@@ -25,34 +23,29 @@ export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
 
       {/* Stats Button */}
       <div className="flex justify-end mb-6">
-        <button
+        <Button
+          variant="secondary"
           onClick={onShowStats}
-          className="button secondary"
           aria-label="View Statistics"
         >
           📊 Statistics
-        </button>
+        </Button>
       </div>
 
       {/* Play Button */}
       <div className="text-center mb-12">
-        <button
+        <Button
+          variant="primary"
+          size="lg"
           onClick={onStartGame}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          className={`
-            button primary text-xl px-8 py-4
-            transform transition-all duration-300
-            hover:scale-105 active:scale-95
-            ${isHovered ? 'translate-y-[-2px]' : ''}
-          `}
+          className="text-xl px-8 py-4"
         >
           <span className="flex items-center gap-3">
             <span className="text-xl">👑</span>
             PLAY GAME
             <span className="text-xl">⚔️</span>
           </span>
-        </button>
+        </Button>
       </div>
 
       {/* Links Section */}
