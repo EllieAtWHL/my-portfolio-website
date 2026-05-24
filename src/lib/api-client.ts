@@ -48,9 +48,6 @@ export async function createEntityAndReload<T>(
     if (reloadResponse.data) {
       setData(reloadResponse.data);
     }
-    
-    // Show success message
-    const entityName = endpoint.replace('-', ' ').replace(/\b\w/g, char => char.toUpperCase() + char.slice(1));
   } catch (error) {
     console.error(`Error creating ${endpoint}:`, error);
     throw error;
