@@ -1,6 +1,14 @@
+import { Metadata } from 'next';
 import { Card } from '@/components/Card';
 import { getStadiumsWithMatchCounts, StadiumWithMatchCount, getStadiumNames, getCurrentStadiumName } from '@/lib/data/stadiums';
 import Link from 'next/link';
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Stadiums - Tottenham Hotspur Women',
+    description: 'Browse all stadiums where Tottenham Hotspur Women have played',
+  };
+}
 
 export default async function StadiumsPage() {
   let stadiums: StadiumWithMatchCount[] = [];
@@ -27,37 +35,37 @@ export default async function StadiumsPage() {
   stadiumsWithCurrentNames.sort((a, b) => a.currentName.localeCompare(b.currentName));
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="spurs-text text-3xl font-bold mb-8 text-center">Stadiums</h1>
+    <main className="p-8">
+      <h1 className="spurs-text text-2xl font-bold mb-6">Stadiums</h1>
       
       {stadiumsWithCurrentNames.length === 0 ? (
-        <Card variant="spursAccent" padding="md">
+        <Card variant="spursAccent">
           <p className="text-center spurs-text">
             No stadium information available at the moment.
           </p>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {stadiumsWithCurrentNames.map((stadium) => (
             <Link 
               key={stadium.slug} 
               href={`/spurs-women/stadiums/${stadium.slug}`}
-              className="block spurs-text"
+              className="block h-full"
             >
-              <Card variant="spursAccent" padding="md" clickable={true}>
-                <div className="flex justify-between items-start mb-2">
-                  <h2 className="text-xl font-semibold">{stadium.currentName}</h2>
-                  <p className="text-sm spurs-text opacity-75">
+              <Card variant="spursAccent" hover={true} clickable={true} className="h-full">
+                <div className="flex justify-between items-start mb-1">
+                  <div className="spurs-text text-base font-semibold">{stadium.currentName}</div>
+                  <p className="text-xs">
                     {stadium.match_count === 0 ? 'No matches' : `${stadium.match_count} match${stadium.match_count === 1 ? '' : 'es'}`}
                   </p>
                 </div>
                 {stadium.city && stadium.country && (
-                  <p className="spurs-text opacity-75">
+                  <p className="spurs-text text-xs opacity-75">
                     {stadium.city}, {stadium.country}
                   </p>
                 )}
                 {stadium.capacity && (
-                  <p className="spurs-text opacity-75">
+                  <p className="spurs-text text-xs opacity-75">
                     Capacity: {stadium.capacity.toLocaleString()}
                   </p>
                 )}
@@ -66,6 +74,6 @@ export default async function StadiumsPage() {
           ))}
         </div>
       )}
-    </div>
+    </main>
   );
 }
