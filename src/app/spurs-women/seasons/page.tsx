@@ -19,24 +19,24 @@ export default async function SeasonsPage() {
 
   return (
     <main className="p-8">
-      <h1 className="spurs-text text-3xl font-bold mb-6">Seasons</h1>
+      <h1 className="spurs-text text-2xl font-bold mb-6">Seasons</h1>
       
-      {/* Season Stats Chart */}
-      <div className="mb-8">
+      {/* Season Stats Chart - Desktop only */}
+      <div className="hidden md:block mb-8">
         <SeasonStatsChart stats={seasonStats} />
       </div>
       
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {seasons.map((season: SeasonWithMatchCount) => (
           <Link
             key={season.id}
             href={`/spurs-women/seasons/${season.id}`}
             className="block"
           >
-            <Card variant="spursAccent" hover={true}>
+            <Card variant="spursAccent" hover={true} clickable={true}>
               <div className="flex justify-between items-start">
-                <h2 className="text-xl font-semibold">{season.name}</h2>
-                <p className="text-sm">
+                <div className="spurs-text text-base font-semibold">{season.name}</div>
+                <p className="text-xs">
                   {season.match_count === 0 ? 'No matches' : `${season.match_count} match${season.match_count === 1 ? '' : 'es'}`}
                 </p>
               </div>
