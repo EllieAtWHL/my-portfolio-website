@@ -82,6 +82,42 @@ export async function GET() {
   }
 }
 
+export async function PUT(request: NextRequest) {
+  try {
+    const user = await getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const adminEmail = process.env.ADMIN_EMAIL;
+    if (!adminEmail || user.email !== adminEmail) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const body = await request.json();
+    const { id, ...updateData } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: 'ID is required' }, { status: 400 });
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('player_stats')
+      .update(updateData)
+      .eq('id', id)
+      .select();
+
+    if (error) {
+      return NextResponse.json(handleApiError(error, 'Failed to update player stats'), { status: 400 });
+    }
+
+    return NextResponse.json(handleApiSuccess(data, 'Player stats updated successfully'));
+  } catch (error) {
+    return NextResponse.json(handleApiError(error, 'Internal server error'), { status: 500 });
+  }
+}
+
 export async function DELETE(request: NextRequest) {
   try {
     const user = await getUser();
