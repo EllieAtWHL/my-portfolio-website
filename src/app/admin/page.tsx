@@ -436,19 +436,19 @@ export default function AdminPage() {
           callAdminApi('media', 'GET'),
         ]);
 
-        if (teamsRes.data) setTeams(teamsRes.data);
-        if (competitionsRes.data) setCompetitions(competitionsRes.data);
-        if (seasonsRes.data) setSeasons(seasonsRes.data);
-        if (matchesRes.data) setMatches(matchesRes.data);
-        if (mediaRes.data) setMedia(mediaRes.data);
+        if (teamsRes.data) setTeams(teamsRes.data as Team[]);
+        if (competitionsRes.data) setCompetitions(competitionsRes.data as Competition[]);
+        if (seasonsRes.data) setSeasons(seasonsRes.data as Season[]);
+        if (matchesRes.data) setMatches(matchesRes.data as Match[]);
+        if (mediaRes.data) setMedia(mediaRes.data as Media[]);
         if (stadiumsRes.data) {
-          setStadiums(stadiumsRes.data);
+          setStadiums(stadiumsRes.data as Stadium[]);
         } else {
           console.warn('No stadiums data');
         }
-        if (stadiumNamesRes.data) setStadiumNames(stadiumNamesRes.data);
+        if (stadiumNamesRes.data) setStadiumNames(stadiumNamesRes.data as StadiumName[]);
         if (playersRes.data) {
-          setPlayers(playersRes.data);
+          setPlayers(playersRes.data as Player[]);
         } else {
           console.warn('No players data received');
         }
@@ -927,7 +927,7 @@ export default function AdminPage() {
       // Reload matches data
       try {
         const matchesResponse = await callAdminApi('matches', 'GET');
-        if (matchesResponse.data) setMatches(matchesResponse.data);
+        if (matchesResponse.data) setMatches(matchesResponse.data as Match[]);
       } catch (error) {
         console.error('Error reloading matches:', error);
       }
@@ -1059,7 +1059,7 @@ export default function AdminPage() {
       // Reload media data
       try {
         const mediaResponse = await callAdminApi('media', 'GET');
-        if (mediaResponse.data) setMedia(mediaResponse.data);
+        if (mediaResponse.data) setMedia(mediaResponse.data as Media[]);
       } catch (error) {
         console.error('Error reloading media:', error);
       }
@@ -1080,7 +1080,7 @@ export default function AdminPage() {
       // Reload teams data
       try {
         const teamsResponse = await callAdminApi('teams', 'GET');
-        if (teamsResponse.data) setTeams(teamsResponse.data);
+        if (teamsResponse.data) setTeams(teamsResponse.data as Team[]);
       } catch (error) {
         console.error('Error reloading teams:', error);
       }
@@ -1125,7 +1125,7 @@ export default function AdminPage() {
       // Reload players data
       try {
         const playersResponse = await callAdminApi('players', 'GET');
-        if (playersResponse.data) setPlayers(playersResponse.data);
+        if (playersResponse.data) setPlayers(playersResponse.data as Player[]);
       } catch (error) {
         console.error('Error reloading players:', error);
       }
@@ -1178,7 +1178,7 @@ export default function AdminPage() {
       // Reload player stats data
       try {
         const playerStatsResponse = await callAdminApi('player-stats', 'GET');
-        if (playerStatsResponse.data) setRecentPlayerStats(playerStatsResponse.data);
+        if (playerStatsResponse.data) setRecentPlayerStats(playerStatsResponse.data as PlayerStats[]);
       } catch (error) {
         console.error('Error reloading player stats:', error);
       }
@@ -1211,7 +1211,7 @@ export default function AdminPage() {
       // Reload player history data
       try {
         const playerHistoryResponse = await callAdminApi('player-history', 'GET');
-        if (playerHistoryResponse.data) setRecentPlayerHistory(playerHistoryResponse.data);
+        if (playerHistoryResponse.data) setRecentPlayerHistory(playerHistoryResponse.data as PlayerHistory[]);
       } catch (error) {
         console.error('Error reloading player history:', error);
       }
@@ -1257,8 +1257,8 @@ export default function AdminPage() {
       try {
         const stadiumsResponse = await callAdminApi('stadia', 'GET');
         if (stadiumsResponse.data) {
-          setStadiums(stadiumsResponse.data);
-          setRecentStadiums(stadiumsResponse.data);
+          setStadiums(stadiumsResponse.data as Stadium[]);
+          setRecentStadiums(stadiumsResponse.data as Stadium[]);
         }
       } catch (error) {
         console.error('Error reloading stadiums:', error);
@@ -1317,8 +1317,8 @@ export default function AdminPage() {
       try {
         const stadiumNamesResponse = await callAdminApi('stadium-names', 'GET');
         if (stadiumNamesResponse.data) {
-          setStadiumNames(stadiumNamesResponse.data);
-          setRecentStadiumNames(stadiumNamesResponse.data);
+          setStadiumNames(stadiumNamesResponse.data as StadiumName[]);
+          setRecentStadiumNames(stadiumNamesResponse.data as StadiumName[]);
         }
       } catch (error) {
         console.error('Error reloading stadium names:', error);
@@ -1402,7 +1402,7 @@ export default function AdminPage() {
       try {
         const playerHistoryResponse = await fetch('/api/admin/player-history');
         const playerHistoryResult = await playerHistoryResponse.json();
-        if (playerHistoryResult.data) setRecentPlayerHistory(playerHistoryResult.data);
+        if (playerHistoryResult.data) setRecentPlayerHistory(playerHistoryResult.data as PlayerHistory[]);
       } catch (error) {
         console.error('Error reloading player history:', error);
       }
@@ -1477,7 +1477,7 @@ export default function AdminPage() {
       try {
         const teamsResponse = await fetch('/api/admin/teams');
         const teamsResult = await teamsResponse.json();
-        if (teamsResult.data) setTeams(teamsResult.data);
+        if (teamsResult.data) setTeams(teamsResult.data as Team[]);
       } catch (error) {
         console.error('Error reloading teams:', error);
       }
@@ -1556,7 +1556,7 @@ export default function AdminPage() {
       try {
         const playersResponse = await fetch('/api/admin/players');
         const playersResult = await playersResponse.json();
-        if (playersResult.data) setPlayers(playersResult.data);
+        if (playersResult.data) setPlayers(playersResult.data as Player[]);
       } catch (error) {
         console.error('Error reloading players:', error);
       }
@@ -1664,7 +1664,7 @@ export default function AdminPage() {
       try {
         const matchesResponse = await fetch('/api/admin/matches');
         const matchesResult = await matchesResponse.json();
-        if (matchesResult.data) setMatches(matchesResult.data);
+        if (matchesResult.data) setMatches(matchesResult.data as Match[]);
       } catch (error) {
         console.error('Error reloading matches:', error);
       }
@@ -1732,7 +1732,7 @@ export default function AdminPage() {
         const mediaResponse = await fetch('/api/admin/media');
         const mediaResult = await mediaResponse.json();
         if (mediaResult.data) {
-          setMedia(mediaResult.data);
+          setMedia(mediaResult.data as Media[]);
         }
       } catch (error) {
         console.error('Error reloading recent media:', error);
@@ -2060,8 +2060,8 @@ export default function AdminPage() {
                 try {
                   const stadiumsRes = await callAdminApi('stadia', 'GET');
                   if (stadiumsRes.data) {
-                    setStadiums(stadiumsRes.data);
-                    setRecentStadiums(stadiumsRes.data);
+                    setStadiums(stadiumsRes.data as Stadium[]);
+                    setRecentStadiums(stadiumsRes.data as Stadium[]);
                   }
                 } catch (error) {
                   console.error('Error reloading stadiums:', error);
@@ -2169,7 +2169,7 @@ export default function AdminPage() {
                 // Reload recent player stats records
                 try {
                   const playerStatsRes = await callAdminApi('player-stats', 'GET');
-                  if (playerStatsRes.data) setRecentPlayerStats(playerStatsRes.data);
+                  if (playerStatsRes.data) setRecentPlayerStats(playerStatsRes.data as PlayerStats[]);
                 } catch (error) {
                   console.error('Error reloading recent player stats:', error);
                 }
@@ -2266,8 +2266,8 @@ export default function AdminPage() {
                 try {
                   const stadiumNamesResponse = await callAdminApi('stadium-names', 'GET');
                   if (stadiumNamesResponse.data) {
-                    setStadiumNames(stadiumNamesResponse.data);
-                    setRecentStadiumNames(stadiumNamesResponse.data);
+                    setStadiumNames(stadiumNamesResponse.data as StadiumName[]);
+                    setRecentStadiumNames(stadiumNamesResponse.data as StadiumName[]);
                   }
                 } catch (error) {
                   console.error('Error reloading stadium names:', error);
