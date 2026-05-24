@@ -108,7 +108,7 @@ export default function TeamLineup({ lineup, teamColor = '#081521' }: TeamLineup
                   : 'text-gray-300 hover:text-[var(--spurs-dark-accent)]'
               }`}
               style={{
-                backgroundColor: activeTab === 'starters' ? 'var(--spurs-dark-bg-1)' : 'rgba(8, 21, 33, 0.3)',
+                backgroundColor: activeTab === 'starters' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
                 borderBottomColor: activeTab === 'starters' ? 'var(--spurs-dark-accent)' : 'transparent',
                 borderBottomWidth: activeTab === 'starters' ? '2px' : '0',
                 color: activeTab === 'starters' ? 'var(--spurs-dark-accent)' : '#d1d5db'
@@ -125,7 +125,7 @@ export default function TeamLineup({ lineup, teamColor = '#081521' }: TeamLineup
                   : 'text-gray-300 hover:text-[var(--spurs-dark-accent)]'
               }`}
               style={{
-                backgroundColor: activeTab === 'substitutes' ? 'var(--spurs-dark-bg-1)' : 'rgba(8, 21, 33, 0.3)',
+                backgroundColor: activeTab === 'substitutes' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
                 borderBottomColor: activeTab === 'substitutes' ? 'var(--spurs-dark-accent)' : 'transparent',
                 borderBottomWidth: activeTab === 'substitutes' ? '2px' : '0',
                 color: activeTab === 'substitutes' ? 'var(--spurs-dark-accent)' : '#d1d5db'
@@ -142,7 +142,7 @@ export default function TeamLineup({ lineup, teamColor = '#081521' }: TeamLineup
                   : 'text-gray-300 hover:text-[var(--spurs-dark-accent)]'
               }`}
               style={{
-                backgroundColor: activeTab === 'unused' ? 'var(--spurs-dark-bg-1)' : 'rgba(8, 21, 33, 0.3)',
+                backgroundColor: activeTab === 'unused' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
                 borderBottomColor: activeTab === 'unused' ? 'var(--spurs-dark-accent)' : 'transparent',
                 borderBottomWidth: activeTab === 'unused' ? '2px' : '0',
                 color: activeTab === 'unused' ? 'var(--spurs-dark-accent)' : '#d1d5db'

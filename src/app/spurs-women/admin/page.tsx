@@ -56,7 +56,7 @@ interface Match {
   stadium_id: string;
   stadium_display_name: string | null;
   attended: boolean;
-  notes: string;
+  notes: string | null;
   home_team_id: number;
   away_team_id: number;
   attendance: number | null;
@@ -1803,7 +1803,7 @@ export default function AdminPage() {
                 : 'text-gray-300 hover:text-spurs-dark-accent'
             }`}
             style={{
-              backgroundColor: activeTab === 'matches' ? 'var(--spurs-dark-bg-1)' : 'rgba(8, 21, 33, 0.3)',
+              backgroundColor: activeTab === 'matches' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
               borderBottomColor: activeTab === 'matches' ? 'var(--spurs-dark-accent)' : 'transparent',
               borderBottomWidth: activeTab === 'matches' ? '2px' : '0',
               color: activeTab === 'matches' ? 'var(--spurs-dark-accent)' : '#d1d5db'
@@ -1819,7 +1819,7 @@ export default function AdminPage() {
                 : 'text-gray-300 hover:text-spurs-dark-accent'
             }`}
             style={{
-              backgroundColor: activeTab === 'media' ? 'var(--spurs-dark-bg-1)' : 'rgba(8, 21, 33, 0.3)',
+              backgroundColor: activeTab === 'media' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
               borderBottomColor: activeTab === 'media' ? 'var(--spurs-dark-accent)' : 'transparent',
               borderBottomWidth: activeTab === 'media' ? '2px' : '0',
               color: activeTab === 'media' ? 'var(--spurs-dark-accent)' : '#d1d5db'
@@ -1835,7 +1835,7 @@ export default function AdminPage() {
                 : 'text-gray-300 hover:text-spurs-dark-accent'
             }`}
             style={{
-              backgroundColor: activeTab === 'teams' ? 'var(--spurs-dark-bg-1)' : 'rgba(8, 21, 33, 0.3)',
+              backgroundColor: activeTab === 'teams' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
               borderBottomColor: activeTab === 'teams' ? 'var(--spurs-dark-accent)' : 'transparent',
               borderBottomWidth: activeTab === 'teams' ? '2px' : '0',
               color: activeTab === 'teams' ? 'var(--spurs-dark-accent)' : '#d1d5db'
@@ -1851,7 +1851,7 @@ export default function AdminPage() {
                 : 'text-gray-300 hover:text-spurs-dark-accent'
             }`}
             style={{
-              backgroundColor: activeTab === 'players' ? 'var(--spurs-dark-bg-1)' : 'rgba(8, 21, 33, 0.3)',
+              backgroundColor: activeTab === 'players' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
               borderBottomColor: activeTab === 'players' ? 'var(--spurs-dark-accent)' : 'transparent',
               borderBottomWidth: activeTab === 'players' ? '2px' : '0',
               color: activeTab === 'players' ? 'var(--spurs-dark-accent)' : '#d1d5db'
@@ -1867,7 +1867,7 @@ export default function AdminPage() {
                 : 'text-gray-300 hover:text-spurs-dark-accent'
             }`}
             style={{
-              backgroundColor: activeTab === 'player_stats' ? 'var(--spurs-dark-bg-1)' : 'rgba(8, 21, 33, 0.3)',
+              backgroundColor: activeTab === 'player_stats' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
               borderBottomColor: activeTab === 'player_stats' ? 'var(--spurs-dark-accent)' : 'transparent',
               borderBottomWidth: activeTab === 'player_stats' ? '2px' : '0',
               color: activeTab === 'player_stats' ? 'var(--spurs-dark-accent)' : '#d1d5db'
@@ -1883,7 +1883,7 @@ export default function AdminPage() {
                 : 'text-gray-300 hover:text-spurs-dark-accent'
             }`}
             style={{
-              backgroundColor: activeTab === 'player_history' ? 'var(--spurs-dark-bg-1)' : 'rgba(8, 21, 33, 0.3)',
+              backgroundColor: activeTab === 'player_history' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
               borderBottomColor: activeTab === 'player_history' ? 'var(--spurs-dark-accent)' : 'transparent',
               borderBottomWidth: activeTab === 'player_history' ? '2px' : '0',
               color: activeTab === 'player_history' ? 'var(--spurs-dark-accent)' : '#d1d5db'
@@ -1899,7 +1899,7 @@ export default function AdminPage() {
                 : 'text-gray-300 hover:text-spurs-dark-accent'
             }`}
             style={{
-              backgroundColor: activeTab === 'stadiums' ? 'var(--spurs-dark-bg-1)' : 'rgba(8, 21, 33, 0.3)',
+              backgroundColor: activeTab === 'stadiums' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
               borderBottomColor: activeTab === 'stadiums' ? 'var(--spurs-dark-accent)' : 'transparent',
               borderBottomWidth: activeTab === 'stadiums' ? '2px' : '0',
               color: activeTab === 'stadiums' ? 'var(--spurs-dark-accent)' : '#d1d5db'
@@ -1915,7 +1915,7 @@ export default function AdminPage() {
                 : 'text-gray-300 hover:text-spurs-dark-accent'
             }`}
             style={{
-              backgroundColor: activeTab === 'stadium_names' ? 'var(--spurs-dark-bg-1)' : 'rgba(8, 21, 33, 0.3)',
+              backgroundColor: activeTab === 'stadium_names' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
               borderBottomColor: activeTab === 'stadium_names' ? 'var(--spurs-dark-accent)' : 'transparent',
               borderBottomWidth: activeTab === 'stadium_names' ? '2px' : '0',
               color: activeTab === 'stadium_names' ? 'var(--spurs-dark-accent)' : '#d1d5db'
@@ -1934,7 +1934,6 @@ export default function AdminPage() {
             competitions={competitions}
             teams={teams}
             stadiums={stadiums}
-            stadiumNames={stadiumNames}
             isEditMode={isEditMode}
             editingMatchId={editingMatchId}
             loading={loading}

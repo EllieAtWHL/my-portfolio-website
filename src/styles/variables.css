@@ -71,14 +71,83 @@
   /* Shadow and Opacity Variables */
   --shadow-dark-medium: rgba(0, 0, 0, 0.2);
   --shadow-dark-light: rgba(0, 0, 0, 0.08);
+  --shadow-dark-heavy: rgba(0, 0, 0, 0.3);
+  --shadow-dark-very-light: rgba(0, 0, 0, 0.05);
+  --shadow-dark-12: rgba(0, 0, 0, 0.12);
+  --shadow-dark-15: rgba(0, 0, 0, 0.15);
+  --shadow-dark-08: rgba(0, 0, 0, 0.08);
+  --shadow-black-80: rgba(0, 0, 0, 0.8);
+  --shadow-black-90: rgba(0, 0, 0, 0.9);
+  
+  /* Brand green opacity variants */
+  --brand-opacity-02: rgba(45, 90, 45, 0.02);
+  --brand-opacity-05: rgba(45, 90, 45, 0.05);
+  --brand-opacity-10: rgba(45, 90, 45, 0.1);
+  --brand-opacity-15: rgba(45, 90, 45, 0.15);
+  --brand-opacity-20: rgba(45, 90, 45, 0.2);
+  --brand-opacity-25: rgba(45, 90, 45, 0.25);
+  --brand-opacity-30: rgba(45, 90, 45, 0.3);
+  --brand-opacity-40: rgba(45, 90, 45, 0.4);
+  --brand-opacity-50: rgba(45, 90, 45, 0.5);
+  
+  /* Brand darker green opacity variants */
+  --brand-darker-opacity-05: rgba(31, 63, 31, 0.05);
+  
+  /* Spurs blue opacity variants */
+  --spurs-opacity-15: rgba(120, 190, 232, 0.15);
+  --spurs-opacity-20: rgba(120, 190, 232, 0.2);
+  --spurs-opacity-30: rgba(120, 190, 232, 0.3);
+  --spurs-opacity-40: rgba(120, 190, 232, 0.4);
+  
+  /* Accent green opacity variants */
+  --accent-opacity-05: rgba(134, 239, 172, 0.05);
+  --accent-opacity-10: rgba(134, 239, 172, 0.1);
+  --accent-opacity-15: rgba(134, 239, 172, 0.15);
+  --accent-opacity-20: rgba(134, 239, 172, 0.2);
+  --accent-opacity-30: rgba(134, 239, 172, 0.3);
+  
+  /* Accent green bright (lighter shade) opacity variants */
+  --accent-bright-opacity-05: rgba(110, 231, 183, 0.05);
+  --accent-bright-opacity-10: rgba(110, 231, 183, 0.1);
+  --accent-bright-opacity-15: rgba(74, 222, 128, 0.15);
+  
+  /* Light green opacity variants */
+  --bg-light-1-opacity-15: rgba(240, 249, 240, 0.15);
+  --bg-light-1-opacity-20: rgba(240, 249, 240, 0.2);
   --bg-light-1-opacity-30: rgba(240, 249, 240, 0.3);
   --bg-light-1-opacity-50: rgba(240, 249, 240, 0.5);
+  --bg-light-1-opacity-80: rgba(240, 249, 240, 0.8);
+  
+  /* White opacity variants */
+  --white-opacity-20: rgba(255, 255, 255, 0.2);
   --white-opacity-30: rgba(255, 255, 255, 0.3);
+  --white-opacity-50: rgba(255, 255, 255, 0.5);
   --white-opacity-70: rgba(255, 255, 255, 0.7);
-  --text-glow-green: rgba(127, 224, 159, 0.5);
+  --white-opacity-80: rgba(255, 255, 255, 0.8);
+  --white-opacity-90: rgba(255, 255, 255, 0.9);
+  
+  /* Dark green opacity variants */
+  --dark-bg-opacity-30: rgba(6, 21, 6, 0.3);
+  --dark-bg-opacity-50: rgba(6, 21, 6, 0.5);
+  --dark-bg-opacity-80: rgba(6, 21, 6, 0.8);
+  --dark-bg-opacity-95: rgba(6, 21, 6, 0.95);
+  
+  /* Spurs dark opacity variants */
+  --spurs-dark-opacity-30: rgba(8, 21, 33, 0.3);
+  --spurs-dark-opacity-95: rgba(8, 21, 33, 0.95);
+  
+  /* Light gray opacity variants */
+  --light-gray-opacity-80: rgba(245, 247, 250, 0.8);
+  --light-gray-opacity-100: rgba(245, 247, 250, 1);
+  
+  /* Warning orange opacity variants */
   --warning-shadow: rgba(243, 156, 18, 0.1);
   --warning-shadow-dark: rgba(243, 156, 18, 0.2);
+  
+  /* Text glow */
+  --text-glow-green: rgba(127, 224, 159, 0.5);
+  
+  /* Existing specific variables (for backward compatibility) */
   --brand-bg-opacity-05: rgba(45, 90, 45, 0.05);
-  --dark-bg-opacity-50: rgba(6, 21, 6, 0.5);
   --accent-bg-opacity-05: rgba(134, 239, 172, 0.05);
 }

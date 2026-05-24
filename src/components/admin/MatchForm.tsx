@@ -39,7 +39,6 @@ interface MatchForm {
   opponent_score_pens: number | null;
   stadium_id: string;
   attended: boolean;
-  notes: string;
   home_team_id: number;
   away_team_id: number;
   attendance: number | null;
@@ -51,6 +50,7 @@ interface MatchForm {
   away_shots_on_target: number | null;
   home_corners: number | null;
   away_corners: number | null;
+  notes: string | null;
 }
 
 interface MatchFormProps {
@@ -233,7 +233,7 @@ export function MatchForm({
             onClick={() => setShowStatsSection(!showStatsSection)}
             className="w-full px-4 py-3 bg-gray-800 hover:bg-gray-700 flex items-center justify-between transition-colors"
             style={{
-              backgroundColor: showStatsSection ? 'var(--spurs-dark-bg-1)' : 'rgba(8, 21, 33, 0.3)',
+              backgroundColor: showStatsSection ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
               borderColor: showStatsSection ? 'var(--spurs-dark-accent)' : 'transparent',
               borderWidth: showStatsSection ? '2px' : '0',
             }}
@@ -331,7 +331,7 @@ export function MatchForm({
             onClick={() => setShowExtraTimeSection(!showExtraTimeSection)}
             className="w-full px-4 py-3 bg-gray-800 hover:bg-gray-700 flex items-center justify-between transition-colors"
             style={{
-              backgroundColor: showExtraTimeSection ? 'var(--spurs-dark-bg-1)' : 'rgba(8, 21, 33, 0.3)',
+              backgroundColor: showExtraTimeSection ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
               borderColor: showExtraTimeSection ? 'var(--spurs-dark-accent)' : 'transparent',
               borderWidth: showExtraTimeSection ? '2px' : '0',
             }}

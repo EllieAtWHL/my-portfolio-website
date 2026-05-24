@@ -54,7 +54,7 @@ export default function SeasonStatsChart({ stats }: SeasonStatsChartProps) {
             />
             <Tooltip 
               contentStyle={{ 
-                backgroundColor: 'rgba(8, 21, 33, 0.95)',
+                backgroundColor: 'var(--spurs-dark-opacity-95)',
                 border: '1px solid #78BEE8',
                 borderRadius: '8px',
                 color: '#f5f7fa'

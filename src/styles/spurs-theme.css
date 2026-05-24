@@ -40,11 +40,11 @@
 }
 
 header.spurs.navbar .spurs-links li a::before {
-  background: linear-gradient(90deg, transparent, rgba(120, 190, 232, 0.2), transparent);
+  background: linear-gradient(90deg, transparent, var(--spurs-opacity-20), transparent);
 }
 
 header.spurs.navbar .spurs-links li:hover a {
-  background: rgba(120, 190, 232, 0.15);
+  background: var(--spurs-opacity-15);
 }
 
 .spurs-wrapper h1.spurs-text {
@@ -121,7 +121,7 @@ header.spurs.navbar .spurs-links li:hover a {
 
 .spurs-accent-card.hover-enabled:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 30px var(--shadow-dark-12);
 }
 
 .spurs-accent-card.no-hover:hover {
@@ -151,12 +151,12 @@ header.spurs.navbar .spurs-links li:hover a {
 
 /* Lightbox navigation buttons */
 button.lightbox-nav-button {
-  background: rgba(245, 247, 250, 0.8);
+  background: var(--light-gray-opacity-80);
   color: #081521;
 }
 
 button.lightbox-nav-button:hover {
-  background: rgba(245, 247, 250, 1);
+  background: var(--light-gray-opacity-100);
 }
 
 .test {
@@ -181,7 +181,7 @@ button.lightbox-nav-button:hover {
   background: linear-gradient(135deg, var(--spurs-primary-darker) 0%, var(--spurs-primary-darkest) 100%);
   color: var(--spurs-primary-light);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(120, 190, 232, 0.4);
+  box-shadow: 0 6px 20px var(--spurs-opacity-40);
   text-decoration: none;
 }
 
@@ -198,7 +198,7 @@ button.lightbox-nav-button:hover {
   background: linear-gradient(135deg, var(--spurs-dark-accent) 0%, var(--spurs-dark-accent-bright) 100%);
   color: var(--spurs-dark-text-darker);
   border-color: var(--spurs-dark-accent);
-  box-shadow: 0 4px 15px rgba(120, 190, 232, 0.2);
+  box-shadow: 0 4px 15px var(--spurs-opacity-20);
 }
 
 .dark .spurs-wrapper button.spurs-button:hover,
@@ -206,7 +206,7 @@ button.lightbox-nav-button:hover {
   background: linear-gradient(135deg, var(--spurs-dark-accent-bright) 0%, var(--spurs-primary-light) 100%);
   color: var(--spurs-dark-text-darker);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(120, 190, 232, 0.3);
+  box-shadow: 0 6px 20px var(--spurs-opacity-30);
 }
 
 /* Ensure venue link in MatchInfo has underline */

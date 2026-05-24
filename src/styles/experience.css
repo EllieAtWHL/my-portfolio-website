@@ -24,7 +24,7 @@
   padding: 1rem 2rem;
   background: var(--bg-white);
   color: var(--brand-primary-dark);
-  border: 1px solid rgba(45, 90, 45, 0.1);
+  border: 1px solid var(--brand-opacity-10);
   border-radius: 12px;
   cursor: pointer;
   font-weight: 600;
@@ -33,15 +33,15 @@
   min-width: 120px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px var(--shadow-dark-very-light);
 }
 
 .tab-navigation .tab-button:hover {
   background: var(--bg-white);
   color: var(--brand-primary-darker);
-  border-color: rgba(45, 90, 45, 0.2);
+  border-color: var(--brand-opacity-20);
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px var(--shadow-dark);
 }
 
 .tab-navigation .tab-button.active {
@@ -49,7 +49,7 @@
   color: var(--bg-light-1);
   border-color: var(--brand-primary-dark);
   transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(45, 90, 45, 0.3);
+  box-shadow: 0 4px 20px var(--brand-opacity-30);
 }
 
 .tab-content {
@@ -68,7 +68,7 @@
   background: var(--bg-white);
   border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px var(--shadow-dark-08);
   border-left: 4px solid var(--brand-primary-dark);
   transition: all 0.3s ease;
   position: relative;
@@ -87,7 +87,7 @@
 
 .experience-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 30px var(--shadow-dark-12);
 }
 
 .card-header {
@@ -157,7 +157,7 @@
 .role-section {
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(45, 90, 45, 0.1);
+  border-bottom: 1px solid var(--brand-opacity-10);
 }
 
 .role-section:last-child {
@@ -213,7 +213,7 @@
   background: var(--bg-white);
   border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px var(--shadow-dark-08);
   border-left: 4px solid var(--brand-primary-dark);
   transition: all 0.3s ease;
   position: relative;
@@ -223,7 +223,7 @@
 
 .certification-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 30px var(--shadow-dark-12);
 }
 
 .cert-image {
@@ -260,7 +260,7 @@
   background: var(--bg-white);
   border-radius: 16px;
   padding: 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px var(--shadow-dark-08);
   transition: all 0.3s ease;
   border-left: 4px solid var(--brand-primary-dark);
   position: relative;
@@ -270,7 +270,7 @@
 
 .award-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 30px var(--shadow-dark-12);
 }
 
 .award-icon {
@@ -317,7 +317,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: var(--shadow-black-80);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -334,8 +334,8 @@
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(45, 90, 45, 0.1);
+  box-shadow: 0 20px 60px var(--shadow-dark-heavy);
+  border: 1px solid var(--brand-opacity-10);
   animation: modal-slide-in 0.3s ease-out;
 }
 
@@ -378,7 +378,7 @@
 .modal-content img {
   border-radius: 8px;
   margin-bottom: 1rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px var(--shadow-dark);
 }
 
 /* Additional content sections */
@@ -403,14 +403,14 @@
 
 .image-gallery img {
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px var(--shadow-dark);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
 }
 
 .image-gallery img:hover {
   transform: scale(1.05);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 20px var(--shadow-dark-15);
 }
 
 .additional-info {
@@ -444,7 +444,7 @@
   background: var(--dark-bg-2) !important;
   color: var(--dark-gray-medium) !important;
   border-color: transparent !important;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 1px 4px var(--shadow-dark) !important;
 }
 
 .dark .tab-navigation .tab-button:hover {
@@ -452,21 +452,21 @@
   color: var(--dark-gray-medium) !important;
   border-color: transparent !important;
   transform: translateY(-1px) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 2px 8px var(--shadow-dark-medium) !important;
 }
 
 .dark .tab-navigation .tab-button.active {
   background: var(--dark-bg-1) !important;
   color: var(--dark-accent) !important;
-  border-color: rgba(134, 239, 172, 0.3) !important;
+  border-color: var(--accent-opacity-30) !important;
   transform: translateY(-1px) !important;
-  box-shadow: 0 2px 12px rgba(134, 239, 172, 0.15) !important;
+  box-shadow: 0 2px 12px var(--accent-opacity-15) !important;
 }
 
 .dark .experience-card {
-  background: rgba(6, 21, 6, 0.5);
+  background: var(--dark-bg-opacity-50);
   border-left-color: var(--dark-accent);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 20px var(--shadow-dark-heavy);
 }
 
 .dark .experience-card::before {
@@ -494,7 +494,7 @@
 }
 
 .dark .role-section {
-  border-bottom-color: rgba(134, 239, 172, 0.2);
+  border-bottom-color: var(--accent-opacity-20);
 }
 
 .dark .role-title {
@@ -506,8 +506,8 @@
 }
 
 .dark .certification-card {
-  background: rgba(6, 21, 6, 0.5);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  background: var(--dark-bg-opacity-50);
+  box-shadow: 0 4px 20px var(--shadow-dark-heavy);
 }
 
 .dark .cert-name {
@@ -519,9 +519,9 @@
 }
 
 .dark .award-card {
-  background: rgba(6, 21, 6, 0.5);
+  background: var(--dark-bg-opacity-50);
   border-left-color: var(--dark-accent);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 20px var(--shadow-dark-heavy);
 }
 
 .dark .award-name {
@@ -538,12 +538,12 @@
 
 /* Dark mode for modal */
 .dark .modal-overlay {
-  background: rgba(0, 0, 0, 0.9);
+  background: var(--shadow-black-90);
 }
 
 .dark .modal-content {
-  background: rgba(6, 21, 6, 0.95);
-  border-color: rgba(134, 239, 172, 0.2);
+  background: var(--dark-bg-opacity-95);
+  border-color: var(--accent-opacity-20);
   color: var(--dark-text);
 }
 

@@ -58,7 +58,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: rgba(45, 90, 45, 0.1);
+  background: var(--brand-opacity-10);
   transition: all 0.3s ease;
   cursor: pointer;
   min-width: 44px; /* Touch target size for accessibility */
@@ -66,7 +66,7 @@
 }
 
 .expand-icon:hover {
-  background: rgba(45, 90, 45, 0.2);
+  background: var(--brand-opacity-20);
 }
 
 .card-description {
@@ -105,17 +105,17 @@
   }
   
   .links-container.expanded::-webkit-scrollbar-track {
-    background: rgba(45, 90, 45, 0.1);
+    background: var(--brand-opacity-10);
     border-radius: 2px;
   }
   
   .links-container.expanded::-webkit-scrollbar-thumb {
-    background: rgba(45, 90, 45, 0.3);
+    background: var(--brand-opacity-30);
     border-radius: 2px;
   }
   
   .links-container.expanded::-webkit-scrollbar-thumb:hover {
-    background: rgba(45, 90, 45, 0.5);
+    background: var(--brand-opacity-50);
   }
 }
 
@@ -143,7 +143,7 @@
 }
 
 .project-link:hover {
-  background: rgba(45, 90, 45, 0.1);
+  background: var(--brand-opacity-10);
   color: var(--brand-primary-darker);
   transform: translateX(4px);
 }
@@ -151,13 +151,13 @@
 /* Touch-specific styles for mobile devices */
 @media (hover: none) {
   .project-link:active {
-    background: rgba(45, 90, 45, 0.15);
+    background: var(--brand-opacity-15);
     color: var(--brand-primary-darker);
     transform: translateX(2px);
   }
   
   .expand-icon:active {
-    background: rgba(45, 90, 45, 0.25);
+    background: var(--brand-opacity-25);
     transform: scale(0.95);
   }
 }
@@ -195,11 +195,11 @@
 
 .dark .expand-icon {
   color: var(--dark-accent);
-  background: rgba(134, 239, 172, 0.1);
+  background: var(--accent-opacity-10);
 }
 
 .dark .expand-icon:hover {
-  background: rgba(134, 239, 172, 0.2);
+  background: var(--accent-opacity-20);
 }
 
 .dark .card-description {
@@ -211,7 +211,7 @@
 }
 
 .dark .project-link:hover {
-  background: rgba(134, 239, 172, 0.1);
+  background: var(--accent-opacity-10);
   color: var(--dark-accent-bright);
 }
 

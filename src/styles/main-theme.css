@@ -117,13 +117,13 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(90deg, transparent, var(--white-opacity-20), transparent);
   transition: left 0.5s ease;
 }
 
 .button:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(45, 90, 45, 0.4);
+  box-shadow: 0 8px 25px var(--brand-opacity-40);
   text-decoration: none;
   color: var(--bg-light-1);
 }
@@ -160,7 +160,7 @@
   font-weight: 500;
   font-size: 1.1rem;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(45, 90, 45, 0.1);
+  box-shadow: 0 4px 15px var(--brand-opacity-10);
   display: inline-block;
   text-align: center;
   min-width: 150px;
@@ -170,7 +170,7 @@
   background: var(--brand-primary-dark);
   color: var(--bg-light-1);
   transform: translateY(-3px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 15px var(--shadow-dark);
   text-decoration: none;
 }
 
@@ -189,7 +189,7 @@
   font-weight: 600;
   font-size: 1.1rem;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(134, 239, 172, 0.1);
+  box-shadow: 0 4px 15px var(--accent-opacity-10);
   display: inline-block;
   text-align: center;
   min-width: 150px;
@@ -199,7 +199,7 @@
   background: var(--dark-accent);
   color: var(--dark-text-darker);
   transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(134, 239, 172, 0.3);
+  box-shadow: 0 8px 25px var(--accent-opacity-30);
   text-decoration: none;
 }
 
@@ -314,7 +314,7 @@ body:not(.dark) .button.primary:hover {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(240, 249, 240, 0.2), transparent);
+  background: linear-gradient(90deg, transparent, var(--bg-light-1-opacity-20), transparent);
   transition: left 0.5s ease;
 }
 
@@ -323,9 +323,9 @@ body:not(.dark) .button.primary:hover {
 }
 
 .navbar-links li:hover a {
-  background: rgba(240, 249, 240, 0.15);
+  background: var(--bg-light-1-opacity-15);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px var(--shadow-dark-medium);
 }
 
 /* Dark mode navbar and footer styles */
@@ -342,7 +342,7 @@ body:not(.dark) .button.primary:hover {
 }
 
 .dark .navbar-links li:hover a {
-  background: rgba(74, 222, 128, 0.15);
+  background: var(--accent-bright-opacity-15);
 }
 
 /* Responsive navbar styles */
