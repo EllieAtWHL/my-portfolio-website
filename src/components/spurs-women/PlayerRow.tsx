@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { PlayerWithStats } from '@/lib/data/players';
 
 interface PlayerRowProps {
@@ -37,9 +38,13 @@ export default function PlayerRow({ player }: PlayerRowProps) {
   };
 
   return (
-    <div
-      className="flex items-center gap-3 p-3 border-b border-gray-200 last:border-b-0"
+    <Link
+      href={`/spurs-women/players/${player.id}`}
+      className="block"
     >
+      <div
+        className="flex items-center gap-3 p-3 border-b border-gray-200 last:border-b-0 hover:bg-[#132c4d] transition-colors cursor-pointer"
+      >
       {getJerseyNumber() && (
         <div className="w-8 text-center font-mono text-sm text-[#f5f7fa]">
           {getJerseyNumber()}
@@ -69,6 +74,7 @@ export default function PlayerRow({ player }: PlayerRowProps) {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </Link>
   );
 }

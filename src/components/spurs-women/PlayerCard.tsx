@@ -163,7 +163,7 @@ export default function PlayerCard({ player, teamColor = 'gray', showStats = tru
             )}
             {stats.minute_on && (
               <span className="text-xs text-gray-500">
-                {stats.minute_on}'{stats.minute_off ? ` - ${stats.minute_off}'` : ''}
+                {stats.minute_on}&apos;{stats.minute_off ? ` - ${stats.minute_off}&apos;` : ''}
               </span>
             )}
           </div>

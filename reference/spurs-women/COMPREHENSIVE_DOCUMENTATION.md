@@ -127,6 +127,66 @@ src/
 - Season reviews (when available)
 - Expandable statistics sections
 
+### Stadiums Page (`/spurs-women/stadiums`)
+**File**: `src/app/spurs-women/stadiums/page.tsx`
+
+**Features**:
+- Grid layout of all stadiums
+- Match count for each stadium
+- Current stadium name display
+- Navigation to detailed stadium pages
+- Hover effects and team branding
+
+### Individual Stadium Pages (`/spurs-women/stadiums/[stadiumSlug]`)
+**File**: `src/app/spurs-women/stadiums/[stadiumSlug]/page.tsx`
+
+**Features**:
+- Complete stadium information
+- Historical name timeline
+- Match history at stadium
+- Stadium capacity and location
+- Attendance statistics
+
+### Teams Page (`/spurs-women/teams`)
+**File**: `src/app/spurs-women/teams/page.tsx`
+
+**Features**:
+- Grid layout of all teams
+- Match count for each team
+- Team color integration
+- Navigation to detailed team pages
+- Responsive card layout
+
+### Individual Team Pages (`/spurs-women/teams/[teamId]`)
+**File**: `src/app/spurs-women/teams/[teamId]/page.tsx`
+
+**Features**:
+- Complete team match history
+- Head-to-head statistics vs Spurs
+- Team information and colors
+- Match list with results
+- Performance statistics
+
+### Players Page (`/spurs-women/players`)
+**File**: `src/app/spurs-women/players/page.tsx`
+
+**Features**:
+- Grid layout of all players
+- Player statistics summary
+- Position and squad number
+- Team color integration
+- Navigation to detailed player pages
+
+### Individual Player Pages (`/spurs-women/players/[playerId]`)
+**File**: `src/app/spurs-women/players/[playerId]/page.tsx`
+
+**Features**:
+- Complete player profile
+- Match statistics history
+- Career timeline
+- Position and squad number
+- Performance metrics
+
 ## Components
 
 ### Layout Components
@@ -250,10 +310,12 @@ src/
 
 #### TeamLineup
 **File**: `src/components/spurs-women/TeamLineup.tsx`
-- Match lineup display
+- Match lineup display with tabbed interface
+- Starting XI, Substitutes, and Unused tabs
 - Formation visualization
-- Player positions
+- Player positions and squad numbers
 - Substitution indicators
+- Minute-on/minute-off display
 
 ## Data Layer
 
@@ -307,15 +369,23 @@ src/
 #### Stadiums (`src/lib/data/stadiums.ts`)
 - `getStadiumBySlug()` - Individual stadium details
 - `getAllStadiums()` - Complete stadium list
+- `getStadiumsWithMatchCounts()` - Stadiums with match statistics
 - `getStadiumNames()` - Historical stadium names
 - `getMatchesAtStadium()` - Stadium-specific matches
+- `getCurrentStadiumName()` - Utility for historical name resolution
 
 #### Players (`src/lib/data/players.ts`)
 - `getPlayers()` - All active players with statistics
 - `getPlayerById()` - Individual player details
 - `getPlayerStats()` - Player match statistics
 - `getPlayersByMatch()` - Players from specific matches
+- `getTeamLineupsByMatch()` - Team lineups for matches
 - `getPlayerHistory()` - Player career history
+
+#### Teams (`src/lib/data/teams.ts`)
+- `getTeams()` - All teams list
+- `getTeamsWithMatchCounts()` - Teams with match statistics
+- `getTeamById()` - Individual team details
 
 ## Features
 
@@ -379,7 +449,7 @@ matches (
   opponent_score INTEGER,
   competition_id INTEGER REFERENCES competitions(id),
   season_id INTEGER REFERENCES seasons(id),
-  venue VARCHAR(255),
+  stadium_id VARCHAR(255) REFERENCES stadia(id),
   stadium_display_name VARCHAR(255),
   stadium_slug VARCHAR(255),
   attendance INTEGER,
@@ -445,6 +515,18 @@ stadia (
   latitude DECIMAL(10, 8),
   longitude DECIMAL(11, 8),
   home_team_id INTEGER REFERENCES teams(id)
+)
+```
+
+#### Stadium Names
+```sql
+stadium_names (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  stadium_id VARCHAR(255) NOT NULL REFERENCES stadia(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  valid_from DATE NOT NULL,
+  valid_to DATE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 )
 ```
 
@@ -732,8 +814,8 @@ Automated cache clearing when data changes.
 
 ### Code Quality
 - **Component Refactoring**: Consolidate duplicate components and improve reusability
-- **Type Safety**: Enhance TypeScript interfaces for new player data structures
-- **Testing Coverage**: Achieved 88.2% statement coverage (target: 80%+)
+- **Type Safety**: Enhanced TypeScript interfaces for new player data structures
+- **Testing Coverage**: Achieved 79.05% statement coverage (target: 80%+)
 - **Code Documentation**: Implement comprehensive JSDoc documentation
 
 ### Performance Monitoring

@@ -19,6 +19,7 @@ export const CACHE_TTL = {
   STADIUM_DATA: 24 * 60 * 60, // 24 hours
   PLAYER_DATA: 60 * 60, // 1 hour
   PLAYER_STATS: 30 * 60, // 30 minutes
+  TEAM_DATA: 24 * 60 * 60, // 24 hours
 } as const;
 
 export type CacheTTLDuration = keyof typeof CACHE_TTL;
@@ -36,6 +37,7 @@ export const CACHE_TAGS = {
   STADIUM_NAMES: 'stadium-names',
   PLAYERS: 'players',
   PLAYER_STATS: 'player-stats',
+  TEAMS: 'teams',
 } as const;
 
 export type CacheTag = typeof CACHE_TAGS[keyof typeof CACHE_TAGS];
@@ -59,6 +61,7 @@ export interface CacheOptions {
   ttl?: CacheTTLDuration;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createCachedFunction<T extends (...args: any[]) => Promise<any>>(
   fn: T,
   options: CacheOptions

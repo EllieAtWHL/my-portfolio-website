@@ -33,6 +33,10 @@ export interface Stadium {
   } | null;
 }
 
+export interface StadiumWithMatchCount extends Stadium {
+  match_count?: number;
+}
+
 export interface StadiumName {
   id: string;
   stadium_id: string;
@@ -87,6 +91,37 @@ async function fetchAllStadiumsFromDB(): Promise<Stadium[]> {
   return data as Stadium[];
 }
 
+async function fetchStadiumsWithMatchCountsFromDB(): Promise<StadiumWithMatchCount[]> {
+  // Fetch stadiums first
+  const { data: stadiumsData, error: stadiumsError } = await supabase
+    .from('stadia')
+    .select('*')
+    .order('name');
+
+  if (stadiumsError) {
+    console.error('Error fetching stadiums:', stadiumsError);
+    throw stadiumsError;
+  }
+
+  // Fetch match counts for each stadium
+  const stadiumsWithCounts = await Promise.all(
+    (stadiumsData as Stadium[]).map(async (stadium) => {
+      const { count, error: countError } = await supabase
+        .from('matches')
+        .select('*', { count: 'exact', head: true })
+        .eq('stadium_id', stadium.id);
+
+      return {
+        ...stadium,
+        match_count: countError ? 0 : count || 0
+      };
+    })
+  );
+
+  return stadiumsWithCounts;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchMatchesAtStadiumFromDB(stadiumSlug: string): Promise<any[]> {
   const { data, error } = await supabase
     .from('matches_with_stadium')
@@ -121,6 +156,15 @@ export const getAllStadiums = createCachedFunction(
   fetchAllStadiumsFromDB,
   {
     keyParts: ['stadiums', 'all'],
+    tags: [CACHE_TAGS.STADIUMS],
+    revalidate: CACHE_TTL.STADIUM_DATA,
+  }
+);
+
+export const getStadiumsWithMatchCounts = createCachedFunction(
+  fetchStadiumsWithMatchCountsFromDB,
+  {
+    keyParts: ['stadiums', 'with-counts'],
     tags: [CACHE_TAGS.STADIUMS],
     revalidate: CACHE_TTL.STADIUM_DATA,
   }
@@ -162,9 +206,39 @@ export async function invalidateStadiumCache(stadiumId?: string, stadiumSlug?: s
 }
 
 export async function invalidateAllStadiumCaches() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const cacheKeys = [
     'stadiums',
     'stadium-names'
   ];
-  
+
+}
+
+export function getCurrentStadiumName(stadiumNames: StadiumName[], date?: Date): string | null {
+  if (!stadiumNames || stadiumNames.length === 0) {
+    return null;
+  }
+
+  const targetDate = date || new Date();
+
+  // Find a name that's valid for the target date
+  const validName = stadiumNames.find(name => {
+    const validFrom = name.valid_from ? new Date(name.valid_from) : null;
+    const validTo = name.valid_to ? new Date(name.valid_to) : null;
+
+    if (validFrom && targetDate < validFrom) {
+      return false;
+    }
+    if (validTo && targetDate > validTo) {
+      return false;
+    }
+    return true;
+  });
+
+  if (validName) {
+    return validName.name;
+  }
+
+  // If no currently valid name, return the most recent one (the first one since they're ordered by valid_from desc)
+  return stadiumNames[0].name;
 }

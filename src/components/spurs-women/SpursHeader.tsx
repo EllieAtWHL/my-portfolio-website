@@ -15,7 +15,9 @@ export default function Header() {
   const navItems = [
     { href: "/spurs-women", label: "Home" },
     { href: "/spurs-women/seasons", label: "Seasons" },
-    { href: "/spurs-women/matches", label: "Matches" }
+    { href: "/spurs-women/matches", label: "Matches" },
+    { href: "/spurs-women/teams", label: "Teams" },
+    { href: "/spurs-women/stadiums", label: "Stadiums" }
   ];
 
   const handleLinkClick = () => {

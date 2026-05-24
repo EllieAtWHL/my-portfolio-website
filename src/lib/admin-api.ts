@@ -12,15 +12,15 @@ export const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
 });
 
 // Generic API response handler
-export function handleApiError(error: any, defaultMessage: string = 'Operation failed') {
+export function handleApiError(error: unknown, defaultMessage: string = 'Operation failed') {
   console.error('Admin API error:', error);
   return {
-    error: error?.message || defaultMessage,
-    code: error?.code || 'UNKNOWN_ERROR'
+    error: (error as Error)?.message || defaultMessage,
+    code: (error as { code?: string })?.code || 'UNKNOWN_ERROR'
   };
 }
 
-export function handleApiSuccess(data: any, message: string = 'Operation successful') {
+export function handleApiSuccess(data: unknown, message: string = 'Operation successful') {
   return {
     data,
     message,

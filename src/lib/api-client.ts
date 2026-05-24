@@ -1,5 +1,5 @@
 interface ApiResponse {
-  data?: any;
+  data?: unknown;
   error?: string;
   message?: string;
   success?: boolean;
@@ -9,7 +9,7 @@ interface ApiResponse {
 export async function callAdminApi(
   endpoint: string,
   method: 'POST' | 'GET' | 'DELETE' = 'POST',
-  payload?: any
+  payload?: unknown
 ): Promise<ApiResponse> {
   try {
     const response = await fetch(`/api/admin/${endpoint}`, {
@@ -36,7 +36,7 @@ export async function callAdminApi(
 // Function to create entity and reload data
 export async function createEntityAndReload<T>(
   endpoint: string,
-  payload: any,
+  payload: unknown,
   reloadEndpoint: string,
   setData: (data: T[]) => void
 ): Promise<void> {
@@ -46,7 +46,7 @@ export async function createEntityAndReload<T>(
     // Reload data
     const reloadResponse = await callAdminApi(reloadEndpoint, 'GET');
     if (reloadResponse.data) {
-      setData(reloadResponse.data);
+      setData(reloadResponse.data as T[]);
     }
   } catch (error) {
     console.error(`Error creating ${endpoint}:`, error);

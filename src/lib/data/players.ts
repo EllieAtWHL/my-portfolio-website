@@ -60,13 +60,15 @@ export interface TeamLineup {
 }
 
 // Helper function to find the correct squad number from player_history
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getSquadNumberFromHistory(player: any): number | null {
   // Find the correct player_history record for this team (team_id = 1 for Tottenham)
-  const relevantHistory = player?.player_history?.find((history: any) => 
-    history.team_id === 1 && 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const relevantHistory = player?.player_history?.find((history: any) =>
+    history.team_id === 1 &&
     (!history.left_on || new Date(history.left_on) > new Date())
   );
-  
+
   return relevantHistory?.squad_number || null;
 }
 
@@ -86,6 +88,7 @@ async function fetchPlayersByMatchFromDB(matchId: string): Promise<PlayerWithSta
     throw error;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return data.map((stat: any) => ({
     ...stat.player,
     squad_number: getSquadNumberFromHistory(stat.player),
@@ -134,11 +137,13 @@ export const getPlayersByMatch = createCachedFunction(
 
 async function fetchTeamLineupsByMatchFromDB(matchId: string): Promise<TeamLineup[]> {
   // Check player_history table directly - get ALL records
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: allPlayerHistory, error: historyError } = await supabase
     .from('player_history')
     .select('*');
-  
+
   // Try with just squad_number field
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: squadNumbers, error: squadError } = await supabase
     .from('player_history')
     .select('player_id, squad_number');

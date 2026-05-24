@@ -2,7 +2,7 @@ import { supabase } from '@/utils/supabase';
 import { createCachedFunction, CACHE_TTL, CACHE_TAGS } from './cache-utils';
 
 export interface Match {
-  id: number;
+  id: string;
   date: string;
   kickoff_time: string | null;
   home_team: {
@@ -29,7 +29,7 @@ export interface Match {
   opponent_score_pens?: number | null;
   attended: boolean;
   is_home_match: boolean;
-  venue: string | null;
+  stadium_id: string;
   stadium_display_name: string | null;
   stadium_slug: string | null;
   attendance: number | null;

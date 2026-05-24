@@ -44,7 +44,7 @@ interface MatchForm {
   opponent_score_aet: number | null;
   spurs_score_pens: number | null;
   opponent_score_pens: number | null;
-  venue: string;
+  stadium_id: string;
   attended: boolean;
   notes: string;
   home_team_id: number;
@@ -248,13 +248,13 @@ export function MatchForm({
             </select>
           </div>
 
-          {/* Venue */}
+          {/* Stadium */}
           <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="venue">Venue (Stadium) <span style={{ color: 'var(--spurs-dark-accent)' }} aria-hidden="true">*</span></label>
+            <label className="block text-sm font-medium mb-2" htmlFor="stadium">Stadium <span style={{ color: 'var(--spurs-dark-accent)' }} aria-hidden="true">*</span></label>
             <select
-              id="venue"
-              value={matchForm.venue || ''}
-              onChange={(e) => setMatchForm({ ...matchForm, venue: e.target.value })}
+              id="stadium"
+              value={matchForm.stadium_id || ''}
+              onChange={(e) => setMatchForm({ ...matchForm, stadium_id: e.target.value })}
               className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
               required
               aria-required="true"
@@ -263,7 +263,7 @@ export function MatchForm({
               {stadiums.map(stadium => {
                 const currentName = getCurrentStadiumName(stadium.id, matchForm.date || new Date().toISOString().split('T')[0]);
                 return (
-                  <option key={stadium.id} value={currentName}>
+                  <option key={stadium.id} value={stadium.id}>
                     {currentName} {stadium.city && currentName !== stadium.name ? `(${stadium.city})` : ''}
                   </option>
                 );

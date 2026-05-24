@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { PhotoMedia } from '../../types/media';
 
 type LightboxGalleryProps = {
@@ -23,9 +23,18 @@ export default function LightboxGallery({
   const currentPhoto = photos[currentIndex];
 
   // Reset loading state when changing photos
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     setIsLoading(true);
   }, [currentIndex]);
+
+  const navigatePrevious = useCallback(() => {
+    setCurrentIndex((prev: number) => (prev - 1 + photos.length) % photos.length);
+  }, [photos.length]);
+
+  const navigateNext = useCallback(() => {
+    setCurrentIndex((prev: number) => (prev + 1) % photos.length);
+  }, [photos.length]);
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -47,7 +56,7 @@ export default function LightboxGallery({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, currentIndex]);
+  }, [isOpen, currentIndex, navigatePrevious, navigateNext, onClose]);
 
   // Auto-hide controls
   useEffect(() => {
@@ -69,14 +78,6 @@ export default function LightboxGallery({
       clearTimeout(timer);
     };
   }, [isOpen]);
-
-  const navigatePrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + photos.length) % photos.length);
-  };
-
-  const navigateNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % photos.length);
-  };
 
   if (!isOpen || !currentPhoto) return null;
 

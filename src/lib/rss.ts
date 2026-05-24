@@ -50,6 +50,7 @@ export async function fetchSpursWomenNews(): Promise<NewsArticle[]> {
       );
       
       const feedPromise = parser.parseURL(sourceUrl);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const feed = await Promise.race([feedPromise, timeoutPromise]) as any;
       
       // Check if the feed is valid RSS
@@ -67,6 +68,7 @@ export async function fetchSpursWomenNews(): Promise<NewsArticle[]> {
       else if (sourceUrl.includes('cartilagefreecaptain')) sourceName = 'Cartilage Free Captain';
       else if (sourceUrl.includes('girlsontheball')) sourceName = 'Girls on the Ball';
     
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const articles = feed.items.map((item: any) => ({
         title: item.title || '',
         link: item.link || '',
@@ -76,6 +78,7 @@ export async function fetchSpursWomenNews(): Promise<NewsArticle[]> {
         guid: item.guid || '',
         isoDate: item.isoDate || '',
         source: sourceName,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         categories: item.categories?.map((cat: any) => cat.term) || []
       }));
       
