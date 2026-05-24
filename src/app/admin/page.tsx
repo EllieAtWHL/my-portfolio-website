@@ -6,6 +6,14 @@ import { getTeamColor } from '@/lib/utils/team-colors';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/Button';
+import { MatchForm } from '@/components/admin/MatchForm';
+import { MediaForm } from '@/components/admin/MediaForm';
+import { TeamForm } from '@/components/admin/TeamForm';
+import { PlayerForm } from '@/components/admin/PlayerForm';
+import { PlayerStatsForm } from '@/components/admin/PlayerStatsForm';
+import { PlayerHistoryForm } from '@/components/admin/PlayerHistoryForm';
+import { StadiumForm } from '@/components/admin/StadiumForm';
+import { StadiumNameForm } from '@/components/admin/StadiumNameForm';
 
 // Types for our data
 interface Team {
@@ -72,8 +80,8 @@ interface Media {
 }
 
 interface Player {
-  id: number;
-  first_name: string;
+  id: string;
+  first_name: string | null;
   last_name: string;
   date_of_birth: string | null;
   nationality: string | null;
@@ -81,7 +89,10 @@ interface Player {
   height_cm: number | null;
   weight_kg: number | null;
   profile_image_url: string | null;
+  squad_number: number | null;
   is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 interface PlayerStats {
@@ -114,6 +125,7 @@ interface PlayerStats {
   offsides: number | null;
   player_rating: number | null;
   player_of_the_match: boolean;
+  created_at: string;
 }
 
 interface PlayerHistory {
@@ -123,7 +135,6 @@ interface PlayerHistory {
   joined_on: string | null;
   left_on: string | null;
   squad_number: number | null;
-  position: string | null;
 }
 
 interface Stadium {
@@ -162,14 +173,13 @@ export default function AdminPage() {
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
+  const [media, setMedia] = useState<Media[]>([]);
   const [stadiums, setStadiums] = useState<Stadium[]>([]);
   const [stadiumNames, setStadiumNames] = useState<StadiumName[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
 
   // Recent records for each entity type
   const [recentMedia, setRecentMedia] = useState<Media[]>([]);
-  const [recentTeams, setRecentTeams] = useState<Team[]>([]);
-  const [recentPlayers, setRecentPlayers] = useState<Player[]>([]);
   const [recentPlayerStats, setRecentPlayerStats] = useState<PlayerStats[]>([]);
   const [recentPlayerHistory, setRecentPlayerHistory] = useState<PlayerHistory[]>([]);
   const [recentStadiums, setRecentStadiums] = useState<Stadium[]>([]);
@@ -186,12 +196,83 @@ export default function AdminPage() {
   const [matchesTotalPages, setMatchesTotalPages] = useState(1);
   const matchesPerPage = 20;
 
+  // Media-specific pagination state
+  const [mediaCurrentPage, setMediaCurrentPage] = useState(1);
+  const [mediaTotalPages, setMediaTotalPages] = useState(1);
+  const mediaPerPage = 20;
+
+  // Teams-specific pagination state
+  const [teamsCurrentPage, setTeamsCurrentPage] = useState(1);
+  const [teamsTotalPages, setTeamsTotalPages] = useState(1);
+  const teamsPerPage = 20;
+
+  // Players-specific pagination state
+  const [playersCurrentPage, setPlayersCurrentPage] = useState(1);
+  const [playersTotalPages, setPlayersTotalPages] = useState(1);
+  const playersPerPage = 20;
+
+  // Player stats-specific pagination state
+  const [playerStatsCurrentPage, setPlayerStatsCurrentPage] = useState(1);
+  const [playerStatsTotalPages, setPlayerStatsTotalPages] = useState(1);
+  const playerStatsPerPage = 20;
+
+  // Player history-specific pagination state
+  const [playerHistoryCurrentPage, setPlayerHistoryCurrentPage] = useState(1);
+  const [playerHistoryTotalPages, setPlayerHistoryTotalPages] = useState(1);
+  const playerHistoryPerPage = 20;
+
+  // Stadiums-specific pagination state
+  const [stadiumsCurrentPage, setStadiumsCurrentPage] = useState(1);
+  const [stadiumsTotalPages, setStadiumsTotalPages] = useState(1);
+  const stadiumsPerPage = 20;
+
+  // Stadium names-specific pagination state
+  const [stadiumNamesCurrentPage, setStadiumNamesCurrentPage] = useState(1);
+  const [stadiumNamesTotalPages, setStadiumNamesTotalPages] = useState(1);
+  const stadiumNamesPerPage = 20;
+
   // Search state for matches
   const [matchSearch, setMatchSearch] = useState('');
+
+  // Search state for media
+  const [mediaSearch, setMediaSearch] = useState('');
+
+  // Search state for teams
+  const [teamSearch, setTeamSearch] = useState('');
+
+  // Search state for players
+  const [playerSearch, setPlayerSearch] = useState('');
+
+  // Search state for player stats
+  const [playerStatsSearch, setPlayerStatsSearch] = useState('');
+
+  // Search state for player history
+  const [playerHistorySearch, setPlayerHistorySearch] = useState('');
+
+  // Search state for stadiums
+  const [stadiumSearch, setStadiumSearch] = useState('');
+
+  // Search state for stadium names
+  const [stadiumNameSearch, setStadiumNameSearch] = useState('');
 
   // Edit mode state
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingMatchId, setEditingMatchId] = useState<string | null>(null);
+  const [isMediaEditMode, setIsMediaEditMode] = useState(false);
+  const [editingMediaId, setEditingMediaId] = useState<string | null>(null);
+  const [isTeamEditMode, setIsTeamEditMode] = useState(false);
+  const [editingTeamId, setEditingTeamId] = useState<number | null>(null);
+  const [isPlayerEditMode, setIsPlayerEditMode] = useState(false);
+  const [editingPlayerId, setEditingPlayerId] = useState<string | null>(null);
+  const [isPlayerStatsEditMode, setIsPlayerStatsEditMode] = useState(false);
+  const [editingPlayerStatsId, setEditingPlayerStatsId] = useState<string | null>(null);
+  const [editingPlayerStats, setEditingPlayerStats] = useState<PlayerStats | null>(null);
+  const [isPlayerHistoryEditMode, setIsPlayerHistoryEditMode] = useState(false);
+  const [editingPlayerHistoryId, setEditingPlayerHistoryId] = useState<string | null>(null);
+  const [isStadiumEditMode, setIsStadiumEditMode] = useState(false);
+  const [editingStadiumId, setEditingStadiumId] = useState<string | null>(null);
+  const [isStadiumNameEditMode, setIsStadiumNameEditMode] = useState(false);
+  const [editingStadiumNameId, setEditingStadiumNameId] = useState<string | null>(null);
 
   // Collapsible section state
   const [showExtraTimeSection, setShowExtraTimeSection] = useState(false);
@@ -233,6 +314,55 @@ export default function AdminPage() {
     url: '',
     caption: '',
     sort_order: 0,
+  });
+
+  const [teamForm, setTeamForm] = useState<Partial<Team>>({
+    name: '',
+    short_name: '',
+    primary_color: null,
+    secondary_color: null,
+    is_tottenham: false,
+  });
+
+  const [playerForm, setPlayerForm] = useState<Partial<Player>>({
+    first_name: '',
+    last_name: '',
+    date_of_birth: null,
+    nationality: null,
+    position: null,
+    height_cm: null,
+    weight_kg: null,
+    profile_image_url: null,
+    is_active: true,
+  });
+
+  const [playerHistoryForm, setPlayerHistoryForm] = useState<Partial<PlayerHistory>>({
+    player_id: '',
+    team_id: 1,
+    joined_on: null,
+    left_on: null,
+    squad_number: null,
+  });
+
+  const [stadiumForm, setStadiumForm] = useState<Partial<Stadium>>({
+    name: '',
+    slug: '',
+    city: null,
+    country: null,
+    capacity: null,
+    opened_date: null,
+    address_line_1: null,
+    postcode: null,
+    latitude: null,
+    longitude: null,
+    home_team_id: null,
+  });
+
+  const [stadiumNameForm, setStadiumNameForm] = useState<Partial<StadiumName>>({
+    stadium_id: '',
+    name: '',
+    valid_from: null,
+    valid_to: null,
   });
 
   // Season filter states
@@ -295,7 +425,7 @@ export default function AdminPage() {
       setLoading(true);
       try {
         // Load all dropdown data via API calls
-        const [matchesRes, teamsRes, competitionsRes, seasonsRes, playersRes, stadiumsRes, stadiumNamesRes] = await Promise.all([
+        const [matchesRes, teamsRes, competitionsRes, seasonsRes, playersRes, stadiumsRes, stadiumNamesRes, mediaRes] = await Promise.all([
           callAdminApi('matches', 'GET'),
           callAdminApi('teams', 'GET'),
           callAdminApi('competitions', 'GET'),
@@ -303,19 +433,25 @@ export default function AdminPage() {
           callAdminApi('players', 'GET'),
           callAdminApi('stadia', 'GET'),
           callAdminApi('stadium-names', 'GET'),
+          callAdminApi('media', 'GET'),
         ]);
 
         if (teamsRes.data) setTeams(teamsRes.data);
         if (competitionsRes.data) setCompetitions(competitionsRes.data);
         if (seasonsRes.data) setSeasons(seasonsRes.data);
         if (matchesRes.data) setMatches(matchesRes.data);
+        if (mediaRes.data) setMedia(mediaRes.data);
         if (stadiumsRes.data) {
           setStadiums(stadiumsRes.data);
         } else {
           console.warn('No stadiums data');
         }
         if (stadiumNamesRes.data) setStadiumNames(stadiumNamesRes.data);
-        if (playersRes.data) setPlayers(playersRes.data);
+        if (playersRes.data) {
+          setPlayers(playersRes.data);
+        } else {
+          console.warn('No players data received');
+        }
       } catch (error) {
         showMessage('Error loading data', 'error');
         console.error('Error loading dropdown data:', error);
@@ -336,18 +472,13 @@ export default function AdminPage() {
   // Functions to fetch recent records for each entity type
   const fetchRecentRecords = useCallback(async (page: number = 1) => {
     try {
-      console.log(`Fetching recent records for page ${page}...`);
-      const offset = (page - 1) * recordsPerPage;
-      
+
       // Determine which table to fetch based on active tab
       let tableName = '';
       
       switch (activeTab) {
         case 'media':
           tableName = 'media';
-          break;
-        case 'teams':
-          tableName = 'teams';
           break;
         case 'players':
           tableName = 'players';
@@ -359,70 +490,52 @@ export default function AdminPage() {
           tableName = 'player_history';
           break;
         case 'stadiums':
-          tableName = 'stadiums';
+          tableName = 'stadia';
           break;
         case 'stadium_names':
           tableName = 'stadium_names';
           break;
-        case 'stadiums':
-          tableName = 'stadia';
-          break;
         case 'matches':
+        case 'teams':
         default:
-          // Matches are already loaded separately
+          // Matches and teams are already loaded separately
           return;
       }
 
       if (tableName) {
-        // Fetch data via API
-        const apiEndpoint = tableName === 'stadia' ? 'stadia' : tableName;
+        // Fetch data via API - map table names to API endpoint names
+        const apiEndpointMap: Record<string, string> = {
+          'player_stats': 'player-stats',
+          'player_history': 'player-history',
+          'stadium_names': 'stadium-names',
+          'stadia': 'stadia',
+        };
+        const apiEndpoint = apiEndpointMap[tableName] || tableName;
         const dataRes = await callAdminApi(apiEndpoint, 'GET');
-        
-        // Apply pagination client-side
-        const paginatedData = dataRes.data ? dataRes.data.slice(offset, offset + recordsPerPage) : [];
-        const totalCount = dataRes.data ? dataRes.data.length : 0;
 
-        console.log(`${tableName} response:`, dataRes);
-        console.log(`${tableName} data:`, paginatedData);
-        console.log(`${tableName} count:`, totalCount);
-        
-        // Set the appropriate state based on the active tab
-        if (paginatedData) {
-          console.log(`Setting recent ${tableName}:`, paginatedData);
+        // Set the appropriate state based on the active tab (store ALL data, not paginated)
+        if (dataRes.data) {
           switch (activeTab) {
             case 'media':
-              setRecentMedia(paginatedData as Media[]);
-              break;
-            case 'teams':
-              setRecentTeams(paginatedData as Team[]);
-              break;
-            case 'players':
-              setRecentPlayers(paginatedData as Player[]);
+              setRecentMedia(dataRes.data as Media[]);
               break;
             case 'player_stats':
-              setRecentPlayerStats(paginatedData as PlayerStats[]);
+              setRecentPlayerStats(dataRes.data as PlayerStats[]);
               break;
             case 'player_history':
-              setRecentPlayerHistory(paginatedData as PlayerHistory[]);
+              setRecentPlayerHistory(dataRes.data as PlayerHistory[]);
               break;
             case 'stadiums':
-              setRecentStadiums(paginatedData as Stadium[]);
+              setRecentStadiums(dataRes.data as Stadium[]);
               break;
             case 'stadium_names':
-              setRecentStadiumNames(paginatedData as StadiumName[]);
+              setRecentStadiumNames(dataRes.data as StadiumName[]);
               break;
           }
         } else {
-          console.log(`No ${tableName} data found`);
           switch (activeTab) {
             case 'media':
               setRecentMedia([]);
-              break;
-            case 'teams':
-              setRecentTeams([]);
-              break;
-            case 'players':
-              setRecentPlayers([]);
               break;
             case 'player_stats':
               setRecentPlayerStats([]);
@@ -447,7 +560,7 @@ export default function AdminPage() {
     } catch (error) {
       console.error('Error fetching recent records:', error);
     }
-  }, [activeTab, recordsPerPage, setRecentMedia, setRecentTeams, setRecentPlayers, setRecentPlayerStats, setRecentPlayerHistory, setRecentStadiums, setRecentStadiumNames, setTotalCount, setTotalPages]);
+  }, [activeTab, recordsPerPage, setRecentMedia, setRecentPlayerStats, setRecentPlayerHistory, setRecentStadiums, setRecentStadiumNames, setTotalCount, setTotalPages]);
 
   // Reset pagination when tab changes
   useEffect(() => {
@@ -456,7 +569,55 @@ export default function AdminPage() {
     setTotalCount(0);
     setMatchesCurrentPage(1);
     setMatchesTotalPages(1);
+    setMediaCurrentPage(1);
+    setMediaTotalPages(1);
+    setTeamsCurrentPage(1);
+    setTeamsTotalPages(1);
+    setPlayersCurrentPage(1);
+    setPlayersTotalPages(1);
+    setPlayerStatsCurrentPage(1);
+    setPlayerStatsTotalPages(1);
+    setPlayerHistoryCurrentPage(1);
+    setPlayerHistoryTotalPages(1);
+    setStadiumsCurrentPage(1);
+    setStadiumsTotalPages(1);
+    setStadiumNamesCurrentPage(1);
+    setStadiumNamesTotalPages(1);
     fetchRecentRecords(1);
+    
+    // Reset edit modes when switching tabs
+    if (activeTab !== 'matches') {
+      setIsEditMode(false);
+      setEditingMatchId(null);
+    }
+    if (activeTab !== 'media') {
+      setIsMediaEditMode(false);
+      setEditingMediaId(null);
+    }
+    if (activeTab !== 'teams') {
+      setIsTeamEditMode(false);
+      setEditingTeamId(null);
+    }
+    if (activeTab !== 'players') {
+      setIsPlayerEditMode(false);
+      setEditingPlayerId(null);
+    }
+    if (activeTab !== 'player_stats') {
+      setIsPlayerStatsEditMode(false);
+      setEditingPlayerStatsId(null);
+    }
+    if (activeTab !== 'player_history') {
+      setIsPlayerHistoryEditMode(false);
+      setEditingPlayerHistoryId(null);
+    }
+    if (activeTab !== 'stadiums') {
+      setIsStadiumEditMode(false);
+      setEditingStadiumId(null);
+    }
+    if (activeTab !== 'stadium_names') {
+      setIsStadiumNameEditMode(false);
+      setEditingStadiumNameId(null);
+    }
   }, [activeTab]);
 
   // Pagination controls
@@ -489,11 +650,183 @@ export default function AdminPage() {
     });
   }, [matches, teams, matchSearch]);
 
+  // Helper function for filtering media (searches across ALL media)
+  const getFilteredMedia = useCallback(() => {
+    return media.filter(mediaItem => {
+      if (!mediaSearch) return true;
+      const searchTerm = mediaSearch.toLowerCase();
+      const match = matches.find(m => m.id === mediaItem.match_id);
+      const homeTeam = teams.find(t => t.id === match?.home_team_id);
+      const awayTeam = teams.find(t => t.id === match?.away_team_id);
+      const matchDescription = match && homeTeam && awayTeam
+        ? `${homeTeam.short_name} vs ${awayTeam.short_name} (${match.date})`
+        : '';
+      return (
+        mediaItem.type?.toLowerCase().includes(searchTerm) ||
+        mediaItem.title?.toLowerCase().includes(searchTerm) ||
+        mediaItem.url?.toLowerCase().includes(searchTerm) ||
+        matchDescription.toLowerCase().includes(searchTerm)
+      );
+    });
+  }, [media, matches, teams, mediaSearch]);
+
+  // Helper function for filtering teams (searches across ALL teams)
+  const getFilteredTeams = useCallback(() => {
+    return teams.filter(team => {
+      if (!teamSearch) return true;
+      const searchTerm = teamSearch.toLowerCase();
+      return (
+        team.name?.toLowerCase().includes(searchTerm) ||
+        team.short_name?.toLowerCase().includes(searchTerm)
+      );
+    });
+  }, [teams, teamSearch]);
+
+  // Helper function for filtering players (searches across ALL players)
+  const getFilteredPlayers = useCallback(() => {
+    return players.filter(player => {
+      if (!playerSearch) return true;
+      const searchTerm = playerSearch.toLowerCase();
+      return (
+        player.first_name?.toLowerCase().includes(searchTerm) ||
+        player.last_name?.toLowerCase().includes(searchTerm) ||
+        player.position?.toLowerCase().includes(searchTerm) ||
+        player.nationality?.toLowerCase().includes(searchTerm)
+      );
+    });
+  }, [players, playerSearch]);
+
+  // Helper function for filtering player stats (searches across ALL player stats)
+  const getFilteredPlayerStats = useCallback(() => {
+    return recentPlayerStats.filter(stat => {
+      if (!playerStatsSearch) return true;
+      const searchTerm = playerStatsSearch.toLowerCase();
+      const player = players.find(p => p.id === stat.player_id);
+      const match = matches.find(m => m.id === stat.match_id);
+      const homeTeam = teams.find(t => t.id === match?.home_team_id);
+      const awayTeam = teams.find(t => t.id === match?.away_team_id);
+      const playerName = player ? `${player.first_name} ${player.last_name}` : '';
+      const matchDescription = match && homeTeam && awayTeam
+        ? `${homeTeam.short_name} vs ${awayTeam.short_name} (${match.date})`
+        : match?.date || '';
+      return (
+        playerName.toLowerCase().includes(searchTerm) ||
+        matchDescription.toLowerCase().includes(searchTerm) ||
+        stat.goals.toString().includes(searchTerm) ||
+        stat.assists.toString().includes(searchTerm)
+      );
+    });
+  }, [recentPlayerStats, players, matches, teams, playerStatsSearch]);
+
+  // Helper function for filtering player history (searches across ALL player history)
+  const getFilteredPlayerHistory = useCallback(() => {
+    return recentPlayerHistory.filter(history => {
+      if (!playerHistorySearch) return true;
+      const searchTerm = playerHistorySearch.toLowerCase();
+      const player = players.find(p => p.id === history.player_id);
+      const team = teams.find(t => t.id === history.team_id);
+      const playerName = player ? `${player.first_name} ${player.last_name}` : '';
+      const teamName = team?.name || '';
+      return (
+        playerName.toLowerCase().includes(searchTerm) ||
+        teamName.toLowerCase().includes(searchTerm) ||
+        history.squad_number?.toString().includes(searchTerm) ||
+        history.joined_on?.includes(searchTerm) ||
+        history.left_on?.includes(searchTerm)
+      );
+    });
+  }, [recentPlayerHistory, players, teams, playerHistorySearch]);
+
+  // Helper function for filtering stadiums (searches across ALL stadiums)
+  const getFilteredStadiums = useCallback(() => {
+    return recentStadiums.filter(stadium => {
+      if (!stadiumSearch) return true;
+      const searchTerm = stadiumSearch.toLowerCase();
+      return (
+        stadium.name?.toLowerCase().includes(searchTerm) ||
+        stadium.slug?.toLowerCase().includes(searchTerm) ||
+        stadium.city?.toLowerCase().includes(searchTerm) ||
+        stadium.country?.toLowerCase().includes(searchTerm)
+      );
+    });
+  }, [recentStadiums, stadiumSearch]);
+
+  // Helper function for filtering stadium names (searches across ALL stadium names)
+  const getFilteredStadiumNames = useCallback(() => {
+    return recentStadiumNames.filter(stadiumName => {
+      if (!stadiumNameSearch) return true;
+      const searchTerm = stadiumNameSearch.toLowerCase();
+      const stadium = stadiums.find(s => s.id === stadiumName.stadium_id);
+      return (
+        stadiumName.name?.toLowerCase().includes(searchTerm) ||
+        stadium?.name?.toLowerCase().includes(searchTerm) ||
+        stadiumName.valid_from?.includes(searchTerm) ||
+        stadiumName.valid_to?.includes(searchTerm)
+      );
+    });
+  }, [recentStadiumNames, stadiums, stadiumNameSearch]);
+
   // Get paginated matches (applies pagination to filtered results)
   const getPaginatedMatches = () => {
     const filtered = getFilteredMatches();
     const startIndex = (matchesCurrentPage - 1) * matchesPerPage;
     const endIndex = startIndex + matchesPerPage;
+    return filtered.slice(startIndex, endIndex);
+  };
+
+  // Get paginated media (applies pagination to filtered results)
+  const getPaginatedMedia = () => {
+    const filtered = getFilteredMedia();
+    const startIndex = (mediaCurrentPage - 1) * mediaPerPage;
+    const endIndex = startIndex + mediaPerPage;
+    return filtered.slice(startIndex, endIndex);
+  };
+
+  // Get paginated teams (applies pagination to filtered results)
+  const getPaginatedTeams = () => {
+    const filtered = getFilteredTeams();
+    const startIndex = (teamsCurrentPage - 1) * teamsPerPage;
+    const endIndex = startIndex + teamsPerPage;
+    return filtered.slice(startIndex, endIndex);
+  };
+
+  // Get paginated players (applies pagination to filtered results)
+  const getPaginatedPlayers = () => {
+    const filtered = getFilteredPlayers();
+    const startIndex = (playersCurrentPage - 1) * playersPerPage;
+    const endIndex = startIndex + playersPerPage;
+    return filtered.slice(startIndex, endIndex);
+  };
+
+  // Get paginated player stats (applies pagination to filtered results)
+  const getPaginatedPlayerStats = () => {
+    const filtered = getFilteredPlayerStats();
+    const startIndex = (playerStatsCurrentPage - 1) * playerStatsPerPage;
+    const endIndex = startIndex + playerStatsPerPage;
+    return filtered.slice(startIndex, endIndex);
+  };
+
+  // Get paginated player history (applies pagination to filtered results)
+  const getPaginatedPlayerHistory = () => {
+    const filtered = getFilteredPlayerHistory();
+    const startIndex = (playerHistoryCurrentPage - 1) * playerHistoryPerPage;
+    const endIndex = startIndex + playerHistoryPerPage;
+    return filtered.slice(startIndex, endIndex);
+  };
+
+  // Get paginated stadiums (applies pagination to filtered results)
+  const getPaginatedStadiums = () => {
+    const filtered = getFilteredStadiums();
+    const startIndex = (stadiumsCurrentPage - 1) * stadiumsPerPage;
+    const endIndex = startIndex + stadiumsPerPage;
+    return filtered.slice(startIndex, endIndex);
+  };
+
+  // Get paginated stadium names (applies pagination to filtered results)
+  const getPaginatedStadiumNames = () => {
+    const filtered = getFilteredStadiumNames();
+    const startIndex = (stadiumNamesCurrentPage - 1) * stadiumNamesPerPage;
+    const endIndex = startIndex + stadiumNamesPerPage;
     return filtered.slice(startIndex, endIndex);
   };
 
@@ -507,6 +840,83 @@ export default function AdminPage() {
       setMatchesCurrentPage(1);
     }
   }, [getFilteredMatches, matchesCurrentPage, matchesPerPage]);
+
+  // Update media pagination when search or data changes
+  useEffect(() => {
+    const filtered = getFilteredMedia();
+    const newTotalPages = Math.ceil(filtered.length / mediaPerPage);
+    setMediaTotalPages(newTotalPages);
+    // Reset to page 1 if current page is beyond new total
+    if (mediaCurrentPage > newTotalPages && newTotalPages > 0) {
+      setMediaCurrentPage(1);
+    }
+  }, [getFilteredMedia, mediaCurrentPage, mediaPerPage]);
+
+  // Update teams pagination when search or data changes
+  useEffect(() => {
+    const filtered = getFilteredTeams();
+    const newTotalPages = Math.ceil(filtered.length / teamsPerPage);
+    setTeamsTotalPages(newTotalPages);
+    // Reset to page 1 if current page is beyond new total
+    if (teamsCurrentPage > newTotalPages && newTotalPages > 0) {
+      setTeamsCurrentPage(1);
+    }
+  }, [getFilteredTeams, teamsCurrentPage, teamsPerPage]);
+
+  // Update players pagination when search or data changes
+  useEffect(() => {
+    const filtered = getFilteredPlayers();
+    const newTotalPages = Math.ceil(filtered.length / playersPerPage);
+    setPlayersTotalPages(newTotalPages);
+    // Reset to page 1 if current page is beyond new total
+    if (playersCurrentPage > newTotalPages && newTotalPages > 0) {
+      setPlayersCurrentPage(1);
+    }
+  }, [getFilteredPlayers, playersCurrentPage, playersPerPage]);
+
+  // Update player stats pagination when search or data changes
+  useEffect(() => {
+    const filtered = getFilteredPlayerStats();
+    const newTotalPages = Math.ceil(filtered.length / playerStatsPerPage);
+    setPlayerStatsTotalPages(newTotalPages);
+    // Reset to page 1 if current page is beyond new total
+    if (playerStatsCurrentPage > newTotalPages && newTotalPages > 0) {
+      setPlayerStatsCurrentPage(1);
+    }
+  }, [getFilteredPlayerStats, playerStatsCurrentPage, playerStatsPerPage]);
+
+  // Update player history pagination when search or data changes
+  useEffect(() => {
+    const filtered = getFilteredPlayerHistory();
+    const newTotalPages = Math.ceil(filtered.length / playerHistoryPerPage);
+    setPlayerHistoryTotalPages(newTotalPages);
+    // Reset to page 1 if current page is beyond new total
+    if (playerHistoryCurrentPage > newTotalPages && newTotalPages > 0) {
+      setPlayerHistoryCurrentPage(1);
+    }
+  }, [getFilteredPlayerHistory, playerHistoryCurrentPage, playerHistoryPerPage]);
+
+  // Update stadiums pagination when search or data changes
+  useEffect(() => {
+    const filtered = getFilteredStadiums();
+    const newTotalPages = Math.ceil(filtered.length / stadiumsPerPage);
+    setStadiumsTotalPages(newTotalPages);
+    // Reset to page 1 if current page is beyond new total
+    if (stadiumsCurrentPage > newTotalPages && newTotalPages > 0) {
+      setStadiumsCurrentPage(1);
+    }
+  }, [getFilteredStadiums, stadiumsCurrentPage, stadiumsPerPage]);
+
+  // Update stadium names pagination when search or data changes
+  useEffect(() => {
+    const filtered = getFilteredStadiumNames();
+    const newTotalPages = Math.ceil(filtered.length / stadiumNamesPerPage);
+    setStadiumNamesTotalPages(newTotalPages);
+    // Reset to page 1 if current page is beyond new total
+    if (stadiumNamesCurrentPage > newTotalPages && newTotalPages > 0) {
+      setStadiumNamesCurrentPage(1);
+    }
+  }, [getFilteredStadiumNames, stadiumNamesCurrentPage, stadiumNamesPerPage]);
 
   const handleDeleteMatch = async (matchId: string) => {
     setLoading(true);
@@ -614,6 +1024,564 @@ export default function AdminPage() {
       home_corners: null,
       away_corners: null,
     });
+  };
+
+  const handleEditMedia = (media: Media) => {
+    setIsMediaEditMode(true);
+    setEditingMediaId(media.id);
+    setMediaForm({
+      match_id: media.match_id,
+      type: media.type,
+      title: media.title || '',
+      url: media.url,
+      caption: media.caption || '',
+      sort_order: media.sort_order,
+    });
+  };
+
+  const handleCancelEditMedia = () => {
+    setIsMediaEditMode(false);
+    setEditingMediaId(null);
+    setMediaForm({
+      match_id: '',
+      type: 'social media',
+      title: '',
+      url: '',
+      caption: '',
+      sort_order: 0,
+    });
+  };
+
+  const handleDeleteMedia = async (mediaId: string) => {
+    setLoading(true);
+    try {
+      await callAdminApi('media', 'DELETE', { id: mediaId });
+      showMessage('Media deleted successfully', 'success');
+
+      // Reload media data
+      try {
+        const mediaResponse = await callAdminApi('media', 'GET');
+        if (mediaResponse.data) setMedia(mediaResponse.data);
+      } catch (error) {
+        console.error('Error reloading media:', error);
+      }
+    } catch (error) {
+      console.error('Error deleting media:', error);
+      showMessage('Error deleting media', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteTeam = async (teamId: number) => {
+    setLoading(true);
+    try {
+      await callAdminApi('teams', 'DELETE', { id: teamId });
+      showMessage('Team deleted successfully', 'success');
+
+      // Reload teams data
+      try {
+        const teamsResponse = await callAdminApi('teams', 'GET');
+        if (teamsResponse.data) setTeams(teamsResponse.data);
+      } catch (error) {
+        console.error('Error reloading teams:', error);
+      }
+    } catch (error) {
+      console.error('Error deleting team:', error);
+      showMessage('Error deleting team', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditTeam = (team: Team) => {
+    setIsTeamEditMode(true);
+    setEditingTeamId(team.id);
+    setTeamForm({
+      name: team.name,
+      short_name: team.short_name,
+      primary_color: team.primary_color,
+      secondary_color: team.secondary_color,
+      is_tottenham: team.is_tottenham,
+    });
+  };
+
+  const handleCancelEditTeam = () => {
+    setIsTeamEditMode(false);
+    setEditingTeamId(null);
+    setTeamForm({
+      name: '',
+      short_name: '',
+      primary_color: null,
+      secondary_color: null,
+      is_tottenham: false,
+    });
+  };
+
+  const handleDeletePlayer = async (playerId: string) => {
+    setLoading(true);
+    try {
+      await callAdminApi('players', 'DELETE', { id: playerId });
+      showMessage('Player deleted successfully', 'success');
+
+      // Reload players data
+      try {
+        const playersResponse = await callAdminApi('players', 'GET');
+        if (playersResponse.data) setPlayers(playersResponse.data);
+      } catch (error) {
+        console.error('Error reloading players:', error);
+      }
+    } catch (error) {
+      console.error('Error deleting player:', error);
+      showMessage('Error deleting player', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditPlayer = (player: Player) => {
+    setIsPlayerEditMode(true);
+    setEditingPlayerId(player.id);
+    setPlayerForm({
+      first_name: player.first_name,
+      last_name: player.last_name,
+      date_of_birth: player.date_of_birth,
+      nationality: player.nationality,
+      position: player.position,
+      height_cm: player.height_cm,
+      weight_kg: player.weight_kg,
+      profile_image_url: player.profile_image_url,
+      is_active: player.is_active,
+    });
+  };
+
+  const handleCancelEditPlayer = () => {
+    setIsPlayerEditMode(false);
+    setEditingPlayerId(null);
+    setPlayerForm({
+      first_name: '',
+      last_name: '',
+      date_of_birth: null,
+      nationality: null,
+      position: null,
+      height_cm: null,
+      weight_kg: null,
+      profile_image_url: null,
+      is_active: true,
+    });
+  };
+
+  const handleDeletePlayerStats = async (playerStatsId: string) => {
+    setLoading(true);
+    try {
+      await callAdminApi('player-stats', 'DELETE', { id: playerStatsId });
+      showMessage('Player stats deleted successfully', 'success');
+
+      // Reload player stats data
+      try {
+        const playerStatsResponse = await callAdminApi('player-stats', 'GET');
+        if (playerStatsResponse.data) setRecentPlayerStats(playerStatsResponse.data);
+      } catch (error) {
+        console.error('Error reloading player stats:', error);
+      }
+    } catch (error) {
+      console.error('Error deleting player stats:', error);
+      showMessage('Error deleting player stats', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditPlayerStats = (stat: PlayerStats) => {
+    setIsPlayerStatsEditMode(true);
+    setEditingPlayerStatsId(stat.id);
+    setEditingPlayerStats(stat);
+  };
+
+  const handleCancelEditPlayerStats = () => {
+    setIsPlayerStatsEditMode(false);
+    setEditingPlayerStatsId(null);
+    setEditingPlayerStats(null);
+  };
+
+  const handleDeletePlayerHistory = async (playerHistoryId: string) => {
+    setLoading(true);
+    try {
+      await callAdminApi('player-history', 'DELETE', { id: playerHistoryId });
+      showMessage('Player history deleted successfully', 'success');
+
+      // Reload player history data
+      try {
+        const playerHistoryResponse = await callAdminApi('player-history', 'GET');
+        if (playerHistoryResponse.data) setRecentPlayerHistory(playerHistoryResponse.data);
+      } catch (error) {
+        console.error('Error reloading player history:', error);
+      }
+    } catch (error) {
+      console.error('Error deleting player history:', error);
+      showMessage('Error deleting player history', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditPlayerHistory = (history: PlayerHistory) => {
+    setIsPlayerHistoryEditMode(true);
+    setEditingPlayerHistoryId(history.id);
+    setPlayerHistoryForm({
+      player_id: history.player_id,
+      team_id: history.team_id,
+      joined_on: history.joined_on,
+      left_on: history.left_on,
+      squad_number: history.squad_number,
+    });
+  };
+
+  const handleCancelEditPlayerHistory = () => {
+    setIsPlayerHistoryEditMode(false);
+    setEditingPlayerHistoryId(null);
+    setPlayerHistoryForm({
+      player_id: '',
+      team_id: 1,
+      joined_on: null,
+      left_on: null,
+      squad_number: null,
+    });
+  };
+
+  const handleDeleteStadium = async (stadiumId: string) => {
+    setLoading(true);
+    try {
+      await callAdminApi('stadia', 'DELETE', { id: stadiumId });
+      showMessage('Stadium deleted successfully', 'success');
+
+      // Reload stadiums data
+      try {
+        const stadiumsResponse = await callAdminApi('stadia', 'GET');
+        if (stadiumsResponse.data) {
+          setStadiums(stadiumsResponse.data);
+          setRecentStadiums(stadiumsResponse.data);
+        }
+      } catch (error) {
+        console.error('Error reloading stadiums:', error);
+      }
+    } catch (error) {
+      console.error('Error deleting stadium:', error);
+      showMessage('Error deleting stadium', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditStadium = (stadium: Stadium) => {
+    setIsStadiumEditMode(true);
+    setEditingStadiumId(stadium.id);
+    setStadiumForm({
+      name: stadium.name,
+      slug: stadium.slug,
+      city: stadium.city,
+      country: stadium.country,
+      capacity: stadium.capacity,
+      opened_date: stadium.opened_date,
+      address_line_1: stadium.address_line_1,
+      postcode: stadium.postcode,
+      latitude: stadium.latitude,
+      longitude: stadium.longitude,
+      home_team_id: stadium.home_team_id,
+    });
+  };
+
+  const handleCancelEditStadium = () => {
+    setIsStadiumEditMode(false);
+    setEditingStadiumId(null);
+    setStadiumForm({
+      name: '',
+      slug: '',
+      city: null,
+      country: null,
+      capacity: null,
+      opened_date: null,
+      address_line_1: null,
+      postcode: null,
+      latitude: null,
+      longitude: null,
+      home_team_id: null,
+    });
+  };
+
+  const handleDeleteStadiumName = async (stadiumNameId: string) => {
+    setLoading(true);
+    try {
+      await callAdminApi('stadium-names', 'DELETE', { id: stadiumNameId });
+      showMessage('Stadium name deleted successfully', 'success');
+
+      // Reload stadium names data
+      try {
+        const stadiumNamesResponse = await callAdminApi('stadium-names', 'GET');
+        if (stadiumNamesResponse.data) {
+          setStadiumNames(stadiumNamesResponse.data);
+          setRecentStadiumNames(stadiumNamesResponse.data);
+        }
+      } catch (error) {
+        console.error('Error reloading stadium names:', error);
+      }
+    } catch (error) {
+      console.error('Error deleting stadium name:', error);
+      showMessage('Error deleting stadium name', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditStadiumName = (stadiumName: StadiumName) => {
+    setIsStadiumNameEditMode(true);
+    setEditingStadiumNameId(stadiumName.id);
+    setStadiumNameForm({
+      stadium_id: stadiumName.stadium_id,
+      name: stadiumName.name,
+      valid_from: stadiumName.valid_from,
+      valid_to: stadiumName.valid_to,
+    });
+  };
+
+  const handleCancelEditStadiumName = () => {
+    setIsStadiumNameEditMode(false);
+    setEditingStadiumNameId(null);
+    setStadiumNameForm({
+      stadium_id: '',
+      name: '',
+      valid_from: null,
+      valid_to: null,
+    });
+  };
+
+  const handlePlayerHistorySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const payload = {
+        player_id: playerHistoryForm.player_id,
+        team_id: playerHistoryForm.team_id,
+        joined_on: playerHistoryForm.joined_on || null,
+        left_on: playerHistoryForm.left_on || null,
+        squad_number: playerHistoryForm.squad_number || null,
+      };
+
+      let response;
+      if (isPlayerHistoryEditMode && editingPlayerHistoryId) {
+        // Update existing player history
+        response = await fetch('/api/admin/player-history', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ id: editingPlayerHistoryId, ...payload }),
+        });
+      } else {
+        // Create new player history
+        response = await fetch('/api/admin/player-history', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+      }
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || `Failed to ${isPlayerHistoryEditMode ? 'update' : 'create'} player history`);
+      }
+
+      showMessage(isPlayerHistoryEditMode ? 'Player history updated successfully' : 'Player history created successfully', 'success');
+      
+      // Reset form and edit mode
+      handleCancelEditPlayerHistory();
+      
+      // Reload player history data
+      try {
+        const playerHistoryResponse = await fetch('/api/admin/player-history');
+        const playerHistoryResult = await playerHistoryResponse.json();
+        if (playerHistoryResult.data) setRecentPlayerHistory(playerHistoryResult.data);
+      } catch (error) {
+        console.error('Error reloading player history:', error);
+      }
+    } catch (error) {
+      console.error(`Error ${isPlayerHistoryEditMode ? 'updating' : 'creating'} player history:`, error);
+      
+      let errorMessage = isPlayerHistoryEditMode ? 'Error updating player history' : 'Error creating player history';
+      if (error && typeof error === 'object') {
+        if ('message' in error) {
+          errorMessage = `${isPlayerHistoryEditMode ? 'Error updating player history' : 'Error creating player history'}: ${error.message}`;
+        } else if ('code' in error) {
+          errorMessage = `${isPlayerHistoryEditMode ? 'Error updating player history' : 'Error creating player history'}: ${error.code}`;
+        } else {
+          errorMessage = `${isPlayerHistoryEditMode ? 'Error updating player history' : 'Error creating player history'}: ${JSON.stringify(error)}`;
+        }
+      } else if (typeof error === 'string') {
+        errorMessage = `${isPlayerHistoryEditMode ? 'Error updating player history' : 'Error creating player history'}: ${error}`;
+      }
+      
+      showMessage(errorMessage, 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTeamSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const payload = {
+        name: teamForm.name,
+        short_name: teamForm.short_name,
+        primary_color: teamForm.primary_color || null,
+        secondary_color: teamForm.secondary_color || null,
+        is_tottenham: teamForm.is_tottenham || false,
+      };
+
+      let response;
+      if (isTeamEditMode && editingTeamId) {
+        // Update existing team
+        response = await fetch('/api/admin/teams', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ id: editingTeamId, ...payload }),
+        });
+      } else {
+        // Create new team
+        response = await fetch('/api/admin/teams', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+      }
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || `Failed to ${isTeamEditMode ? 'update' : 'create'} team`);
+      }
+
+      showMessage(isTeamEditMode ? 'Team updated successfully' : 'Team created successfully', 'success');
+      
+      // Reset form and edit mode
+      handleCancelEditTeam();
+      
+      // Reload teams data
+      try {
+        const teamsResponse = await fetch('/api/admin/teams');
+        const teamsResult = await teamsResponse.json();
+        if (teamsResult.data) setTeams(teamsResult.data);
+      } catch (error) {
+        console.error('Error reloading teams:', error);
+      }
+    } catch (error) {
+      console.error(`Error ${isTeamEditMode ? 'updating' : 'creating'} team:`, error);
+      
+      let errorMessage = isTeamEditMode ? 'Error updating team' : 'Error creating team';
+      if (error && typeof error === 'object') {
+        if ('message' in error) {
+          errorMessage = `${isTeamEditMode ? 'Error updating team' : 'Error creating team'}: ${error.message}`;
+        } else if ('code' in error) {
+          errorMessage = `${isTeamEditMode ? 'Error updating team' : 'Error creating team'}: ${error.code}`;
+        } else {
+          errorMessage = `${isTeamEditMode ? 'Error updating team' : 'Error creating team'}: ${JSON.stringify(error)}`;
+        }
+      } else if (typeof error === 'string') {
+        errorMessage = `${isTeamEditMode ? 'Error updating team' : 'Error creating team'}: ${error}`;
+      }
+      
+      showMessage(errorMessage, 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePlayerSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const payload = {
+        first_name: playerForm.first_name || null,
+        last_name: playerForm.last_name,
+        date_of_birth: playerForm.date_of_birth || null,
+        nationality: playerForm.nationality || null,
+        position: playerForm.position || null,
+        height_cm: playerForm.height_cm || null,
+        weight_kg: playerForm.weight_kg || null,
+        profile_image_url: playerForm.profile_image_url || null,
+        is_active: playerForm.is_active !== undefined ? playerForm.is_active : true,
+      };
+
+      let response;
+      if (isPlayerEditMode && editingPlayerId) {
+        // Update existing player
+        response = await fetch('/api/admin/players', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ id: editingPlayerId, ...payload }),
+        });
+      } else {
+        // Create new player
+        response = await fetch('/api/admin/players', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+      }
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || `Failed to ${isPlayerEditMode ? 'update' : 'create'} player`);
+      }
+
+      showMessage(isPlayerEditMode ? 'Player updated successfully' : 'Player created successfully', 'success');
+      
+      // Reset form and edit mode
+      handleCancelEditPlayer();
+      
+      // Reload players data
+      try {
+        const playersResponse = await fetch('/api/admin/players');
+        const playersResult = await playersResponse.json();
+        if (playersResult.data) setPlayers(playersResult.data);
+      } catch (error) {
+        console.error('Error reloading players:', error);
+      }
+    } catch (error) {
+      console.error(`Error ${isPlayerEditMode ? 'updating' : 'creating'} player:`, error);
+      
+      let errorMessage = isPlayerEditMode ? 'Error updating player' : 'Error creating player';
+      if (error && typeof error === 'object') {
+        if ('message' in error) {
+          errorMessage = `${isPlayerEditMode ? 'Error updating player' : 'Error creating player'}: ${error.message}`;
+        } else if ('code' in error) {
+          errorMessage = `${isPlayerEditMode ? 'Error updating player' : 'Error creating player'}: ${error.code}`;
+        } else {
+          errorMessage = `${isPlayerEditMode ? 'Error updating player' : 'Error creating player'}: ${JSON.stringify(error)}`;
+        }
+      } else if (typeof error === 'string') {
+        errorMessage = `${isPlayerEditMode ? 'Error updating player' : 'Error creating player'}: ${error}`;
+      }
+      
+      showMessage(errorMessage, 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleMatchSubmit = async (e: React.FormEvent) => {
@@ -729,54 +1697,62 @@ export default function AdminPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/admin/media', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(mediaForm),
-      });
+      let response;
+      if (isMediaEditMode && editingMediaId) {
+        // Update existing media
+        response = await fetch('/api/admin/media', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ id: editingMediaId, ...mediaForm }),
+        });
+      } else {
+        // Create new media
+        response = await fetch('/api/admin/media', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(mediaForm),
+        });
+      }
 
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to create media');
+        throw new Error(result.error || `Failed to ${isMediaEditMode ? 'update' : 'create'} media`);
       }
 
-      showMessage('Media created successfully', 'success');
-      setMediaForm({
-        match_id: '',
-        type: 'social media',
-        title: '',
-        url: '',
-        caption: '',
-        sort_order: 0,
-      });
+      showMessage(isMediaEditMode ? 'Media updated successfully' : 'Media created successfully', 'success');
+      
+      // Reset form and edit mode
+      handleCancelEditMedia();
       
       // Reload recent media records
       try {
         const mediaResponse = await fetch('/api/admin/media');
         const mediaResult = await mediaResponse.json();
         if (mediaResult.data) {
-          setRecentMedia(mediaResult.data);
+          setMedia(mediaResult.data);
         }
       } catch (error) {
         console.error('Error reloading recent media:', error);
       }
     } catch (error) {
-      console.error('Error creating media:', error);
+      console.error(`Error ${isMediaEditMode ? 'updating' : 'creating'} media:`, error);
       
-      let errorMessage = 'Error creating media';
+      let errorMessage = isMediaEditMode ? 'Error updating media' : 'Error creating media';
       if (error && typeof error === 'object') {
         if ('message' in error) {
-          errorMessage = `Error creating media: ${error.message}`;
+          errorMessage = `${isMediaEditMode ? 'Error updating media' : 'Error creating media'}: ${error.message}`;
         } else if ('code' in error) {
-          errorMessage = `Error creating media: ${error.code}`;
+          errorMessage = `${isMediaEditMode ? 'Error updating media' : 'Error creating media'}: ${error.code}`;
         } else {
-          errorMessage = `Error creating media: ${JSON.stringify(error)}`;
+          errorMessage = `${isMediaEditMode ? 'Error updating media' : 'Error creating media'}: ${JSON.stringify(error)}`;
         }
       } else if (typeof error === 'string') {
-        errorMessage = `Error creating media: ${error}`;
+        errorMessage = `${isMediaEditMode ? 'Error updating media' : 'Error creating media'}: ${error}`;
       }
       
       showMessage(errorMessage, 'error');
@@ -950,967 +1926,193 @@ export default function AdminPage() {
 
         {/* Match Form */}
         {activeTab === 'matches' && (
-          <div className="spurs-accent-card rounded-lg p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-semibold spurs-text">
-                {isEditMode ? 'Edit Match' : 'Add New Match'}
-              </h2>
-              {isEditMode && (
-                <div className="flex gap-2">
-                  <Button
-                    variant="spurs"
-                    size="sm"
-                    onClick={() => {
-                      if (confirm('Are you sure you want to delete this match?')) {
-                        handleDeleteMatch(editingMatchId!);
-                      }
-                    }}
-                  >
-                    Delete
-                  </Button>
-                  <Button
-                    variant="spurs"
-                    size="sm"
-                    onClick={handleCancelEdit}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              )}
-            </div>
-            
-            <form onSubmit={handleMatchSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Season Dropdown */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Season</label>
-                  <select
-                    value={matchForm.season_id || ''}
-                    onChange={(e) => setMatchForm({ ...matchForm, season_id: e.target.value })}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    required
-                  >
-                    <option value="">Select season</option>
-                    {seasons.map(season => (
-                      <option key={season.id} value={season.id}>
-                        {season.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Competition Dropdown */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Competition</label>
-                  <select
-                    value={matchForm.competition_id || ''}
-                    onChange={(e) => setMatchForm({ ...matchForm, competition_id: e.target.value })}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    required
-                  >
-                    <option value="">Select competition</option>
-                    {competitions.map(competition => (
-                      <option key={competition.id} value={competition.id}>
-                        {competition.name} ({competition.nickname})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Date */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Date</label>
-                  <input
-                    type="date"
-                    value={matchForm.date || ''}
-                    onChange={(e) => setMatchForm({ ...matchForm, date: e.target.value })}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    required
-                  />
-                </div>
-
-                {/* Kickoff Time */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Kickoff Time</label>
-                  <input
-                    type="time"
-                    value={matchForm.kickoff_time || ''}
-                    onChange={(e) => setMatchForm({ ...matchForm, kickoff_time: e.target.value })}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                  />
-                </div>
-
-                {/* Home/Away Toggle */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Match Type</label>
-                  <div className="flex space-x-4">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        checked={matchForm.is_home_match === true}
-                        onChange={() => setMatchForm({ ...matchForm, is_home_match: true })}
-                        className="mr-2"
-                      />
-                      Home Match
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        checked={matchForm.is_home_match === false}
-                        onChange={() => setMatchForm({ ...matchForm, is_home_match: false })}
-                        className="mr-2"
-                      />
-                      Away Match
-                    </label>
-                  </div>
-                </div>
-
-                {/* Opponent Team Dropdown */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Opponent {matchForm.is_home_match ? 'Away' : 'Home'} Team
-                  </label>
-                  <select
-                    value={matchForm.is_home_match ? (matchForm.away_team_id?.toString() || '') : (matchForm.home_team_id?.toString() || '')}
-                    onChange={(e) => setMatchForm({ ...matchForm, [matchForm.is_home_match ? 'away_team_id' : 'home_team_id']: parseInt(e.target.value) })}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    required
-                  >
-                    <option value="">Select opponent</option>
-                    {teams.filter(team => !team.is_tottenham).map(team => (
-                      <option key={team.id} value={team.id}>
-                        {team.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Venue */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Venue (Stadium)</label>
-                  <select
-                    value={matchForm.venue || ''}
-                    onChange={(e) => setMatchForm({ ...matchForm, venue: e.target.value })}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    required
-                  >
-                    <option value="">Select stadium</option>
-                    {stadiums.map(stadium => {
-                      const currentName = getCurrentStadiumName(stadium.id, matchForm.date || new Date().toISOString().split('T')[0]);
-                      return (
-                        <option key={stadium.id} value={currentName}>
-                          {currentName} {stadium.city && currentName !== stadium.name ? `(${stadium.city})` : ''}
-                        </option>
-                      );
-                    })}
-                  </select>
-                </div>
-
-                {/* Score */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Spurs Score</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={matchForm.spurs_score ?? ''}
-                      onChange={(e) => setMatchForm({ ...matchForm, spurs_score: e.target.value ? parseInt(e.target.value) : null })}
-                      className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Opponent Score</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={matchForm.opponent_score ?? ''}
-                      onChange={(e) => setMatchForm({ ...matchForm, opponent_score: e.target.value ? parseInt(e.target.value) : null })}
-                      className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    />
-                  </div>
-                </div>
-
-                {/* Attended */}
-                <div>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={matchForm.attended === true}
-                      onChange={(e) => setMatchForm({ ...matchForm, attended: e.target.checked })}
-                      className="mr-2"
-                    />
-                    I attended this match
-                  </label>
-                </div>
-
-                {/* Attendance */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Attendance</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={matchForm.attendance === null || matchForm.attendance === undefined ? '' : matchForm.attendance}
-                    onChange={(e) => setMatchForm({ ...matchForm, attendance: e.target.value !== '' ? parseInt(e.target.value) : null })}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                  />
-                </div>
-              </div>
-
-              {/* Notes */}
-              <div>
-                <label className="block text-sm font-medium mb-2 spurs-text">Notes</label>
-                <textarea
-                  value={matchForm.notes || ''}
-                  onChange={(e) => setMatchForm({ ...matchForm, notes: e.target.value })}
-                  className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                  rows={4}
-                  placeholder="Match notes, highlights, etc."
-                />
-              </div>
-
-              {/* Stats Collapsible Section */}
-              <div className="border border-gray-600 rounded-lg overflow-hidden">
-                <button
-                  type="button"
-                  onClick={() => setShowStatsSection(!showStatsSection)}
-                  className="w-full px-4 py-3 bg-gray-800 hover:bg-gray-700 flex items-center justify-between transition-colors"
-                  style={{
-                    backgroundColor: showStatsSection ? 'var(--spurs-dark-bg-1)' : 'rgba(8, 21, 33, 0.3)',
-                    borderColor: showStatsSection ? 'var(--spurs-dark-accent)' : 'transparent',
-                    borderWidth: showStatsSection ? '2px' : '0',
-                  }}
-                >
-                  <span className="font-medium text-white">Match Stats</span>
-                  <span className="text-gray-400 transform transition-transform">
-                    {showStatsSection ? '▼' : '▶'}
-                  </span>
-                </button>
-                
-                {showStatsSection && (
-                  <div className="p-4 space-y-4 bg-gray-800/50">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Possession */}
-                      <div>
-                        <label className="block text-sm font-medium mb-2 spurs-text">Home Possession (%)</label>
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          step="0.1"
-                          value={matchForm.home_possession === null || matchForm.home_possession === undefined ? '' : matchForm.home_possession}
-                          onChange={(e) => setMatchForm({ ...matchForm, home_possession: e.target.value ? parseFloat(e.target.value) : null })}
-                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-2 spurs-text">Away Possession (%)</label>
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          step="0.1"
-                          value={matchForm.away_possession === null || matchForm.away_possession === undefined ? '' : matchForm.away_possession}
-                          onChange={(e) => setMatchForm({ ...matchForm, away_possession: e.target.value ? parseFloat(e.target.value) : null })}
-                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                        />
-                      </div>
-
-                      {/* Total Shots */}
-                      <div>
-                        <label className="block text-sm font-medium mb-2 spurs-text">Home Total Shots</label>
-                        <input
-                          type="number"
-                          min="0"
-                          value={matchForm.home_total_shots === null || matchForm.home_total_shots === undefined ? '' : matchForm.home_total_shots}
-                          onChange={(e) => setMatchForm({ ...matchForm, home_total_shots: e.target.value !== '' ? parseInt(e.target.value) : null })}
-                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-2 spurs-text">Away Total Shots</label>
-                        <input
-                          type="number"
-                          min="0"
-                          value={matchForm.away_total_shots === null || matchForm.away_total_shots === undefined ? '' : matchForm.away_total_shots}
-                          onChange={(e) => setMatchForm({ ...matchForm, away_total_shots: e.target.value !== '' ? parseInt(e.target.value) : null })}
-                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                        />
-                      </div>
-
-                      {/* Shots On Target */}
-                      <div>
-                        <label className="block text-sm font-medium mb-2 spurs-text">Home Shots On Target</label>
-                        <input
-                          type="number"
-                          min="0"
-                          value={matchForm.home_shots_on_target === null || matchForm.home_shots_on_target === undefined ? '' : matchForm.home_shots_on_target}
-                          onChange={(e) => setMatchForm({ ...matchForm, home_shots_on_target: e.target.value !== '' ? parseInt(e.target.value) : null })}
-                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-2 spurs-text">Away Shots On Target</label>
-                        <input
-                          type="number"
-                          min="0"
-                          value={matchForm.away_shots_on_target === null || matchForm.away_shots_on_target === undefined ? '' : matchForm.away_shots_on_target}
-                          onChange={(e) => setMatchForm({ ...matchForm, away_shots_on_target: e.target.value !== '' ? parseInt(e.target.value) : null })}
-                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                        />
-                      </div>
-
-                      {/* Corners */}
-                      <div>
-                        <label className="block text-sm font-medium mb-2 spurs-text">Home Corners</label>
-                        <input
-                          type="number"
-                          min="0"
-                          value={matchForm.home_corners === null || matchForm.home_corners === undefined ? '' : matchForm.home_corners}
-                          onChange={(e) => setMatchForm({ ...matchForm, home_corners: e.target.value !== '' ? parseInt(e.target.value) : null })}
-                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-2 spurs-text">Away Corners</label>
-                        <input
-                          type="number"
-                          min="0"
-                          value={matchForm.away_corners === null || matchForm.away_corners === undefined ? '' : matchForm.away_corners}
-                          onChange={(e) => setMatchForm({ ...matchForm, away_corners: e.target.value !== '' ? parseInt(e.target.value) : null })}
-                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Extra Time & Penalties Collapsible Section */}
-              <div className="border border-gray-600 rounded-lg overflow-hidden">
-                <button
-                  type="button"
-                  onClick={() => setShowExtraTimeSection(!showExtraTimeSection)}
-                  className="w-full px-4 py-3 bg-gray-800 hover:bg-gray-700 flex items-center justify-between transition-colors"
-                  style={{
-                    backgroundColor: showExtraTimeSection ? 'var(--spurs-dark-bg-1)' : 'rgba(8, 21, 33, 0.3)',
-                    borderColor: showExtraTimeSection ? 'var(--spurs-dark-accent)' : 'transparent',
-                    borderWidth: showExtraTimeSection ? '2px' : '0',
-                  }}
-                >
-                  <span className="font-medium text-white">Extra Time</span>
-                  <span className="text-gray-400 transform transition-transform">
-                    {showExtraTimeSection ? '▼' : '▶'}
-                  </span>
-                </button>
-                
-                {showExtraTimeSection && (
-                  <div className="p-4 space-y-4 bg-gray-800/50">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-2 spurs-text">Spurs Score (AET)</label>
-                        <input
-                          type="number"
-                          min="0"
-                          value={matchForm.spurs_score_aet ?? ''}
-                          onChange={(e) => setMatchForm({ ...matchForm, spurs_score_aet: e.target.value ? parseInt(e.target.value) : null })}
-                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                          placeholder="After extra time"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-2 spurs-text">Opponent Score (AET)</label>
-                        <input
-                          type="number"
-                          min="0"
-                          value={matchForm.opponent_score_aet ?? ''}
-                          onChange={(e) => setMatchForm({ ...matchForm, opponent_score_aet: e.target.value ? parseInt(e.target.value) : null })}
-                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                          placeholder="After extra time"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-2 spurs-text">Spurs Score (Penalties)</label>
-                        <input
-                          type="number"
-                          min="0"
-                          value={matchForm.spurs_score_pens ?? ''}
-                          onChange={(e) => setMatchForm({ ...matchForm, spurs_score_pens: e.target.value ? parseInt(e.target.value) : null })}
-                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                          placeholder="Penalty shootout"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-2 spurs-text">Opponent Score (Penalties)</label>
-                        <input
-                          type="number"
-                          min="0"
-                          value={matchForm.opponent_score_pens ?? ''}
-                          onChange={(e) => setMatchForm({ ...matchForm, opponent_score_pens: e.target.value ? parseInt(e.target.value) : null })}
-                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                          placeholder="Penalty shootout"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <Button
-                type="submit"
-                variant="spurs"
-                disabled={loading}
-                loading={loading}
-                fullWidth
-              >
-                {loading ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Match' : 'Create Match')}
-              </Button>
-            </form>
-          </div>
+          <MatchForm
+            matchForm={matchForm}
+            setMatchForm={setMatchForm}
+            seasons={seasons}
+            competitions={competitions}
+            teams={teams}
+            stadiums={stadiums}
+            stadiumNames={stadiumNames}
+            isEditMode={isEditMode}
+            editingMatchId={editingMatchId}
+            loading={loading}
+            showStatsSection={showStatsSection}
+            showExtraTimeSection={showExtraTimeSection}
+            setShowStatsSection={setShowStatsSection}
+            setShowExtraTimeSection={setShowExtraTimeSection}
+            getCurrentStadiumName={getCurrentStadiumName}
+            onSubmit={handleMatchSubmit}
+            onDelete={() => {
+              if (confirm('Are you sure you want to delete this match?')) {
+                handleDeleteMatch(editingMatchId!);
+              }
+            }}
+            onCancel={handleCancelEdit}
+          />
         )}
 
         {/* Media Form */}
         {activeTab === 'media' && (
-          <div className="spurs-accent-card rounded-lg p-6">
-            <h2 className="text-2xl font-semibold mb-6">Add New Media</h2>
-            
-            <form onSubmit={handleMediaSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Season Dropdown */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Season</label>
-                  <select
-                    value={mediaSeason}
-                    onChange={(e) => setMediaSeason(e.target.value)}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                  >
-                    <option value="">All seasons</option>
-                    {(() => {
-                      const seasonIdsInMatches = [...new Set(matches.map(m => m.season_id))];
-                      return seasons.filter(season => seasonIdsInMatches.includes(season.id)).map(season => (
-                        <option key={season.id} value={season.id}>
-                          {season.name}
-                        </option>
-                      ));
-                    })()}
-                  </select>
-                </div>
-                
-                {/* Match Dropdown */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Match</label>
-                  <select
-                    value={mediaForm.match_id || ''}
-                    onChange={(e) => setMediaForm({ ...mediaForm, match_id: e.target.value })}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    required
-                  >
-                    <option value="">Select match</option>
-                    {matches.filter(match => !mediaSeason || match.season_id === mediaSeason).map(match => {
-                      const homeTeam = teams.find(t => t.id === match.home_team_id);
-                      const awayTeam = teams.find(t => t.id === match.away_team_id);
-                      const competition = competitions.find(c => c.id === match.competition_id);
-                      
-                      return (
-                        <option key={match.id} value={match.id}>
-                          {homeTeam?.short_name} vs {awayTeam?.short_name} - {competition?.nickname} ({match.date})
-                        </option>
-                      );
-                    })}
-                  </select>
-                </div>
-
-                {/* Media Type */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Media Type</label>
-                  <select
-                    value={mediaForm.type || 'social media'}
-                    onChange={(e) => setMediaForm({ ...mediaForm, type: e.target.value as Media['type'] })}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    required
-                  >
-                    <option value="social media">Social Media</option>
-                    <option value="article">Article</option>
-                    <option value="photo">Photo</option>
-                    <option value="photo album">Photo Album</option>
-                    <option value="video-external">External Video</option>
-                  </select>
-                </div>
-
-                {/* Title */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Title</label>
-                  <input
-                    type="text"
-                    value={mediaForm.title || ''}
-                    onChange={(e) => setMediaForm({ ...mediaForm, title: e.target.value })}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="Media title (optional)"
-                  />
-                </div>
-
-                {/* URL */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">URL</label>
-                  <input
-                    type="url"
-                    value={mediaForm.url || ''}
-                    onChange={(e) => setMediaForm({ ...mediaForm, url: e.target.value })}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="https://..."
-                    required
-                  />
-                </div>
-
-                {/* Sort Order */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Sort Order</label>
-                  <input
-                    type="number"
-                    value={mediaForm.sort_order || 0}
-                    onChange={(e) => setMediaForm({ ...mediaForm, sort_order: parseInt(e.target.value) || 0 })}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                  />
-                </div>
-              </div>
-
-              {/* Caption */}
-              <div>
-                <label className="block text-sm font-medium mb-2">Caption</label>
-                <textarea
-                  value={mediaForm.caption || ''}
-                  onChange={(e) => setMediaForm({ ...mediaForm, caption: e.target.value })}
-                  className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                  rows={3}
-                  placeholder="Media caption or description"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="spurs-button w-full md:w-auto px-6 py-2 rounded font-medium"
-              >
-                {loading ? 'Creating...' : 'Create Media'}
-              </button>
-            </form>
-          </div>
+          <MediaForm
+            mediaForm={mediaForm}
+            setMediaForm={setMediaForm}
+            mediaSeason={mediaSeason}
+            setMediaSeason={setMediaSeason}
+            matches={matches}
+            seasons={seasons}
+            teams={teams}
+            competitions={competitions}
+            isMediaEditMode={isMediaEditMode}
+            editingMediaId={editingMediaId}
+            loading={loading}
+            onSubmit={handleMediaSubmit}
+            onDelete={() => {
+              if (editingMediaId && confirm('Are you sure you want to delete this media?')) {
+                handleDeleteMedia(editingMediaId);
+              }
+            }}
+            onCancel={handleCancelEditMedia}
+          />
         )}
 
         {/* Team Form */}
         {activeTab === 'teams' && (
-          <div className="spurs-accent-card rounded-lg p-6">
-            <h2 className="text-2xl font-semibold mb-6 spurs-text">Add New Team</h2>
-            
-            <form onSubmit={async (e) => {
-              e.preventDefault();
-              setLoading(true);
-              try {
-                const formData = new FormData(e.currentTarget);
-                const payload = {
-                  name: formData.get('name') as string,
-                  short_name: formData.get('short_name') as string,
-                  primary_color: formData.get('primary_color') as string || null,
-                  secondary_color: formData.get('secondary_color') as string || null,
-                  is_tottenham: formData.get('is_tottenham') === 'true',
-                };
-
-                await createEntityAndReload('teams', payload, 'teams', setTeams);
-                
-                // Reload recent teams records
-                try {
-                  const teamsRes = await callAdminApi('teams', 'GET');
-                  if (teamsRes.data) setRecentTeams(teamsRes.data.slice(0, 10));
-                } catch (error) {
-                  console.error('Error reloading recent teams:', error);
-                }
-                
-                if (e.currentTarget && 'reset' in e.currentTarget) {
-                  e.currentTarget.reset();
-                }
-              } catch (error) {
-                showMessage('Error creating team', 'error');
-                console.error('Error creating team:', error);
-              } finally {
-                setLoading(false);
+          <TeamForm
+            teamForm={teamForm}
+            setTeamForm={setTeamForm}
+            isTeamEditMode={isTeamEditMode}
+            editingTeamId={editingTeamId}
+            loading={loading}
+            onSubmit={handleTeamSubmit}
+            onDelete={() => {
+              if (editingTeamId && confirm('Are you sure you want to delete this team?')) {
+                handleDeleteTeam(editingTeamId);
               }
-            }} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Team Name</label>
-                  <input
-                    name="name"
-                    type="text"
-                    required
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="Team name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Short Name</label>
-                  <input
-                    name="short_name"
-                    type="text"
-                    required
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="Short name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Primary Color</label>
-                  <input
-                    name="primary_color"
-                    type="text"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="e.g., blue-600"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Secondary Color</label>
-                  <input
-                    name="secondary_color"
-                    type="text"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="e.g., white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Is Tottenham?</label>
-                  <select
-                    name="is_tottenham"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                  >
-                    <option value="false">No</option>
-                    <option value="true">Yes</option>
-                  </select>
-                </div>
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="spurs-button w-full md:w-auto px-6 py-2 rounded font-medium"
-              >
-                {loading ? 'Creating...' : 'Create Team'}
-              </button>
-            </form>
-          </div>
+            }}
+            onCancel={handleCancelEditTeam}
+          />
         )}
 
         {/* Player Form */}
         {activeTab === 'players' && (
-          <div className="spurs-accent-card rounded-lg p-6">
-            <h2 className="text-2xl font-semibold mb-6 spurs-text">Add New Player</h2>
-            
-            <form onSubmit={async (e) => {
-              e.preventDefault();
-              setLoading(true);
-              try {
-                const formData = new FormData(e.currentTarget);
-                const payload = {
-                  first_name: formData.get('first_name') as string || null,
-                  last_name: formData.get('last_name') as string,
-                  date_of_birth: formData.get('date_of_birth') as string || null,
-                  nationality: formData.get('nationality') as string || null,
-                  position: formData.get('position') as string || null,
-                  height_cm: formData.get('height_cm') ? parseInt(formData.get('height_cm') as string) : null,
-                  weight_kg: formData.get('weight_kg') ? parseInt(formData.get('weight_kg') as string) : null,
-                  profile_image_url: formData.get('profile_image_url') as string || null,
-                  is_active: formData.get('is_active') === 'true',
-                };
-
-                await createEntityAndReload('players', payload, 'players', setPlayers);
-                
-                // Reload recent players records
-                try {
-                  const playersRes = await callAdminApi('players', 'GET');
-                  if (playersRes.data) setRecentPlayers(playersRes.data.slice(0, 10));
-                } catch (error) {
-                  console.error('Error reloading recent players:', error);
-                }
-                
-                if (e.currentTarget && 'reset' in e.currentTarget) {
-                  e.currentTarget.reset();
-                }
-              } catch (error) {
-                showMessage('Error creating player', 'error');
-                console.error('Error creating player:', error);
-              } finally {
-                setLoading(false);
+          <PlayerForm
+            playerForm={playerForm}
+            setPlayerForm={setPlayerForm}
+            isPlayerEditMode={isPlayerEditMode}
+            editingPlayerId={editingPlayerId}
+            loading={loading}
+            onSubmit={handlePlayerSubmit}
+            onDelete={() => {
+              if (editingPlayerId && confirm('Are you sure you want to delete this player?')) {
+                handleDeletePlayer(editingPlayerId);
               }
-            }} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium mb-2">First Name</label>
-                  <input
-                    name="first_name"
-                    type="text"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="First name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Last Name *</label>
-                  <input
-                    name="last_name"
-                    type="text"
-                    required
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="Last name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Date of Birth</label>
-                  <input
-                    name="date_of_birth"
-                    type="date"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Nationality</label>
-                  <input
-                    name="nationality"
-                    type="text"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="Nationality"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Position</label>
-                  <select
-                    name="position"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                  >
-                    <option value="">Select position</option>
-                    <option value="Goalkeeper">Goalkeeper</option>
-                    <option value="Defender">Defender</option>
-                    <option value="Midfielder">Midfielder</option>
-                    <option value="Forward">Forward</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Height (cm)</label>
-                  <input
-                    name="height_cm"
-                    type="number"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="Height in cm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Weight (kg)</label>
-                  <input
-                    name="weight_kg"
-                    type="number"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="Weight in kg"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Profile Image URL</label>
-                  <input
-                    name="profile_image_url"
-                    type="url"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="https://..."
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Is Active?</label>
-                  <select
-                    name="is_active"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                  >
-                    <option value="true">Yes</option>
-                    <option value="false">No</option>
-                  </select>
-                </div>
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="spurs-button w-full md:w-auto px-6 py-2 rounded font-medium"
-              >
-                {loading ? 'Creating...' : 'Create Player'}
-              </button>
-            </form>
-          </div>
+            }}
+            onCancel={handleCancelEditPlayer}
+          />
         )}
 
         {/* Stadium Form */}
         {activeTab === 'stadiums' && (
-          <div className="spurs-accent-card rounded-lg p-6">
-            <h2 className="text-2xl font-semibold mb-6 spurs-text">Add New Stadium</h2>
-            
-            <form onSubmit={async (e) => {
+          <StadiumForm
+            teams={teams}
+            stadiumForm={stadiumForm}
+            setStadiumForm={setStadiumForm}
+            isStadiumEditMode={isStadiumEditMode}
+            editingStadiumId={editingStadiumId}
+            loading={loading}
+            onSubmit={async (e) => {
               e.preventDefault();
               setLoading(true);
               try {
-                const formData = new FormData(e.currentTarget);
                 const payload = {
-                  name: formData.get('name') as string,
-                  slug: formData.get('slug') as string,
-                  city: formData.get('city') as string || null,
-                  country: formData.get('country') as string || null,
-                  capacity: formData.get('capacity') ? parseInt(formData.get('capacity') as string) : null,
-                  opened_date: formData.get('opened_date') as string || null,
-                  address_line_1: formData.get('address_line_1') as string || null,
-                  postcode: formData.get('postcode') as string || null,
-                  latitude: formData.get('latitude') ? parseFloat(formData.get('latitude') as string) : null,
-                  longitude: formData.get('longitude') ? parseFloat(formData.get('longitude') as string) : null,
-                  home_team_id: formData.get('home_team_id') ? parseInt(formData.get('home_team_id') as string) : null,
+                  name: stadiumForm.name,
+                  slug: stadiumForm.slug,
+                  city: stadiumForm.city,
+                  country: stadiumForm.country,
+                  capacity: stadiumForm.capacity,
+                  opened_date: stadiumForm.opened_date,
+                  address_line_1: stadiumForm.address_line_1,
+                  postcode: stadiumForm.postcode,
+                  latitude: stadiumForm.latitude,
+                  longitude: stadiumForm.longitude,
+                  home_team_id: stadiumForm.home_team_id,
                 };
 
-                await createEntityAndReload('stadia', payload, 'stadia', setStadiums);
+                if (isStadiumEditMode && editingStadiumId) {
+                  // Update existing stadium
+                  const response = await fetch('/api/admin/stadia', {
+                    method: 'PUT',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: editingStadiumId, ...payload }),
+                  });
+                  if (!response.ok) {
+                    throw new Error('Failed to update stadium');
+                  }
+                  showMessage('Stadium updated successfully', 'success');
+                } else {
+                  // Create new stadium
+                  await createEntityAndReload('stadia', payload, 'stadia', setStadiums);
+                  showMessage('Stadium created successfully', 'success');
+                }
                 
-                // Reload recent stadiums records
+                // Reload stadiums data
                 try {
                   const stadiumsRes = await callAdminApi('stadia', 'GET');
-                  if (stadiumsRes.data) setRecentStadiums(stadiumsRes.data.slice(0, 10));
+                  if (stadiumsRes.data) {
+                    setStadiums(stadiumsRes.data);
+                    setRecentStadiums(stadiumsRes.data);
+                  }
                 } catch (error) {
-                  console.error('Error reloading recent stadiums:', error);
+                  console.error('Error reloading stadiums:', error);
                 }
                 
-                if (e.currentTarget && 'reset' in e.currentTarget) {
-                  e.currentTarget.reset();
-                }
+                // Reset form
+                handleCancelEditStadium();
               } catch (error) {
-                showMessage('Error creating stadium', 'error');
-                console.error('Error creating stadium:', error);
+                showMessage(isStadiumEditMode ? 'Error updating stadium' : 'Error creating stadium', 'error');
+                console.error('Error saving stadium:', error);
               } finally {
                 setLoading(false);
               }
-            }} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Stadium Name *</label>
-                  <input
-                    name="name"
-                    type="text"
-                    required
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="Stadium name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Slug *</label>
-                  <input
-                    name="slug"
-                    type="text"
-                    required
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="stadium-slug"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">City</label>
-                  <input
-                    name="city"
-                    type="text"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="City"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Country</label>
-                  <input
-                    name="country"
-                    type="text"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="Country"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Capacity</label>
-                  <input
-                    name="capacity"
-                    type="number"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="Capacity"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Opened Date</label>
-                  <input
-                    name="opened_date"
-                    type="date"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Address Line 1</label>
-                  <input
-                    name="address_line_1"
-                    type="text"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Home Team</label>
-                  <select
-                    name="home_team_id"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                  >
-                    <option value="">Select team (optional)</option>
-                    {teams.map(team => (
-                      <option key={team.id} value={team.id}>
-                        {team.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Latitude</label>
-                  <input
-                    name="latitude"
-                    type="number"
-                    step="any"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="Latitude"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Longitude</label>
-                  <input
-                    name="longitude"
-                    type="number"
-                    step="any"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="Longitude"
-                  />
-                </div>
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="spurs-button w-full md:w-auto px-6 py-2 rounded font-medium"
-              >
-                {loading ? 'Creating...' : 'Create Stadium'}
-              </button>
-            </form>
-          </div>
+            }}
+            onDelete={() => {
+              if (editingStadiumId && confirm('Are you sure you want to delete this stadium?')) {
+                handleDeleteStadium(editingStadiumId);
+              }
+            }}
+            onCancel={handleCancelEditStadium}
+          />
         )}
 
         {/* Player Stats Form */}
         {activeTab === 'player_stats' && (
-          <div className="spurs-accent-card rounded-lg p-6">
-            <h2 className="text-2xl font-semibold mb-6 spurs-text">Add New Player Stats</h2>
-            
-            <form onSubmit={async (e) => {
+          <PlayerStatsForm
+            playerStatsSeason={playerStatsSeason}
+            setPlayerStatsSeason={setPlayerStatsSeason}
+            players={players}
+            matches={matches}
+            teams={teams}
+            seasons={seasons}
+            isPlayerStatsEditMode={isPlayerStatsEditMode}
+            editingPlayerStatsId={editingPlayerStatsId}
+            editingPlayerStats={editingPlayerStats}
+            loading={loading}
+            onSubmit={async (e) => {
               e.preventDefault();
               setLoading(true);
               try {
-                const formData = new FormData(e.currentTarget);
+                const formData = new FormData(e.currentTarget as HTMLFormElement);
                 const payload = {
                   player_id: formData.get('player_id') as string,
                   match_id: formData.get('match_id') as string,
                   team_id: parseInt(formData.get('team_id') as string),
-                  started: formData.get('started') === 'true',
-                  was_substitute: formData.get('was_substitute') === 'true',
-                  was_unused_substitute: formData.get('was_unused_substitute') === 'true',
+                  started: formData.get('participation') === 'started',
+                  captain: formData.get('captain') === 'true',
+                  was_substitute: formData.get('participation') === 'substitute',
+                  was_unused_substitute: formData.get('participation') === 'unused_substitute',
                   minute_on: formData.get('minute_on') ? parseInt(formData.get('minute_on') as string) : null,
                   minute_off: formData.get('minute_off') ? parseInt(formData.get('minute_off') as string) : null,
                   minutes_played: parseInt(formData.get('minutes_played') as string),
@@ -1934,447 +2136,194 @@ export default function AdminPage() {
                   player_of_the_match: formData.get('player_of_the_match') === 'true',
                 };
 
-                await createEntityAndReload('player-stats', payload, 'player-stats', () => {
-                // Player stats don't need to reload a list, just show success
-              });
-              
-              // Reload recent player stats records
-              try {
-                const playerStatsRes = await callAdminApi('player-stats', 'GET');
-                if (playerStatsRes.data) setRecentPlayerStats(playerStatsRes.data.slice(0, 10));
+                let response;
+                if (isPlayerStatsEditMode && editingPlayerStatsId) {
+                  // Update existing player stats
+                  response = await fetch('/api/admin/player-stats', {
+                    method: 'PUT',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: editingPlayerStatsId, ...payload }),
+                  });
+                } else {
+                  // Create new player stats
+                  response = await fetch('/api/admin/player-stats', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                  });
+                }
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                  throw new Error(result.error || `Failed to ${isPlayerStatsEditMode ? 'update' : 'create'} player stats`);
+                }
+
+                showMessage(isPlayerStatsEditMode ? 'Player stats updated successfully' : 'Player stats created successfully', 'success');
+                
+                // Reset form and edit mode
+                handleCancelEditPlayerStats();
+                
+                // Reload recent player stats records
+                try {
+                  const playerStatsRes = await callAdminApi('player-stats', 'GET');
+                  if (playerStatsRes.data) setRecentPlayerStats(playerStatsRes.data);
+                } catch (error) {
+                  console.error('Error reloading recent player stats:', error);
+                }
               } catch (error) {
-                console.error('Error reloading recent player stats:', error);
-              }
-              
-              if (e.currentTarget && 'reset' in e.currentTarget) {
-                e.currentTarget.reset();
-              }
-              } catch (error) {
-                showMessage('Error creating player stats', 'error');
-                console.error('Error creating player stats:', error);
+                console.error(`Error ${isPlayerStatsEditMode ? 'updating' : 'creating'} player stats:`, error);
+                
+                let errorMessage = isPlayerStatsEditMode ? 'Error updating player stats' : 'Error creating player stats';
+                if (error && typeof error === 'object') {
+                  if ('message' in error) {
+                    errorMessage = `${isPlayerStatsEditMode ? 'Error updating player stats' : 'Error creating player stats'}: ${error.message}`;
+                  } else if ('code' in error) {
+                    errorMessage = `${isPlayerStatsEditMode ? 'Error updating player stats' : 'Error creating player stats'}: ${error.code}`;
+                  } else {
+                    errorMessage = `${isPlayerStatsEditMode ? 'Error updating player stats' : 'Error creating player stats'}: ${JSON.stringify(error)}`;
+                  }
+                } else if (typeof error === 'string') {
+                  errorMessage = `${isPlayerStatsEditMode ? 'Error updating player stats' : 'Error creating player stats'}: ${error}`;
+                }
+                
+                showMessage(errorMessage, 'error');
               } finally {
                 setLoading(false);
               }
-            }} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Season</label>
-                  <select
-                    value={playerStatsSeason}
-                    onChange={(e) => setPlayerStatsSeason(e.target.value)}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                  >
-                    <option value="">All seasons</option>
-                    {(() => {
-                      const seasonIdsInMatches = [...new Set(matches.map(m => m.season_id))];
-                      return seasons.filter(season => seasonIdsInMatches.includes(season.id)).map(season => (
-                        <option key={season.id} value={season.id}>
-                          {season.name}
-                        </option>
-                      ));
-                    })()}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Player *</label>
-                  <select
-                    name="player_id"
-                    required
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                  >
-                    <option value="">Select player</option>
-                    {players.map(player => (
-                      <option key={player.id} value={player.id}>
-                        {player.first_name} {player.last_name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Match *</label>
-                  <select
-                    name="match_id"
-                    required
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                  >
-                    <option value="">Select match</option>
-                    {matches.filter(match => !playerStatsSeason || match.season_id === playerStatsSeason).map(match => {
-                      const homeTeam = teams.find(t => t.id === match.home_team_id);
-                      const awayTeam = teams.find(t => t.id === match.away_team_id);
-                      return (
-                        <option key={match.id} value={match.id}>
-                          {homeTeam?.short_name} vs {awayTeam?.short_name} ({match.date})
-                        </option>
-                      );
-                    })}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Team *</label>
-                  <select
-                    name="team_id"
-                    required
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                  >
-                    <option value="">Select team</option>
-                    {teams.map(team => (
-                      <option 
-                        key={team.id} 
-                        value={team.id}
-                                              >
-                        {team.name} {team.is_tottenham && '(Default)'}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Started?</label>
-                  <select
-                    name="started"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                  >
-                    <option value="false">No</option>
-                    <option value="true">Yes</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Was Substitute?</label>
-                  <select
-                    name="was_substitute"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                  >
-                    <option value="false">No</option>
-                    <option value="true">Yes</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Was Unused Substitute?</label>
-                  <select
-                    name="was_unused_substitute"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                  >
-                    <option value="false">No</option>
-                    <option value="true">Yes</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Minute On</label>
-                  <input
-                    name="minute_on"
-                    type="number"
-                    min="0"
-                    max="120"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="Minute entered"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Minute Off</label>
-                  <input
-                    name="minute_off"
-                    type="number"
-                    min="0"
-                    max="120"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="Minute subbed off"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Goals</label>
-                  <input
-                    name="goals"
-                    type="number"
-                    min="0"
-                    defaultValue="0"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="Goals scored"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Assists</label>
-                  <input
-                    name="assists"
-                    type="number"
-                    min="0"
-                    defaultValue="0"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="Assists"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Yellow Cards</label>
-                  <input
-                    name="yellow_cards"
-                    type="number"
-                    min="0"
-                    defaultValue="0"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="Yellow cards"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Red Cards</label>
-                  <input
-                    name="red_cards"
-                    type="number"
-                    min="0"
-                    defaultValue="0"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="Red cards"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Clean Sheet</label>
-                  <select
-                    name="clean_sheet"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                  >
-                    <option value="">N/A</option>
-                    <option value="false">No</option>
-                    <option value="true">Yes</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Player of the Match?</label>
-                  <select
-                    name="player_of_the_match"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                  >
-                    <option value="false">No</option>
-                    <option value="true">Yes</option>
-                  </select>
-                </div>
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="spurs-button w-full md:w-auto px-6 py-2 rounded font-medium"
-              >
-                {loading ? 'Creating...' : 'Create Player Stats'}
-              </button>
-            </form>
-          </div>
+            }}
+            onDelete={() => {
+              if (editingPlayerStatsId && confirm('Are you sure you want to delete this player stats record?')) {
+                handleDeletePlayerStats(editingPlayerStatsId);
+              }
+            }}
+            onCancel={handleCancelEditPlayerStats}
+          />
         )}
 
         {/* Player History Form */}
         {activeTab === 'player_history' && (
-          <div className="spurs-accent-card rounded-lg p-6">
-            <h2 className="text-2xl font-semibold mb-6 spurs-text">Add New Player History</h2>
-            
-            <form onSubmit={async (e) => {
-              e.preventDefault();
-              setLoading(true);
-              try {
-                const formData = new FormData(e.currentTarget);
-                const payload = {
-                  player_id: formData.get('player_id') as string,
-                  team_id: parseInt(formData.get('team_id') as string),
-                  joined_on: formData.get('joined_on') as string || null,
-                  left_on: formData.get('left_on') as string || null,
-                };
-
-                await createEntityAndReload('player-history', payload, 'player-history', () => {
-                // Player history doesn't need to reload a list, just show success
-              });
-              
-              // Reload recent player history records
-              try {
-                const playerHistoryRes = await callAdminApi('player-history', 'GET');
-                if (playerHistoryRes.data) setRecentPlayerHistory(playerHistoryRes.data.slice(0, 10));
-              } catch (error) {
-                console.error('Error reloading recent player history:', error);
+          <PlayerHistoryForm
+            players={players}
+            teams={teams}
+            loading={loading}
+            playerHistoryForm={playerHistoryForm}
+            setPlayerHistoryForm={setPlayerHistoryForm}
+            isEditMode={isPlayerHistoryEditMode}
+            onSubmit={handlePlayerHistorySubmit}
+            onDelete={() => {
+              if (editingPlayerHistoryId && confirm('Are you sure you want to delete this player history record?')) {
+                handleDeletePlayerHistory(editingPlayerHistoryId);
               }
-              
-              if (e.currentTarget && 'reset' in e.currentTarget) {
-                e.currentTarget.reset();
-              }
-              } catch (error) {
-                showMessage('Error creating player history', 'error');
-                console.error('Error creating player history:', error);
-              } finally {
-                setLoading(false);
-              }
-            }} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Player *</label>
-                  <select
-                    name="player_id"
-                    required
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                  >
-                    <option value="">Select player</option>
-                    {players.map(player => (
-                      <option key={player.id} value={player.id}>
-                        {player.first_name} {player.last_name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Team *</label>
-                  <select
-                    name="team_id"
-                    required
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                  >
-                    <option value="">Select team</option>
-                    {teams.map(team => (
-                      <option 
-                        key={team.id} 
-                        value={team.id}
-                                              >
-                        {team.name} {team.is_tottenham && '(Default)'}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Joined On</label>
-                  <input
-                    name="joined_on"
-                    type="date"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Left On</label>
-                  <input
-                    name="left_on"
-                    type="date"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Squad Number</label>
-                  <input
-                    name="squad_number"
-                    type="number"
-                    min="1"
-                    max="99"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="Squad number"
-                  />
-                </div>
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="spurs-button w-full md:w-auto px-6 py-2 rounded font-medium"
-              >
-                {loading ? 'Creating...' : 'Create Player History'}
-              </button>
-            </form>
-          </div>
+            }}
+            onCancel={handleCancelEditPlayerHistory}
+          />
         )}
 
         {/* Stadium Names Form */}
         {activeTab === 'stadium_names' && (
-          <div className="spurs-accent-card rounded-lg p-6">
-            <h2 className="text-2xl font-semibold mb-6 spurs-text">Add New Stadium Name</h2>
-            
-            <form onSubmit={async (e) => {
+          <StadiumNameForm
+            stadiums={stadiums}
+            stadiumNameForm={stadiumNameForm}
+            setStadiumNameForm={setStadiumNameForm}
+            isStadiumNameEditMode={isStadiumNameEditMode}
+            editingStadiumNameId={editingStadiumNameId}
+            loading={loading}
+            onSubmit={async (e) => {
               e.preventDefault();
               setLoading(true);
               try {
-                const formData = new FormData(e.currentTarget);
                 const payload = {
-                  stadium_id: formData.get('stadium_id') as string,
-                  name: formData.get('name') as string,
-                  valid_from: formData.get('valid_from') as string || null,
-                  valid_to: formData.get('valid_to') as string || null,
+                  stadium_id: stadiumNameForm.stadium_id,
+                  name: stadiumNameForm.name,
+                  valid_from: stadiumNameForm.valid_from || null,
+                  valid_to: stadiumNameForm.valid_to || null,
                 };
 
-                await createEntityAndReload('stadium-names', payload, 'stadium-names', () => {
-                // Stadium names don't need to reload a list, just show success
-              });
-                if (e.currentTarget && 'reset' in e.currentTarget) {
-                  e.currentTarget.reset();
+                if (isStadiumNameEditMode && editingStadiumNameId) {
+                  // Update existing stadium name
+                  const response = await fetch('/api/admin/stadium-names', {
+                    method: 'PUT',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: editingStadiumNameId, ...payload }),
+                  });
+                  if (!response.ok) {
+                    throw new Error('Failed to update stadium name');
+                  }
+                  showMessage('Stadium name updated successfully', 'success');
+                } else {
+                  // Create new stadium name
+                  await createEntityAndReload('stadium-names', payload, 'stadium-names', () => {
+                    // Stadium names don't need to reload a list, just show success
+                  });
                 }
+
+                // Reload stadium names data
+                try {
+                  const stadiumNamesResponse = await callAdminApi('stadium-names', 'GET');
+                  if (stadiumNamesResponse.data) {
+                    setStadiumNames(stadiumNamesResponse.data);
+                    setRecentStadiumNames(stadiumNamesResponse.data);
+                  }
+                } catch (error) {
+                  console.error('Error reloading stadium names:', error);
+                }
+
+                // Reset form
+                setStadiumNameForm({
+                  stadium_id: '',
+                  name: '',
+                  valid_from: null,
+                  valid_to: null,
+                });
+                setIsStadiumNameEditMode(false);
+                setEditingStadiumNameId(null);
               } catch (error) {
-                showMessage('Error creating stadium name', 'error');
-                console.error('Error creating stadium name:', error);
+                showMessage(isStadiumNameEditMode ? 'Error updating stadium name' : 'Error creating stadium name', 'error');
+                console.error('Error with stadium name:', error);
               } finally {
                 setLoading(false);
               }
-            }} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Stadium *</label>
-                  <select
-                    name="stadium_id"
-                    required
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                  >
-                    <option value="">Select stadium</option>
-                    {stadiums.map(stadium => (
-                      <option key={stadium.id} value={stadium.id}>
-                        {stadium.name} {stadium.city && `(${stadium.city})`}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Stadium Name *</label>
-                  <input
-                    name="name"
-                    type="text"
-                    required
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="Historical or alternative stadium name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Valid From</label>
-                  <input
-                    name="valid_from"
-                    type="date"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="Date this name became valid"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Valid To</label>
-                  <input
-                    name="valid_to"
-                    type="date"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-                    placeholder="Date this name was no longer valid"
-                  />
-                </div>
-              </div>
-              <div className="text-sm text-gray-400 mb-4">
-                <p>Use this form to add historical stadium names or naming variations. For example:</p>
-                <ul className="list-disc list-inside mt-2 space-y-1">
-                  <li>Previous names (e.g., &ldquo;White Hart Lane&rdquo;)</li>
-                  <li>Sponsored names (e.g., &ldquo;Tottenham Hotspur Stadium&rdquo;)</li>
-                  <li>Historical variations</li>
-                </ul>
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="spurs-button w-full md:w-auto px-6 py-2 rounded font-medium"
-              >
-                {loading ? 'Creating...' : 'Create Stadium Name'}
-              </button>
-            </form>
-          </div>
+            }}
+            onDelete={async () => {
+              if (editingStadiumNameId) {
+                await handleDeleteStadiumName(editingStadiumNameId);
+                setStadiumNameForm({
+                  stadium_id: '',
+                  name: '',
+                  valid_from: null,
+                  valid_to: null,
+                });
+                setIsStadiumNameEditMode(false);
+                setEditingStadiumNameId(null);
+              }
+            }}
+            onCancel={() => {
+              handleCancelEditStadiumName();
+            }}
+          />
         )}
 
         {/* Recent Records Preview */}
         <div className="mt-8 spurs-accent-card rounded-lg p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-semibold spurs-text">
-              {activeTab === 'matches' 
+              {activeTab === 'matches'
                 ? (matchSearch ? `All Matches (${getFilteredMatches().length} filtered)` : 'All Matches')
-                : activeTab === 'media' ? 'Recent Media' :
-                activeTab === 'teams' ? 'Recent Teams' :
-                activeTab === 'players' ? 'Recent Players' :
-                activeTab === 'player_stats' ? 'Recent Player Stats' :
-                activeTab === 'player_history' ? 'Recent Player History' :
-                activeTab === 'stadiums' ? 'Recent Stadiums' :
-                activeTab === 'stadium_names' ? 'Recent Stadium Names' : 'Recent Records'}
+                : activeTab === 'media' ? (mediaSearch ? `All Media (${getFilteredMedia().length} filtered)` : 'All Media') :
+                activeTab === 'teams' ? (teamSearch ? `All Teams (${getFilteredTeams().length} filtered)` : 'All Teams') :
+                activeTab === 'players' ? (playerSearch ? `All Players (${getFilteredPlayers().length} filtered)` : 'All Players') :
+                activeTab === 'player_stats' ? (playerStatsSearch ? `All Player Stats (${getFilteredPlayerStats().length} filtered)` : 'All Player Stats') :
+                activeTab === 'player_history' ? (playerHistorySearch ? `All Player History (${getFilteredPlayerHistory().length} filtered)` : 'All Player History') :
+                activeTab === 'stadiums' ? (stadiumSearch ? `All Stadiums (${getFilteredStadiums().length} filtered)` : 'All Stadiums') :
+                activeTab === 'stadium_names' ? (stadiumNameSearch ? `All Stadium Names (${getFilteredStadiumNames().length} filtered)` : 'All Stadium Names') :
+                'Recent Records'}
             </h3>
           </div>
           {activeTab === 'matches' && (
@@ -2384,6 +2333,83 @@ export default function AdminPage() {
                 placeholder="Search matches by date, opponent, or venue..."
                 value={matchSearch}
                 onChange={(e) => setMatchSearch(e.target.value)}
+                className="w-full px-4 py-2 rounded border border-gray-600 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          )}
+          {activeTab === 'media' && (
+            <div className="mb-4">
+              <input
+                type="text"
+                placeholder="Search media by type, title, URL, or match..."
+                value={mediaSearch}
+                onChange={(e) => setMediaSearch(e.target.value)}
+                className="w-full px-4 py-2 rounded border border-gray-600 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          )}
+          {activeTab === 'teams' && (
+            <div className="mb-4">
+              <input
+                type="text"
+                placeholder="Search teams by name or short name..."
+                value={teamSearch}
+                onChange={(e) => setTeamSearch(e.target.value)}
+                className="w-full px-4 py-2 rounded border border-gray-600 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          )}
+          {activeTab === 'players' && (
+            <div className="mb-4">
+              <input
+                type="text"
+                placeholder="Search players by name, position, or nationality..."
+                value={playerSearch}
+                onChange={(e) => setPlayerSearch(e.target.value)}
+                className="w-full px-4 py-2 rounded border border-gray-600 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          )}
+          {activeTab === 'player_stats' && (
+            <div className="mb-4">
+              <input
+                type="text"
+                placeholder="Search player stats by player name, match, goals, or assists..."
+                value={playerStatsSearch}
+                onChange={(e) => setPlayerStatsSearch(e.target.value)}
+                className="w-full px-4 py-2 rounded border border-gray-600 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          )}
+          {activeTab === 'player_history' && (
+            <div className="mb-4">
+              <input
+                type="text"
+                placeholder="Search player history by player name, team, squad number, or dates..."
+                value={playerHistorySearch}
+                onChange={(e) => setPlayerHistorySearch(e.target.value)}
+                className="w-full px-4 py-2 rounded border border-gray-600 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          )}
+          {activeTab === 'stadiums' && (
+            <div className="mb-4">
+              <input
+                type="text"
+                placeholder="Search stadiums by name, slug, city, or country..."
+                value={stadiumSearch}
+                onChange={(e) => setStadiumSearch(e.target.value)}
+                className="w-full px-4 py-2 rounded border border-gray-600 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          )}
+          {activeTab === 'stadium_names' && (
+            <div className="mb-4">
+              <input
+                type="text"
+                placeholder="Search stadium names by name, stadium, or dates..."
+                value={stadiumNameSearch}
+                onChange={(e) => setStadiumNameSearch(e.target.value)}
                 className="w-full px-4 py-2 rounded border border-gray-600 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -2482,30 +2508,32 @@ export default function AdminPage() {
                 })}
                 {activeTab === 'media' && (
                   <>
-                    {console.log('Rendering media tab, recentMedia:', recentMedia)}
-                    {console.log('recentMedia length:', recentMedia.length)}
-                    {recentMedia.length === 0 ? (
+                    {getPaginatedMedia().length === 0 ? (
                       <tr>
                         <td colSpan={4} className="p-2 text-center text-gray-400">
                           No media records found
                         </td>
                       </tr>
                     ) : (
-                      recentMedia.map(media => {
-                        const match = matches.find(m => m.id === media.match_id);
+                      getPaginatedMedia().map(mediaItem => {
+                        const match = matches.find(m => m.id === mediaItem.match_id);
                         const homeTeam = teams.find(t => t.id === match?.home_team_id);
                         const awayTeam = teams.find(t => t.id === match?.away_team_id);
 
                         return (
-                          <tr key={media.id} className="border-b border-gray-600">
-                            <td className="p-2 spurs-text">{media.type}</td>
+                          <tr 
+                            key={mediaItem.id} 
+                            className="border-b border-gray-600 cursor-pointer hover:bg-gray-700/50 transition-colors"
+                            onClick={() => handleEditMedia(mediaItem)}
+                          >
+                            <td className="p-2 spurs-text">{mediaItem.type}</td>
                             <td className="p-2 spurs-text">
                               {match && homeTeam && awayTeam
                                 ? `${homeTeam.short_name} vs ${awayTeam.short_name} (${match.date})`
                                 : '-'
                               }
                             </td>
-                            <td className="p-2 spurs-text max-w-xs truncate">{media.url}</td>
+                            <td className="p-2 spurs-text max-w-xs truncate">{mediaItem.url}</td>
                           </tr>
                         );
                       })
@@ -2514,136 +2542,191 @@ export default function AdminPage() {
                 )}
                 {activeTab === 'teams' && (
                   <>
-                    {recentTeams.map(team => {
-                      return (
-                        <tr key={team.id} className="border-b border-gray-600">
-                          <td className="p-2 spurs-text">{team.name}</td>
-                          <td className="p-2 spurs-text">{team.short_name}</td>
-                          <td className="p-2 spurs-text">
-                            <div className="flex items-center space-x-2">
-                              {team.primary_color ? (
-                                <div
-                                  className="w-6 h-6 rounded border border-gray-400"
-                                  style={{ backgroundColor: getTeamColor(team.primary_color) }}
-                                  title={team.primary_color}
-                                />
-                              ) : (
-                                <div className="w-6 h-6 rounded border border-gray-400 bg-gray-600" title="No color" />
-                              )}
-                              <span className="text-xs">{team.primary_color || '-'}</span>
-                            </div>
-                          </td>
-                          <td className="p-2 spurs-text">
-                            <div className="flex items-center space-x-2">
-                              {team.secondary_color ? (
-                                <div
-                                  className="w-6 h-6 rounded border border-gray-400"
-                                  style={{ backgroundColor: getTeamColor(team.secondary_color) }}
-                                  title={team.secondary_color}
-                                />
-                              ) : (
-                                <div className="w-6 h-6 rounded border border-gray-400 bg-gray-600" title="No color" />
-                              )}
-                              <span className="text-xs">{team.secondary_color || '-'}</span>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                    {getPaginatedTeams().length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="p-2 text-center text-gray-400">
+                          No teams found
+                        </td>
+                      </tr>
+                    ) : (
+                      getPaginatedTeams().map(team => {
+                        return (
+                          <tr 
+                            key={team.id} 
+                            className="border-b border-gray-600 cursor-pointer hover:bg-gray-700/50 transition-colors"
+                            onClick={() => handleEditTeam(team)}
+                          >
+                            <td className="p-2 spurs-text">{team.name}</td>
+                            <td className="p-2 spurs-text">{team.short_name}</td>
+                            <td className="p-2 spurs-text">
+                              <div className="flex items-center space-x-2">
+                                {team.primary_color ? (
+                                  <div
+                                    className="w-6 h-6 rounded border border-gray-400"
+                                    style={{ backgroundColor: getTeamColor(team.primary_color) }}
+                                    title={team.primary_color}
+                                  />
+                                ) : (
+                                  <div className="w-6 h-6 rounded border border-gray-400 bg-gray-600" title="No color" />
+                                )}
+                                <span className="text-xs">{team.primary_color || '-'}</span>
+                              </div>
+                            </td>
+                            <td className="p-2 spurs-text">
+                              <div className="flex items-center space-x-2">
+                                {team.secondary_color ? (
+                                  <div
+                                    className="w-6 h-6 rounded border border-gray-400"
+                                    style={{ backgroundColor: getTeamColor(team.secondary_color) }}
+                                    title={team.secondary_color}
+                                  />
+                                ) : (
+                                  <div className="w-6 h-6 rounded border border-gray-400 bg-gray-600" title="No color" />
+                                )}
+                                <span className="text-xs">{team.secondary_color || '-'}</span>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
                   </>
                 )}
                 {activeTab === 'players' && (
                   <>
-                    {recentPlayers.map(player => {
-                      return (
-                        <tr key={player.id} className="border-b border-gray-600">
-                          <td className="p-2 spurs-text">{player.first_name} {player.last_name}</td>
-                          <td className="p-2 spurs-text">{player.position || '-'}</td>
-                          <td className="p-2 spurs-text">{player.nationality || '-'}</td>
-                        </tr>
-                      );
-                    })}
+                    {getPaginatedPlayers().length === 0 ? (
+                      <tr>
+                        <td colSpan={3} className="p-2 text-center text-gray-400">
+                          No players found
+                        </td>
+                      </tr>
+                    ) : (
+                      getPaginatedPlayers().map(player => {
+                        return (
+                          <tr 
+                            key={player.id} 
+                            className="border-b border-gray-600 cursor-pointer hover:bg-gray-700/50 transition-colors"
+                            onClick={() => handleEditPlayer(player)}
+                          >
+                            <td className="p-2 spurs-text">{player.first_name ? `${player.first_name} ` : ''}{player.last_name}</td>
+                            <td className="p-2 spurs-text">{player.position || '-'}</td>
+                            <td className="p-2 spurs-text">{player.nationality || '-'}</td>
+                          </tr>
+                        );
+                      })
+                    )}
                   </>
                 )}
                 {activeTab === 'player_stats' && (
                   <>
-                    {recentPlayerStats.map(stat => {
-                      const player = players.find(p => p.id === parseInt(stat.player_id));
-                      const match = matches.find(m => m.id === stat.match_id);
-                      const homeTeam = teams.find(t => t.id === match?.home_team_id);
-                      const awayTeam = teams.find(t => t.id === match?.away_team_id);
-                      return (
-                        <tr key={stat.id} className="border-b border-gray-600">
-                          <td className="p-2 spurs-text">{player?.first_name} {player?.last_name}</td>
-                          <td className="p-2 spurs-text">
-                            {match && homeTeam && awayTeam
-                              ? `${homeTeam.short_name} vs ${awayTeam.short_name} (${match.date})`
-                              : match?.date || '-'
-                            }
-                          </td>
-                          <td className="p-2 spurs-text">{stat.started ? 'Yes' : 'No'}</td>
-                          <td className="p-2 spurs-text">{stat.captain ? 'Yes' : 'No'}</td>
-                          <td className="p-2 spurs-text">{stat.player_of_the_match ? 'Yes' : 'No'}</td>
-                          <td className="p-2 spurs-text">{stat.goals}</td>
-                        </tr>
-                      );
-                    })}
+                    {getPaginatedPlayerStats().length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="p-2 text-center text-gray-400">
+                          No player stats found
+                        </td>
+                      </tr>
+                    ) : (
+                      getPaginatedPlayerStats().map(stat => {
+                        const player = players.find(p => p.id === stat.player_id);
+                        const match = matches.find(m => m.id === stat.match_id);
+                        const homeTeam = teams.find(t => t.id === match?.home_team_id);
+                        const awayTeam = teams.find(t => t.id === match?.away_team_id);
+                        return (
+                          <tr 
+                            key={stat.id} 
+                            className="border-b border-gray-600 cursor-pointer hover:bg-gray-700/50 transition-colors"
+                            onClick={() => handleEditPlayerStats(stat)}
+                          >
+                            <td className="p-2 spurs-text">{player?.first_name ? `${player.first_name} ` : ''}{player?.last_name}</td>
+                            <td className="p-2 spurs-text">
+                              {match && homeTeam && awayTeam
+                                ? `${homeTeam.short_name} vs ${awayTeam.short_name} (${match.date})`
+                                : match?.date || '-'
+                              }
+                            </td>
+                            <td className="p-2 spurs-text">{stat.started ? 'Yes' : 'No'}</td>
+                            <td className="p-2 spurs-text">{stat.captain ? 'Yes' : 'No'}</td>
+                            <td className="p-2 spurs-text">{stat.player_of_the_match ? 'Yes' : 'No'}</td>
+                            <td className="p-2 spurs-text">{stat.goals}</td>
+                          </tr>
+                        );
+                      })
+                    )}
                   </>
                 )}
-                {(() => {
-                  console.log('=== PLAYER HISTORY DEBUG ===');
-                  console.log('Total recentPlayerHistory records:', recentPlayerHistory.length);
-                  console.log('Total players available:', players.length);
-                  console.log('First 3 players:', players.slice(0, 3));
-                  console.log('First player history record:', recentPlayerHistory[0]);
-                  
-                  return recentPlayerHistory.map(history => {
-                    // Match by converting string IDs to numbers where needed
-                    const player = players.find(p => p.id === parseInt(history.player_id));
-                    const team = teams.find(t => t.id === history.team_id);
-                    return (
-                      <tr key={history.id} className="border-b border-gray-600">
-                        <td className="p-2 spurs-text">
-                          {player ? `${player.first_name} ${player.last_name}` : `Player ID: ${history.player_id} (not found)`}
+                {activeTab === 'player_history' && (
+                  <>
+                    {getPaginatedPlayerHistory().length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="p-2 text-center text-gray-400">
+                          No player history found
                         </td>
-                        <td className="p-2 spurs-text">{team?.name || 'Unknown Team'}</td>
-                        <td className="p-2 spurs-text">{history.squad_number || '-'}</td>
-                        <td className="p-2 spurs-text">{history.joined_on || '-'}</td>
-                        <td className="p-2 spurs-text">{history.left_on || '-'}</td>
                       </tr>
-                    );
-                  });
-                })()}
-                {activeTab === 'stadiums' && recentStadiums
-                  .sort((a, b) => {
-                    // Sort by opened_date, fallback to name if no opened_date
-                    if (!a.opened_date && !b.opened_date) return 0;
-                    if (!a.opened_date) return 1;
-                    if (!b.opened_date) return -1;
-                    return new Date(b.opened_date).getTime() - new Date(a.opened_date).getTime();
-                  })
-                  .map(stadium => {
-                    return (
-                      <tr key={stadium.id} className="border-b border-gray-600">
-                        <td className="p-2 spurs-text">{stadium.name}</td>
-                        <td className="p-2 spurs-text">{stadium.city || '-'}</td>
-                        <td className="p-2 spurs-text">{stadium.capacity || '-'}</td>
+                    ) : (
+                      getPaginatedPlayerHistory().map(history => {
+                        const player = players.find(p => p.id === history.player_id);
+                        const team = teams.find(t => t.id === history.team_id);
+                        return (
+                          <tr 
+                            key={history.id} 
+                            className="border-b border-gray-600 cursor-pointer hover:bg-gray-700/50 transition-colors"
+                            onClick={() => handleEditPlayerHistory(history)}
+                          >
+                            <td className="p-2 spurs-text">
+                              {player ? `${player.first_name ? `${player.first_name} ` : ''}${player.last_name}` : `Player ID: ${history.player_id} (not found)`}
+                            </td>
+                            <td className="p-2 spurs-text">{team?.name || 'Unknown Team'}</td>
+                            <td className="p-2 spurs-text">{history.squad_number || '-'}</td>
+                            <td className="p-2 spurs-text">{history.joined_on || '-'}</td>
+                            <td className="p-2 spurs-text">{history.left_on || '-'}</td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </>
+                )}
+                {activeTab === 'stadiums' && (
+                  <>
+                    {getPaginatedStadiums().length === 0 ? (
+                      <tr>
+                        <td colSpan={3} className="p-2 text-center text-gray-400">
+                          No stadiums found
+                        </td>
                       </tr>
-                    );
-                  })}
+                    ) : (
+                      getPaginatedStadiums().map(stadium => {
+                        return (
+                          <tr
+                            key={stadium.id}
+                            className="border-b border-gray-600 cursor-pointer hover:bg-gray-700/50 transition-colors"
+                            onClick={() => handleEditStadium(stadium)}
+                          >
+                            <td className="p-2 spurs-text">{stadium.name}</td>
+                            <td className="p-2 spurs-text">{stadium.city || '-'}</td>
+                            <td className="p-2 spurs-text">{stadium.capacity || '-'}</td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </>
+                )}
                 {activeTab === 'stadium_names' && (
                   <>
-                    {recentStadiumNames.length === 0 ? (
+                    {getPaginatedStadiumNames().length === 0 ? (
                       <tr>
                         <td colSpan={5} className="p-2 text-center text-gray-400">
                           No stadium names found
                         </td>
                       </tr>
                     ) : (
-                      recentStadiumNames.map(stadiumName => {
+                      getPaginatedStadiumNames().map(stadiumName => {
                         const stadium = stadiums.find(s => s.id === stadiumName.stadium_id);
                         return (
-                          <tr key={stadiumName.id} className="border-b border-gray-600">
+                          <tr
+                            key={stadiumName.id}
+                            className="border-b border-gray-600 cursor-pointer hover:bg-gray-700/50 transition-colors"
+                            onClick={() => handleEditStadiumName(stadiumName)}
+                          >
                             <td className="p-2 spurs-text">{stadium?.name || 'Unknown Stadium'}</td>
                             <td className="p-2 spurs-text">{stadiumName.name}</td>
                             <td className="p-2 spurs-text">{stadiumName.valid_from || '-'}</td>
@@ -2665,49 +2748,249 @@ export default function AdminPage() {
                 Showing {((matchesCurrentPage - 1) * matchesPerPage) + 1} to {Math.min(matchesCurrentPage * matchesPerPage, getFilteredMatches().length)} of {getFilteredMatches().length} matches
               </div>
               <div className="flex space-x-2">
-                <button
+                <Button
+                  variant="spurs"
+                  size="sm"
                   onClick={() => setMatchesCurrentPage(matchesCurrentPage - 1)}
                   disabled={matchesCurrentPage === 1}
-                  className="px-3 py-1 text-sm bg-gray-700 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600"
                 >
                   Previous
-                </button>
+                </Button>
                 <span className="px-3 py-1 text-sm text-gray-300">
                   Page {matchesCurrentPage} of {matchesTotalPages}
                 </span>
-                <button
+                <Button
+                  variant="spurs"
+                  size="sm"
                   onClick={() => setMatchesCurrentPage(matchesCurrentPage + 1)}
                   disabled={matchesCurrentPage === matchesTotalPages}
-                  className="px-3 py-1 text-sm bg-gray-700 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600"
                 >
                   Next
-                </button>
+                </Button>
               </div>
             </div>
           )}
-          {activeTab !== 'matches' && activeTab !== 'stadium_names' && totalPages > 1 && (
+          {activeTab === 'media' && mediaTotalPages > 1 && (
+            <div className="mt-4 flex items-center justify-between">
+              <div className="text-sm text-gray-400">
+                Showing {((mediaCurrentPage - 1) * mediaPerPage) + 1} to {Math.min(mediaCurrentPage * mediaPerPage, getFilteredMedia().length)} of {getFilteredMedia().length} media
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  variant="spurs"
+                  size="sm"
+                  onClick={() => setMediaCurrentPage(mediaCurrentPage - 1)}
+                  disabled={mediaCurrentPage === 1}
+                >
+                  Previous
+                </Button>
+                <span className="px-3 py-1 text-sm text-gray-300">
+                  Page {mediaCurrentPage} of {mediaTotalPages}
+                </span>
+                <Button
+                  variant="spurs"
+                  size="sm"
+                  onClick={() => setMediaCurrentPage(mediaCurrentPage + 1)}
+                  disabled={mediaCurrentPage === mediaTotalPages}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
+          {activeTab === 'teams' && teamsTotalPages > 1 && (
+            <div className="mt-4 flex items-center justify-between">
+              <div className="text-sm text-gray-400">
+                Showing {((teamsCurrentPage - 1) * teamsPerPage) + 1} to {Math.min(teamsCurrentPage * teamsPerPage, getFilteredTeams().length)} of {getFilteredTeams().length} teams
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  variant="spurs"
+                  size="sm"
+                  onClick={() => setTeamsCurrentPage(teamsCurrentPage - 1)}
+                  disabled={teamsCurrentPage === 1}
+                >
+                  Previous
+                </Button>
+                <span className="px-3 py-1 text-sm text-gray-300">
+                  Page {teamsCurrentPage} of {teamsTotalPages}
+                </span>
+                <Button
+                  variant="spurs"
+                  size="sm"
+                  onClick={() => setTeamsCurrentPage(teamsCurrentPage + 1)}
+                  disabled={teamsCurrentPage === teamsTotalPages}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
+          {activeTab === 'players' && playersTotalPages > 1 && (
+            <div className="mt-4 flex items-center justify-between">
+              <div className="text-sm text-gray-400">
+                Showing {((playersCurrentPage - 1) * playersPerPage) + 1} to {Math.min(playersCurrentPage * playersPerPage, getFilteredPlayers().length)} of {getFilteredPlayers().length} players
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  variant="spurs"
+                  size="sm"
+                  onClick={() => setPlayersCurrentPage(playersCurrentPage - 1)}
+                  disabled={playersCurrentPage === 1}
+                >
+                  Previous
+                </Button>
+                <span className="px-3 py-1 text-sm text-gray-300">
+                  Page {playersCurrentPage} of {playersTotalPages}
+                </span>
+                <Button
+                  variant="spurs"
+                  size="sm"
+                  onClick={() => setPlayersCurrentPage(playersCurrentPage + 1)}
+                  disabled={playersCurrentPage === playersTotalPages}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
+          {activeTab === 'player_stats' && playerStatsTotalPages > 1 && (
+            <div className="mt-4 flex items-center justify-between">
+              <div className="text-sm text-gray-400">
+                Showing {((playerStatsCurrentPage - 1) * playerStatsPerPage) + 1} to {Math.min(playerStatsCurrentPage * playerStatsPerPage, getFilteredPlayerStats().length)} of {getFilteredPlayerStats().length} player stats
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  variant="spurs"
+                  size="sm"
+                  onClick={() => setPlayerStatsCurrentPage(playerStatsCurrentPage - 1)}
+                  disabled={playerStatsCurrentPage === 1}
+                >
+                  Previous
+                </Button>
+                <span className="px-3 py-1 text-sm text-gray-300">
+                  Page {playerStatsCurrentPage} of {playerStatsTotalPages}
+                </span>
+                <Button
+                  variant="spurs"
+                  size="sm"
+                  onClick={() => setPlayerStatsCurrentPage(playerStatsCurrentPage + 1)}
+                  disabled={playerStatsCurrentPage === playerStatsTotalPages}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
+          {activeTab === 'player_history' && playerHistoryTotalPages > 1 && (
+            <div className="mt-4 flex items-center justify-between">
+              <div className="text-sm text-gray-400">
+                Showing {((playerHistoryCurrentPage - 1) * playerHistoryPerPage) + 1} to {Math.min(playerHistoryCurrentPage * playerHistoryPerPage, getFilteredPlayerHistory().length)} of {getFilteredPlayerHistory().length} player history
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  variant="spurs"
+                  size="sm"
+                  onClick={() => setPlayerHistoryCurrentPage(playerHistoryCurrentPage - 1)}
+                  disabled={playerHistoryCurrentPage === 1}
+                >
+                  Previous
+                </Button>
+                <span className="px-3 py-1 text-sm text-gray-300">
+                  Page {playerHistoryCurrentPage} of {playerHistoryTotalPages}
+                </span>
+                <Button
+                  variant="spurs"
+                  size="sm"
+                  onClick={() => setPlayerHistoryCurrentPage(playerHistoryCurrentPage + 1)}
+                  disabled={playerHistoryCurrentPage === playerHistoryTotalPages}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
+          {activeTab === 'stadiums' && stadiumsTotalPages > 1 && (
+            <div className="mt-4 flex items-center justify-between">
+              <div className="text-sm text-gray-400">
+                Showing {((stadiumsCurrentPage - 1) * stadiumsPerPage) + 1} to {Math.min(stadiumsCurrentPage * stadiumsPerPage, getFilteredStadiums().length)} of {getFilteredStadiums().length} stadiums
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  variant="spurs"
+                  size="sm"
+                  onClick={() => setStadiumsCurrentPage(stadiumsCurrentPage - 1)}
+                  disabled={stadiumsCurrentPage === 1}
+                >
+                  Previous
+                </Button>
+                <span className="px-3 py-1 text-sm text-gray-300">
+                  Page {stadiumsCurrentPage} of {stadiumsTotalPages}
+                </span>
+                <Button
+                  variant="spurs"
+                  size="sm"
+                  onClick={() => setStadiumsCurrentPage(stadiumsCurrentPage + 1)}
+                  disabled={stadiumsCurrentPage === stadiumsTotalPages}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
+          {activeTab === 'stadium_names' && stadiumNamesTotalPages > 1 && (
+            <div className="mt-4 flex items-center justify-between">
+              <div className="text-sm text-gray-400">
+                Showing {((stadiumNamesCurrentPage - 1) * stadiumNamesPerPage) + 1} to {Math.min(stadiumNamesCurrentPage * stadiumNamesPerPage, getFilteredStadiumNames().length)} of {getFilteredStadiumNames().length} stadium names
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  variant="spurs"
+                  size="sm"
+                  onClick={() => setStadiumNamesCurrentPage(stadiumNamesCurrentPage - 1)}
+                  disabled={stadiumNamesCurrentPage === 1}
+                >
+                  Previous
+                </Button>
+                <span className="px-3 py-1 text-sm text-gray-300">
+                  Page {stadiumNamesCurrentPage} of {stadiumNamesTotalPages}
+                </span>
+                <Button
+                  variant="spurs"
+                  size="sm"
+                  onClick={() => setStadiumNamesCurrentPage(stadiumNamesCurrentPage + 1)}
+                  disabled={stadiumNamesCurrentPage === stadiumNamesTotalPages}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
+          {activeTab !== 'matches' && activeTab !== 'media' && activeTab !== 'stadium_names' && activeTab !== 'stadiums' && totalPages > 1 && (
             <div className="mt-4 flex items-center justify-between">
               <div className="text-sm text-gray-400">
                 Showing {((currentPage - 1) * recordsPerPage) + 1} to {Math.min(currentPage * recordsPerPage, totalCount)} of {totalCount} records
               </div>
               <div className="flex space-x-2">
-                <button
+                <Button
+                  variant="spurs"
+                  size="sm"
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className="px-3 py-1 text-sm bg-gray-700 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600"
                 >
                   Previous
-                </button>
+                </Button>
                 <span className="px-3 py-1 text-sm text-gray-300">
                   Page {currentPage} of {totalPages}
                 </span>
-                <button
+                <Button
+                  variant="spurs"
+                  size="sm"
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className="px-3 py-1 text-sm bg-gray-700 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600"
                 >
                   Next
-                </button>
+                </Button>
               </div>
             </div>
           )}
