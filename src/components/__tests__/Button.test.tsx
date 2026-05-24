@@ -7,7 +7,7 @@ describe('Button Component', () => {
     render(<Button>Click me</Button>)
     const button = screen.getByRole('button', { name: 'Click me' })
     expect(button).toBeInTheDocument()
-    expect(button).toHaveClass('button', 'primary', 'px-4', 'py-2', 'text-base')
+    expect(button).toHaveClass('button', 'primary', '!px-4', '!py-2', 'text-base')
   })
 
   it('applies variant classes correctly', () => {
@@ -27,11 +27,11 @@ describe('Button Component', () => {
   it('applies size classes correctly', () => {
     const { rerender } = render(<Button size="sm">Small</Button>)
     let button = screen.getByRole('button')
-    expect(button).toHaveClass('px-3', 'py-1.5', 'text-sm')
+    expect(button).toHaveClass('!px-3', '!py-1.5', 'text-sm')
 
     rerender(<Button size="lg">Large</Button>)
     button = screen.getByRole('button')
-    expect(button).toHaveClass('px-6', 'py-3', 'text-lg')
+    expect(button).toHaveClass('!px-6', '!py-3', 'text-lg')
   })
 
   it('handles fullWidth prop', () => {
