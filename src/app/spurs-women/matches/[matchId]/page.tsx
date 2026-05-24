@@ -99,7 +99,6 @@ export default async function MatchDetailPage({ params }: PageProps) {
         <div className="mb-6">
           <h2 className="text-2xl font-bold media-title mb-4">Match Info</h2>
           <MatchInfo 
-            venue={match.venue} 
             stadium_display_name={match.stadium_display_name}
             stadium_slug={match.stadium_slug}
             attendance={match.attendance} 
