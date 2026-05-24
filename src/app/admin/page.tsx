@@ -52,7 +52,7 @@ interface Match {
   opponent_score_aet: number | null;
   spurs_score_pens: number | null;
   opponent_score_pens: number | null;
-  venue: string;
+  stadium_id: string;
   stadium_display_name: string | null;
   attended: boolean;
   notes: string;
@@ -291,7 +291,7 @@ export default function AdminPage() {
     opponent_score_aet: null,
     spurs_score_pens: null,
     opponent_score_pens: null,
-    venue: '',
+    stadium_id: '',
     attended: false,
     notes: '',
     home_team_id: 1, // Default to Tottenham
@@ -645,7 +645,7 @@ export default function AdminPage() {
         homeTeamFullName.toLowerCase().includes(searchTerm) ||
         awayTeamShortName.toLowerCase().includes(searchTerm) ||
         awayTeamFullName.toLowerCase().includes(searchTerm) ||
-        match.venue?.toLowerCase().includes(searchTerm)
+        match.stadium_display_name?.toLowerCase().includes(searchTerm)
       );
     });
   }, [matches, teams, matchSearch]);
@@ -943,25 +943,23 @@ export default function AdminPage() {
     setIsEditMode(true);
     setEditingMatchId(match.id);
     
-    // Try to match the venue by comparing current stadium names with stadium_display_name
+    // Try to match the stadium by comparing stadium_id with stadium_display_name
     const matchedStadium = stadiums.find(s => {
       const currentName = getCurrentStadiumName(s.id, match.date);
       const displayNameLower = match.stadium_display_name?.toLowerCase() || '';
       const currentNameLower = currentName.toLowerCase();
-      const venueLower = match.venue?.toLowerCase() || '';
       
       return (
+        s.id === match.stadium_id ||
         currentName === match.stadium_display_name ||
         currentNameLower === displayNameLower ||
-        s.name === match.venue ||
-        venueLower === currentNameLower ||
         displayNameLower.includes(currentNameLower) ||
         currentNameLower.includes(displayNameLower)
       );
     });
     
-    // Use the current stadium name for the form value
-    const venueValue = matchedStadium ? getCurrentStadiumName(matchedStadium.id, match.date) : match.stadium_display_name || match.venue;
+    // Use the stadium_id for the form value
+    const stadiumIdValue = matchedStadium ? matchedStadium.id : match.stadium_id || '';
     
     setMatchForm({
       season_id: match.season_id,
@@ -975,7 +973,7 @@ export default function AdminPage() {
       opponent_score_aet: match.opponent_score_aet,
       spurs_score_pens: match.spurs_score_pens,
       opponent_score_pens: match.opponent_score_pens,
-      venue: venueValue,
+      stadium_id: stadiumIdValue,
       attended: match.attended,
       notes: match.notes || '',
       home_team_id: match.home_team_id,
@@ -1009,7 +1007,7 @@ export default function AdminPage() {
       opponent_score_aet: null,
       spurs_score_pens: null,
       opponent_score_pens: null,
-      venue: '',
+      stadium_id: '',
       attended: false,
       notes: '',
       home_team_id: 1,
@@ -1614,7 +1612,7 @@ export default function AdminPage() {
         opponent_score_aet: matchForm.opponent_score_aet !== null && matchForm.opponent_score_aet !== undefined ? matchForm.opponent_score_aet : null,
         spurs_score_pens: matchForm.spurs_score_pens !== null && matchForm.spurs_score_pens !== undefined ? matchForm.spurs_score_pens : null,
         opponent_score_pens: matchForm.opponent_score_pens !== null && matchForm.opponent_score_pens !== undefined ? matchForm.opponent_score_pens : null,
-        venue: matchForm.venue || '',
+        stadium_id: matchForm.stadium_id || '',
         attended: matchForm.attended || false,
         notes: matchForm.notes || '',
         home_team_id: matchForm.is_home_match ? spursTeam.id : (matchForm.home_team_id || matchForm.away_team_id),
@@ -2330,7 +2328,7 @@ export default function AdminPage() {
             <div className="mb-4">
               <input
                 type="text"
-                placeholder="Search matches by date, opponent, or venue..."
+                placeholder="Search matches by date, opponent, or stadium..."
                 value={matchSearch}
                 onChange={(e) => setMatchSearch(e.target.value)}
                 className="w-full px-4 py-2 rounded border border-gray-600 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -2490,7 +2488,7 @@ export default function AdminPage() {
                   const homeTeam = teams.find(t => t.id === match.home_team_id);
                   const awayTeam = teams.find(t => t.id === match.away_team_id);
                   const competition = competitions.find(c => c.id === match.competition_id);
-                  const displayVenue = match.stadium_display_name || match.venue;
+                  const displayVenue = match.stadium_display_name;
 
                   return (
                     <tr 
