@@ -38,3 +38,57 @@
   position: relative;
   padding-top: 80px;
 }
+
+/* CSS Classes for Brand Colors */
+.brand-primary-dark {
+  color: var(--brand-primary-dark);
+}
+
+.brand-primary-darker {
+  color: var(--brand-primary-darker);
+}
+
+.brand-title img {
+  height: 50px;
+  width: auto;
+  filter: brightness(0) invert(1);
+  transition: transform 0.3s ease;
+}
+
+.brand-title img:hover {
+  transform: scale(1.05);
+}
+
+/* Neutral color utility classes */
+.neutral-gray {
+  color: var(--neutral-gray);
+}
+
+.dark-border {
+  color: var(--dark-border);
+}
+
+.dark-gray-medium {
+  color: var(--dark-gray-medium);
+}
+
+.dark-text {
+  color: var(--dark-text);
+}
+
+.active-page-text {
+  color: var(--brand-primary-dark);
+}
+
+.dark .active-page-text {
+  color: var(--dark-text);
+}
+
+/* Form label styling */
+.form-label {
+  color: var(--brand-primary-dark);
+}
+
+.dark .form-label {
+  color: var(--dark-accent);
+}

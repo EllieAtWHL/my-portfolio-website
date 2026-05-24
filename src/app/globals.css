@@ -32,38 +32,6 @@ html {
 }
 
 /* CSS Classes for Brand Colors (to use instead of Tailwind) */
-.brand-primary-dark {
-  color: var(--brand-primary-dark);
-}
-
-.brand-primary-darker {
-  color: var(--brand-primary-darker);
-}
-
-.neutral-gray {
-  color: var(--neutral-gray);
-}
-
-.dark-border {
-  color: var(--dark-border);
-}
-
-.dark-gray-medium {
-  color: var(--dark-gray-medium);
-}
-
-.dark-text {
-  color: var(--dark-text);
-}
-
-.active-page-text {
-  color: var(--brand-primary-dark);
-}
-
-.dark .active-page-text {
-  color: var(--dark-text);
-}
-
 .mobile-nav-button {
   background-color: var(--bg-white) !important;
   color: var(--brand-primary-dark) !important;
@@ -95,17 +63,6 @@ html {
   right: 0;
   width: 100%;
   z-index: 100;
-}
-
-.brand-title img {
-  height: 50px;
-  width: auto;
-  filter: brightness(0) invert(1);
-  transition: transform 0.3s ease;
-}
-
-.brand-title img:hover {
-  transform: scale(1.05);
 }
 
 .navbar-links {
@@ -3273,39 +3230,43 @@ body:not(.dark) .button.primary:hover {
 
 /* Custom form input styling */
 .form-input-tall {
-  min-height: 50px !important;
-  height: 50px !important;
-  padding-top: 12px !important;
-  padding-bottom: 12px !important;
-  padding-left: 20px !important;
-  padding-right: 20px !important;
-  font-size: 16px !important;
-  font-family: 'Nokora', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-  border-radius: 16px !important;
+  min-height: 50px;
+  height: 50px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  padding-left: 20px;
+  padding-right: 20px;
+  font-size: 16px;
+  font-family: 'Nokora', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  border-radius: 16px;
+  background-color: var(--bg-white);
+  color: var(--brand-primary-darkest);
 }
 
 /* Custom form textarea styling */
 .form-textarea {
-  min-height: 120px !important;
-  padding-top: 12px !important;
-  padding-bottom: 12px !important;
-  padding-left: 20px !important;
-  padding-right: 20px !important;
-  font-size: 16px !important;
-  font-family: 'Nokora', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-  border-radius: 16px !important;
+  min-height: 120px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  padding-left: 20px;
+  padding-right: 20px;
+  font-size: 16px;
+  font-family: 'Nokora', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  border-radius: 16px;
+  background-color: var(--bg-white);
+  color: var(--brand-primary-darkest);
 }
 
 /* Dark mode form input styling */
 .dark .form-input-tall {
-  background-color: var(--dark-bg-1) !important;
-  color: var(--dark-text) !important;
+  background-color: var(--dark-bg-1);
+  color: var(--dark-text);
 }
 
 /* Dark mode form textarea styling */
 .dark .form-textarea {
-  background-color: var(--dark-bg-1) !important;
-  color: var(--dark-text) !important;
+  background-color: var(--dark-bg-1);
+  color: var(--dark-text);
 }
 
 /* Ensure primary button with w-full spans full width */

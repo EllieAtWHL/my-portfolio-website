@@ -112,7 +112,7 @@ export default function ContactMe() {
               <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-green-600 to-green-400 bg-clip-text text-transparent">
                 Get In Touch
               </h1>
-              <p className="text-lg text-gray-600 dark:text-gray-300">
+              <p className="text-lg form-label">
                 I'd love to hear from you! Whether you have a question, want to collaborate, or just want to say hello.
               </p>
             </div>
@@ -149,7 +149,7 @@ export default function ContactMe() {
                   
                   <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <label htmlFor="first_name" className="block text-sm font-semibold text-gray-700 dark:text-gray-200">
+                      <label htmlFor="first_name" className="block text-sm font-semibold form-label">
                         First Name
                       </label>
                       <input 
@@ -164,7 +164,7 @@ export default function ContactMe() {
                     </div>
                     
                     <div className="space-y-2">
-                      <label htmlFor="last_name" className="block text-sm font-semibold text-gray-700 dark:text-gray-200">
+                      <label htmlFor="last_name" className="block text-sm font-semibold form-label">
                         Last Name
                       </label>
                       <input 
@@ -180,7 +180,7 @@ export default function ContactMe() {
                   </div>
                   
                   <div className="space-y-2">
-                    <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-200">
+                    <label htmlFor="email" className="block text-sm font-semibold form-label">
                       Email
                     </label>
                     <input 
@@ -195,7 +195,7 @@ export default function ContactMe() {
                   </div>
                   
                   <div className="space-y-2">
-                    <label htmlFor="description" className="block text-sm font-semibold text-gray-700 dark:text-gray-200">
+                    <label htmlFor="description" className="block text-sm font-semibold form-label">
                       Message
                     </label>
                     <textarea 
