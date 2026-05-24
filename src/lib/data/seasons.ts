@@ -1,6 +1,7 @@
 import { supabase } from '@/utils/supabase';
 import { createCachedFunction, CACHE_TTL, CACHE_TAGS } from './cache-utils';
 import { getSeasonMatches } from './matches';
+import { fetchAllFromDB, fetchByIdFromDB, fetchWithSingleMatchCountFromDB } from './generic-fetchers';
 
 export interface Season {
   id: number;
@@ -36,62 +37,15 @@ export interface SeasonReview {
 
 // Raw database fetch functions
 async function fetchSeasonsFromDB(): Promise<Season[]> {
-  const { data, error } = await supabase
-    .from('seasons')
-    .select('*')
-    .order('start_date', { ascending: true });
-
-  if (error) {
-    console.error('Error fetching seasons:', error);
-    throw error;
-  }
-
-  return data as Season[] || [];
+  return fetchAllFromDB<Season>('seasons', 'start_date');
 }
 
 async function fetchSeasonsWithMatchCountsFromDB(): Promise<SeasonWithMatchCount[]> {
-  // Fetch seasons first
-  const { data: seasonsData, error: seasonsError } = await supabase
-    .from('seasons')
-    .select('*')
-    .order('start_date', { ascending: true });
-
-  if (seasonsError) {
-    console.error('Error fetching seasons:', seasonsError);
-    throw seasonsError;
-  }
-
-  // Fetch match counts for each season
-  const seasonsWithCounts = await Promise.all(
-    (seasonsData as Season[]).map(async (season) => {
-      const { count, error: countError } = await supabase
-        .from('matches')
-        .select('*', { count: 'exact', head: true })
-        .eq('season_id', season.id);
-
-      return {
-        ...season,
-        match_count: countError ? 0 : count || 0
-      };
-    })
-  );
-
-  return seasonsWithCounts;
+  return fetchWithSingleMatchCountFromDB<Season>('seasons', 'matches', 'season_id', 'start_date');
 }
 
 async function fetchSeasonByIdFromDB(seasonId: string): Promise<Season | null> {
-  const { data, error } = await supabase
-    .from('seasons')
-    .select('*')
-    .eq('id', seasonId)
-    .single();
-
-  if (error) {
-    console.error('Error fetching season:', error);
-    throw error;
-  }
-
-  return data as Season;
+  return fetchByIdFromDB<Season>('seasons', seasonId);
 }
 
 async function fetchSeasonReviewFromDB(seasonId: string): Promise<SeasonReview | null> {

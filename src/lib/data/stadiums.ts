@@ -1,5 +1,6 @@
 import { supabase } from '@/utils/supabase';
 import { createCachedFunction, CACHE_TAGS, CACHE_TTL } from './cache-utils';
+import { fetchAllFromDB, fetchWithSingleMatchCountFromDB } from './generic-fetchers';
 
 export interface Team {
   id: number;
@@ -79,46 +80,11 @@ async function fetchStadiumNamesFromDB(stadiumId: string): Promise<StadiumName[]
 }
 
 async function fetchAllStadiumsFromDB(): Promise<Stadium[]> {
-  const { data, error } = await supabase
-    .from('stadia')
-    .select('*')
-    .order('name');
-
-  if (error) {
-    throw error;
-  }
-
-  return data as Stadium[];
+  return fetchAllFromDB<Stadium>('stadia', 'name');
 }
 
 async function fetchStadiumsWithMatchCountsFromDB(): Promise<StadiumWithMatchCount[]> {
-  // Fetch stadiums first
-  const { data: stadiumsData, error: stadiumsError } = await supabase
-    .from('stadia')
-    .select('*')
-    .order('name');
-
-  if (stadiumsError) {
-    console.error('Error fetching stadiums:', stadiumsError);
-    throw stadiumsError;
-  }
-
-  // Fetch match counts for each stadium
-  const stadiumsWithCounts = await Promise.all(
-    (stadiumsData as Stadium[]).map(async (stadium) => {
-      const { count, error: countError } = await supabase
-        .from('matches')
-        .select('*', { count: 'exact', head: true })
-        .eq('stadium_id', stadium.id);
-
-      return {
-        ...stadium,
-        match_count: countError ? 0 : count || 0
-      };
-    })
-  );
-
-  return stadiumsWithCounts;
+  return fetchWithSingleMatchCountFromDB<Stadium>('stadia', 'matches', 'stadium_id', 'name');
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
