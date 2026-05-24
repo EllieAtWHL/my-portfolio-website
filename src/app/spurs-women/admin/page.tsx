@@ -5,6 +5,7 @@ import { callAdminApi, createEntityAndReload } from '@/lib/api-client';
 import { getTeamColor } from '@/lib/utils/team-colors';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/Button';
 import { MatchForm } from '@/components/admin/MatchForm';
 import { MediaForm } from '@/components/admin/MediaForm';
@@ -382,7 +383,7 @@ export default function AdminPage() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push('/login');
+    router.push('/spurs-women/login');
   };
 
   // Helper function to get current stadium display name based on date
@@ -1761,13 +1762,15 @@ export default function AdminPage() {
 
 
   return (
-    <div className="spurs-wrapper min-h-screen p-4">
+    <div className="spurs-wrapper min-h-screen p-4 pb-20">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="spurs-text text-3xl font-bold">Supabase Admin Interface</h1>
           {user && (
             <div className="flex items-center gap-4">
-              <span className="text-gray-300 text-sm">{user.email}</span>
+              <Link href="/spurs-women/profile" className="text-sm hover:opacity-80 transition-opacity" style={{ color: 'var(--spurs-dark-accent)' }}>
+                {user.email}
+              </Link>
               <Button
                 variant="spurs"
                 size="sm"

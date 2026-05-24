@@ -33,10 +33,10 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   // Protect admin routes
-  if (request.nextUrl.pathname.startsWith('/admin')) {
+  if (request.nextUrl.pathname.startsWith('/spurs-women/admin')) {
     if (!user) {
       const url = request.nextUrl.clone()
-      url.pathname = '/login'
+      url.pathname = '/spurs-women/login'
       return NextResponse.redirect(url)
     }
 
@@ -44,16 +44,16 @@ export async function updateSession(request: NextRequest) {
     const adminEmail = process.env.ADMIN_EMAIL
     if (!adminEmail || user.email !== adminEmail) {
       const url = request.nextUrl.clone()
-      url.pathname = '/unauthorized'
+      url.pathname = '/spurs-women/unauthorised'
       return NextResponse.redirect(url)
     }
   }
 
   // Protect profile routes (requires authentication but not admin)
-  if (request.nextUrl.pathname.startsWith('/profile')) {
+  if (request.nextUrl.pathname.startsWith('/spurs-women/profile')) {
     if (!user) {
       const url = request.nextUrl.clone()
-      url.pathname = '/login'
+      url.pathname = '/spurs-women/login'
       return NextResponse.redirect(url)
     }
   }

@@ -2,18 +2,19 @@
 
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { Button } from '@/components/Button'
 
-export default function UnauthorizedPage() {
+export default function UnauthorisedPage() {
   const router = useRouter()
   const supabase = createClient()
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    router.push('/login')
+    router.push('/spurs-women/login')
   }
 
   return (
-    <div className="spurs-wrapper min-h-screen flex items-center justify-center p-4">
+    <div className="flex items-center justify-center p-4">
       <div className="spurs-accent-card rounded-lg p-8 max-w-md w-full text-center">
         <h1 className="spurs-text text-3xl font-bold mb-4">Access Denied</h1>
         
@@ -23,19 +24,21 @@ export default function UnauthorizedPage() {
           You don&apos;t have permission to access the admin panel. Only authorized administrators can access this page.
         </p>
 
-        <button
-          onClick={handleLogout}
-          className="spurs-button w-full px-6 py-3 rounded font-medium mb-4"
-        >
-          Sign Out
-        </button>
+        <div className="grid grid-cols-2 gap-3 pt-4 border-t border-gray-600 w-full">
+          <Button
+            variant="spurs"
+            onClick={handleLogout}
+          >
+            Sign Out
+          </Button>
 
-        <button
-          onClick={() => router.push('/')}
-          className="w-full px-6 py-3 rounded font-medium bg-gray-700 hover:bg-gray-600 text-white transition-colors"
-        >
-          Return to Home
-        </button>
+          <Button
+            variant="spurs"
+            onClick={() => router.push('/spurs-women')}
+          >
+            Return to Home
+          </Button>
+        </div>
       </div>
     </div>
   )
