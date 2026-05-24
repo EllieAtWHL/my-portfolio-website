@@ -38,8 +38,8 @@ export default function MatchCard({ match }: MatchProps) {
   const scoreLabel = hasPensScores ? 'PENS' : (hasAetScores ? 'AET' : null);
 
   return (
-    <Link href={`/spurs-women/matches/${match.id}`} className="block spurs-text">
-      <Card variant="spursAccent" padding="md" clickable={true}>
+    <Link href={`/spurs-women/matches/${match.id}`} className="block spurs-text h-full">
+      <Card variant="spursAccent" padding="md" clickable={true} className="h-full">
         <div className="text-center text-sm spurs-text mb-2 flex justify-center items-center gap-4">
           {formatDateForCard(match.date)}
           {match.competitions?.name && (

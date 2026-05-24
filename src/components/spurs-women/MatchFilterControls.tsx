@@ -56,6 +56,7 @@ export default function MatchFilterControls({
       if (showVenueFilter && venueFilter !== 'all') {
         if (venueFilter === 'home' && !match.is_home_match) return false;
         if (venueFilter === 'away' && match.is_home_match) return false;
+        if (venueFilter === 'neutral' && !match.is_neutral_venue) return false;
       }
       
       if (showAttendedFilter && attendedFilter !== 'all') {

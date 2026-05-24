@@ -33,6 +33,11 @@ interface Stats {
   cupGoalsConceded: number;
   // Total competitive matches (league + cups)
   allCompetitiveMatches: number;
+  // Match stats (league only)
+  averagePossession: number;
+  averageTotalShots: number;
+  averageShotsOnTarget: number;
+  averageCorners: number;
 }
 
 export default function SeasonStats({ matches, seasonName }: SeasonStatsProps) {
@@ -120,6 +125,48 @@ export default function SeasonStats({ matches, seasonName }: SeasonStatsProps) {
       sum + (match.opponent_score || 0), 0
     );
 
+    // Calculate match stats (league only)
+    const matchesWithStats = leagueMatches.filter(match => 
+      match.home_possession !== null || match.away_possession !== null
+    );
+
+    const possessionSum = matchesWithStats.reduce((sum, match) => {
+      if (match.is_home_match) {
+        return sum + (match.home_possession || 0);
+      } else {
+        return sum + (match.away_possession || 0);
+      }
+    }, 0);
+
+    const totalShotsSum = matchesWithStats.reduce((sum, match) => {
+      if (match.is_home_match) {
+        return sum + (match.home_total_shots || 0);
+      } else {
+        return sum + (match.away_total_shots || 0);
+      }
+    }, 0);
+
+    const shotsOnTargetSum = matchesWithStats.reduce((sum, match) => {
+      if (match.is_home_match) {
+        return sum + (match.home_shots_on_target || 0);
+      } else {
+        return sum + (match.away_shots_on_target || 0);
+      }
+    }, 0);
+
+    const cornersSum = matchesWithStats.reduce((sum, match) => {
+      if (match.is_home_match) {
+        return sum + (match.home_corners || 0);
+      } else {
+        return sum + (match.away_corners || 0);
+      }
+    }, 0);
+
+    const averagePossession = matchesWithStats.length > 0 ? possessionSum / matchesWithStats.length : 0;
+    const averageTotalShots = matchesWithStats.length > 0 ? totalShotsSum / matchesWithStats.length : 0;
+    const averageShotsOnTarget = matchesWithStats.length > 0 ? shotsOnTargetSum / matchesWithStats.length : 0;
+    const averageCorners = matchesWithStats.length > 0 ? cornersSum / matchesWithStats.length : 0;
+
     return {
       totalMatches,
       wins,
@@ -140,7 +187,11 @@ export default function SeasonStats({ matches, seasonName }: SeasonStatsProps) {
       cupLosses,
       cupGoalsScored,
       cupGoalsConceded,
-      allCompetitiveMatches: allCompetitiveMatches.length
+      allCompetitiveMatches: allCompetitiveMatches.length,
+      averagePossession,
+      averageTotalShots,
+      averageShotsOnTarget,
+      averageCorners
     };
   };
 
@@ -222,38 +273,30 @@ export default function SeasonStats({ matches, seasonName }: SeasonStatsProps) {
             </div>
           </div>
 
-          {/* Cup Record Section */}
+          {/* Match Stats Section */}
           <div className="space-y-3">
-            <h3 className="font-semibold text-lg spurs-text">Cup Record</h3>
+            <h3 className="font-semibold text-lg spurs-text">Match Stats</h3>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Total Matches:</span>
-                <span className="font-medium">{stats.cupMatches}</span>
+                <span className="text-gray-600 dark:text-gray-400">Avg Possession:</span>
+                <span className="font-medium">{stats.averagePossession.toFixed(1)}%</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Wins:</span>
-                <span className="font-medium text-green-600 dark:text-green-400">{stats.cupWins}</span>
+                <span className="text-gray-600 dark:text-gray-400">Avg Total Shots:</span>
+                <span className="font-medium">{stats.averageTotalShots.toFixed(1)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Draws:</span>
-                <span className="font-medium text-yellow-600 dark:text-yellow-400">{stats.cupDraws}</span>
+                <span className="text-gray-600 dark:text-gray-400">Avg Shots on Target:</span>
+                <span className="font-medium">{stats.averageShotsOnTarget.toFixed(1)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Losses:</span>
-                <span className="font-medium text-red-600 dark:text-red-400">{stats.cupLosses}</span>
+                <span className="text-gray-600 dark:text-gray-400">Avg Corners:</span>
+                <span className="font-medium">{stats.averageCorners.toFixed(1)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Goals Scored:</span>
-                <span className="font-medium text-green-600 dark:text-green-400">{stats.cupGoalsScored}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Goals Conceded:</span>
-                <span className="font-medium text-red-600 dark:text-red-400">{stats.cupGoalsConceded}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Goal Difference:</span>
-                <span className={`font-medium ${(stats.cupGoalsScored - stats.cupGoalsConceded) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                  {(stats.cupGoalsScored - stats.cupGoalsConceded) > 0 ? '+' : ''}{stats.cupGoalsScored - stats.cupGoalsConceded}
+                <span className="text-gray-600 dark:text-gray-400">Shot Accuracy:</span>
+                <span className="font-medium">
+                  {stats.averageTotalShots > 0 ? `${((stats.averageShotsOnTarget / stats.averageTotalShots) * 100).toFixed(1)}%` : '0.0%'}
                 </span>
               </div>
             </div>
