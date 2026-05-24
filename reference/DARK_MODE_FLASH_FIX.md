@@ -10,35 +10,45 @@ The fix involves three key components:
 Added a blocking script in `src/app/layout.tsx` that runs immediately in the `<head>` before any content renders:
 
 ```tsx
-<script
-  dangerouslySetInnerHTML={{
-    __html: `
-      (function() {
-        function getSystemPreference() {
-          return window.matchMedia('(prefers-color-scheme: dark)').matches;
-        }
-        
-        function applyTheme() {
-          const systemPreference = getSystemPreference();
-          
-          if (systemPreference) {
-            document.documentElement.classList.add('dark');
-            document.documentElement.classList.remove('light');
-          } else {
-            document.documentElement.classList.add('light');
-            document.documentElement.classList.remove('dark');
-          }
-          
-          // Remove the loading attribute to show content
-          document.documentElement.removeAttribute('data-theme-loading');
-        }
-        
-        // Apply theme immediately before page renders
-        applyTheme();
-      })();
-    `,
-  }}
-/>
+<script src="/theme-script.js" suppressHydrationWarning />
+```
+
+The script is stored in an external file `public/theme-script.js` for better maintainability:
+
+```javascript
+(function() {
+  function getSystemPreference() {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  
+  function getStoredTheme() {
+    try {
+      return localStorage.getItem('theme');
+    } catch (e) {
+      return null;
+    }
+  }
+  
+  function applyTheme() {
+    const stored = getStoredTheme();
+    const systemPreference = getSystemPreference();
+    const isDark = stored === 'dark' || (!stored && systemPreference);
+    
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    } else {
+      document.documentElement.classList.add('light');
+      document.documentElement.classList.remove('dark');
+    }
+    
+    // Remove the loading attribute to show content
+    document.documentElement.removeAttribute('data-theme-loading');
+  }
+  
+  // Apply theme immediately before React loads
+  applyTheme();
+})();
 ```
 
 ### 2. Theme Loading Attribute
@@ -84,10 +94,11 @@ To verify the fix works:
 
 ## If This Fix Gets Broken
 If the dark mode flash returns, check these components in order:
-1. Ensure the blocking script is present in `layout.tsx`
-2. Verify `data-theme-loading` attribute is on the `<html>` element
-3. Check CSS rules for `html[data-theme-loading]` are present
-4. Confirm `suppressHydrationWarning` is on the `<html>` element
+1. Ensure the blocking script reference is present in `layout.tsx` (`<script src="/theme-script.js" />`)
+2. Verify `public/theme-script.js` file exists and contains the theme logic
+3. Verify `data-theme-loading` attribute is on the `<html>` element
+4. Check CSS rules for `html[data-theme-loading]` are present
+5. Confirm `suppressHydrationWarning` is on the `<html>` element
 
 ## Alternative Approaches Considered
 - **CSS-only solution**: Using `prefers-color-scheme` in CSS, but this doesn't work with the custom theme system
