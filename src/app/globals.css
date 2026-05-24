@@ -32,17 +32,6 @@ html {
 }
 
 /* CSS Classes for Brand Colors (to use instead of Tailwind) */
-.mobile-nav-button {
-  background-color: var(--bg-white) !important;
-  color: var(--brand-primary-dark) !important;
-  border: none !important;
-}
-
-.dark .mobile-nav-button {
-  background-color: var(--dark-bg-1) !important;
-  color: var(--dark-text) !important;
-  border: none !important;
-}
 
 .mobile-sidebar-content {
   background-color: var(--bg-white) !important;
@@ -216,61 +205,11 @@ h1.slideDown {
   animation: fade-in 1.5s ease-out 1.5s forwards;
 }
 
-/* Button styles */
-.button {
-  display: inline-block;
-  padding: 1rem 2rem;
-  background: linear-gradient(135deg, var(--brand-primary-dark) 0%, var(--brand-primary-light) 100%);
-  color: var(--bg-light-1);
-  border: none;
-  border-radius: 12px;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 1.1rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px var(--shadow-green);
-  position: relative;
-  overflow: hidden;
-}
-
-.button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s ease;
-}
-
-.button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(45, 90, 45, 0.4);
-  text-decoration: none;
-  color: var(--bg-light-1);
-}
+/* Button styles migrated to main-theme.css */
 
 .badge-text {
   display: block;
   color: var(--bg-light-1);
-}
-
-.button:hover::before {
-  left: 100%;
-}
-
-.button:active {
-  transform: translateY(-1px);
-}
-
-.button:focus-visible {
-  outline: 2px solid var(--brand-primary-dark);
-  outline-offset: 2px;
-}
-
-.dark .button:focus-visible {
-  outline-color: var(--dark-accent);
 }
 
 /* Dark mode toggle */
@@ -693,34 +632,7 @@ input:checked + .slider:before {
   flex-wrap: wrap;
 }
 
-.button.primary {
-  background: linear-gradient(135deg, var(--brand-primary-dark) 0%, var(--brand-primary-light) 100%);
-  color: var(--bg-light-1);
-}
-
-.button.secondary {
-  background: transparent;
-  color: var(--brand-primary-darker);
-  border: 2px solid var(--brand-primary-dark);
-  padding: 1rem 2rem;
-  border-radius: 12px;
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 1.1rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(45, 90, 45, 0.1);
-  display: inline-block;
-  text-align: center;
-  min-width: 150px;
-}
-
-.button.secondary:hover {
-  background: var(--brand-primary-dark);
-  color: var(--bg-light-1);
-  transform: translateY(-3px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  text-decoration: none;
-}
+/* Button variants migrated to main-theme.css */
 
 /* Dark mode for About Me */
 .dark .about-container {
@@ -821,34 +733,6 @@ input:checked + .slider:before {
 
 .dark .highlight-link::after {
   background: linear-gradient(90deg, var(--dark-accent), var(--dark-accent-bright));
-}
-
-.dark .button.primary {
-  background: linear-gradient(135deg, var(--dark-accent) 0%, var(--dark-accent-bright) 100%);
-  color: var(--dark-text-darker);
-}
-
-.dark .button.secondary {
-  color: var(--dark-text-darker);
-  border-color: var(--dark-accent);
-  padding: 1rem 2rem;
-  border-radius: 12px;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 1.1rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(134, 239, 172, 0.1);
-  display: inline-block;
-  text-align: center;
-  min-width: 150px;
-}
-
-.dark .button.secondary:hover {
-  background: var(--dark-accent);
-  color: var(--dark-text-darker);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(134, 239, 172, 0.3);
-  text-decoration: none;
 }
 
 /* Responsive for About Me */
@@ -1804,15 +1688,6 @@ input:checked + .slider:before {
 
 .dark .navbar-links li:hover a {
   background: rgba(74, 222, 128, 0.15);
-}
-
-.dark .button {
-  background: linear-gradient(135deg, var(--dark-accent) 0%, var(--dark-accent-bright) 100%);
-  color: var(--dark-text-darker);
-}
-
-.dark .button:hover {
-  background: linear-gradient(135deg, var(--dark-accent-bright) 0%, #5eead4 100%);
 }
 
 .dark .findMe a {
@@ -3086,22 +2961,6 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   color: var(--dark-text-darker);
 }
 
-.dark button:hover,
-.dark .button:hover {
-  background: var(--button-hover-light);
-}
-
-.dark .content .button.secondary {
-  background: transparent;
-  color: var(--dark-text-darker);
-  border-color: var(--dark-accent);
-}
-
-.dark .content .button.secondary:hover {
-  background: var(--dark-accent);
-  color: var(--dark-text-darker);
-}
-
 /* Dark Mode Switch Styles */
 .floatLeft {
   float: left;
@@ -3203,30 +3062,7 @@ body:not(.dark) .moon-icon {
   color: inherit;
 }
 
-/* Update primary button styling to match home page Contact Me button */
-body.dark .button.primary {
-  background: #6ee7b7 !important;
-  color: #061506 !important;
-  border: 2px solid #6ee7b7 !important;
-}
-
-body.dark .button.primary:hover {
-  background: #a9dec2 !important;
-  color: #061506 !important;
-  border: 2px solid #a9dec2 !important;
-}
-
-body:not(.dark) .button.primary {
-  background: var(--brand-primary-dark) !important;
-  color: var(--bg-light-1) !important;
-  border: 2px solid var(--brand-primary-dark) !important;
-}
-
-body:not(.dark) .button.primary:hover {
-  background: var(--brand-primary-light) !important;
-  color: var(--bg-light-1) !important;
-  border: 2px solid var(--brand-primary-light) !important;
-}
+/* Update primary button styling to match home page Contact Me button - migrated to main-theme.css */
 
 /* Custom form input styling */
 .form-input-tall {
@@ -3269,8 +3105,4 @@ body:not(.dark) .button.primary:hover {
   color: var(--dark-text);
 }
 
-/* Ensure primary button with w-full spans full width */
-.button.primary.w-full {
-  width: 100% !important;
-  max-width: 100% !important;
-}
+/* Ensure primary button with w-full spans full width - migrated to main-theme.css */

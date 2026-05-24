@@ -92,3 +92,176 @@
 .dark .form-label {
   color: var(--dark-accent);
 }
+
+/* Button styles */
+.button {
+  display: inline-block;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, var(--brand-primary-dark) 0%, var(--brand-primary-light) 100%);
+  color: var(--bg-light-1);
+  border: none;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px var(--shadow-green);
+  position: relative;
+  overflow: hidden;
+}
+
+.button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(45, 90, 45, 0.4);
+  text-decoration: none;
+  color: var(--bg-light-1);
+}
+
+.button:hover::before {
+  left: 100%;
+}
+
+.button:active {
+  transform: translateY(-1px);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--brand-primary-dark);
+  outline-offset: 2px;
+}
+
+.dark .button:focus-visible {
+  outline-color: var(--dark-accent);
+}
+
+.button.primary {
+  background: linear-gradient(135deg, var(--brand-primary-dark) 0%, var(--brand-primary-light) 100%);
+  color: var(--bg-light-1);
+}
+
+.button.secondary {
+  background: transparent;
+  color: var(--brand-primary-darker);
+  border: 2px solid var(--brand-primary-dark);
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(45, 90, 45, 0.1);
+  display: inline-block;
+  text-align: center;
+  min-width: 150px;
+}
+
+.button.secondary:hover {
+  background: var(--brand-primary-dark);
+  color: var(--bg-light-1);
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  text-decoration: none;
+}
+
+/* Dark mode button styles */
+.dark .button.primary {
+  background: linear-gradient(135deg, var(--dark-accent) 0%, var(--dark-accent-bright) 100%);
+  color: var(--dark-text-darker);
+}
+
+.dark .button.secondary {
+  color: var(--dark-text-darker);
+  border-color: var(--dark-accent);
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(134, 239, 172, 0.1);
+  display: inline-block;
+  text-align: center;
+  min-width: 150px;
+}
+
+.dark .button.secondary:hover {
+  background: var(--dark-accent);
+  color: var(--dark-text-darker);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(134, 239, 172, 0.3);
+  text-decoration: none;
+}
+
+.dark .button {
+  background: linear-gradient(135deg, var(--dark-accent) 0%, var(--dark-accent-bright) 100%);
+  color: var(--dark-text-darker);
+}
+
+.dark .button:hover {
+  background: linear-gradient(135deg, var(--dark-accent-bright) 0%, #5eead4 100%);
+}
+
+.dark .content .button.secondary {
+  background: transparent;
+  color: var(--dark-text-darker);
+  border-color: var(--dark-accent);
+}
+
+.dark .content .button.secondary:hover {
+  background: var(--dark-accent);
+  color: var(--dark-text-darker);
+}
+
+body.dark .button.primary {
+  background: var(--button-hover-light);
+  color: var(--dark-text-darker);
+  border: 2px solid var(--button-hover-light);
+}
+
+body.dark .button.primary:hover {
+  background: var(--button-hover-light);
+  color: var(--dark-text-darker);
+  border: 2px solid var(--button-hover-light);
+}
+
+body:not(.dark) .button.primary {
+  background: var(--brand-primary-light);
+  color: var(--bg-light-1);
+  border: 2px solid var(--brand-primary-light);
+}
+
+body:not(.dark) .button.primary:hover {
+  background: var(--brand-primary-light);
+  color: var(--bg-light-1);
+  border: 2px solid var(--brand-primary-light);
+}
+
+/* Mobile nav button */
+.mobile-nav-button {
+  background-color: var(--bg-white);
+  color: var(--brand-primary-dark);
+  border: none;
+}
+
+.dark .mobile-nav-button {
+  background-color: var(--dark-bg-1);
+  color: var(--dark-text);
+  border: none;
+}
+
+/* Ensure primary button with w-full spans full width */
+.button.primary.w-full {
+  width: 100%;
+  max-width: 100%;
+}
