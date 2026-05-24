@@ -121,6 +121,7 @@ async function fetchStadiumsWithMatchCountsFromDB(): Promise<StadiumWithMatchCou
   return stadiumsWithCounts;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchMatchesAtStadiumFromDB(stadiumSlug: string): Promise<any[]> {
   const { data, error } = await supabase
     .from('matches_with_stadium')
@@ -205,11 +206,12 @@ export async function invalidateStadiumCache(stadiumId?: string, stadiumSlug?: s
 }
 
 export async function invalidateAllStadiumCaches() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const cacheKeys = [
     'stadiums',
     'stadium-names'
   ];
-  
+
 }
 
 export function getCurrentStadiumName(stadiumNames: StadiumName[], date?: Date): string | null {

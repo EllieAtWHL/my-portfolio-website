@@ -33,6 +33,7 @@ const PODCAST_FEEDS: PodcastFeed[] = [
   }
 ];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchRSSFeed(url: string, feedUrl: string): Promise<any> {
   try {
     const response = await fetch(url, {
