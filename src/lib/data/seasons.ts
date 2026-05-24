@@ -1,5 +1,6 @@
 import { supabase } from '@/utils/supabase';
-import { createCachedFunction, CACHE_TTL, CACHE_TAGS, CACHE_KEYS } from './cache-utils';
+import { createCachedFunction, CACHE_TTL, CACHE_TAGS } from './cache-utils';
+import { getSeasonMatches } from './matches';
 
 export interface Season {
   id: number;
@@ -8,6 +9,15 @@ export interface Season {
 
 export interface SeasonWithMatchCount extends Season {
   match_count?: number;
+}
+
+export interface SeasonStatsData {
+  seasonId: number;
+  seasonName: string;
+  winPercentage: number;
+  goalsPerGame: number;
+  goalsConcededPerGame: number;
+  attendancePercentage: number;
 }
 
 export interface SeasonReview {
@@ -167,3 +177,65 @@ export async function getSeasonDetails(seasonId: string) {
 export async function getSeasonReviewDetails(seasonId: string) {
   return getSeasonReview(seasonId);
 }
+
+async function fetchAllSeasonStatsFromDB(): Promise<SeasonStatsData[]> {
+  const seasons = await fetchSeasonsFromDB();
+  
+  const statsData = await Promise.all(
+    seasons.map(async (season) => {
+      const matches = await getSeasonMatches(season.id.toString());
+      
+      // Filter for league matches (WSL) with scores
+      const leagueMatches = matches.filter(match => {
+        const hasScore = match.spurs_score !== null && match.opponent_score !== null;
+        const isWSL = match.competitions?.name?.toLowerCase().includes('super league');
+        return hasScore && isWSL;
+      });
+      
+      // Filter for cup matches (competitive but not WSL or friendly)
+      const cupMatches = matches.filter(match => 
+        match.spurs_score !== null && 
+        match.opponent_score !== null &&
+        match.competitions?.name &&
+        !match.competitions.name.toLowerCase().includes('super league') &&
+        !match.competitions.name.toLowerCase().includes('friendly')
+      );
+      
+      const totalMatches = leagueMatches.length;
+      const wins = leagueMatches.filter(match => match.spurs_score! > match.opponent_score!).length;
+      const winPercentage = totalMatches > 0 ? (wins / totalMatches) * 100 : 0;
+      
+      const goalsScored = leagueMatches.reduce((sum, match) => sum + (match.spurs_score || 0), 0);
+      const goalsConceded = leagueMatches.reduce((sum, match) => sum + (match.opponent_score || 0), 0);
+      const goalsPerGame = totalMatches > 0 ? goalsScored / totalMatches : 0;
+      const goalsConcededPerGame = totalMatches > 0 ? goalsConceded / totalMatches : 0;
+      
+      // Attendance calculation (all competitive matches)
+      const allCompetitiveMatches = [...leagueMatches, ...cupMatches];
+      const attendedMatches = allCompetitiveMatches.filter(match => match.attended).length;
+      const attendancePercentage = allCompetitiveMatches.length > 0 
+        ? (attendedMatches / allCompetitiveMatches.length) * 100 
+        : 0;
+      
+      return {
+        seasonId: season.id,
+        seasonName: season.name,
+        winPercentage,
+        goalsPerGame,
+        goalsConcededPerGame,
+        attendancePercentage
+      };
+    })
+  );
+  
+  return statsData;
+}
+
+export const getAllSeasonStats = createCachedFunction(
+  fetchAllSeasonStatsFromDB,
+  {
+    keyParts: ['seasons', 'all-stats'],
+    tags: [CACHE_TAGS.SEASONS],
+    revalidate: CACHE_TTL.STATIC_CONTENT,
+  }
+);

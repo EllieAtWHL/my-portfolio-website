@@ -1,8 +1,9 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { Card } from '@/components/Card';
-import { getSeasonsWithMatchCounts } from '@/lib/data/seasons';
+import { getSeasonsWithMatchCounts, getAllSeasonStats } from '@/lib/data/seasons';
 import { SeasonWithMatchCount } from '@/lib/data/seasons';
+import SeasonStatsChart from '@/components/spurs-women/SeasonStatsChart';
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
@@ -14,10 +15,17 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function SeasonsPage() {
   // Fetch seasons server-side with caching
   const seasons = await getSeasonsWithMatchCounts();
+  const seasonStats = await getAllSeasonStats();
 
   return (
     <main className="p-8">
       <h1 className="spurs-text text-3xl font-bold mb-6">Seasons</h1>
+      
+      {/* Season Stats Chart */}
+      <div className="mb-8">
+        <SeasonStatsChart stats={seasonStats} />
+      </div>
+      
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {seasons.map((season: SeasonWithMatchCount) => (
           <Link
