@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getPlayerById } from '@/lib/data/players';
 import PlayerClient from './PlayerClient';
+import { generatePageMetadata } from '@/lib/metadata';
 
 interface PageProps {
   params: Promise<{
@@ -14,19 +15,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const player = await getPlayerById(playerId);
   
   if (!player) {
-    return {
-      title: 'Player Not Found - Tottenham Hotspur Women',
-    };
+    return generatePageMetadata(
+      'Player Not Found - Tottenham Hotspur Women',
+      'The requested player could not be found'
+    );
   }
 
   const playerName = player.first_name && player.last_name 
     ? `${player.first_name} ${player.last_name}`
     : player.last_name || 'Player';
 
-  return {
-    title: `${playerName} - Tottenham Hotspur Women`,
-    description: `Player profile for ${playerName} - Tottenham Hotspur Women`,
-  };
+  return generatePageMetadata(
+    `${playerName} - Tottenham Hotspur Women`,
+    `Player profile for ${playerName} - Tottenham Hotspur Women`
+  );
 }
 
 export default async function PlayerPage({ params }: PageProps) {

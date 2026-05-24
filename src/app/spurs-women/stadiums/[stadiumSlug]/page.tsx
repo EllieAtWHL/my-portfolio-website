@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getStadiumBySlug } from '@/lib/data/stadiums';
 import StadiumClient from './StadiumClient';
+import { generatePageMetadata } from '@/lib/metadata';
 
 interface PageProps {
   params: Promise<{
@@ -14,15 +15,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const stadium = await getStadiumBySlug(stadiumSlug);
   
   if (!stadium) {
-    return {
-      title: 'Stadium Not Found - Tottenham Hotspur Women',
-    };
+    return generatePageMetadata(
+      'Stadium Not Found - Tottenham Hotspur Women',
+      'The requested stadium could not be found'
+    );
   }
 
-  return {
-    title: `${stadium.name} - Tottenham Hotspur Women`,
-    description: `Matches and details for ${stadium.name} - Tottenham Hotspur Women`,
-  };
+  return generatePageMetadata(
+    `${stadium.name} - Tottenham Hotspur Women`,
+    `Matches and details for ${stadium.name} - Tottenham Hotspur Women`
+  );
 }
 
 export default async function StadiumPage({ params }: PageProps) {

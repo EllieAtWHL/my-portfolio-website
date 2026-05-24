@@ -4,12 +4,13 @@ import { Card } from '@/components/Card';
 import { getSeasonsWithMatchCounts, getAllSeasonStats } from '@/lib/data/seasons';
 import { SeasonWithMatchCount } from '@/lib/data/seasons';
 import SeasonStatsChart from '@/components/spurs-women/SeasonStatsChart';
+import { generatePageMetadata } from '@/lib/metadata';
 
 export async function generateMetadata(): Promise<Metadata> {
-  return {
-    title: 'Seasons - Tottenham Hotspur Women',
-    description: 'Browse all seasons of Tottenham Hotspur Women matches and statistics',
-  };
+  return generatePageMetadata(
+    'Seasons - Tottenham Hotspur Women',
+    'Browse all seasons of Tottenham Hotspur Women matches and statistics'
+  );
 }
 
 export default async function SeasonsPage() {

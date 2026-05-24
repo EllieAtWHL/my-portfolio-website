@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import SeasonFilterClient from './SeasonFilterClient';
 import { getMatchesBySeason, getSeasonDetails, getSeasonReviewDetails } from '@/lib/data';
+import { generatePageMetadata } from '@/lib/metadata';
 
 interface SeasonDetailPageProps {
   params: {
@@ -12,9 +13,10 @@ export async function generateMetadata({ params }: SeasonDetailPageProps) {
   const seasonId = (await params).seasonId;
   const season = await getSeasonDetails(seasonId);
   
-  return {
-    title: season ? `${season.name} - Tottenham Hotspur Women` : 'Season Details - Tottenham Hotspur Women',
-  };
+  return generatePageMetadata(
+    season ? `${season.name} - Tottenham Hotspur Women` : 'Season Details - Tottenham Hotspur Women',
+    season ? `View matches and statistics for ${season.name}` : 'Season details for Tottenham Hotspur Women'
+  );
 }
 
 export default async function SeasonDetailPage({ params }: SeasonDetailPageProps) {

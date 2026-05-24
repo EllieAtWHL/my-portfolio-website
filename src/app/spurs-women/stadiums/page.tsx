@@ -2,12 +2,13 @@ import { Metadata } from 'next';
 import { Card } from '@/components/Card';
 import { getStadiumsWithMatchCounts, StadiumWithMatchCount, getStadiumNames, getCurrentStadiumName } from '@/lib/data/stadiums';
 import Link from 'next/link';
+import { generatePageMetadata } from '@/lib/metadata';
 
 export async function generateMetadata(): Promise<Metadata> {
-  return {
-    title: 'Stadiums - Tottenham Hotspur Women',
-    description: 'Browse all stadiums where Tottenham Hotspur Women have played',
-  };
+  return generatePageMetadata(
+    'Stadiums - Tottenham Hotspur Women',
+    'Browse all stadiums where Tottenham Hotspur Women have played'
+  );
 }
 
 export default async function StadiumsPage() {

@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTeamById } from '@/lib/data/teams';
 import TeamClient from './TeamClient';
+import { generatePageMetadata } from '@/lib/metadata';
 
 interface PageProps {
   params: Promise<{
@@ -14,15 +15,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const team = await getTeamById(teamId);
   
   if (!team) {
-    return {
-      title: 'Team Not Found - Tottenham Hotspur Women',
-    };
+    return generatePageMetadata(
+      'Team Not Found - Tottenham Hotspur Women',
+      'The requested team could not be found'
+    );
   }
 
-  return {
-    title: `${team.name} - Tottenham Hotspur Women`,
-    description: `Matches and players for ${team.name} - Tottenham Hotspur Women`,
-  };
+  return generatePageMetadata(
+    `${team.name} - Tottenham Hotspur Women`,
+    `Matches and players for ${team.name} - Tottenham Hotspur Women`
+  );
 }
 
 export default async function TeamPage({ params }: PageProps) {

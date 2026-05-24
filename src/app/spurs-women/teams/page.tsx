@@ -3,12 +3,13 @@ import { Card } from '@/components/Card';
 import { getTeamsWithMatchCounts, TeamWithMatchCount } from '@/lib/data';
 import Link from 'next/link';
 import TeamPill from '@/components/spurs-women/TeamPill';
+import { generatePageMetadata } from '@/lib/metadata';
 
 export async function generateMetadata(): Promise<Metadata> {
-  return {
-    title: 'Teams - Tottenham Hotspur Women',
-    description: 'Browse all teams that have played against Tottenham Hotspur Women',
-  };
+  return generatePageMetadata(
+    'Teams - Tottenham Hotspur Women',
+    'Browse all teams that have played against Tottenham Hotspur Women'
+  );
 }
 
 export default async function TeamsPage() {

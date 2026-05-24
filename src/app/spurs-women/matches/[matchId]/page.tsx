@@ -13,6 +13,7 @@ import MatchNavigation from '@/components/spurs-women/MatchNavigation';
 import TeamLineup from '@/components/spurs-women/TeamLineup';
 import { Media } from '@/lib/data/media';
 import { PhotoMedia } from '@/lib/data/media';
+import { generatePageMetadata } from '@/lib/metadata';
 
 
 interface PageProps {
@@ -26,19 +27,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const match = await getMatchById(matchId);
   
   if (!match) {
-    return {
-      title: 'Match Not Found - Tottenham Hotspur Women',
-    };
+    return generatePageMetadata(
+      'Match Not Found - Tottenham Hotspur Women',
+      'The requested match could not be found'
+    );
   }
 
   const homeTeam = match.home_team?.name || 'Home Team';
   const awayTeam = match.away_team?.name || 'Away Team';
   const matchDate = match.date ? new Date(match.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
 
-  return {
-    title: `${homeTeam} vs ${awayTeam} (${matchDate}) - Tottenham Hotspur Women`,
-    description: `Match details for ${homeTeam} vs ${awayTeam} on ${matchDate}`,
-  };
+  return generatePageMetadata(
+    `${homeTeam} vs ${awayTeam} (${matchDate}) - Tottenham Hotspur Women`,
+    `Match details for ${homeTeam} vs ${awayTeam} on ${matchDate}`
+  );
 }
 
 export default async function MatchDetailPage({ params }: PageProps) {
