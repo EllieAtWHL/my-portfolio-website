@@ -1,0 +1,564 @@
+/* 404 Not Found Page Styles - Main Site (Green Theme with Football Game) */
+
+.not-found-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--bg-light-1);
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.dark .not-found-container {
+  background: var(--dark-bg-1);
+}
+
+.not-found-content {
+  text-align: center;
+  position: absolute;
+  top: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  max-width: 600px;
+}
+
+.not-found-game-info {
+  bottom: 5%;
+  top: auto;
+}
+
+/* Goal Post */
+.goal-post {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 450px;
+  height: 150px;
+}
+
+.post {
+  position: absolute;
+  width: 12px;
+  background: #c8c8c8;
+  border-radius: 6px;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.left-post {
+  left: 0;
+  bottom: 0;
+  height: 100%;
+}
+
+.right-post {
+  right: 0;
+  bottom: 0;
+  height: 100%;
+}
+
+.crossbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 12px;
+  background: #c8c8c8;
+  border-radius: 6px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.net {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  bottom: 0;
+  background: 
+    linear-gradient(rgba(255, 255, 255, 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.3) 1px, transparent 1px),
+    var(--brand-opacity-10);
+  background-size: 8px 8px;
+  border-radius: 0 0 4px 4px;
+}
+
+.dark .net {
+  background: 
+    linear-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.2) 1px, transparent 1px),
+    var(--spurs-opacity-15);
+  background-size: 8px 8px;
+}
+
+/* Football */
+.football {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  font-size: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 50%;
+  left: 50%;
+  cursor: grab;
+  transition: transform 0.1s ease;
+  z-index: 20;
+  user-select: none;
+}
+
+.football:active {
+  cursor: grabbing;
+}
+
+.football.dragging {
+  cursor: grabbing;
+  transform: scale(1.1);
+}
+
+.football.flying {
+  cursor: default;
+}
+
+/* Goal message */
+.goal-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--brand-primary-dark);
+  text-shadow: 0 0 20px var(--brand-primary-light);
+  animation: goal-pop 0.5s ease-out;
+  z-index: 30;
+}
+
+.dark .goal-message {
+  color: var(--dark-accent);
+  text-shadow: 0 0 20px var(--dark-accent-bright);
+}
+
+/* Miss message */
+.miss-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--brand-primary-dark);
+  text-shadow: 0 0 20px var(--brand-primary-light);
+  animation: miss-pop 0.5s ease-out;
+  z-index: 30;
+}
+
+.dark .miss-message {
+  color: var(--dark-accent);
+  text-shadow: 0 0 20px var(--dark-accent-bright);
+}
+
+/* Target in goal */
+.target {
+  position: absolute;
+  width: 20%;
+  height: 10%;
+  border: 3px solid var(--brand-primary-dark);
+  border-radius: 50%;
+  opacity: 0.3;
+  z-index: 5;
+  transition: all 0.3s ease-out;
+}
+
+.target::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40%;
+  height: 40%;
+  border: 2px solid var(--brand-primary-dark);
+  border-radius: 50%;
+}
+
+.target::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10%;
+  height: 10%;
+  background: var(--brand-primary-dark);
+  border-radius: 50%;
+}
+
+.dark .target {
+  border-color: var(--dark-accent);
+}
+
+.dark .target::before {
+  border-color: var(--dark-accent);
+}
+
+.dark .target::after {
+  background: var(--dark-accent);
+}
+
+/* Bullseye message */
+.bullseye-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--brand-primary-dark);
+  text-shadow: 0 0 20px var(--brand-primary-light);
+  animation: bullseye-pop 0.5s ease-out;
+  z-index: 35;
+}
+
+.dark .bullseye-message {
+  color: var(--dark-accent);
+  text-shadow: 0 0 20px var(--dark-accent-bright);
+}
+
+@keyframes bullseye-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.3);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes goal-pop {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes miss-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.football-pattern {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--brand-primary-dark);
+  opacity: 0.2;
+}
+
+@keyframes bounce-ball {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes kick-animation {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Typography */
+.not-found-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.not-found-title {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 700;
+  margin: 0;
+  color: var(--brand-primary-dark);
+  text-shadow: 2px 2px 4px var(--shadow-dark);
+  animation: slide-down 1s ease-out;
+  margin-right: 1rem;
+}
+
+.dark .not-found-title {
+  color: var(--dark-accent);
+}
+
+.not-found-subtitle {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 600;
+  color: var(--brand-primary-dark);
+  margin: 0;
+  animation: slide-down 1s ease-out 0.2s forwards;
+  opacity: 0;
+}
+
+.dark .not-found-subtitle {
+  color: var(--dark-accent);
+}
+
+.not-found-message {
+  font-size: 1.1rem;
+  color: var(--brand-primary-darker);
+  margin: 0 0 2rem;
+  line-height: 1.6;
+  animation: slide-down 1s ease-out 0.4s forwards;
+  opacity: 0;
+}
+
+.dark .not-found-message {
+  color: var(--dark-text);
+}
+
+/* Score display */
+.score-display {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--brand-primary-dark);
+  margin: 0 0 0.5rem;
+  animation: slide-down 1s ease-out 0.5s forwards;
+  opacity: 0;
+}
+
+.dark .score-display {
+  color: var(--dark-accent);
+}
+
+.score-number {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--brand-primary-darker);
+}
+
+.dark .score-number {
+  color: var(--dark-accent-bright);
+}
+
+.game-hint {
+  font-size: 0.9rem;
+  color: var(--brand-primary-darker);
+  margin: 0 0 1.5rem;
+  animation: slide-down 1s ease-out 0.55s forwards;
+  opacity: 0;
+}
+
+.dark .game-hint {
+  color: var(--dark-text);
+}
+
+@keyframes slide-down {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .goal-post {
+    width: 200px;
+    height: 133px;
+  }
+  
+  .not-found-title {
+    font-size: clamp(3rem, 12vw, 5rem);
+  }
+  
+  .not-found-subtitle {
+    font-size: clamp(1.2rem, 3vw, 1.5rem);
+  }
+  
+  .not-found-message {
+    font-size: 1rem;
+  }
+}
+
+/* Spurs Women 404 Page Styles - With Football Game */
+.spurs-not-found-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--spurs-bg-light-1);
+  padding: 2rem;
+  overflow: hidden;
+  z-index: 9999;
+}
+
+.dark .spurs-not-found-container {
+  background: var(--spurs-dark-bg-1);
+}
+
+.spurs-not-found-content {
+  text-align: center;
+  position: absolute;
+  bottom: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  max-width: 600px;
+}
+
+/* Goal Post for Spurs Women */
+.spurs-goal .goal-post {
+  width: 450px;
+  height: 150px;
+}
+
+.spurs-goal .post {
+  width: 10px;
+  border-radius: 5px;
+}
+
+.spurs-goal .crossbar {
+  height: 10px;
+  border-radius: 5px;
+}
+
+.spurs-goal .net.spurs-net {
+  background: var(--spurs-opacity-15);
+}
+
+/* Football for Spurs Women */
+.spurs-football {
+  cursor: grab;
+}
+
+.spurs-football:active {
+  cursor: grabbing;
+}
+
+.spurs-football.dragging {
+  cursor: grabbing;
+  transform: scale(1.1);
+}
+
+.spurs-football.flying {
+  cursor: default;
+}
+
+.spurs-football-pattern {
+  background: var(--spurs-primary-dark);
+  opacity: 0.2;
+}
+
+/* Spurs Women Typography with animations */
+.spurs-title {
+  color: var(--spurs-primary-dark);
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 700;
+  animation: slide-down 1s ease-out;
+  display: inline;
+  margin-right: 1rem;
+}
+
+.dark .spurs-title {
+  color: var(--spurs-dark-accent);
+}
+
+.spurs-subtitle {
+  color: var(--spurs-primary-dark);
+  animation: slide-down 1s ease-out 0.2s forwards;
+  opacity: 0;
+  display: inline;
+}
+
+.dark .spurs-subtitle {
+  color: var(--spurs-dark-accent);
+}
+
+.spurs-message {
+  color: var(--spurs-primary-darker);
+  animation: slide-down 1s ease-out 0.4s forwards;
+  opacity: 0;
+}
+
+.dark .spurs-message {
+  color: var(--spurs-dark-text);
+}
+
+.spurs-score {
+  color: var(--spurs-primary-dark);
+  animation: slide-down 1s ease-out 0.5s forwards;
+  opacity: 0;
+}
+
+.dark .spurs-score {
+  color: var(--spurs-dark-accent);
+}
+
+.spurs-score-number {
+  color: var(--spurs-primary-darker);
+}
+
+.dark .spurs-score-number {
+  color: var(--spurs-dark-accent-bright);
+}
+
+.spurs-hint {
+  color: var(--spurs-primary-darker);
+  animation: slide-down 1s ease-out 0.55s forwards;
+  opacity: 0;
+}
+
+.dark .spurs-hint {
+  color: var(--spurs-dark-text);
+}
+
+.spurs-goal-message {
+  color: var(--spurs-primary-dark);
+  text-shadow: 0 0 20px var(--spurs-primary-light);
+}
+
+.dark .spurs-goal-message {
+  color: var(--spurs-dark-accent);
+  text-shadow: 0 0 20px var(--spurs-dark-accent-bright);
+}
