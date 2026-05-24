@@ -23,6 +23,7 @@ export interface PlayerStats {
   match_id: string;
   team_id: number;
   started: boolean;
+  captain: boolean;
   was_substitute: boolean;
   was_unused_substitute: boolean;
   minute_on: number | null;
