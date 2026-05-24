@@ -8,7 +8,7 @@ interface ApiResponse {
 // Generic API call function for admin operations
 export async function callAdminApi(
   endpoint: string,
-  method: 'POST' | 'GET' = 'POST',
+  method: 'POST' | 'GET' | 'DELETE' = 'POST',
   payload?: any
 ): Promise<ApiResponse> {
   try {
@@ -48,10 +48,6 @@ export async function createEntityAndReload<T>(
     if (reloadResponse.data) {
       setData(reloadResponse.data);
     }
-    
-    // Show success message
-    const entityName = endpoint.replace('-', ' ').replace(/\b\w/g, char => char.toUpperCase() + char.slice(1));
-    console.log(`${entityName} created successfully`);
   } catch (error) {
     console.error(`Error creating ${endpoint}:`, error);
     throw error;

@@ -49,10 +49,10 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    const { data, error } = await supabaseAdmin.from('matches').insert(body).select();
+    const { data, error: insertError } = await supabaseAdmin.from('matches').insert(body).select();
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+    if (insertError) {
+      return NextResponse.json({ error: insertError.message }, { status: 400 });
     }
 
     return NextResponse.json({ data, message: 'Match created successfully' });
@@ -75,8 +75,14 @@ export async function GET() {
     }
 
     const { data, error } = await supabaseAdmin
-      .from('matches')
-      .select('*')
+      .from('matches_with_stadium')
+      .select(`
+        *,
+        spurs_score_aet,
+        opponent_score_aet,
+        spurs_score_pens,
+        opponent_score_pens
+      `)
       .order('date', { ascending: false });
 
     if (error) {
@@ -84,6 +90,74 @@ export async function GET() {
     }
 
     return NextResponse.json({ data });
+  } catch (error) {
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    const user = await getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const adminEmail = process.env.ADMIN_EMAIL;
+    if (!adminEmail || user.email !== adminEmail) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const body = await request.json();
+    const { id, ...updateData } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: 'ID is required' }, { status: 400 });
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('matches')
+      .update(updateData)
+      .eq('id', id)
+      .select();
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    return NextResponse.json({ data, message: 'Match updated successfully' });
+  } catch (error) {
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const user = await getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const adminEmail = process.env.ADMIN_EMAIL;
+    if (!adminEmail || user.email !== adminEmail) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const body = await request.json();
+    const { id } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: 'ID is required' }, { status: 400 });
+    }
+
+    const { error } = await supabaseAdmin.from('matches').delete().eq('id', id);
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    return NextResponse.json({ success: true, message: 'Match deleted successfully' });
   } catch (error) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

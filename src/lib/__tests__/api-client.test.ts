@@ -160,7 +160,6 @@ describe('API Client Utils', () => {
         body: undefined,
       });
       expect(setDataMock).toHaveBeenCalledWith([{ id: 1 }, { id: 2 }]);
-      expect(consoleLogSpy).toHaveBeenCalledWith('Test Endpoint created successfully');
     });
 
     it('should handle create error', async () => {
@@ -222,8 +221,6 @@ describe('API Client Utils', () => {
         });
 
       await createEntityAndReload('player-stats', { name: 'Test' }, 'reload-endpoint', setDataMock);
-
-      expect(consoleLogSpy).toHaveBeenCalledWith('Player Stats created successfully');
     });
   });
 });
