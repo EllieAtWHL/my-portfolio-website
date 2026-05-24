@@ -1,4 +1,5 @@
-import { Button } from '@/components/Button';
+import { FormWrapper } from './FormWrapper';
+import { FormField, TextInput, NumberInput, SelectInput } from './FormField';
 
 interface Team {
   id: number;
@@ -45,117 +46,67 @@ export function PlayerHistoryForm({
   onCancel,
 }: PlayerHistoryFormProps) {
   return (
-    <div className="spurs-accent-card rounded-lg p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold spurs-text">
-          {isEditMode ? 'Edit Player History' : 'Add New Player History'}
-        </h2>
-        {isEditMode && (
-          <div className="flex gap-2">
-            <Button
-              variant="spurs"
-              size="sm"
-              onClick={onDelete}
-            >
-              Delete
-            </Button>
-            <Button
-              variant="spurs"
-              size="sm"
-              onClick={onCancel}
-            >
-              Cancel
-            </Button>
-          </div>
-        )}
-      </div>
-      
-      <form onSubmit={onSubmit} className="space-y-6">
+    <FormWrapper
+      title="Player History"
+      isEditMode={isEditMode}
+      editingId={playerHistoryForm.id}
+      loading={loading}
+      onSubmit={onSubmit}
+      onDelete={onDelete}
+      onCancel={onCancel}
+    >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="player-history-player">Player <span style={{ color: 'var(--spurs-dark-accent)' }} aria-hidden="true">*</span></label>
-            <select
+          <FormField label="Player" required htmlFor="player-history-player">
+            <SelectInput
               id="player-history-player"
               name="player_id"
               value={playerHistoryForm.player_id || ''}
-              onChange={(e) => setPlayerHistoryForm({ ...playerHistoryForm, player_id: e.target.value })}
+              onChange={(value) => setPlayerHistoryForm({ ...playerHistoryForm, player_id: value as string })}
+              options={players.map(player => ({ value: player.id, label: `${player.first_name} ${player.last_name}` }))}
               required
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-              aria-required="true"
-            >
-              <option value="">Select player</option>
-              {players.map(player => (
-                <option key={player.id} value={player.id}>
-                  {player.first_name} {player.last_name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="player-history-team">Team <span style={{ color: 'var(--spurs-dark-accent)' }} aria-hidden="true">*</span></label>
-            <select
+              placeholder="Select player"
+            />
+          </FormField>
+          <FormField label="Team" required htmlFor="player-history-team">
+            <SelectInput
               id="player-history-team"
               name="team_id"
               value={playerHistoryForm.team_id?.toString() || ''}
-              onChange={(e) => setPlayerHistoryForm({ ...playerHistoryForm, team_id: parseInt(e.target.value) })}
+              onChange={(value) => setPlayerHistoryForm({ ...playerHistoryForm, team_id: parseInt(value) })}
+              options={teams.map(team => ({ value: team.id, label: `${team.name} ${team.is_tottenham ? '(Default)' : ''}` }))}
               required
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-              aria-required="true"
-            >
-              <option value="">Select team</option>
-              {teams.map(team => (
-                <option key={team.id} value={team.id}>
-                  {team.name} {team.is_tottenham && '(Default)'}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="player-history-joined">Joined On <span className="text-gray-400">(optional)</span></label>
-            <input
+              placeholder="Select team"
+            />
+          </FormField>
+          <FormField label="Joined On" htmlFor="player-history-joined">
+            <TextInput
               id="player-history-joined"
               name="joined_on"
               type="date"
               value={playerHistoryForm.joined_on || ''}
-              onChange={(e) => setPlayerHistoryForm({ ...playerHistoryForm, joined_on: e.target.value || null })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              onChange={(value) => setPlayerHistoryForm({ ...playerHistoryForm, joined_on: value })}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="player-history-left">Left On <span className="text-gray-400">(optional)</span></label>
-            <input
+          </FormField>
+          <FormField label="Left On" htmlFor="player-history-left">
+            <TextInput
               id="player-history-left"
               name="left_on"
               type="date"
               value={playerHistoryForm.left_on || ''}
-              onChange={(e) => setPlayerHistoryForm({ ...playerHistoryForm, left_on: e.target.value || null })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              onChange={(value) => setPlayerHistoryForm({ ...playerHistoryForm, left_on: value })}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="player-history-squad">Squad Number <span className="text-gray-400">(optional)</span></label>
-            <input
+          </FormField>
+          <FormField label="Squad Number" htmlFor="player-history-squad">
+            <NumberInput
               id="player-history-squad"
               name="squad_number"
-              type="number"
-              min="1"
-              max="99"
-              value={playerHistoryForm.squad_number ?? ''}
-              onChange={(e) => setPlayerHistoryForm({ ...playerHistoryForm, squad_number: e.target.value ? parseInt(e.target.value) : null })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              min={1}
+              max={99}
+              value={playerHistoryForm.squad_number ?? null}
+              onChange={(value) => setPlayerHistoryForm({ ...playerHistoryForm, squad_number: value })}
             />
-          </div>
+          </FormField>
         </div>
-        <Button
-          type="submit"
-          variant="spurs"
-          disabled={loading}
-          loading={loading}
-          fullWidth
-        >
-          {loading ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Player History' : 'Create Player History')}
-        </Button>
-      </form>
-    </div>
+      </FormWrapper>
   );
 }

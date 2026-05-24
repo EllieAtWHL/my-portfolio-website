@@ -1,4 +1,5 @@
-import { Button } from '@/components/Button';
+import { FormWrapper } from './FormWrapper';
+import { FormField, TextInput, SelectInput } from './FormField';
 
 interface Stadium {
   id: string;
@@ -40,87 +41,54 @@ export function StadiumNameForm({
   onCancel,
 }: StadiumNameFormProps) {
   return (
-    <div className="spurs-accent-card rounded-lg p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold spurs-text">
-          {isStadiumNameEditMode && editingStadiumNameId ? 'Edit Stadium Name' : 'Add New Stadium Name'}
-        </h2>
-        {isStadiumNameEditMode && editingStadiumNameId && (
-          <div className="flex gap-2">
-            <Button
-              variant="spurs"
-              size="sm"
-              onClick={onDelete}
-            >
-              Delete
-            </Button>
-            <Button
-              variant="spurs"
-              size="sm"
-              onClick={onCancel}
-            >
-              Cancel
-            </Button>
-          </div>
-        )}
-      </div>
-      
-      <form onSubmit={onSubmit} className="space-y-6">
+    <FormWrapper
+      title="Stadium Name"
+      isEditMode={isStadiumNameEditMode}
+      editingId={editingStadiumNameId}
+      loading={loading}
+      onSubmit={onSubmit}
+      onDelete={onDelete}
+      onCancel={onCancel}
+    >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="stadium-name-stadium">Stadium <span style={{ color: 'var(--spurs-dark-accent)' }} aria-hidden="true">*</span></label>
-            <select
+          <FormField label="Stadium" required htmlFor="stadium-name-stadium">
+            <SelectInput
               id="stadium-name-stadium"
               name="stadium_id"
               value={stadiumNameForm.stadium_id || ''}
-              onChange={(e) => setStadiumNameForm({ ...stadiumNameForm, stadium_id: e.target.value })}
+              onChange={(value) => setStadiumNameForm({ ...stadiumNameForm, stadium_id: value as string })}
+              options={stadiums.map(stadium => ({ value: stadium.id, label: `${stadium.name} ${stadium.city ? `(${stadium.city})` : ''}` }))}
               required
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-              aria-required="true"
-            >
-              <option value="">Select stadium</option>
-              {stadiums.map(stadium => (
-                <option key={stadium.id} value={stadium.id}>
-                  {stadium.name} {stadium.city && `(${stadium.city})`}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="stadium-name-name">Stadium Name <span style={{ color: 'var(--spurs-dark-accent)' }} aria-hidden="true">*</span></label>
-            <input
+              placeholder="Select stadium"
+            />
+          </FormField>
+          <FormField label="Stadium Name" required htmlFor="stadium-name-name">
+            <TextInput
               id="stadium-name-name"
               name="name"
-              type="text"
               value={stadiumNameForm.name || ''}
-              onChange={(e) => setStadiumNameForm({ ...stadiumNameForm, name: e.target.value })}
+              onChange={(value) => setStadiumNameForm({ ...stadiumNameForm, name: value })}
               required
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-              aria-required="true"
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="stadium-name-valid-from">Valid From <span className="text-gray-400">(optional)</span></label>
-            <input
+          </FormField>
+          <FormField label="Valid From" htmlFor="stadium-name-valid-from">
+            <TextInput
               id="stadium-name-valid-from"
               name="valid_from"
               type="date"
               value={stadiumNameForm.valid_from || ''}
-              onChange={(e) => setStadiumNameForm({ ...stadiumNameForm, valid_from: e.target.value || null })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              onChange={(value) => setStadiumNameForm({ ...stadiumNameForm, valid_from: value })}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="stadium-name-valid-to">Valid To <span className="text-gray-400">(optional)</span></label>
-            <input
+          </FormField>
+          <FormField label="Valid To" htmlFor="stadium-name-valid-to">
+            <TextInput
               id="stadium-name-valid-to"
               name="valid_to"
               type="date"
               value={stadiumNameForm.valid_to || ''}
-              onChange={(e) => setStadiumNameForm({ ...stadiumNameForm, valid_to: e.target.value || null })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              onChange={(value) => setStadiumNameForm({ ...stadiumNameForm, valid_to: value })}
             />
-          </div>
+          </FormField>
         </div>
         <div className="text-sm text-gray-400 mb-4">
           <p>Use this form to add historical stadium names or naming variations. For example:</p>
@@ -130,16 +98,6 @@ export function StadiumNameForm({
             <li>Historical variations</li>
           </ul>
         </div>
-        <Button
-          type="submit"
-          variant="spurs"
-          disabled={loading}
-          loading={loading}
-          fullWidth
-        >
-          {loading ? (isStadiumNameEditMode ? 'Updating...' : 'Creating...') : (isStadiumNameEditMode ? 'Update Stadium Name' : 'Create Stadium Name')}
-        </Button>
-      </form>
-    </div>
+      </FormWrapper>
   );
 }

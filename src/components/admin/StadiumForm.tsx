@@ -1,4 +1,5 @@
-import { Button } from '@/components/Button';
+import { FormWrapper } from './FormWrapper';
+import { FormField, TextInput, NumberInput, SelectInput } from './FormField';
 
 interface Team {
   id: number;
@@ -53,179 +54,114 @@ export function StadiumForm({
   onCancel,
 }: StadiumFormProps) {
   return (
-    <div className="spurs-accent-card rounded-lg p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold spurs-text">
-          {isStadiumEditMode && editingStadiumId ? 'Edit Stadium' : 'Add New Stadium'}
-        </h2>
-        {isStadiumEditMode && editingStadiumId && (
-          <div className="flex gap-2">
-            <Button
-              variant="spurs"
-              size="sm"
-              onClick={onDelete}
-            >
-              Delete
-            </Button>
-            <Button
-              variant="spurs"
-              size="sm"
-              onClick={onCancel}
-            >
-              Cancel
-            </Button>
-          </div>
-        )}
-      </div>
-      
-      <form onSubmit={onSubmit} className="space-y-6">
+    <FormWrapper
+      title="Stadium"
+      isEditMode={isStadiumEditMode}
+      editingId={editingStadiumId}
+      loading={loading}
+      onSubmit={onSubmit}
+      onDelete={onDelete}
+      onCancel={onCancel}
+    >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="stadium-name">Stadium Name <span style={{ color: 'var(--spurs-dark-accent)' }} aria-hidden="true">*</span></label>
-            <input
+          <FormField label="Stadium Name" required htmlFor="stadium-name">
+            <TextInput
               id="stadium-name"
               name="name"
-              type="text"
               value={stadiumForm.name || ''}
-              onChange={(e) => setStadiumForm({ ...stadiumForm, name: e.target.value })}
+              onChange={(value) => setStadiumForm({ ...stadiumForm, name: value })}
               required
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-              aria-required="true"
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="stadium-slug">Slug <span style={{ color: 'var(--spurs-dark-accent)' }} aria-hidden="true">*</span></label>
-            <input
+          </FormField>
+          <FormField label="Slug" required htmlFor="stadium-slug">
+            <TextInput
               id="stadium-slug"
               name="slug"
-              type="text"
               value={stadiumForm.slug || ''}
-              onChange={(e) => setStadiumForm({ ...stadiumForm, slug: e.target.value })}
+              onChange={(value) => setStadiumForm({ ...stadiumForm, slug: value })}
               required
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-              aria-required="true"
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="stadium-city">City <span className="text-gray-400">(optional)</span></label>
-            <input
+          </FormField>
+          <FormField label="City" htmlFor="stadium-city">
+            <TextInput
               id="stadium-city"
               name="city"
-              type="text"
               value={stadiumForm.city || ''}
-              onChange={(e) => setStadiumForm({ ...stadiumForm, city: e.target.value || null })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              onChange={(value) => setStadiumForm({ ...stadiumForm, city: value })}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="stadium-country">Country <span className="text-gray-400">(optional)</span></label>
-            <input
+          </FormField>
+          <FormField label="Country" htmlFor="stadium-country">
+            <TextInput
               id="stadium-country"
               name="country"
-              type="text"
               value={stadiumForm.country || ''}
-              onChange={(e) => setStadiumForm({ ...stadiumForm, country: e.target.value || null })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              onChange={(value) => setStadiumForm({ ...stadiumForm, country: value })}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="stadium-capacity">Capacity <span className="text-gray-400">(optional)</span></label>
-            <input
+          </FormField>
+          <FormField label="Capacity" htmlFor="stadium-capacity">
+            <NumberInput
               id="stadium-capacity"
               name="capacity"
-              type="number"
-              value={stadiumForm.capacity === null || stadiumForm.capacity === undefined ? '' : stadiumForm.capacity}
-              onChange={(e) => setStadiumForm({ ...stadiumForm, capacity: e.target.value !== '' ? parseInt(e.target.value) : null })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              value={stadiumForm.capacity}
+              onChange={(value) => setStadiumForm({ ...stadiumForm, capacity: value })}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="stadium-opened">Opened Date <span className="text-gray-400">(optional)</span></label>
-            <input
+          </FormField>
+          <FormField label="Opened Date" htmlFor="stadium-opened">
+            <TextInput
               id="stadium-opened"
               name="opened_date"
               type="date"
               value={stadiumForm.opened_date || ''}
-              onChange={(e) => setStadiumForm({ ...stadiumForm, opened_date: e.target.value || null })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              onChange={(value) => setStadiumForm({ ...stadiumForm, opened_date: value })}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="stadium-address">Address Line 1 <span className="text-gray-400">(optional)</span></label>
-            <input
+          </FormField>
+          <FormField label="Address Line 1" htmlFor="stadium-address">
+            <TextInput
               id="stadium-address"
               name="address_line_1"
-              type="text"
               value={stadiumForm.address_line_1 || ''}
-              onChange={(e) => setStadiumForm({ ...stadiumForm, address_line_1: e.target.value || null })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              onChange={(value) => setStadiumForm({ ...stadiumForm, address_line_1: value })}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="stadium-postcode">Postcode <span className="text-gray-400">(optional)</span></label>
-            <input
+          </FormField>
+          <FormField label="Postcode" htmlFor="stadium-postcode">
+            <TextInput
               id="stadium-postcode"
               name="postcode"
-              type="text"
               value={stadiumForm.postcode || ''}
-              onChange={(e) => setStadiumForm({ ...stadiumForm, postcode: e.target.value || null })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              onChange={(value) => setStadiumForm({ ...stadiumForm, postcode: value })}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="stadium-home-team">Home Team <span className="text-gray-400">(optional)</span></label>
-            <select
+          </FormField>
+          <FormField label="Home Team" htmlFor="stadium-home-team">
+            <SelectInput
               id="stadium-home-team"
               name="home_team_id"
               value={stadiumForm.home_team_id?.toString() || ''}
-              onChange={(e) => setStadiumForm({ ...stadiumForm, home_team_id: e.target.value ? parseInt(e.target.value) : null })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-            >
-              <option value="">Select team</option>
-              {teams.map(team => (
-                <option key={team.id} value={team.id}>
-                  {team.name}
-                </option>
-              ))}
-            </select>
-          </div>
+              onChange={(value) => setStadiumForm({ ...stadiumForm, home_team_id: value ? parseInt(value) : null })}
+              options={teams.map(team => ({ value: team.id, label: team.name }))}
+              placeholder="Select team"
+            />
+          </FormField>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="stadium-latitude">Latitude <span className="text-gray-400">(optional)</span></label>
-            <input
+          <FormField label="Latitude" htmlFor="stadium-latitude">
+            <NumberInput
               id="stadium-latitude"
               name="latitude"
-              type="number"
               step="any"
-              value={stadiumForm.latitude === null || stadiumForm.latitude === undefined ? '' : stadiumForm.latitude}
-              onChange={(e) => setStadiumForm({ ...stadiumForm, latitude: e.target.value !== '' ? parseFloat(e.target.value) : null })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              value={stadiumForm.latitude}
+              onChange={(value) => setStadiumForm({ ...stadiumForm, latitude: value })}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="stadium-longitude">Longitude <span className="text-gray-400">(optional)</span></label>
-            <input
+          </FormField>
+          <FormField label="Longitude" htmlFor="stadium-longitude">
+            <NumberInput
               id="stadium-longitude"
               name="longitude"
-              type="number"
               step="any"
-              value={stadiumForm.longitude === null || stadiumForm.longitude === undefined ? '' : stadiumForm.longitude}
-              onChange={(e) => setStadiumForm({ ...stadiumForm, longitude: e.target.value !== '' ? parseFloat(e.target.value) : null })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              value={stadiumForm.longitude}
+              onChange={(value) => setStadiumForm({ ...stadiumForm, longitude: value })}
             />
-          </div>
+          </FormField>
         </div>
-        <Button
-          type="submit"
-          variant="spurs"
-          disabled={loading}
-          loading={loading}
-          fullWidth
-        >
-          {loading ? (isStadiumEditMode ? 'Updating...' : 'Creating...') : (isStadiumEditMode ? 'Update Stadium' : 'Create Stadium')}
-        </Button>
-      </form>
-    </div>
+      </FormWrapper>
   );
 }
