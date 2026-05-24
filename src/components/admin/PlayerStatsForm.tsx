@@ -1,5 +1,5 @@
 import { FormWrapper } from './FormWrapper';
-import { FormField, TextInput, NumberInput, SelectInput, RadioGroup } from './FormField';
+import { FormField, NumberInput, SelectInput, RadioGroup } from './FormField';
 import { PlayerStats } from '@/lib/data/players';
 
 interface Team {
@@ -176,6 +176,7 @@ export function PlayerStatsForm({
               min={0}
               max={120}
               value={editingPlayerStats?.minute_on || null}
+              onChange={() => {}}
             />
           </FormField>
           <FormField label="Minute Off" htmlFor="player-stats-minute-off">
@@ -185,6 +186,7 @@ export function PlayerStatsForm({
               min={0}
               max={120}
               value={editingPlayerStats?.minute_off || null}
+              onChange={() => {}}
             />
           </FormField>
           <FormField label="Goals" htmlFor="player-stats-goals">
@@ -193,6 +195,7 @@ export function PlayerStatsForm({
               name="goals"
               min={0}
               value={editingPlayerStats?.goals || 0}
+              onChange={() => {}}
             />
           </FormField>
           <FormField label="Assists" htmlFor="player-stats-assists">
@@ -201,6 +204,7 @@ export function PlayerStatsForm({
               name="assists"
               min={0}
               value={editingPlayerStats?.assists || 0}
+              onChange={() => {}}
             />
           </FormField>
           <FormField label="Yellow Cards" htmlFor="player-stats-yellow-cards">
@@ -209,6 +213,7 @@ export function PlayerStatsForm({
               name="yellow_cards"
               min={0}
               value={editingPlayerStats?.yellow_cards || 0}
+              onChange={() => {}}
             />
           </FormField>
           <FormField label="Red Cards" htmlFor="player-stats-red-cards">
@@ -217,6 +222,7 @@ export function PlayerStatsForm({
               name="red_cards"
               min={0}
               value={editingPlayerStats?.red_cards || 0}
+              onChange={() => {}}
             />
           </FormField>
           <FormField label="Captain?" htmlFor="player-stats-captain">
@@ -225,6 +231,7 @@ export function PlayerStatsForm({
               name="captain"
               value={editingPlayerStats?.captain?.toString() || 'false'}
               options={[{ value: 'false', label: 'No' }, { value: 'true', label: 'Yes' }]}
+              onChange={() => {}}
             />
           </FormField>
           <FormField label="Player of the Match?" htmlFor="player-stats-pom">
@@ -233,6 +240,7 @@ export function PlayerStatsForm({
               name="player_of_the_match"
               value={editingPlayerStats?.player_of_the_match?.toString() || 'false'}
               options={[{ value: 'false', label: 'No' }, { value: 'true', label: 'Yes' }]}
+              onChange={() => {}}
             />
           </FormField>
         </div>

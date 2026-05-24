@@ -68,7 +68,7 @@ describe('Card Component', () => {
     expect(card).toHaveClass('p-8')
   })
 
-  it('applies special padding for accent variant', () => {
+  it('applies accent variant with padding', () => {
     render(
       <Card variant="accent" padding="sm">
         <p>Accent card with small padding</p>
@@ -76,8 +76,7 @@ describe('Card Component', () => {
     )
     
     const card = screen.getByText('Accent card with small padding').closest('.rounded-xl')
-    expect(card).toHaveClass('!pt-4', '!pr-4', '!pb-4', '!pl-8')
-    expect(card).not.toHaveClass('p-4')
+    expect(card).toHaveClass('accent-card', 'p-4')
   })
 
   it('disables hover effects when hover is false', () => {

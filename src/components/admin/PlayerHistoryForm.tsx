@@ -49,7 +49,7 @@ export function PlayerHistoryForm({
     <FormWrapper
       title="Player History"
       isEditMode={isEditMode}
-      editingId={playerHistoryForm.id}
+      editingId={playerHistoryForm.id ?? null}
       loading={loading}
       onSubmit={onSubmit}
       onDelete={onDelete}

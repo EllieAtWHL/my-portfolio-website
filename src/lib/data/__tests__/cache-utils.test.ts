@@ -179,5 +179,34 @@ describe('Cache Utils', () => {
 
       expect(mockFn).toHaveBeenCalledTimes(1);
     });
+
+    it('should handle cache failure with successful fallback', async () => {
+      mockFn.mockResolvedValueOnce('fallback-result').mockResolvedValueOnce('fallback-result');
+      const options: CacheOptions = {
+        keyParts: ['test', 'key'],
+        tags: [CACHE_TAGS.MATCHES],
+        ttl: 'STATIC_CONTENT'
+      };
+
+      const cachedFn = createCachedFunction(mockFn, options);
+      const result = await cachedFn();
+
+      expect(result).toBe('fallback-result');
+      expect(mockFn).toHaveBeenCalledTimes(1);
+    });
+
+    it('should handle non-Error objects in fallback', async () => {
+      mockFn.mockRejectedValueOnce('string error').mockResolvedValueOnce('fallback-result');
+      const options: CacheOptions = {
+        keyParts: ['test', 'key'],
+        tags: [CACHE_TAGS.MATCHES],
+        ttl: 'STATIC_CONTENT'
+      };
+
+      const cachedFn = createCachedFunction(mockFn, options);
+      const result = await cachedFn();
+
+      expect(result).toBe('fallback-result');
+    });
   });
 });

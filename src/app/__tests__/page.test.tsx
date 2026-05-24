@@ -86,7 +86,7 @@ describe('Home Page', () => {
   it('has proper content structure', () => {
     render(<Home />)
     
-    const content = screen.getByText('Trailblazer.').closest('.content')
+    const content = screen.getByText('Trailblazer.').closest('.content-with-footer')
     const scrollable = screen.getByText('Trailblazer.').closest('.scrollable')
     
     expect(content).toBeInTheDocument()
