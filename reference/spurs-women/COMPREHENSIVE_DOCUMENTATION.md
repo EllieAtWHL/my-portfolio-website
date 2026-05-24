@@ -379,7 +379,7 @@ matches (
   opponent_score INTEGER,
   competition_id INTEGER REFERENCES competitions(id),
   season_id INTEGER REFERENCES seasons(id),
-  venue VARCHAR(255),
+  stadium_id VARCHAR(255) REFERENCES stadia(id),
   stadium_display_name VARCHAR(255),
   stadium_slug VARCHAR(255),
   attendance INTEGER,

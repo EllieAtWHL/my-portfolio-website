@@ -57,7 +57,7 @@ The admin system manages the following entities:
   - `is_home_match` (boolean)
   - `spurs_score` (number, nullable)
   - `opponent_score` (number, nullable)
-  - `venue` (string)
+  - `stadium_id` (string, UUID)
   - `attended` (boolean)
   - `notes` (string)
   - `home_team_id` (number)
@@ -294,7 +294,7 @@ The match form includes:
 - Kickoff time picker
 - Home/Away match toggle
 - Opponent team dropdown (excludes Tottenham)
-- Venue/stadium dropdown
+- Stadium dropdown
 - Score inputs (Spurs and opponent)
 - Attended checkbox
 - Notes textarea

@@ -1,4 +1,4 @@
-id,season_id,competition_id,date,kickoff_time,is_home_match,spurs_score,opponent_score,venue,attended,notes,created_at,attendance,home_team_id,away_team_id
+id,season_id,competition_id,date,kickoff_time,is_home_match,spurs_score,opponent_score,stadium_id,attended,notes,created_at,attendance,home_team_id,away_team_id
 ba521a3c-7916-4836-8e31-7da9b3c7d661,b94b8778-6dbc-4cc3-b6fc-dc78f9b31eac,8d1ae4a5-d398-40c3-824d-d85c8e182fe8,2025-11-02,12:00:00,TRUE,2,1,Brisbane Road,TRUE,"Kick off delayed by 15 minutes to ensure the air ambulance was on site. 
 
 Liverpool took the lead in the 11th minute with a goal from Beata Olsson. Koga equalised within 5 minutes. Spurs then took the lead early in the second half with a goal from Bethany England and from there. it only look like's going our way.
