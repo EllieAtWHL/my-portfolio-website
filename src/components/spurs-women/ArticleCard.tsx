@@ -16,7 +16,7 @@ export default function ArticleCard({ article }: ArticleCardProps) {
     try {
       const urlObj = new URL(url);
       return urlObj.hostname.replace('www.', '');
-    } catch (error) {
+    } catch {
       return '';
     }
   };
@@ -24,13 +24,13 @@ export default function ArticleCard({ article }: ArticleCardProps) {
   const domain = getDomain(article.url);
 
   return (
-    <Card variant="spursAccent" className="overflow-hidden">
-      <a
-        href={article.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block spurs-text hover:opacity-90 transition-opacity"
-      >
+    <a
+      href={article.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="block spurs-text"
+    >
+      <Card variant="spursAccent" clickable={true} className="overflow-hidden">
         <div className="flex items-start space-x-3 p-4">
           {/* Content */}
           <div className="flex-1 min-w-0">
@@ -49,7 +49,7 @@ export default function ArticleCard({ article }: ArticleCardProps) {
             </svg>
           </div>
         </div>
-      </a>
-    </Card>
+      </Card>
+    </a>
   );
 }

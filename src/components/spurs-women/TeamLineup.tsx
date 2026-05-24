@@ -10,8 +10,11 @@ interface TeamLineupProps {
   teamColor?: string;
 }
 
+type LineupTab = 'starters' | 'substitutes' | 'unused';
+
 export default function TeamLineup({ lineup, teamColor = '#081521' }: TeamLineupProps) {
   const [selectedPlayer, setSelectedPlayer] = useState<null | typeof lineup.players[0]>(null);
+  const [activeTab, setActiveTab] = useState<LineupTab>('starters');
 
   const sortByPosition = (players: typeof lineup.players) => {
     const positionOrder: Record<string, number> = {
@@ -72,55 +75,104 @@ export default function TeamLineup({ lineup, teamColor = '#081521' }: TeamLineup
   const sortedSubstitutes = sortByPosition(lineup.players.filter(p => p.player_stats?.was_substitute));
   const sortedUnusedSubstitutes = sortByPosition(lineup.players.filter(p => p.player_stats?.was_unused_substitute));
 
+  // Get players to display based on active tab
+  const getPlayersForTab = () => {
+    switch (activeTab) {
+      case 'starters':
+        return sortedStarters;
+      case 'substitutes':
+        return sortedSubstitutes;
+      case 'unused':
+        return sortedUnusedSubstitutes;
+      default:
+        return [];
+    }
+  };
+
+  const displayedPlayers = getPlayersForTab();
+
+  // Fallback for players without stats
+  const hasNoStats = sortedStarters.length === 0 && sortedSubstitutes.length === 0 && sortedUnusedSubstitutes.length === 0;
+
   return (
     <div className="mb-8">
-      {/* Starting XI */}
-      {sortedStarters.length > 0 && (
-        <div className="mb-6">
-          <h4 className="text-sm font-semibold mb-2 text-[#64748b] uppercase tracking-wide">Starting XI</h4>
-          <div className="bg-[#081521] rounded-lg border border-[#e2e8f0] overflow-hidden">
-            {sortedStarters.map((player) => (
-              <PlayerRow
-                key={player.id}
-                player={player}
-              />
-            ))}
+      {!hasNoStats && (
+        <>
+          {/* Tabs */}
+          <div className="flex gap-4 mb-4">
+            <button
+              onClick={() => setActiveTab('starters')}
+              className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
+                activeTab === 'starters'
+                  ? 'text-[var(--spurs-dark-accent)]'
+                  : 'text-gray-300 hover:text-[var(--spurs-dark-accent)]'
+              }`}
+              style={{
+                backgroundColor: activeTab === 'starters' ? 'var(--spurs-dark-bg-1)' : 'rgba(8, 21, 33, 0.3)',
+                borderBottomColor: activeTab === 'starters' ? 'var(--spurs-dark-accent)' : 'transparent',
+                borderBottomWidth: activeTab === 'starters' ? '2px' : '0',
+                color: activeTab === 'starters' ? 'var(--spurs-dark-accent)' : '#d1d5db'
+              }}
+              disabled={sortedStarters.length === 0}
+            >
+              Starting XI ({sortedStarters.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('substitutes')}
+              className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
+                activeTab === 'substitutes'
+                  ? 'text-[var(--spurs-dark-accent)]'
+                  : 'text-gray-300 hover:text-[var(--spurs-dark-accent)]'
+              }`}
+              style={{
+                backgroundColor: activeTab === 'substitutes' ? 'var(--spurs-dark-bg-1)' : 'rgba(8, 21, 33, 0.3)',
+                borderBottomColor: activeTab === 'substitutes' ? 'var(--spurs-dark-accent)' : 'transparent',
+                borderBottomWidth: activeTab === 'substitutes' ? '2px' : '0',
+                color: activeTab === 'substitutes' ? 'var(--spurs-dark-accent)' : '#d1d5db'
+              }}
+              disabled={sortedSubstitutes.length === 0}
+            >
+              Substitutes ({sortedSubstitutes.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('unused')}
+              className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
+                activeTab === 'unused'
+                  ? 'text-[var(--spurs-dark-accent)]'
+                  : 'text-gray-300 hover:text-[var(--spurs-dark-accent)]'
+              }`}
+              style={{
+                backgroundColor: activeTab === 'unused' ? 'var(--spurs-dark-bg-1)' : 'rgba(8, 21, 33, 0.3)',
+                borderBottomColor: activeTab === 'unused' ? 'var(--spurs-dark-accent)' : 'transparent',
+                borderBottomWidth: activeTab === 'unused' ? '2px' : '0',
+                color: activeTab === 'unused' ? 'var(--spurs-dark-accent)' : '#d1d5db'
+              }}
+              disabled={sortedUnusedSubstitutes.length === 0}
+            >
+              Unused ({sortedUnusedSubstitutes.length})
+            </button>
           </div>
-        </div>
-      )}
 
-      {/* Substitutes */}
-      {sortedSubstitutes.length > 0 && (
-        <div className="mb-6">
-          <h4 className="text-sm font-semibold mb-2 text-[#64748b] uppercase tracking-wide">Substitutes</h4>
+          {/* Tab Content */}
           <div className="bg-[#081521] rounded-lg border border-[#e2e8f0] overflow-hidden">
-            {sortedSubstitutes.map((player) => (
-              <PlayerRow
-                key={player.id}
-                player={player}
-              />
-            ))}
+            {displayedPlayers.length > 0 ? (
+              displayedPlayers.map((player) => (
+                <PlayerRow
+                  key={player.id}
+                  player={player}
+                />
+              ))
+            ) : (
+              <div className="p-4 text-center text-gray-400">
+                No players in this category
+              </div>
+            )}
           </div>
-        </div>
-      )}
-
-      {/* Unused Substitutes */}
-      {sortedUnusedSubstitutes.length > 0 && (
-        <div className="mb-6">
-          <h4 className="text-sm font-semibold mb-2 text-[#64748b] uppercase tracking-wide">Unused Substitutes</h4>
-          <div className="bg-[#081521] rounded-lg border border-[#e2e8f0] overflow-hidden">
-            {sortedUnusedSubstitutes.map((player) => (
-              <PlayerRow
-                key={player.id}
-                player={player}
-              />
-            ))}
-          </div>
-        </div>
+        </>
       )}
 
       {/* Players without stats (fallback) */}
-      {sortedStarters.length === 0 && sortedSubstitutes.length === 0 && sortedUnusedSubstitutes.length === 0 && (
+      {hasNoStats && (
         <div className="bg-[#081521] rounded-lg border border-[#e2e8f0] overflow-hidden">
           {sortByPosition(lineup.players).map((player) => (
             <PlayerRow

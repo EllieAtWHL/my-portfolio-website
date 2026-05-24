@@ -1,7 +1,6 @@
 import { Card } from '@/components/Card';
 
 type MatchInfoProps = {
-  venue?: string | null;
   stadium_display_name?: string | null;
   stadium_slug?: string | null;
   attendance?: number | null;
@@ -10,9 +9,8 @@ type MatchInfoProps = {
   kickoff_time?: string | null;
 };
 
-export default function MatchInfo({ venue, stadium_display_name, stadium_slug, attendance, notes, date, kickoff_time }: MatchInfoProps) {
-  const displayVenue = stadium_display_name || venue;
-  if (!displayVenue && !attendance && !notes && !date) return null;
+export default function MatchInfo({ stadium_display_name, stadium_slug, attendance, notes, date, kickoff_time }: MatchInfoProps) {
+  if (!stadium_display_name && !attendance && !notes && !date) return null;
 
   const formatKickoffDateTime = (date: string, time: string | null) => {
     const dateObj = new Date(date);
@@ -37,26 +35,26 @@ export default function MatchInfo({ venue, stadium_display_name, stadium_slug, a
             <strong>Kickoff:</strong> {formatKickoffDateTime(date, kickoff_time || null)}
           </p>
         )}
-        {displayVenue && (
+        {stadium_display_name && (
           <p className="mb-2">
             <strong>Venue:</strong>{' '}
-            {displayVenue === 'Behind-Closed-Doors' ? (
-              <span className="spurs-text">{displayVenue}</span>
+            {stadium_display_name === 'Behind-Closed-Doors' ? (
+              <span className="spurs-text">{stadium_display_name}</span>
             ) : stadium_slug ? (
               <a
                 href={`/spurs-women/stadiums/${stadium_slug}`}
                 className="venue-link spurs-text underline decoration-2 hover:opacity-80"
               >
-                {displayVenue}
+                {stadium_display_name}
               </a>
             ) : (
               <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(displayVenue)}`}
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(stadium_display_name)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="venue-link spurs-text underline decoration-2 hover:opacity-80"
               >
-                {displayVenue}
+                {stadium_display_name}
               </a>
             )}
           </p>

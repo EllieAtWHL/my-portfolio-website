@@ -11,13 +11,13 @@ interface VideoCardProps {
 
 export default function VideoCard({ video, showDate = true }: VideoCardProps) {
   return (
-    <Card variant="spursAccent" padding="md" className="overflow-hidden">
-      <a 
-        href={video.link} 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="block spurs-text hover:opacity-90 transition-opacity"
-      >
+    <a 
+      href={video.link} 
+      target="_blank" 
+      rel="noopener noreferrer"
+      className="block spurs-text"
+    >
+      <Card variant="spursAccent" padding="md" clickable={true} className="overflow-hidden">
         <div className="w-full bg-gray-200 relative">
           {video.thumbnail ? (
             <>
@@ -67,7 +67,7 @@ export default function VideoCard({ video, showDate = true }: VideoCardProps) {
             </span>
           </div>
         </div>
-      </a>
-    </Card>
+      </Card>
+    </a>
   );
 }

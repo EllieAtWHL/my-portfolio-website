@@ -63,7 +63,7 @@ export default function MatchNavigation({
         {/* Previous match button */}
         <Button
           variant="spurs"
-          onClick={() => navigateToMatch(previousMatch?.id.toString() || '')}
+          onClick={() => navigateToMatch(previousMatch?.id || '')}
           disabled={!previousMatch}
           className="text-sm !px-4 !py-3 w-11/12 justify-start"
         >
@@ -78,7 +78,7 @@ export default function MatchNavigation({
         {/* Next match button */}
         <Button
           variant="spurs"
-          onClick={() => navigateToMatch(nextMatch?.id.toString() || '')}
+          onClick={() => navigateToMatch(nextMatch?.id || '')}
           disabled={!nextMatch}
           className="text-sm !px-4 !py-3 w-11/12 justify-end"
         >
@@ -96,7 +96,7 @@ export default function MatchNavigation({
         {/* Left navigation button */}
         <Button
           variant="spurs"
-          onClick={() => navigateToMatch(previousMatch?.id.toString() || '')}
+          onClick={() => navigateToMatch(previousMatch?.id || '')}
           disabled={!previousMatch}
           size="sm"
           className="text-xs !px-2 !py-1 !text-xs"
@@ -137,7 +137,7 @@ export default function MatchNavigation({
         {/* Right navigation button */}
         <Button
           variant="spurs"
-          onClick={() => navigateToMatch(nextMatch?.id.toString() || '')}
+          onClick={() => navigateToMatch(nextMatch?.id || '')}
           disabled={!nextMatch}
           size="sm"
           className="text-xs !px-2 !py-1 !text-xs"

@@ -16,8 +16,6 @@ export default function MatchCard({ match }: MatchProps) {
   const homeScorePens = match.is_home_match ? (match.spurs_score_pens ?? null) : (match.opponent_score_pens ?? null);
   const awayScorePens = match.is_home_match ? (match.opponent_score_pens ?? null) : (match.spurs_score_pens ?? null);
   
-  const displayStadium = match.stadium_display_name || match.venue;
-  
   // Determine if we need to show AET/PENS bracket scores
   const hasAetScores = homeScoreAet !== null && awayScoreAet !== null;
   const hasPensScores = homeScorePens !== null && awayScorePens !== null;
@@ -86,9 +84,9 @@ export default function MatchCard({ match }: MatchProps) {
           />
         </div>
 
-        {displayStadium && (
+        {match.stadium_display_name && (
           <div className="text-center text-xs spurs-text opacity-75">
-            {displayStadium}
+            {match.stadium_display_name}
           </div>
         )}
       </Card>
