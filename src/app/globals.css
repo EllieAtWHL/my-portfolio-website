@@ -93,7 +93,7 @@ h1 {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  text-shadow: 2px 2px 4px var(--shadow-dark);
 }
 
 h2 {
@@ -179,10 +179,10 @@ h1.slideDown {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(240, 249, 240, 0.3);
+  background: var(--bg-light-1-opacity-30);
   transition: all 0.4s ease;
   border-radius: 34px;
-  border: 2px solid rgba(240, 249, 240, 0.5);
+  border: 2px solid var(--bg-light-1-opacity-50);
 }
 
 .slider:before {
@@ -195,12 +195,12 @@ h1.slideDown {
   background: var(--bg-light-1);
   transition: all 0.4s ease;
   border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px var(--shadow-dark-medium);
 }
 
 input:checked + .slider {
-  background: rgba(255, 255, 255, 0.3);
-  border-color: rgba(255, 255, 255, 0.7);
+  background: var(--white-opacity-30);
+  border-color: var(--white-opacity-70);
 }
 
 input:checked + .slider:before {
@@ -227,7 +227,7 @@ input:checked + .slider:before {
 
 .findMe a:hover {
   color: var(--bg-white);
-  text-shadow: 0 0 8px rgba(127, 224, 159, 0.5);
+  text-shadow: 0 0 8px var(--text-glow-green);
 }
 
 /* Utility classes */
@@ -375,7 +375,7 @@ input:checked + .slider:before {
   border-radius: 12px;
   padding: 1.5rem;
   margin-bottom: 2rem;
-  box-shadow: 0 4px 12px rgba(243, 156, 18, 0.1);
+  box-shadow: 0 4px 12px var(--warning-shadow);
 }
 
 .banner-icon {
@@ -406,7 +406,7 @@ input:checked + .slider:before {
   background: linear-gradient(135deg, var(--warning-dark-bg) 0%, var(--warning-dark-border) 100%);
   border-color: var(--warning-dark-border);
   border-left-color: var(--warning-accent);
-  box-shadow: 0 4px 12px rgba(243, 156, 18, 0.2);
+  box-shadow: 0 4px 12px var(--warning-shadow-dark);
 }
 
 .dark .banner-title {
@@ -429,7 +429,7 @@ input:checked + .slider:before {
   background: var(--bg-white);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px var(--shadow-dark-light);
   border: 1px solid var(--neutral-border);
 }
 
@@ -458,7 +458,7 @@ input:checked + .slider:before {
 }
 
 .orgs-table tbody tr:hover {
-  background: rgba(45, 90, 45, 0.05);
+  background: var(--brand-bg-opacity-05);
 }
 
 .orgs-table tbody tr:last-child td {
@@ -493,9 +493,9 @@ input:checked + .slider:before {
 
 /* Dark mode for orgs table */
 .dark .orgs-table {
-  background: rgba(6, 21, 6, 0.5);
+  background: var(--dark-bg-opacity-50);
   border-color: var(--dark-border);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 20px var(--shadow-brand);
 }
 
 .dark .orgs-table th,
@@ -509,7 +509,7 @@ input:checked + .slider:before {
 }
 
 .dark .orgs-table tbody tr:hover {
-  background: rgba(134, 239, 172, 0.05);
+  background: var(--accent-bg-opacity-05);
 }
 
 .dark .org-link {

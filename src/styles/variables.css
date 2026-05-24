@@ -67,4 +67,18 @@
 
   --spurs-dark-text-darker: #06101a;
   --spurs-button-hover-light: #b9cfff;
+
+  /* Shadow and Opacity Variables */
+  --shadow-dark-medium: rgba(0, 0, 0, 0.2);
+  --shadow-dark-light: rgba(0, 0, 0, 0.08);
+  --bg-light-1-opacity-30: rgba(240, 249, 240, 0.3);
+  --bg-light-1-opacity-50: rgba(240, 249, 240, 0.5);
+  --white-opacity-30: rgba(255, 255, 255, 0.3);
+  --white-opacity-70: rgba(255, 255, 255, 0.7);
+  --text-glow-green: rgba(127, 224, 159, 0.5);
+  --warning-shadow: rgba(243, 156, 18, 0.1);
+  --warning-shadow-dark: rgba(243, 156, 18, 0.2);
+  --brand-bg-opacity-05: rgba(45, 90, 45, 0.05);
+  --dark-bg-opacity-50: rgba(6, 21, 6, 0.5);
+  --accent-bg-opacity-05: rgba(134, 239, 172, 0.05);
 }
