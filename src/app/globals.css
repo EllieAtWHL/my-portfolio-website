@@ -317,26 +317,7 @@ input:checked + .slider:before {
   padding-bottom: 120px;
 }
 
-.about-header {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.about-title {
-  font-size: clamp(2.5rem, 6vw, 4rem);
-  margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, var(--brand-primary-dark) 0%, var(--brand-primary-light) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.about-subtitle {
-  font-size: clamp(1.2rem, 3vw, 1.5rem);
-  color: var(--brand-primary-light);
-  font-weight: 500;
-  opacity: 0.8;
-}
+/* About-me page now uses global .page-header, .page-title, .page-subtitle classes */
 
 .intro {
   display: grid;
@@ -541,18 +522,6 @@ input:checked + .slider:before {
   color: var(--dark-text);
 }
 
-.dark .about-title {
-  background: linear-gradient(135deg, var(--dark-accent) 0%, var(--dark-accent-bright) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.dark .about-subtitle {
-  color: var(--dark-accent);
-  opacity: 0.8;
-}
-
 .dark .profile {
   border-color: var(--dark-accent);
   box-shadow: 0 8px 32px rgba(134, 239, 172, 0.2);
@@ -731,26 +700,7 @@ input:checked + .slider:before {
   width: 100%;
 }
 
-.experience-header {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.experience-title {
-  font-size: clamp(2.5rem, 6vw, 4rem);
-  margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, var(--brand-primary-dark) 0%, var(--brand-primary-light) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.experience-subtitle {
-  font-size: clamp(1.2rem, 3vw, 1.5rem);
-  color: var(--brand-primary-light);
-  font-weight: 500;
-  opacity: 0.8;
-}
+/* Experience page now uses global .page-header, .page-title, .page-subtitle classes */
 
 .tab-navigation {
   display: flex;
@@ -1057,18 +1007,6 @@ input:checked + .slider:before {
 /* Dark mode for Experience */
 .dark .experience-container {
   color: var(--dark-text);
-}
-
-.dark .experience-title {
-  background: linear-gradient(135deg, var(--dark-accent) 0%, var(--dark-accent-bright) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.dark .experience-subtitle {
-  color: var(--dark-accent);
-  opacity: 0.8;
 }
 
 .dark .tab-navigation {
@@ -1592,24 +1530,7 @@ input:checked + .slider:before {
   padding-bottom: 2rem;
 }
 
-.projects-header {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.projects-title {
-  font-size: clamp(2.5rem, 5vw, 3.5rem);
-  color: var(--brand-primary-dark);
-  margin: 0 0 1rem 0;
-  font-weight: 700;
-}
-
-.projects-subtitle {
-  font-size: clamp(1.2rem, 3vw, 1.5rem);
-  color: var(--brand-primary-light);
-  font-weight: 500;
-  opacity: 0.8;
-}
+/* Projects page now uses global .page-header, .page-title-solid, .page-subtitle classes */
 
 .projects-grid {
   display: flex;
@@ -2009,15 +1930,6 @@ input:checked + .slider:before {
 }
 
 /* Dark mode for projects */
-.dark .projects-title {
-  color: var(--dark-accent);
-}
-
-.dark .projects-subtitle {
-  color: var(--dark-accent);
-  opacity: 0.8;
-}
-
 .dark .project-card {
   /* Background and box-shadow handled by Card component */
   border-left-color: var(--dark-accent);
@@ -2075,24 +1987,7 @@ input:checked + .slider:before {
   }
 }
 
-.blog-header {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.blog-title {
-  font-size: clamp(2.5rem, 5vw, 3.5rem);
-  color: var(--brand-primary-dark);
-  margin: 0 0 1rem 0;
-  font-weight: 700;
-}
-
-.blog-subtitle {
-  font-size: clamp(1.2rem, 3vw, 1.5rem);
-  color: var(--brand-primary-light);
-  font-weight: 500;
-  opacity: 0.8;
-}
+/* Blog page now uses global .page-header, .page-title-solid, .page-subtitle classes */
 
 .blog-intro {
   font-size: 1.1rem;
@@ -2441,15 +2336,6 @@ input:checked + .slider:before {
 /* Dark mode for blog/Lightning Rollout */
 .dark .lightning-rollout-container {
   color: var(--dark-text);
-}
-
-.dark .blog-title {
-  color: var(--dark-accent);
-}
-
-.dark .blog-subtitle {
-  color: var(--dark-accent);
-  opacity: 0.8;
 }
 
 .dark .blog-intro {

@@ -387,3 +387,50 @@ body:not(.dark) .button.primary:hover {
     font-size: 1.1rem;
   }
 }
+
+/* Common page header styles */
+.page-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.page-title {
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, var(--brand-primary-dark) 0%, var(--brand-primary-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.page-subtitle {
+  font-size: clamp(1.2rem, 3vw, 1.5rem);
+  color: var(--brand-primary-light);
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+/* Alternative page title (solid color) */
+.page-title-solid {
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  color: var(--brand-primary-dark);
+  margin: 0 0 1rem 0;
+  font-weight: 700;
+}
+
+/* Dark mode page header styles */
+.dark .page-title {
+  background: linear-gradient(135deg, var(--dark-accent) 0%, var(--dark-accent-bright) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dark .page-subtitle {
+  color: var(--dark-accent);
+  opacity: 0.8;
+}
+
+.dark .page-title-solid {
+  color: var(--dark-accent);
+}

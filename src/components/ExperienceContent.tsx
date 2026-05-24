@@ -442,9 +442,9 @@ export default function ExperienceContent() {
 
   return (
     <div className="experience-container">
-      <div className="experience-header">
-        <h1 className="experience-title">Experience</h1>
-        <div className="experience-subtitle">14+ Years of Technological Excellence</div>
+      <div className="page-header">
+        <h1 className="page-title">Experience</h1>
+        <div className="page-subtitle">14+ Years of Technological Excellence</div>
       </div>
       
       <div className="tab-navigation">

@@ -115,9 +115,9 @@ export default function ProjectsContent() {
 
   return (
     <div className="projects-container">
-      <div className="projects-header">
-        <h1 className="projects-title">Projects</h1>
-        <div className="projects-subtitle">From Salesforce development to creative coding adventures</div>
+      <div className="page-header">
+        <h1 className="page-title-solid">Projects</h1>
+        <div className="page-subtitle">From Salesforce development to creative coding adventures</div>
       </div>
 
       <div className="projects-grid">
