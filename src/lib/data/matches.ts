@@ -29,6 +29,7 @@ export interface Match {
   opponent_score_pens?: number | null;
   attended: boolean;
   is_home_match: boolean;
+  is_neutral_venue: boolean;
   stadium_id: string;
   stadium_display_name: string | null;
   stadium_slug: string | null;
@@ -61,6 +62,7 @@ async function fetchUpcomingMatchesFromDB(limit: number = 3): Promise<Match[]> {
     .from('matches_with_stadium')
     .select(`
       *,
+      is_neutral_venue,
       spurs_score_aet,
       opponent_score_aet,
       spurs_score_pens,
@@ -86,6 +88,7 @@ async function fetchUpcomingMatchesFromDB(limit: number = 3): Promise<Match[]> {
     .from('matches_with_stadium')
     .select(`
       *,
+      is_neutral_venue,
       spurs_score_aet,
       opponent_score_aet,
       spurs_score_pens,
@@ -119,6 +122,7 @@ async function fetchPreviousMatchesFromDB(limit: number = 3): Promise<Match[]> {
     .from('matches_with_stadium')
     .select(`
       *,
+      is_neutral_venue,
       spurs_score_aet,
       opponent_score_aet,
       spurs_score_pens,
@@ -144,6 +148,7 @@ async function fetchPreviousMatchesFromDB(limit: number = 3): Promise<Match[]> {
     .from('matches_with_stadium')
     .select(`
       *,
+      is_neutral_venue,
       spurs_score_aet,
       opponent_score_aet,
       spurs_score_pens,
@@ -171,6 +176,7 @@ async function fetchAllMatchesFromDB(filter?: 'upcoming' | 'previous'): Promise<
     .from('matches_with_stadium')
     .select(`
       *,
+      is_neutral_venue,
       spurs_score_aet,
       opponent_score_aet,
       spurs_score_pens,
@@ -204,6 +210,7 @@ async function fetchSeasonMatchesFromDB(seasonId: string): Promise<Match[]> {
     .from('matches_with_stadium')
     .select(`
       *,
+      is_neutral_venue,
       spurs_score_aet,
       opponent_score_aet,
       spurs_score_pens,
@@ -285,6 +292,7 @@ async function fetchMatchByIdFromDB(matchId: string): Promise<Match | null> {
     .from('matches_with_stadium')
     .select(`
       *,
+      is_neutral_venue,
       home_possession,
       away_possession,
       home_total_shots,
@@ -322,6 +330,7 @@ async function fetchMatchByIdFromDB(matchId: string): Promise<Match | null> {
   if (data.away_shots_on_target === undefined) data.away_shots_on_target = null;
   if (data.home_corners === undefined) data.home_corners = null;
   if (data.away_corners === undefined) data.away_corners = null;
+  if (data.is_neutral_venue === undefined) data.is_neutral_venue = false;
 
   return data as Match;
 }
@@ -331,6 +340,7 @@ async function fetchAdjacentMatchesFromDB(matchId: string, currentMatchDate: str
     .from('matches_with_stadium')
     .select(`
       *,
+      is_neutral_venue,
       home_possession,
       away_possession,
       home_total_shots,
@@ -356,6 +366,7 @@ async function fetchAdjacentMatchesFromDB(matchId: string, currentMatchDate: str
     .from('matches_with_stadium')
     .select(`
       *,
+      is_neutral_venue,
       home_possession,
       away_possession,
       home_total_shots,

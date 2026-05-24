@@ -18,6 +18,10 @@ export interface SeasonStatsData {
   goalsPerGame: number;
   goalsConcededPerGame: number;
   attendancePercentage: number;
+  averagePossession: number;
+  averageTotalShots: number;
+  averageShotsOnTarget: number;
+  averageCorners: number;
 }
 
 export interface SeasonReview {
@@ -213,21 +217,67 @@ async function fetchAllSeasonStatsFromDB(): Promise<SeasonStatsData[]> {
       // Attendance calculation (all competitive matches)
       const allCompetitiveMatches = [...leagueMatches, ...cupMatches];
       const attendedMatches = allCompetitiveMatches.filter(match => match.attended).length;
-      const attendancePercentage = allCompetitiveMatches.length > 0 
-        ? (attendedMatches / allCompetitiveMatches.length) * 100 
+      const attendancePercentage = allCompetitiveMatches.length > 0
+        ? (attendedMatches / allCompetitiveMatches.length) * 100
         : 0;
-      
+
+      // Calculate match stats (league only)
+      const matchesWithStats = leagueMatches.filter(match =>
+        match.home_possession !== null || match.away_possession !== null
+      );
+
+      const possessionSum = matchesWithStats.reduce((sum, match) => {
+        if (match.is_home_match) {
+          return sum + (match.home_possession || 0);
+        } else {
+          return sum + (match.away_possession || 0);
+        }
+      }, 0);
+
+      const totalShotsSum = matchesWithStats.reduce((sum, match) => {
+        if (match.is_home_match) {
+          return sum + (match.home_total_shots || 0);
+        } else {
+          return sum + (match.away_total_shots || 0);
+        }
+      }, 0);
+
+      const shotsOnTargetSum = matchesWithStats.reduce((sum, match) => {
+        if (match.is_home_match) {
+          return sum + (match.home_shots_on_target || 0);
+        } else {
+          return sum + (match.away_shots_on_target || 0);
+        }
+      }, 0);
+
+      const cornersSum = matchesWithStats.reduce((sum, match) => {
+        if (match.is_home_match) {
+          return sum + (match.home_corners || 0);
+        } else {
+          return sum + (match.away_corners || 0);
+        }
+      }, 0);
+
+      const averagePossession = matchesWithStats.length > 0 ? possessionSum / matchesWithStats.length : 0;
+      const averageTotalShots = matchesWithStats.length > 0 ? totalShotsSum / matchesWithStats.length : 0;
+      const averageShotsOnTarget = matchesWithStats.length > 0 ? shotsOnTargetSum / matchesWithStats.length : 0;
+      const averageCorners = matchesWithStats.length > 0 ? cornersSum / matchesWithStats.length : 0;
+
       return {
         seasonId: season.id,
         seasonName: season.name,
         winPercentage,
         goalsPerGame,
         goalsConcededPerGame,
-        attendancePercentage
+        attendancePercentage,
+        averagePossession,
+        averageTotalShots,
+        averageShotsOnTarget,
+        averageCorners
       };
     })
   );
-  
+
   return statsData;
 }
 
