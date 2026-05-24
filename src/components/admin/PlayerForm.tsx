@@ -1,4 +1,5 @@
-import { Button } from '@/components/Button';
+import { FormWrapper } from './FormWrapper';
+import { FormField, TextInput, NumberInput, SelectInput } from './FormField';
 
 interface PlayerForm {
   first_name: string | null;
@@ -34,152 +35,99 @@ export function PlayerForm({
   onCancel,
 }: PlayerFormProps) {
   return (
-    <div className="spurs-accent-card rounded-lg p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold spurs-text">
-          {isPlayerEditMode && editingPlayerId ? 'Edit Player' : 'Add New Player'}
-        </h2>
-        {isPlayerEditMode && editingPlayerId && (
-          <div className="flex gap-2">
-            <Button
-              variant="spurs"
-              size="sm"
-              onClick={onDelete}
-            >
-              Delete
-            </Button>
-            <Button
-              variant="spurs"
-              size="sm"
-              onClick={onCancel}
-            >
-              Cancel
-            </Button>
-          </div>
-        )}
-      </div>
-      
-      <form onSubmit={onSubmit} className="space-y-6">
+    <FormWrapper
+      title="Player"
+      isEditMode={isPlayerEditMode}
+      editingId={editingPlayerId}
+      loading={loading}
+      onSubmit={onSubmit}
+      onDelete={onDelete}
+      onCancel={onCancel}
+    >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="player-first-name">First Name <span className="text-gray-400">(optional)</span></label>
-            <input
+          <FormField label="First Name" htmlFor="player-first-name">
+            <TextInput
               id="player-first-name"
               name="first_name"
-              type="text"
               value={playerForm.first_name || ''}
-              onChange={(e) => setPlayerForm({ ...playerForm, first_name: e.target.value })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              onChange={(value) => setPlayerForm({ ...playerForm, first_name: value })}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="player-last-name">Last Name <span style={{ color: 'var(--spurs-dark-accent)' }} aria-hidden="true">*</span></label>
-            <input
+          </FormField>
+          <FormField label="Last Name" required htmlFor="player-last-name">
+            <TextInput
               id="player-last-name"
               name="last_name"
-              type="text"
               value={playerForm.last_name || ''}
-              onChange={(e) => setPlayerForm({ ...playerForm, last_name: e.target.value })}
+              onChange={(value) => setPlayerForm({ ...playerForm, last_name: value })}
               required
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-              aria-required="true"
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="player-dob">Date of Birth <span className="text-gray-400">(optional)</span></label>
-            <input
+          </FormField>
+          <FormField label="Date of Birth" htmlFor="player-dob">
+            <TextInput
               id="player-dob"
               name="date_of_birth"
               type="date"
               value={playerForm.date_of_birth || ''}
-              onChange={(e) => setPlayerForm({ ...playerForm, date_of_birth: e.target.value })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              onChange={(value) => setPlayerForm({ ...playerForm, date_of_birth: value })}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="player-nationality">Nationality <span className="text-gray-400">(optional)</span></label>
-            <input
+          </FormField>
+          <FormField label="Nationality" htmlFor="player-nationality">
+            <TextInput
               id="player-nationality"
               name="nationality"
-              type="text"
               value={playerForm.nationality || ''}
-              onChange={(e) => setPlayerForm({ ...playerForm, nationality: e.target.value })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              onChange={(value) => setPlayerForm({ ...playerForm, nationality: value })}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="player-position">Position <span className="text-gray-400">(optional)</span></label>
-            <select
+          </FormField>
+          <FormField label="Position" htmlFor="player-position">
+            <SelectInput
               id="player-position"
               name="position"
               value={playerForm.position || ''}
-              onChange={(e) => setPlayerForm({ ...playerForm, position: e.target.value })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-            >
-              <option value="">Select position</option>
-              <option value="Goalkeeper">Goalkeeper</option>
-              <option value="Defender">Defender</option>
-              <option value="Midfielder">Midfielder</option>
-              <option value="Forward">Forward</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="player-height">Height (cm) <span className="text-gray-400">(optional)</span></label>
-            <input
+              onChange={(value) => setPlayerForm({ ...playerForm, position: value })}
+              options={[
+                { value: 'Goalkeeper', label: 'Goalkeeper' },
+                { value: 'Defender', label: 'Defender' },
+                { value: 'Midfielder', label: 'Midfielder' },
+                { value: 'Forward', label: 'Forward' }
+              ]}
+              placeholder="Select position"
+            />
+          </FormField>
+          <FormField label="Height (cm)" htmlFor="player-height">
+            <NumberInput
               id="player-height"
               name="height_cm"
-              type="number"
-              value={playerForm.height_cm === null || playerForm.height_cm === undefined ? '' : playerForm.height_cm}
-              onChange={(e) => setPlayerForm({ ...playerForm, height_cm: e.target.value !== '' ? parseInt(e.target.value) : null })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              value={playerForm.height_cm}
+              onChange={(value) => setPlayerForm({ ...playerForm, height_cm: value })}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="player-weight">Weight (kg) <span className="text-gray-400">(optional)</span></label>
-            <input
+          </FormField>
+          <FormField label="Weight (kg)" htmlFor="player-weight">
+            <NumberInput
               id="player-weight"
               name="weight_kg"
-              type="number"
-              value={playerForm.weight_kg === null || playerForm.weight_kg === undefined ? '' : playerForm.weight_kg}
-              onChange={(e) => setPlayerForm({ ...playerForm, weight_kg: e.target.value !== '' ? parseInt(e.target.value) : null })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              value={playerForm.weight_kg}
+              onChange={(value) => setPlayerForm({ ...playerForm, weight_kg: value })}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="player-image-url">Profile Image URL <span className="text-gray-400">(optional)</span></label>
-            <input
+          </FormField>
+          <FormField label="Profile Image URL" htmlFor="player-image-url">
+            <TextInput
               id="player-image-url"
               name="profile_image_url"
-              type="text"
               value={playerForm.profile_image_url || ''}
-              onChange={(e) => setPlayerForm({ ...playerForm, profile_image_url: e.target.value })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              onChange={(value) => setPlayerForm({ ...playerForm, profile_image_url: value })}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="player-is-active">Is Active? <span className="text-gray-400">(optional)</span></label>
-            <select
+          </FormField>
+          <FormField label="Is Active?" htmlFor="player-is-active">
+            <SelectInput
               id="player-is-active"
               name="is_active"
               value={playerForm.is_active ? 'true' : 'false'}
-              onChange={(e) => setPlayerForm({ ...playerForm, is_active: e.target.value === 'true' })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-            >
-              <option value="true">Yes</option>
-              <option value="false">No</option>
-            </select>
-          </div>
+              onChange={(value) => setPlayerForm({ ...playerForm, is_active: value === 'true' })}
+              options={[{ value: 'true', label: 'Yes' }, { value: 'false', label: 'No' }]}
+            />
+          </FormField>
         </div>
-        <Button
-          type="submit"
-          variant="spurs"
-          disabled={loading}
-          loading={loading}
-          fullWidth
-        >
-          {loading ? (isPlayerEditMode ? 'Updating...' : 'Creating...') : (isPlayerEditMode ? 'Update Player' : 'Create Player')}
-        </Button>
-      </form>
-    </div>
+      </FormWrapper>
   );
 }

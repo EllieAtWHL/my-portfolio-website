@@ -3,6 +3,7 @@ import { createCachedFunction, CACHE_TAGS, CACHE_TTL } from './cache-utils';
 import { Match } from './matches';
 import { Team } from './stadiums';
 import { Player } from './players';
+import { fetchAllFromDB, fetchByIdFromDB, fetchWithMatchCountFromDB } from './generic-fetchers';
 
 export interface TeamWithMatchCount extends Team {
   match_count?: number;
@@ -23,69 +24,15 @@ export interface TeamPlayers {
 
 // Raw database fetch functions
 async function fetchAllTeamsFromDB(): Promise<Team[]> {
-  const { data, error } = await supabase
-    .from('teams')
-    .select('*')
-    .order('name');
-
-  if (error) {
-    console.error('Error fetching teams:', error);
-    throw error;
-  }
-
-  return data as Team[];
+  return fetchAllFromDB<Team>('teams', 'name');
 }
 
 async function fetchTeamsWithMatchCountsFromDB(): Promise<TeamWithMatchCount[]> {
-  // Fetch teams first
-  const { data: teamsData, error: teamsError } = await supabase
-    .from('teams')
-    .select('*')
-    .order('name');
-
-  if (teamsError) {
-    console.error('Error fetching teams:', teamsError);
-    throw teamsError;
-  }
-
-  // Fetch match counts for each team (both as home and away)
-  const teamsWithCounts = await Promise.all(
-    (teamsData as Team[]).map(async (team) => {
-      const { count: homeCount, error: homeError } = await supabase
-        .from('matches')
-        .select('*', { count: 'exact', head: true })
-        .eq('home_team_id', team.id);
-
-      const { count: awayCount, error: awayError } = await supabase
-        .from('matches')
-        .select('*', { count: 'exact', head: true })
-        .eq('away_team_id', team.id);
-
-      const totalMatches = (homeError ? 0 : homeCount || 0) + (awayError ? 0 : awayCount || 0);
-
-      return {
-        ...team,
-        match_count: totalMatches
-      };
-    })
-  );
-
-  return teamsWithCounts;
+  return fetchWithMatchCountFromDB<Team>('teams', 'matches', 'home_team_id', 'away_team_id', 'name');
 }
 
 async function fetchTeamByIdFromDB(teamId: string): Promise<Team | null> {
-  const { data, error } = await supabase
-    .from('teams')
-    .select('*')
-    .eq('id', teamId)
-    .single();
-
-  if (error) {
-    console.error('Error fetching team:', error);
-    return null;
-  }
-
-  return data as Team;
+  return fetchByIdFromDB<Team>('teams', teamId);
 }
 
 async function fetchMatchesForTeamFromDB(teamId: string): Promise<Match[]> {

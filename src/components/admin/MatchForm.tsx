@@ -1,4 +1,5 @@
-import { Button } from '@/components/Button';
+import { FormWrapper } from './FormWrapper';
+import { FormField, TextInput, NumberInput, SelectInput, CheckboxInput, RadioGroup, TextArea } from './FormField';
 
 interface Team {
   id: number;
@@ -24,14 +25,6 @@ interface Stadium {
   city: string | null;
 }
 
-interface StadiumName {
-  id: string;
-  stadium_id: string;
-  name: string;
-  valid_from: string | null;
-  valid_to: string | null;
-}
-
 interface MatchForm {
   season_id: string;
   competition_id: string;
@@ -46,7 +39,6 @@ interface MatchForm {
   opponent_score_pens: number | null;
   stadium_id: string;
   attended: boolean;
-  notes: string;
   home_team_id: number;
   away_team_id: number;
   attendance: number | null;
@@ -58,6 +50,7 @@ interface MatchForm {
   away_shots_on_target: number | null;
   home_corners: number | null;
   away_corners: number | null;
+  notes: string | null;
 }
 
 interface MatchFormProps {
@@ -67,7 +60,6 @@ interface MatchFormProps {
   competitions: Competition[];
   teams: Team[];
   stadiums: Stadium[];
-  stadiumNames: StadiumName[];
   isEditMode: boolean;
   editingMatchId: string | null;
   loading: boolean;
@@ -88,7 +80,6 @@ export function MatchForm({
   competitions,
   teams,
   stadiums,
-  stadiumNames,
   isEditMode,
   editingMatchId,
   loading,
@@ -102,241 +93,138 @@ export function MatchForm({
   onCancel,
 }: MatchFormProps) {
   return (
-    <div className="spurs-accent-card rounded-lg p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold spurs-text">
-          {isEditMode ? 'Edit Match' : 'Add New Match'}
-        </h2>
-        {isEditMode && (
-          <div className="flex gap-2">
-            <Button
-              variant="spurs"
-              size="sm"
-              onClick={onDelete}
-            >
-              Delete
-            </Button>
-            <Button
-              variant="spurs"
-              size="sm"
-              onClick={onCancel}
-            >
-              Cancel
-            </Button>
-          </div>
-        )}
-      </div>
-      
-      <form onSubmit={onSubmit} className="space-y-6">
+    <FormWrapper
+      title="Match"
+      isEditMode={isEditMode}
+      editingId={editingMatchId}
+      loading={loading}
+      onSubmit={onSubmit}
+      onDelete={onDelete}
+      onCancel={onCancel}
+    >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Season Dropdown */}
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="season">Season <span style={{ color: 'var(--spurs-dark-accent)' }} aria-hidden="true">*</span></label>
-            <select
+          <FormField label="Season" required htmlFor="season">
+            <SelectInput
               id="season"
               value={matchForm.season_id || ''}
-              onChange={(e) => setMatchForm({ ...matchForm, season_id: e.target.value })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              onChange={(value) => setMatchForm({ ...matchForm, season_id: value as string })}
+              options={seasons.map(season => ({ value: season.id, label: season.name }))}
               required
-              aria-required="true"
-            >
-              <option value="">Select season</option>
-              {seasons.map(season => (
-                <option key={season.id} value={season.id}>
-                  {season.name}
-                </option>
-              ))}
-            </select>
-          </div>
+              placeholder="Select season"
+            />
+          </FormField>
 
-          {/* Competition Dropdown */}
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="competition">Competition <span style={{ color: 'var(--spurs-dark-accent)' }} aria-hidden="true">*</span></label>
-            <select
+          <FormField label="Competition" required htmlFor="competition">
+            <SelectInput
               id="competition"
               value={matchForm.competition_id || ''}
-              onChange={(e) => setMatchForm({ ...matchForm, competition_id: e.target.value })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              onChange={(value) => setMatchForm({ ...matchForm, competition_id: value as string })}
+              options={competitions.map(competition => ({ value: competition.id, label: `${competition.name} (${competition.nickname})` }))}
               required
-              aria-required="true"
-            >
-              <option value="">Select competition</option>
-              {competitions.map(competition => (
-                <option key={competition.id} value={competition.id}>
-                  {competition.name} ({competition.nickname})
-                </option>
-              ))}
-            </select>
-          </div>
+              placeholder="Select competition"
+            />
+          </FormField>
 
-          {/* Date */}
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="date">Date <span style={{ color: 'var(--spurs-dark-accent)' }} aria-hidden="true">*</span></label>
-            <input
+          <FormField label="Date" required htmlFor="date">
+            <TextInput
               id="date"
               type="date"
               value={matchForm.date || ''}
-              onChange={(e) => setMatchForm({ ...matchForm, date: e.target.value })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              onChange={(value) => setMatchForm({ ...matchForm, date: value })}
               required
-              aria-required="true"
             />
-          </div>
+          </FormField>
 
-          {/* Kickoff Time */}
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="kickoff-time">Kickoff Time <span className="text-gray-400">(optional)</span></label>
-            <input
+          <FormField label="Kickoff Time" htmlFor="kickoff-time">
+            <TextInput
               id="kickoff-time"
               type="time"
               value={matchForm.kickoff_time || ''}
-              onChange={(e) => setMatchForm({ ...matchForm, kickoff_time: e.target.value })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              onChange={(value) => setMatchForm({ ...matchForm, kickoff_time: value })}
             />
-          </div>
+          </FormField>
 
-          {/* Home/Away Toggle */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Match Type <span style={{ color: 'var(--spurs-dark-accent)' }} aria-hidden="true">*</span></label>
-            <div className="flex space-x-4">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="match-type"
-                  checked={matchForm.is_home_match === true}
-                  onChange={() => setMatchForm({ ...matchForm, is_home_match: true })}
-                  className="mr-2"
-                  required
-                  style={{ accentColor: 'var(--spurs-dark-accent)' }}
-                />
-                Home Match
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="match-type"
-                  checked={matchForm.is_home_match === false}
-                  onChange={() => setMatchForm({ ...matchForm, is_home_match: false })}
-                  className="mr-2"
-                  required
-                  style={{ accentColor: 'var(--spurs-dark-accent)' }}
-                />
-                Away Match
-              </label>
-            </div>
-          </div>
+          <FormField label="Match Type" required>
+            <RadioGroup
+              name="match-type"
+              value={matchForm.is_home_match === true ? 'true' : (matchForm.is_home_match === false ? 'false' : null)}
+              onChange={(value) => setMatchForm({ ...matchForm, is_home_match: value === 'true' })}
+              options={[{ value: 'true', label: 'Home Match' }, { value: 'false', label: 'Away Match' }]}
+            />
+          </FormField>
 
-          {/* Opponent Team Dropdown */}
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="opponent-team">
-              Opponent {matchForm.is_home_match ? 'Away' : 'Home'} Team <span style={{ color: 'var(--spurs-dark-accent)' }} aria-hidden="true">*</span>
-            </label>
-            <select
+          <FormField label={`Opponent ${matchForm.is_home_match ? 'Away' : 'Home'} Team`} required htmlFor="opponent-team">
+            <SelectInput
               id="opponent-team"
               value={matchForm.is_home_match ? (matchForm.away_team_id?.toString() || '') : (matchForm.home_team_id?.toString() || '')}
-              onChange={(e) => setMatchForm({ ...matchForm, [matchForm.is_home_match ? 'away_team_id' : 'home_team_id']: parseInt(e.target.value) })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              onChange={(value) => setMatchForm({ ...matchForm, [matchForm.is_home_match ? 'away_team_id' : 'home_team_id']: parseInt(value) })}
+              options={teams.filter(team => !team.is_tottenham).map(team => ({ value: team.id, label: team.name }))}
               required
-              aria-required="true"
-            >
-              <option value="">Select opponent</option>
-              {teams.filter(team => !team.is_tottenham).map(team => (
-                <option key={team.id} value={team.id}>
-                  {team.name}
-                </option>
-              ))}
-            </select>
-          </div>
+              placeholder="Select opponent"
+            />
+          </FormField>
 
-          {/* Stadium */}
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="stadium">Stadium <span style={{ color: 'var(--spurs-dark-accent)' }} aria-hidden="true">*</span></label>
-            <select
+          <FormField label="Stadium" required htmlFor="stadium">
+            <SelectInput
               id="stadium"
               value={matchForm.stadium_id || ''}
-              onChange={(e) => setMatchForm({ ...matchForm, stadium_id: e.target.value })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-              required
-              aria-required="true"
-            >
-              <option value="">Select stadium</option>
-              {stadiums.map(stadium => {
+              onChange={(value) => setMatchForm({ ...matchForm, stadium_id: value as string })}
+              options={stadiums.map(stadium => {
                 const currentName = getCurrentStadiumName(stadium.id, matchForm.date || new Date().toISOString().split('T')[0]);
-                return (
-                  <option key={stadium.id} value={stadium.id}>
-                    {currentName} {stadium.city && currentName !== stadium.name ? `(${stadium.city})` : ''}
-                  </option>
-                );
+                return {
+                  value: stadium.id,
+                  label: `${currentName} ${stadium.city && currentName !== stadium.name ? `(${stadium.city})` : ''}`
+                };
               })}
-            </select>
-          </div>
-
-          {/* Score */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2" htmlFor="spurs-score">Spurs Score <span className="text-gray-400">(optional)</span></label>
-              <input
-                id="spurs-score"
-                type="number"
-                min="0"
-                value={matchForm.spurs_score ?? ''}
-                onChange={(e) => setMatchForm({ ...matchForm, spurs_score: e.target.value ? parseInt(e.target.value) : null })}
-                className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2" htmlFor="opponent-score">Opponent Score <span className="text-gray-400">(optional)</span></label>
-              <input
-                id="opponent-score"
-                type="number"
-                min="0"
-                value={matchForm.opponent_score ?? ''}
-                onChange={(e) => setMatchForm({ ...matchForm, opponent_score: e.target.value ? parseInt(e.target.value) : null })}
-                className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-              />
-            </div>
-          </div>
-
-          {/* Attended */}
-          <div>
-            <label className="flex items-center">
-              <input
-                id="attended"
-                type="checkbox"
-                checked={matchForm.attended === true}
-                onChange={(e) => setMatchForm({ ...matchForm, attended: e.target.checked })}
-                className="mr-2"
-                style={{ accentColor: 'var(--spurs-dark-accent)' }}
-              />
-              <span className="text-gray-400">(optional)</span> I attended this match
-            </label>
-          </div>
-
-          {/* Attendance */}
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="attendance">Attendance <span className="text-gray-400">(optional)</span></label>
-            <input
-              id="attendance"
-              type="number"
-              min="0"
-              value={matchForm.attendance === null || matchForm.attendance === undefined ? '' : matchForm.attendance}
-              onChange={(e) => setMatchForm({ ...matchForm, attendance: e.target.value !== '' ? parseInt(e.target.value) : null })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              required
+              placeholder="Select stadium"
             />
+          </FormField>
+
+          <div className="grid grid-cols-2 gap-4">
+            <FormField label="Spurs Score" htmlFor="spurs-score">
+              <NumberInput
+                id="spurs-score"
+                value={matchForm.spurs_score ?? null}
+                onChange={(value) => setMatchForm({ ...matchForm, spurs_score: value })}
+                min={0}
+              />
+            </FormField>
+            <FormField label="Opponent Score" htmlFor="opponent-score">
+              <NumberInput
+                id="opponent-score"
+                value={matchForm.opponent_score ?? null}
+                onChange={(value) => setMatchForm({ ...matchForm, opponent_score: value })}
+                min={0}
+              />
+            </FormField>
           </div>
+
+          <CheckboxInput
+            id="attended"
+            checked={matchForm.attended === true}
+            onChange={(checked) => setMatchForm({ ...matchForm, attended: checked })}
+            label="I attended this match"
+          />
+
+          <FormField label="Attendance" htmlFor="attendance">
+            <NumberInput
+              id="attendance"
+              value={matchForm.attendance}
+              onChange={(value) => setMatchForm({ ...matchForm, attendance: value })}
+              min={0}
+            />
+          </FormField>
         </div>
 
-        {/* Notes */}
-        <div>
-          <label className="block text-sm font-medium mb-2 spurs-text" htmlFor="notes">Notes <span className="text-gray-400">(optional)</span></label>
-          <textarea
+        <FormField label="Notes" htmlFor="notes">
+          <TextArea
             id="notes"
             value={matchForm.notes || ''}
-            onChange={(e) => setMatchForm({ ...matchForm, notes: e.target.value })}
-            className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+            onChange={(value) => setMatchForm({ ...matchForm, notes: value })}
             rows={4}
           />
-        </div>
+        </FormField>
 
         {/* Stats Collapsible Section */}
         <div className="border border-gray-600 rounded-lg overflow-hidden">
@@ -345,7 +233,7 @@ export function MatchForm({
             onClick={() => setShowStatsSection(!showStatsSection)}
             className="w-full px-4 py-3 bg-gray-800 hover:bg-gray-700 flex items-center justify-between transition-colors"
             style={{
-              backgroundColor: showStatsSection ? 'var(--spurs-dark-bg-1)' : 'rgba(8, 21, 33, 0.3)',
+              backgroundColor: showStatsSection ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
               borderColor: showStatsSection ? 'var(--spurs-dark-accent)' : 'transparent',
               borderWidth: showStatsSection ? '2px' : '0',
             }}
@@ -360,96 +248,77 @@ export function MatchForm({
             <div className="p-4 space-y-4 bg-gray-800/50">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Possession */}
-                <div>
-                  <label className="block text-sm font-medium mb-2 spurs-text">Home Possession (%) <span className="text-gray-400">(optional)</span></label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
+                <FormField label="Home Possession (%)" htmlFor="home-possession">
+                  <NumberInput
+                    id="home-possession"
+                    value={matchForm.home_possession}
+                    onChange={(value) => setMatchForm({ ...matchForm, home_possession: value })}
+                    min={0}
+                    max={100}
                     step="0.1"
-                    value={matchForm.home_possession === null || matchForm.home_possession === undefined ? '' : matchForm.home_possession}
-                    onChange={(e) => setMatchForm({ ...matchForm, home_possession: e.target.value ? parseFloat(e.target.value) : null })}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2 spurs-text">Away Possession (%) <span className="text-gray-400">(optional)</span></label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
+                </FormField>
+                <FormField label="Away Possession (%)" htmlFor="away-possession">
+                  <NumberInput
+                    id="away-possession"
+                    value={matchForm.away_possession}
+                    onChange={(value) => setMatchForm({ ...matchForm, away_possession: value })}
+                    min={0}
+                    max={100}
                     step="0.1"
-                    value={matchForm.away_possession === null || matchForm.away_possession === undefined ? '' : matchForm.away_possession}
-                    onChange={(e) => setMatchForm({ ...matchForm, away_possession: e.target.value ? parseFloat(e.target.value) : null })}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
                   />
-                </div>
+                </FormField>
 
-                {/* Total Shots */}
-                <div>
-                  <label className="block text-sm font-medium mb-2 spurs-text">Home Total Shots <span className="text-gray-400">(optional)</span></label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={matchForm.home_total_shots === null || matchForm.home_total_shots === undefined ? '' : matchForm.home_total_shots}
-                    onChange={(e) => setMatchForm({ ...matchForm, home_total_shots: e.target.value !== '' ? parseInt(e.target.value) : null })}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+                <FormField label="Home Total Shots" htmlFor="home-total-shots">
+                  <NumberInput
+                    id="home-total-shots"
+                    value={matchForm.home_total_shots}
+                    onChange={(value) => setMatchForm({ ...matchForm, home_total_shots: value })}
+                    min={0}
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2 spurs-text">Away Total Shots <span className="text-gray-400">(optional)</span></label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={matchForm.away_total_shots === null || matchForm.away_total_shots === undefined ? '' : matchForm.away_total_shots}
-                    onChange={(e) => setMatchForm({ ...matchForm, away_total_shots: e.target.value !== '' ? parseInt(e.target.value) : null })}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+                </FormField>
+                <FormField label="Away Total Shots" htmlFor="away-total-shots">
+                  <NumberInput
+                    id="away-total-shots"
+                    value={matchForm.away_total_shots}
+                    onChange={(value) => setMatchForm({ ...matchForm, away_total_shots: value })}
+                    min={0}
                   />
-                </div>
+                </FormField>
 
-                {/* Shots On Target */}
-                <div>
-                  <label className="block text-sm font-medium mb-2 spurs-text">Home Shots On Target <span className="text-gray-400">(optional)</span></label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={matchForm.home_shots_on_target === null || matchForm.home_shots_on_target === undefined ? '' : matchForm.home_shots_on_target}
-                    onChange={(e) => setMatchForm({ ...matchForm, home_shots_on_target: e.target.value !== '' ? parseInt(e.target.value) : null })}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+                <FormField label="Home Shots On Target" htmlFor="home-shots-on-target">
+                  <NumberInput
+                    id="home-shots-on-target"
+                    value={matchForm.home_shots_on_target}
+                    onChange={(value) => setMatchForm({ ...matchForm, home_shots_on_target: value })}
+                    min={0}
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2 spurs-text">Away Shots On Target <span className="text-gray-400">(optional)</span></label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={matchForm.away_shots_on_target === null || matchForm.away_shots_on_target === undefined ? '' : matchForm.away_shots_on_target}
-                    onChange={(e) => setMatchForm({ ...matchForm, away_shots_on_target: e.target.value !== '' ? parseInt(e.target.value) : null })}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+                </FormField>
+                <FormField label="Away Shots On Target" htmlFor="away-shots-on-target">
+                  <NumberInput
+                    id="away-shots-on-target"
+                    value={matchForm.away_shots_on_target}
+                    onChange={(value) => setMatchForm({ ...matchForm, away_shots_on_target: value })}
+                    min={0}
                   />
-                </div>
+                </FormField>
 
-                {/* Corners */}
-                <div>
-                  <label className="block text-sm font-medium mb-2 spurs-text">Home Corners <span className="text-gray-400">(optional)</span></label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={matchForm.home_corners === null || matchForm.home_corners === undefined ? '' : matchForm.home_corners}
-                    onChange={(e) => setMatchForm({ ...matchForm, home_corners: e.target.value !== '' ? parseInt(e.target.value) : null })}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+                <FormField label="Home Corners" htmlFor="home-corners">
+                  <NumberInput
+                    id="home-corners"
+                    value={matchForm.home_corners}
+                    onChange={(value) => setMatchForm({ ...matchForm, home_corners: value })}
+                    min={0}
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2 spurs-text">Away Corners <span className="text-gray-400">(optional)</span></label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={matchForm.away_corners === null || matchForm.away_corners === undefined ? '' : matchForm.away_corners}
-                    onChange={(e) => setMatchForm({ ...matchForm, away_corners: e.target.value !== '' ? parseInt(e.target.value) : null })}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+                </FormField>
+                <FormField label="Away Corners" htmlFor="away-corners">
+                  <NumberInput
+                    id="away-corners"
+                    value={matchForm.away_corners}
+                    onChange={(value) => setMatchForm({ ...matchForm, away_corners: value })}
+                    min={0}
                   />
-                </div>
+                </FormField>
               </div>
             </div>
           )}
@@ -462,7 +331,7 @@ export function MatchForm({
             onClick={() => setShowExtraTimeSection(!showExtraTimeSection)}
             className="w-full px-4 py-3 bg-gray-800 hover:bg-gray-700 flex items-center justify-between transition-colors"
             style={{
-              backgroundColor: showExtraTimeSection ? 'var(--spurs-dark-bg-1)' : 'rgba(8, 21, 33, 0.3)',
+              backgroundColor: showExtraTimeSection ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
               borderColor: showExtraTimeSection ? 'var(--spurs-dark-accent)' : 'transparent',
               borderWidth: showExtraTimeSection ? '2px' : '0',
             }}
@@ -476,64 +345,46 @@ export function MatchForm({
           {showExtraTimeSection && (
             <div className="p-4 space-y-4 bg-gray-800/50">
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2 spurs-text">Spurs Score (AET) <span className="text-gray-400">(optional)</span></label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={matchForm.spurs_score_aet ?? ''}
-                    onChange={(e) => setMatchForm({ ...matchForm, spurs_score_aet: e.target.value ? parseInt(e.target.value) : null })}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+                <FormField label="Spurs Score (AET)" htmlFor="spurs-score-aet">
+                  <NumberInput
+                    id="spurs-score-aet"
+                    value={matchForm.spurs_score_aet ?? null}
+                    onChange={(value) => setMatchForm({ ...matchForm, spurs_score_aet: value })}
+                    min={0}
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2 spurs-text">Opponent Score (AET) <span className="text-gray-400">(optional)</span></label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={matchForm.opponent_score_aet ?? ''}
-                    onChange={(e) => setMatchForm({ ...matchForm, opponent_score_aet: e.target.value ? parseInt(e.target.value) : null })}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+                </FormField>
+                <FormField label="Opponent Score (AET)" htmlFor="opponent-score-aet">
+                  <NumberInput
+                    id="opponent-score-aet"
+                    value={matchForm.opponent_score_aet ?? null}
+                    onChange={(value) => setMatchForm({ ...matchForm, opponent_score_aet: value })}
+                    min={0}
                   />
-                </div>
+                </FormField>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2 spurs-text">Spurs Score (Penalties) <span className="text-gray-400">(optional)</span></label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={matchForm.spurs_score_pens ?? ''}
-                    onChange={(e) => setMatchForm({ ...matchForm, spurs_score_pens: e.target.value ? parseInt(e.target.value) : null })}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+                <FormField label="Spurs Score (Penalties)" htmlFor="spurs-score-pens">
+                  <NumberInput
+                    id="spurs-score-pens"
+                    value={matchForm.spurs_score_pens ?? null}
+                    onChange={(value) => setMatchForm({ ...matchForm, spurs_score_pens: value })}
+                    min={0}
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2 spurs-text">Opponent Score (Penalties) <span className="text-gray-400">(optional)</span></label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={matchForm.opponent_score_pens ?? ''}
-                    onChange={(e) => setMatchForm({ ...matchForm, opponent_score_pens: e.target.value ? parseInt(e.target.value) : null })}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+                </FormField>
+                <FormField label="Opponent Score (Penalties)" htmlFor="opponent-score-pens">
+                  <NumberInput
+                    id="opponent-score-pens"
+                    value={matchForm.opponent_score_pens ?? null}
+                    onChange={(value) => setMatchForm({ ...matchForm, opponent_score_pens: value })}
+                    min={0}
                   />
-                </div>
+                </FormField>
               </div>
             </div>
           )}
         </div>
 
-        <Button
-          type="submit"
-          variant="spurs"
-          disabled={loading}
-          loading={loading}
-          fullWidth
-        >
-          {loading ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Match' : 'Create Match')}
-        </Button>
-      </form>
-    </div>
+      </FormWrapper>
   );
 }

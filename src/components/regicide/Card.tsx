@@ -37,10 +37,14 @@ export function Card({ suit, rank, power, onClick, isSelected = false, className
     >
       {/* Card Background Pattern */}
       <div className="absolute inset-0 opacity-5">
-        <div className="w-full h-full bg-repeat" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000000' fill-opacity='0.1'%3E%3Cpath d='M0 0h20v20H0z'/%3E%3C/g%3E%3C/svg%3E")`,
-          backgroundSize: '20px 20px'
-        }} />
+        <div 
+          className="w-full h-full bg-repeat" 
+          style={{
+            '--pattern-image': `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000000' fill-opacity='0.1'%3E%3Cpath d='M0 0h20v20H0z'/%3E%3C/g%3E%3C/svg%3E")`,
+            backgroundImage: 'var(--pattern-image)',
+            backgroundSize: '20px 20px'
+          } as React.CSSProperties}
+        />
       </div>
 
       {/* Rank */}

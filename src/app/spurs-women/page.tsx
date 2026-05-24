@@ -7,22 +7,14 @@ import PodcastCard from '@/components/spurs-women/PodcastCard';
 import VideoCard from '@/components/spurs-women/VideoCard';
 import { getHomePageContent } from '@/lib/data';
 import { Match, NewsArticle, YouTubeVideo } from '@/lib/data';
+import { PodcastEpisode } from '@/types/podcast';
+import { generatePageMetadata } from '@/lib/metadata';
 
 export async function generateMetadata(): Promise<Metadata> {
-  return {
-    title: 'Home - Tottenham Hotspur Women',
-    description: 'Latest news, matches, videos, and podcasts for Tottenham Hotspur Women FC',
-  };
-}
-
-interface PodcastEpisode {
-  title: string;
-  episodeNumber: string;
-  description: string;
-  duration: string;
-  publishDate: string;
-  url: string;
-  podcastName: string;
+  return generatePageMetadata(
+    'Home - Tottenham Hotspur Women',
+    'Latest news, matches, videos, and podcasts for Tottenham Hotspur Women FC'
+  );
 }
 
 export default async function HomePage() {

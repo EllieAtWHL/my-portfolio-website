@@ -38,13 +38,15 @@ export default function MatchCard({ match }: MatchProps) {
   const scoreLabel = hasPensScores ? 'PENS' : (hasAetScores ? 'AET' : null);
 
   return (
-    <Link href={`/spurs-women/matches/${match.id}`} className="block spurs-text">
-      <Card variant="spursAccent" padding="md" clickable={true}>
+    <Link href={`/spurs-women/matches/${match.id}`} className="block spurs-text h-full">
+      <Card variant="spursAccent" padding="md" clickable={true} className="h-full">
         <div className="text-center text-sm spurs-text mb-2 flex justify-center items-center gap-4">
           {formatDateForCard(match.date)}
           {match.competitions?.name && (
             <span className="spurs-text" title={match.competitions.name}>
               {match.competitions.icon_svg ? (
+                // SECURITY EXCEPTION: icon_svg comes from trusted Supabase database (admin-controlled only)
+                // Content is limited to SVG icons, not arbitrary HTML. No user-generated content.
                 <div className="w-4 h-4" dangerouslySetInnerHTML={{ __html: match.competitions.icon_svg }} />
               ) : (
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">

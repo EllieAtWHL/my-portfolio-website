@@ -6,6 +6,7 @@ import { Card as GameCard } from './Card';
 import { Deck } from './Deck';
 import { GameControls } from './GameControls';
 import { PowerDisplay } from './PowerDisplay';
+import { Button } from '@/components/Button';
 
 interface PlayAreaProps {
   gameData?: any;
@@ -34,13 +35,13 @@ export function PlayArea({ gameData, onShowStats, playCard, drawCard }: PlayArea
           <p className="text-gray-600 dark:text-gray-300">Defeat the Royals!</p>
         </div>
         
-        <button
+        <Button
+          variant="secondary"
           onClick={onShowStats}
-          className="button secondary"
           aria-label="View Statistics"
         >
           📊 Stats
-        </button>
+        </Button>
       </div>
 
       {/* Game Board */}

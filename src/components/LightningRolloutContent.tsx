@@ -36,9 +36,9 @@ export default function LightningRolloutContent() {
 
   return (
     <div className="lightning-rollout-container">
-      <div className="blog-header">
-        <h1 className="blog-title">Salesforce Lightning Rollout Series</h1>
-        <p className="blog-subtitle">A comprehensive 3-part guide to successfully migrating from Salesforce Classic to Lightning</p>
+      <div className="page-header">
+        <h1 className="page-title-solid">Salesforce Lightning Rollout Series</h1>
+        <p className="page-subtitle">A comprehensive 3-part guide to successfully migrating from Salesforce Classic to Lightning</p>
       </div>
 
       <Card variant="highlight" padding="md">

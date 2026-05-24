@@ -1,4 +1,5 @@
-import { Button } from '@/components/Button';
+import { FormWrapper } from './FormWrapper';
+import { FormField, NumberInput, SelectInput, RadioGroup } from './FormField';
 import { PlayerStats } from '@/lib/data/players';
 
 interface Team {
@@ -77,54 +78,29 @@ export function PlayerStatsForm({
     return null;
   };
   return (
-    <div className="spurs-accent-card rounded-lg p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold spurs-text">
-          {isPlayerStatsEditMode && editingPlayerStatsId ? 'Edit Player Stats' : 'Add New Player Stats'}
-        </h2>
-        {isPlayerStatsEditMode && editingPlayerStatsId && (
-          <div className="flex gap-2">
-            <Button
-              variant="spurs"
-              size="sm"
-              onClick={onDelete}
-            >
-              Delete
-            </Button>
-            <Button
-              variant="spurs"
-              size="sm"
-              onClick={onCancel}
-            >
-              Cancel
-            </Button>
-          </div>
-        )}
-      </div>
-      
-      <form key={editingPlayerStatsId || 'new'} onSubmit={onSubmit} className="space-y-6">
+    <FormWrapper
+      title="Player Stats"
+      isEditMode={isPlayerStatsEditMode}
+      editingId={editingPlayerStatsId}
+      loading={loading}
+      onSubmit={onSubmit}
+      onDelete={onDelete}
+      onCancel={onCancel}
+    >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="player-stats-season">Season <span className="text-gray-400">(optional)</span></label>
-            <select
+          <FormField label="Season" htmlFor="player-stats-season">
+            <SelectInput
               id="player-stats-season"
               value={playerStatsSeason}
-              onChange={(e) => setPlayerStatsSeason(e.target.value)}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-            >
-              <option value="">All seasons</option>
-              {(() => {
+              onChange={(value) => setPlayerStatsSeason(value)}
+              options={(() => {
                 const seasonIdsInMatches = [...new Set(matches.map(m => m.season_id))];
-                return seasons.filter(season => seasonIdsInMatches.includes(season.id)).map(season => (
-                  <option key={season.id} value={season.id}>
-                    {season.name}
-                  </option>
-                ));
+                return seasons.filter(season => seasonIdsInMatches.includes(season.id)).map(season => ({ value: season.id, label: season.name }));
               })()}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="player-stats-player">Player <span style={{ color: 'var(--spurs-dark-accent)' }} aria-hidden="true">*</span></label>
+              placeholder="All seasons"
+            />
+          </FormField>
+          <FormField label="Player" required htmlFor="player-stats-player">
             <select
               id="player-stats-player"
               name="player_id"
@@ -140,9 +116,8 @@ export function PlayerStatsForm({
                 </option>
               ))}
             </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="player-stats-match">Match <span style={{ color: 'var(--spurs-dark-accent)' }} aria-hidden="true">*</span></label>
+          </FormField>
+          <FormField label="Match" required htmlFor="player-stats-match">
             <select
               id="player-stats-match"
               name="match_id"
@@ -162,9 +137,8 @@ export function PlayerStatsForm({
                 );
               })}
             </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="player-stats-team">Team <span style={{ color: 'var(--spurs-dark-accent)' }} aria-hidden="true">*</span></label>
+          </FormField>
+          <FormField label="Team" required htmlFor="player-stats-team">
             <select
               id="player-stats-team"
               name="team_id"
@@ -180,148 +154,96 @@ export function PlayerStatsForm({
                 </option>
               ))}
             </select>
-          </div>
+          </FormField>
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium mb-2">Match Participation <span className="text-gray-400">(optional)</span></label>
-            <div className="flex space-x-6">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="participation"
-                  value="started"
-                  className="mr-2"
-                  style={{ accentColor: 'var(--spurs-dark-accent)' }}
-                  defaultChecked={getParticipationValue() === 'started'}
-                />
-                Started
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="participation"
-                  value="substitute"
-                  className="mr-2"
-                  style={{ accentColor: 'var(--spurs-dark-accent)' }}
-                  defaultChecked={getParticipationValue() === 'substitute'}
-                />
-                Substitute
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="participation"
-                  value="unused_substitute"
-                  className="mr-2"
-                  style={{ accentColor: 'var(--spurs-dark-accent)' }}
-                  defaultChecked={getParticipationValue() === 'unused_substitute'}
-                />
-                Unused Substitute
-              </label>
-            </div>
+            <FormField label="Match Participation">
+              <RadioGroup
+                name="participation"
+                value={getParticipationValue()}
+                onChange={() => {}}
+                options={[
+                  { value: 'started', label: 'Started' },
+                  { value: 'substitute', label: 'Substitute' },
+                  { value: 'unused_substitute', label: 'Unused Substitute' }
+                ]}
+              />
+            </FormField>
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="player-stats-minute-on">Minute On <span className="text-gray-400">(optional)</span></label>
-            <input
+          <FormField label="Minute On" htmlFor="player-stats-minute-on">
+            <NumberInput
               id="player-stats-minute-on"
               name="minute_on"
-              type="number"
-              min="0"
-              max="120"
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-              defaultValue={editingPlayerStats?.minute_on || ''}
+              min={0}
+              max={120}
+              value={editingPlayerStats?.minute_on || null}
+              onChange={() => {}}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="player-stats-minute-off">Minute Off <span className="text-gray-400">(optional)</span></label>
-            <input
+          </FormField>
+          <FormField label="Minute Off" htmlFor="player-stats-minute-off">
+            <NumberInput
               id="player-stats-minute-off"
               name="minute_off"
-              type="number"
-              min="0"
-              max="120"
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-              defaultValue={editingPlayerStats?.minute_off || ''}
+              min={0}
+              max={120}
+              value={editingPlayerStats?.minute_off || null}
+              onChange={() => {}}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="player-stats-goals">Goals <span className="text-gray-400">(optional)</span></label>
-            <input
+          </FormField>
+          <FormField label="Goals" htmlFor="player-stats-goals">
+            <NumberInput
               id="player-stats-goals"
               name="goals"
-              type="number"
-              min="0"
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-              defaultValue={editingPlayerStats?.goals || 0}
+              min={0}
+              value={editingPlayerStats?.goals || 0}
+              onChange={() => {}}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="player-stats-assists">Assists <span className="text-gray-400">(optional)</span></label>
-            <input
+          </FormField>
+          <FormField label="Assists" htmlFor="player-stats-assists">
+            <NumberInput
               id="player-stats-assists"
               name="assists"
-              type="number"
-              min="0"
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-              defaultValue={editingPlayerStats?.assists || 0}
+              min={0}
+              value={editingPlayerStats?.assists || 0}
+              onChange={() => {}}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="player-stats-yellow-cards">Yellow Cards <span className="text-gray-400">(optional)</span></label>
-            <input
+          </FormField>
+          <FormField label="Yellow Cards" htmlFor="player-stats-yellow-cards">
+            <NumberInput
               id="player-stats-yellow-cards"
               name="yellow_cards"
-              type="number"
-              min="0"
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-              defaultValue={editingPlayerStats?.yellow_cards || 0}
+              min={0}
+              value={editingPlayerStats?.yellow_cards || 0}
+              onChange={() => {}}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="player-stats-red-cards">Red Cards <span className="text-gray-400">(optional)</span></label>
-            <input
+          </FormField>
+          <FormField label="Red Cards" htmlFor="player-stats-red-cards">
+            <NumberInput
               id="player-stats-red-cards"
               name="red_cards"
-              type="number"
-              min="0"
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-              defaultValue={editingPlayerStats?.red_cards || 0}
+              min={0}
+              value={editingPlayerStats?.red_cards || 0}
+              onChange={() => {}}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="player-stats-captain">Captain? <span className="text-gray-400">(optional)</span></label>
-            <select
+          </FormField>
+          <FormField label="Captain?" htmlFor="player-stats-captain">
+            <SelectInput
               id="player-stats-captain"
               name="captain"
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-              defaultValue={editingPlayerStats?.captain?.toString() || 'false'}
-            >
-              <option value="false">No</option>
-              <option value="true">Yes</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="player-stats-pom">Player of the Match? <span className="text-gray-400">(optional)</span></label>
-            <select
+              value={editingPlayerStats?.captain?.toString() || 'false'}
+              options={[{ value: 'false', label: 'No' }, { value: 'true', label: 'Yes' }]}
+              onChange={() => {}}
+            />
+          </FormField>
+          <FormField label="Player of the Match?" htmlFor="player-stats-pom">
+            <SelectInput
               id="player-stats-pom"
               name="player_of_the_match"
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-              defaultValue={editingPlayerStats?.player_of_the_match?.toString() || 'false'}
-            >
-              <option value="false">No</option>
-              <option value="true">Yes</option>
-            </select>
-          </div>
+              value={editingPlayerStats?.player_of_the_match?.toString() || 'false'}
+              options={[{ value: 'false', label: 'No' }, { value: 'true', label: 'Yes' }]}
+              onChange={() => {}}
+            />
+          </FormField>
         </div>
-        <Button
-          type="submit"
-          variant="spurs"
-          disabled={loading}
-          loading={loading}
-          fullWidth
-        >
-          {loading ? (isPlayerStatsEditMode ? 'Updating...' : 'Creating...') : (isPlayerStatsEditMode ? 'Update Player Stats' : 'Create Player Stats')}
-        </Button>
-      </form>
-    </div>
+      </FormWrapper>
   );
 }

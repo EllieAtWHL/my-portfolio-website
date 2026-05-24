@@ -32,7 +32,7 @@ export default function SeasonFilterClient({ matches, seasonName, seasonReview }
         />
 
         {/* Season Stats */}
-        <SeasonStats matches={matches} seasonName={seasonName} />
+        <SeasonStats matches={filteredMatches} seasonName={seasonName} />
 
         {/* Comprehensive Filters */}
         <MatchFilterControls

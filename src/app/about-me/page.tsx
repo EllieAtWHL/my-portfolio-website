@@ -23,12 +23,12 @@ export const metadata = {
 export default function AboutMe() {
   return (
     <MainSitePage>
-      <div className="content">
+      <div className="content-with-footer">
         <div className="scrollable">
             <div className="about-container">
-              <div className="about-header">
-                <h1 className="about-title">About Me</h1>
-                <div className="about-subtitle">Trailblazer. Mentor. Champion.</div>
+              <div className="page-header">
+                <h1 className="page-title">About Me</h1>
+                <div className="page-subtitle">Trailblazer. Mentor. Champion.</div>
               </div>
               
               <section className="intro">

@@ -4,15 +4,7 @@ import { NewsArticle, YouTubeVideo } from '@/lib/rss';
 import { getHomePageMatches } from './matches';
 
 // Podcast fetching logic extracted from API route
-interface PodcastEpisode {
-  title: string;
-  episodeNumber: string;
-  description: string;
-  duration: string;
-  publishDate: string;
-  url: string;
-  podcastName: string;
-}
+import { PodcastEpisode } from '@/types/podcast';
 
 interface PodcastFeed {
   name: string;

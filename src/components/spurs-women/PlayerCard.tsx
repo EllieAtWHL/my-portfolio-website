@@ -35,12 +35,12 @@ export default function PlayerCard({ player, teamColor = 'gray', showStats = tru
                 src={player.profile_image_url}
                 alt={fullName}
                 className="w-12 h-12 rounded-full object-cover border-2"
-                style={{ borderColor: teamColor }}
+                style={{ '--team-color': teamColor, borderColor: 'var(--team-color)' } as React.CSSProperties}
               />
             ) : (
               <div
                 className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-sm border-2"
-                style={{ backgroundColor: teamColor, borderColor: teamColor }}
+                style={{ '--team-color': teamColor, backgroundColor: 'var(--team-color)', borderColor: 'var(--team-color)' } as React.CSSProperties}
               >
                 {player.last_name.charAt(0).toUpperCase()}
               </div>

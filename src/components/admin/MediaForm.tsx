@@ -1,4 +1,5 @@
-import { Button } from '@/components/Button';
+import { FormWrapper } from './FormWrapper';
+import { FormField, TextInput, SelectInput, NumberInput } from './FormField';
 
 interface Team {
   id: number;
@@ -67,148 +68,92 @@ export function MediaForm({
   onCancel,
 }: MediaFormProps) {
   return (
-    <div className="spurs-accent-card rounded-lg p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold spurs-text">
-          {isMediaEditMode && editingMediaId ? 'Edit Media' : 'Add New Media'}
-        </h2>
-        {isMediaEditMode && editingMediaId && (
-          <div className="flex gap-2">
-            <Button
-              variant="spurs"
-              size="sm"
-              onClick={onDelete}
-            >
-              Delete
-            </Button>
-            <Button
-              variant="spurs"
-              size="sm"
-              onClick={onCancel}
-            >
-              Cancel
-            </Button>
-          </div>
-        )}
-      </div>
-      
-      <form onSubmit={onSubmit} className="space-y-6">
+    <FormWrapper
+      title="Media"
+      isEditMode={isMediaEditMode}
+      editingId={editingMediaId}
+      loading={loading}
+      onSubmit={onSubmit}
+      onDelete={onDelete}
+      onCancel={onCancel}
+    >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Season Dropdown */}
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="media-season">Season <span className="text-gray-400">(optional)</span></label>
-            <select
+          <FormField label="Season" htmlFor="media-season">
+            <SelectInput
               id="media-season"
               value={mediaSeason}
-              onChange={(e) => setMediaSeason(e.target.value)}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-            >
-              <option value="">All seasons</option>
-              {(() => {
+              onChange={(value) => setMediaSeason(value)}
+              options={(() => {
                 const seasonIdsInMatches = [...new Set(matches.map(m => m.season_id))];
-                return seasons.filter(season => seasonIdsInMatches.includes(season.id)).map(season => (
-                  <option key={season.id} value={season.id}>
-                    {season.name}
-                  </option>
-                ));
+                return seasons.filter(season => seasonIdsInMatches.includes(season.id)).map(season => ({ value: season.id, label: season.name }));
               })()}
-            </select>
-          </div>
+              placeholder="All seasons"
+            />
+          </FormField>
           
-          {/* Match Dropdown */}
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="media-match">Match <span style={{ color: 'var(--spurs-dark-accent)' }} aria-hidden="true">*</span></label>
-            <select
+          <FormField label="Match" required htmlFor="media-match">
+            <SelectInput
               id="media-match"
               value={mediaForm.match_id || ''}
-              onChange={(e) => setMediaForm({ ...mediaForm, match_id: e.target.value })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
-              required
-              aria-required="true"
-            >
-              <option value="">Select match</option>
-              {matches.filter(match => !mediaSeason || match.season_id === mediaSeason).map(match => {
+              onChange={(value) => setMediaForm({ ...mediaForm, match_id: value as string })}
+              options={matches.filter(match => !mediaSeason || match.season_id === mediaSeason).map(match => {
                 const homeTeam = teams.find(t => t.id === match.home_team_id);
                 const awayTeam = teams.find(t => t.id === match.away_team_id);
                 const competition = competitions.find(c => c.id === match.competition_id);
                 
-                return (
-                  <option key={match.id} value={match.id}>
-                    {homeTeam?.short_name} vs {awayTeam?.short_name} - {competition?.nickname} ({match.date})
-                  </option>
-                );
+                return {
+                  value: match.id,
+                  label: `${homeTeam?.short_name} vs ${awayTeam?.short_name} - ${competition?.nickname} (${match.date})`
+                };
               })}
-            </select>
-          </div>
+              required
+              placeholder="Select match"
+            />
+          </FormField>
 
-          {/* Media Type */}
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="media-type">Media Type <span style={{ color: 'var(--spurs-dark-accent)' }} aria-hidden="true">*</span></label>
-            <select
+          <FormField label="Media Type" required htmlFor="media-type">
+            <SelectInput
               id="media-type"
               value={mediaForm.type || 'social media'}
-              onChange={(e) => setMediaForm({ ...mediaForm, type: e.target.value as MediaForm['type'] })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              onChange={(value) => setMediaForm({ ...mediaForm, type: value as MediaForm['type'] })}
+              options={[
+                { value: 'social media', label: 'Social Media' },
+                { value: 'article', label: 'Article' },
+                { value: 'photo', label: 'Photo' },
+                { value: 'photo album', label: 'Photo Album' },
+                { value: 'video-external', label: 'External Video' }
+              ]}
               required
-              aria-required="true"
-            >
-              <option value="social media">Social Media</option>
-              <option value="article">Article</option>
-              <option value="photo">Photo</option>
-              <option value="photo album">Photo Album</option>
-              <option value="video-external">External Video</option>
-            </select>
-          </div>
+              placeholder="Select media type"
+            />
+          </FormField>
 
-          {/* Title */}
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="media-title">Title <span className="text-gray-400">(optional)</span></label>
-            <input
+          <FormField label="Title" htmlFor="media-title">
+            <TextInput
               id="media-title"
-              type="text"
               value={mediaForm.title || ''}
-              onChange={(e) => setMediaForm({ ...mediaForm, title: e.target.value })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              onChange={(value) => setMediaForm({ ...mediaForm, title: value })}
             />
-          </div>
+          </FormField>
 
-          {/* URL */}
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="media-url">URL <span style={{ color: 'var(--spurs-dark-accent)' }} aria-hidden="true">*</span></label>
-            <input
+          <FormField label="URL" required htmlFor="media-url">
+            <TextInput
               id="media-url"
-              type="text"
               value={mediaForm.url || ''}
-              onChange={(e) => setMediaForm({ ...mediaForm, url: e.target.value })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              onChange={(value) => setMediaForm({ ...mediaForm, url: value })}
               required
-              aria-required="true"
             />
-          </div>
+          </FormField>
 
-          {/* Sort Order */}
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="media-sort-order">Sort Order <span className="text-gray-400">(optional)</span></label>
-            <input
+          <FormField label="Sort Order" htmlFor="media-sort-order">
+            <NumberInput
               id="media-sort-order"
-              type="number"
               value={mediaForm.sort_order || 0}
-              onChange={(e) => setMediaForm({ ...mediaForm, sort_order: parseInt(e.target.value) || 0 })}
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text"
+              onChange={(value) => setMediaForm({ ...mediaForm, sort_order: value || 0 })}
             />
-          </div>
+          </FormField>
         </div>
 
-        <Button
-          type="submit"
-          variant="spurs"
-          disabled={loading}
-          loading={loading}
-          fullWidth
-        >
-          {loading ? (isMediaEditMode ? 'Updating...' : 'Creating...') : (isMediaEditMode ? 'Update Media' : 'Create Media')}
-        </Button>
-      </form>
-    </div>
+      </FormWrapper>
   );
 }

@@ -1,13 +1,14 @@
 // components/MainSitePage.tsx
 import Header from './Header';
 import Footer from './Footer';
+import { MainSiteWrapper } from './MainSiteWrapper';
 
 export default function MainSitePage({ children }: { children: React.ReactNode }) {
   return (
-    <div className="main-wrapper">
+    <MainSiteWrapper>
       <Header />
       {children}
       <Footer />
-    </div>
+    </MainSiteWrapper>
   );
 }

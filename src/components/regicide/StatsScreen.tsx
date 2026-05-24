@@ -99,7 +99,7 @@ export function StatsScreen({ onClose }: StatsScreenProps) {
               <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
                 <div 
                   className="bg-green-600 dark:bg-green-400 h-2 rounded-full transition-all duration-500"
-                  style={{ width: `${stats.gamesStarted > 0 ? (stats.gamesWon / stats.gamesStarted) * 100 : 0}%` }}
+                  style={{ '--progress-width': `${stats.gamesStarted > 0 ? (stats.gamesWon / stats.gamesStarted) * 100 : 0}%`, width: 'var(--progress-width)' } as React.CSSProperties}
                 />
               </div>
             </UniversalCard>
@@ -127,7 +127,7 @@ export function StatsScreen({ onClose }: StatsScreenProps) {
               <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
                 <div 
                   className="bg-yellow-600 dark:bg-yellow-400 h-2 rounded-full transition-all duration-500"
-                  style={{ width: `${stats.winRate}%` }}
+                  style={{ '--progress-width': `${stats.winRate}%`, width: 'var(--progress-width)' } as React.CSSProperties}
                 />
               </div>
             </UniversalCard>

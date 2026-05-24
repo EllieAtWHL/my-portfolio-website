@@ -39,10 +39,13 @@ export function Deck({ type, count, className = '' }: DeckProps) {
               transform transition-transform duration-200
             `}
             style={{
-              top: `${offset * 2}px`,
-              left: `${offset * 2}px`,
-              zIndex: 3 - offset
-            }}
+              '--offset-top': `${offset * 2}px`,
+              '--offset-left': `${offset * 2}px`,
+              '--z-index': 3 - offset,
+              top: 'var(--offset-top)',
+              left: 'var(--offset-left)',
+              zIndex: 'var(--z-index)'
+            } as React.CSSProperties}
           />
         ))}
         
@@ -58,10 +61,14 @@ export function Deck({ type, count, className = '' }: DeckProps) {
         >
           {/* Deck Pattern */}
           <div className="absolute inset-0 opacity-20">
-            <div className="w-full h-full bg-repeat" style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.2'%3E%3Cpath d='M0 0h20v20H0z'/%3E%3C/g%3E%3C/svg%3E")`,
-              backgroundSize: '20px 20px'
-            }} />
+            <div 
+              className="w-full h-full bg-repeat" 
+              style={{
+                '--pattern-image': `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.2'%3E%3Cpath d='M0 0h20v20H0z'/%3E%3C/g%3E%3C/svg%3E")`,
+                backgroundImage: 'var(--pattern-image)',
+                backgroundSize: '20px 20px'
+              } as React.CSSProperties}
+            />
           </div>
 
           {/* Deck Icon */}

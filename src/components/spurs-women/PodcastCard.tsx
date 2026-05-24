@@ -3,15 +3,7 @@
 import Link from 'next/link';
 import { Card } from '@/components/Card';
 
-interface PodcastEpisode {
-  title: string;
-  episodeNumber: string;
-  description: string;
-  duration: string;
-  publishDate: string;
-  url: string;
-  podcastName: string;
-}
+import { PodcastEpisode } from '@/types/podcast';
 
 interface PodcastCardProps {
   episode: PodcastEpisode;

@@ -1,3 +1,4 @@
+import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getMatchById, getAdjacentMatches } from '@/lib/data/matches';
 import { getPhotosByMatch, getArticlesByMatch, getSocialMediaByMatch, getVideosByMatch } from '@/lib/data/media';
@@ -12,12 +13,34 @@ import MatchNavigation from '@/components/spurs-women/MatchNavigation';
 import TeamLineup from '@/components/spurs-women/TeamLineup';
 import { Media } from '@/lib/data/media';
 import { PhotoMedia } from '@/lib/data/media';
+import { generatePageMetadata } from '@/lib/metadata';
 
 
 interface PageProps {
   params: {
     matchId: string;
   };
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { matchId } = await params;
+  const match = await getMatchById(matchId);
+  
+  if (!match) {
+    return generatePageMetadata(
+      'Match Not Found - Tottenham Hotspur Women',
+      'The requested match could not be found'
+    );
+  }
+
+  const homeTeam = match.home_team?.name || 'Home Team';
+  const awayTeam = match.away_team?.name || 'Away Team';
+  const matchDate = match.date ? new Date(match.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+
+  return generatePageMetadata(
+    `${homeTeam} vs ${awayTeam} (${matchDate}) - Tottenham Hotspur Women`,
+    `Match details for ${homeTeam} vs ${awayTeam} on ${matchDate}`
+  );
 }
 
 export default async function MatchDetailPage({ params }: PageProps) {
@@ -76,6 +99,8 @@ export default async function MatchDetailPage({ params }: PageProps) {
           {match.competitions && (
             <div className="flex items-center gap-2">
               {match.competitions.icon_svg ? (
+                // SECURITY EXCEPTION: icon_svg comes from trusted Supabase database (admin-controlled only)
+                // Content is limited to SVG icons, not arbitrary HTML. No user-generated content.
                 <div className="w-5 h-5" dangerouslySetInnerHTML={{ __html: match.competitions.icon_svg }} />
               ) : (
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
