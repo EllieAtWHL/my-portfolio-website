@@ -6,20 +6,73 @@ import { useState, useRef, useEffect } from 'react';
 
 export default function NotFound() {
   const [score, setScore] = useState(0);
+  const [ballsRemaining, setBallsRemaining] = useState(10);
+  const [highScore, setHighScore] = useState(0);
+  const [gameOver, setGameOver] = useState(false);
   const [ballPosition, setBallPosition] = useState({ x: 50, y: 50, z: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [isFlying, setIsFlying] = useState(false);
   const [showGoal, setShowGoal] = useState(false);
+  const [showBullseye, setShowBullseye] = useState(false);
+  const [showMiss, setShowMiss] = useState(false);
+  const [missReason, setMissReason] = useState('');
+  const [targetPosition, setTargetPosition] = useState({ x: 50, y: 10, z: 15 });
   const [hasPlayedIntro, setHasPlayedIntro] = useState(false);
   const [isIntroPlaying, setIsIntroPlaying] = useState(false);
   const ballRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number | undefined>(undefined);
   const isDraggingRef = useRef(false);
+  const isTooFastRef = useRef(false);
+  const ballWentThroughGoalRef = useRef(false);
+  const scoreRef = useRef(0);
+
+  const randomizeTarget = () => {
+    // Random position within goal area (x: 20-80%, y: 5-18%, z: 10-25%)
+    const newX = 20 + Math.random() * 60;
+    const newY = 5 + Math.random() * 13;
+    const newZ = 10 + Math.random() * 15;
+    setTargetPosition({ x: newX, y: newY, z: newZ });
+  };
+
+  const randomizeBallPosition = () => {
+    // Random position in lower area, well above text (x: 20-80%, y: 75-90%, z: 0)
+    const newX = 20 + Math.random() * 60;
+    const newY = 50 + Math.random() * 20;
+    setBallPosition({ x: newX, y: newY, z: 0 });
+  };
+
+  const resetGame = () => {
+    setScore(0);
+    setBallsRemaining(10);
+    setGameOver(false);
+    randomizeBallPosition();
+    randomizeTarget();
+  };
+
+  // Keep scoreRef in sync with score state
+  useEffect(() => {
+    scoreRef.current = score;
+  }, [score]);
+
+  // Load high score from localStorage on mount
+  useEffect(() => {
+    const savedHighScore = localStorage.getItem('footballHighScore');
+    if (savedHighScore) {
+      setHighScore(parseInt(savedHighScore, 10));
+    }
+  }, []);
+
+  // Randomize ball position on initial load
+  useEffect(() => {
+    randomizeBallPosition();
+  }, []);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (isFlying || isIntroPlaying) return;
     setIsDragging(true);
     isDraggingRef.current = true;
+    isTooFastRef.current = false;
+    ballWentThroughGoalRef.current = false;
     
     // Store in closure variables for immediate access
     const startX = e.clientX;
@@ -50,9 +103,33 @@ export default function NotFound() {
       
       const zVelocity = Math.min(dragDistance * 0.15, 25);
       
+      // Cap velocity to prevent automatic misses from too-fast kicks
+      const maxVelocity = 30;
+      let xVelocity = -dragDeltaX / 3;
+      let yVelocity = -dragDeltaY / 3;
+      
+      // Calculate total velocity magnitude
+      const velocityMagnitude = Math.sqrt(xVelocity * xVelocity + yVelocity * yVelocity + zVelocity * zVelocity);
+      
+      // Scale down if velocity is too high and show miss message
+      if (velocityMagnitude > maxVelocity) {
+        const scale = maxVelocity / velocityMagnitude;
+        xVelocity *= scale;
+        yVelocity *= scale;
+        isTooFastRef.current = true;
+        setShowMiss(true);
+        setMissReason('High!');
+        setTimeout(() => {
+          setShowMiss(false);
+          setMissReason('');
+        }, 1000);
+      } else {
+        isTooFastRef.current = false;
+      }
+      
       const newVelocity = {
-        x: -dragDeltaX / 3,
-        y: -dragDeltaY / 3,
+        x: xVelocity,
+        y: yVelocity,
         z: zVelocity
       };
       
@@ -69,6 +146,8 @@ export default function NotFound() {
     e.preventDefault();
     setIsDragging(true);
     isDraggingRef.current = true;
+    isTooFastRef.current = false;
+    ballWentThroughGoalRef.current = false;
     const touch = e.touches[0];
     
     // Store in closure variables for immediate access
@@ -103,9 +182,33 @@ export default function NotFound() {
       
       const zVelocity = Math.min(dragDistance * 0.15, 25);
       
+      // Cap velocity to prevent automatic misses from too-fast kicks
+      const maxVelocity = 30;
+      let xVelocity = -dragDeltaX / 3;
+      let yVelocity = -dragDeltaY / 3;
+      
+      // Calculate total velocity magnitude
+      const velocityMagnitude = Math.sqrt(xVelocity * xVelocity + yVelocity * yVelocity + zVelocity * zVelocity);
+      
+      // Scale down if velocity is too high and show miss message
+      if (velocityMagnitude > maxVelocity) {
+        const scale = maxVelocity / velocityMagnitude;
+        xVelocity *= scale;
+        yVelocity *= scale;
+        isTooFastRef.current = true;
+        setShowMiss(true);
+        setMissReason('High!');
+        setTimeout(() => {
+          setShowMiss(false);
+          setMissReason('');
+        }, 1000);
+      } else {
+        isTooFastRef.current = false;
+      }
+      
       const newVelocity = {
-        x: -dragDeltaX / 3,
-        y: -dragDeltaY / 3,
+        x: xVelocity,
+        y: yVelocity,
         z: zVelocity
       };
       
@@ -133,17 +236,68 @@ export default function NotFound() {
       currentVy += 0.08;
       currentVz -= 0.02;
 
-      if (!goalChecked && currentX > 10 && currentX < 90 && currentY < 20 && currentY > 0 && currentZ > 5 && currentZ < 30) {
+      // Check for bullseye (target) hit - smaller zone around target position
+      const targetHitbox = 15; // 15% margin around target (increased for easier hitting)
+      if (!goalChecked && !isTooFastRef.current && 
+          currentX > targetPosition.x - targetHitbox && 
+          currentX < targetPosition.x + targetHitbox && 
+          currentY > targetPosition.y - targetHitbox && 
+          currentY < targetPosition.y + targetHitbox && 
+          currentZ > targetPosition.z - targetHitbox && 
+          currentZ < targetPosition.z + targetHitbox) {
+        goalChecked = true;
+        setScore(prev => prev + 5);
+        setShowBullseye(true);
+        setTimeout(() => setShowBullseye(false), 1000);
+      }
+      // Check for regular goal hit
+      else if (!goalChecked && !isTooFastRef.current && currentX > 10 && currentX < 90 && currentY < 20 && currentY > 0 && currentZ > 5 && currentZ < 30) {
         goalChecked = true;
         setScore(prev => prev + 1);
         setShowGoal(true);
         setTimeout(() => setShowGoal(false), 1000);
       }
 
+      // Track if ball went through goal area (for miss message)
+      if (currentX > 10 && currentX < 90 && currentY < 20 && currentY > 0 && currentZ > 5 && currentZ < 30) {
+        ballWentThroughGoalRef.current = true;
+      }
+
       if (currentX < -20 || currentX > 120 || currentY > 120 || currentZ < -50 || currentZ > 100) {
-        setBallPosition({ x: 50, y: 50, z: 0 });
         setIsFlying(false);
         setIsDragging(false);
+        
+        // Decrement balls remaining
+        setBallsRemaining(prev => {
+          const newRemaining = prev - 1;
+          
+          // Check if game is over
+          if (newRemaining === 0) {
+            setGameOver(true);
+            // Update high score if current score is higher (use ref for latest value)
+            if (scoreRef.current > highScore) {
+              const newHighScore = scoreRef.current;
+              setHighScore(newHighScore);
+              localStorage.setItem('footballHighScore', newHighScore.toString());
+            }
+          }
+          
+          return newRemaining;
+        });
+        
+        // Randomize target and ball position for next shot
+        randomizeTarget();
+        randomizeBallPosition();
+        
+        // Show miss message if not a goal and not too fast
+        if (!showGoal && !isTooFastRef.current && !ballWentThroughGoalRef.current) {
+          setShowMiss(true);
+          setMissReason('Wide!');
+          setTimeout(() => {
+            setShowMiss(false);
+            setMissReason('');
+          }, 1000);
+        }
         return;
       }
 
@@ -215,7 +369,17 @@ export default function NotFound() {
         <div className="crossbar"></div>
         <div className="post right-post"></div>
         <div className="net"></div>
+        <div 
+          className="target"
+          style={{
+            left: `${targetPosition.x}%`,
+            top: `${targetPosition.y}%`,
+            transform: `translate(-50%, -50%) scale(${1 + targetPosition.z * 0.02})`
+          }}
+        ></div>
         {showGoal && <div className="goal-message">GOAL!</div>}
+        {showBullseye && <div className="bullseye-message">BULLSEYE! +5</div>}
+        {showMiss && <div className="miss-message">MISS - {missReason}</div>}
       </div>
       
       <div 
@@ -225,7 +389,8 @@ export default function NotFound() {
           left: `${ballPosition.x}%`,
           top: `${ballPosition.y}%`,
           transform: `translate(-50%, -50%) scale(${1 + ballPosition.z * 0.01})`,
-          zIndex: Math.floor(ballPosition.z)
+          zIndex: Math.max(20, Math.floor(ballPosition.z)),
+          pointerEvents: gameOver ? 'none' : 'auto'
         }}
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
@@ -233,7 +398,7 @@ export default function NotFound() {
         tabIndex={0}
         aria-label="Drag and release to kick the football"
       >
-        <div className="football-pattern"></div>
+        ⚽
       </div>
       
       <div className="not-found-content">
@@ -244,14 +409,38 @@ export default function NotFound() {
         <p className="not-found-message">
           Looks like the ball hit the post! This page doesn&apos;t exist.
         </p>
-        
+      </div>
+      
+      <div className="not-found-content not-found-game-info">
         <p className="score-display">
           Goals scored: <span className="score-number">{score}</span>
         </p>
+        <p className="score-display">
+          Balls remaining: <span className="score-number">{ballsRemaining}</span>
+        </p>
+        <p className="score-display">
+          High score: <span className="score-number">{highScore}</span>
+        </p>
         <p className="game-hint">Drag the ball and release to flick it into the goal!</p>
         
+        {gameOver && (
+          <div style={{ marginTop: '1rem' }}>
+            <p className="score-display" style={{ fontSize: '1.5rem', fontWeight: '700' }}>
+              Game Over!
+            </p>
+            <Button 
+              variant="primary" 
+              size="lg" 
+              onClick={resetGame}
+              style={{ marginTop: '0.5rem' }}
+            >
+              Play Again
+            </Button>
+          </div>
+        )}
+        
         <Link href="/">
-          <Button variant="primary" size="lg">
+          <Button variant="secondary" size="lg" style={{ marginTop: '1rem' }}>
             Back to Home
           </Button>
         </Link>
