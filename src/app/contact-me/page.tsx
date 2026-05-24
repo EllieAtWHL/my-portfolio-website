@@ -217,12 +217,11 @@ export default function ContactMe() {
                   )}
 
                   <div className="pt-4">
-                    <Button 
-                      type="submit" 
-                      variant="primary" 
-                      size="lg" 
-                      fullWidth 
-                      className="button primary"
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      size="lg"
+                      fullWidth
                       disabled={isSubmitting}
                     >
                       {isSubmitting ? 'Sending...' : 'Send Message'}

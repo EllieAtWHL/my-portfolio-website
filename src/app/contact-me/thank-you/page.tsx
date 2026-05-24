@@ -73,7 +73,7 @@ export default function ThankYou() {
               </div>
               
               <div className="mt-8 space-y-4">
-                <Button variant="primary" size="lg" fullWidth asChild className="button primary">
+                <Button variant="primary" size="lg" fullWidth asChild>
                   <Link href="/">
                     Return to Home
                   </Link>
