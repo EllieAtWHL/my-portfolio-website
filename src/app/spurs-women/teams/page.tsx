@@ -1,7 +1,15 @@
+import { Metadata } from 'next';
 import { Card } from '@/components/Card';
 import { getTeamsWithMatchCounts, TeamWithMatchCount } from '@/lib/data';
 import Link from 'next/link';
 import TeamPill from '@/components/spurs-women/TeamPill';
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Teams - Tottenham Hotspur Women',
+    description: 'Browse all teams that have played against Tottenham Hotspur Women',
+  };
+}
 
 export default async function TeamsPage() {
   let teams: TeamWithMatchCount[] = [];
