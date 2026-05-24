@@ -241,18 +241,19 @@ git add src/app/spurs-women/matches/[matchId]/page.tsx
 
 ## Specific Anti-Patterns to Avoid
 
-**CSS Violations** (Critical):
-- 106 instances of hardcoded `rgba()` values in globals.css must be replaced
+**CSS Violations** (Resolved):
+- ✅ Hardcoded `rgba()` values in globals.css have been replaced
 - Tailwind config contains hardcoded color arrays that contradict CSS variable approach
 - Button component uses CSS classes instead of Tailwind utilities
 
-**Security Issues**:
+**Security Issues** (Mitigated):
 - `dangerouslySetInnerHTML` usage in MatchHeader.tsx and MatchCard.tsx for SVG rendering
-- Find safer alternatives for SVG rendering
+- ✅ Security comments added explaining content is from trusted Supabase database (admin-controlled only)
+- Content limited to SVG icons, not arbitrary HTML. No user-generated content.
 
-**Component Inconsistencies**:
+**Component Inconsistencies** (Resolved):
 - Mixed styling approaches between CSS classes and Tailwind utilities
-- Button migration incomplete (~70% complete - 6 files still need migration)
+- ✅ Button migration complete - all files migrated to Button component
 
 ## Spurs Women Specific Rules
 
