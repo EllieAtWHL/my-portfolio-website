@@ -1,6 +1,8 @@
 // Client-side data fetching functions that call the cached API routes
 // These are safe to use in client components
 
+import { PodcastEpisode } from '@/types/podcast';
+
 export interface NewsArticle {
   title: string;
   link: string;
@@ -19,16 +21,6 @@ export interface YouTubeVideo {
   videoId: string;
   thumbnail: string;
   description: string;
-}
-
-export interface PodcastEpisode {
-  title: string;
-  episodeNumber: string;
-  description: string;
-  duration: string;
-  publishDate: string;
-  url: string;
-  podcastName: string;
 }
 
 export interface Season {

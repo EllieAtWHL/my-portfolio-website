@@ -1,14 +1,6 @@
 import { NextResponse } from 'next/server';
 
-interface PodcastEpisode {
-  title: string;
-  episodeNumber: string;
-  description: string;
-  duration: string;
-  publishDate: string;
-  url: string;
-  podcastName: string;
-}
+import { PodcastEpisode } from '@/types/podcast';
 
 interface PodcastFeed {
   name: string;
