@@ -55,9 +55,11 @@ export default async function TeamsPage() {
             >
               <div
                 style={{
-                  borderTop: team.primary_color && !isWhiteColor(team.primary_color) ? `4px solid ${team.primary_color}` : undefined,
-                  borderBottom: team.secondary_color && !isWhiteColor(team.secondary_color) ? `4px solid ${team.secondary_color}` : undefined
-                }}
+                  '--team-primary-color': team.primary_color && !isWhiteColor(team.primary_color) ? team.primary_color : 'transparent',
+                  '--team-secondary-color': team.secondary_color && !isWhiteColor(team.secondary_color) ? team.secondary_color : 'transparent',
+                  borderTop: '4px solid var(--team-primary-color)',
+                  borderBottom: '4px solid var(--team-secondary-color)'
+                } as React.CSSProperties}
               >
                 <Card variant="spursAccent" padding="md" clickable={true}>
                   <div className="flex justify-between items-start mb-2">

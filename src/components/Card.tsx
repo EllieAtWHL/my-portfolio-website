@@ -32,9 +32,9 @@ export function Card({
   };
   
   const paddingClasses = {
-    sm: variant === 'accent' ? '!pt-4 !pr-4 !pb-4 !pl-8' : 'p-4',
-    md: variant === 'accent' ? '!pt-6 !pr-6 !pb-6 !pl-8' : 'p-6',
-    lg: variant === 'accent' ? '!pt-8 !pr-8 !pb-8 !pl-8' : 'p-8'
+    sm: 'p-4',
+    md: 'p-6',
+    lg: 'p-8'
   };
   
   const hoverClasses = (hover && clickable) ? 'hover:shadow-xl hover:-translate-y-1 hover-enabled' : 'no-hover';

@@ -23,7 +23,7 @@ export default function Home() {
 
   return (
     <MainSitePage>
-      <div className="content">
+      <div className="content-with-footer">
         <div className="scrollable">
           <h1 className="slideLeft">Trailblazer.</h1>
           <h1 className="slideRight">Mentor.</h1>

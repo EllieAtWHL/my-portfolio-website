@@ -67,11 +67,15 @@ export default function TeamClient({ team, teamId }: TeamClientProps) {
                       : 'text-gray-300 hover:text-[var(--spurs-dark-accent)]'
                   }`}
                   style={{
-                    backgroundColor: activeTab === 'current' ? 'var(--spurs-dark-bg-1)' : 'rgba(8, 21, 33, 0.3)',
-                    borderBottomColor: activeTab === 'current' ? 'var(--spurs-dark-accent)' : 'transparent',
-                    borderBottomWidth: activeTab === 'current' ? '2px' : '0',
-                    color: activeTab === 'current' ? 'var(--spurs-dark-accent)' : '#d1d5db'
-                  }}
+                    '--tab-bg': activeTab === 'current' ? 'var(--spurs-dark-bg-1)' : 'rgba(8, 21, 33, 0.3)',
+                    '--tab-border-color': activeTab === 'current' ? 'var(--spurs-dark-accent)' : 'transparent',
+                    '--tab-border-width': activeTab === 'current' ? '2px' : '0',
+                    '--tab-color': activeTab === 'current' ? 'var(--spurs-dark-accent)' : '#d1d5db',
+                    backgroundColor: 'var(--tab-bg)',
+                    borderBottomColor: 'var(--tab-border-color)',
+                    borderBottomWidth: 'var(--tab-border-width)',
+                    color: 'var(--tab-color)'
+                  } as React.CSSProperties}
                   disabled={players.current.length === 0}
                 >
                   Current ({players.current.length})
@@ -84,11 +88,15 @@ export default function TeamClient({ team, teamId }: TeamClientProps) {
                       : 'text-gray-300 hover:text-[var(--spurs-dark-accent)]'
                   }`}
                   style={{
-                    backgroundColor: activeTab === 'former' ? 'var(--spurs-dark-bg-1)' : 'rgba(8, 21, 33, 0.3)',
-                    borderBottomColor: activeTab === 'former' ? 'var(--spurs-dark-accent)' : 'transparent',
-                    borderBottomWidth: activeTab === 'former' ? '2px' : '0',
-                    color: activeTab === 'former' ? 'var(--spurs-dark-accent)' : '#d1d5db'
-                  }}
+                    '--tab-bg': activeTab === 'former' ? 'var(--spurs-dark-bg-1)' : 'rgba(8, 21, 33, 0.3)',
+                    '--tab-border-color': activeTab === 'former' ? 'var(--spurs-dark-accent)' : 'transparent',
+                    '--tab-border-width': activeTab === 'former' ? '2px' : '0',
+                    '--tab-color': activeTab === 'former' ? 'var(--spurs-dark-accent)' : '#d1d5db',
+                    backgroundColor: 'var(--tab-bg)',
+                    borderBottomColor: 'var(--tab-border-color)',
+                    borderBottomWidth: 'var(--tab-border-width)',
+                    color: 'var(--tab-color)'
+                  } as React.CSSProperties}
                   disabled={players.former.length === 0}
                 >
                   Former ({players.former.length})
