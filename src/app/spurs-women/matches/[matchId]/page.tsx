@@ -1,3 +1,4 @@
+import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getMatchById, getAdjacentMatches } from '@/lib/data/matches';
 import { getPhotosByMatch, getArticlesByMatch, getSocialMediaByMatch, getVideosByMatch } from '@/lib/data/media';
@@ -17,6 +18,26 @@ import { PhotoMedia } from '@/lib/data/media';
 interface PageProps {
   params: {
     matchId: string;
+  };
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { matchId } = await params;
+  const match = await getMatchById(matchId);
+  
+  if (!match) {
+    return {
+      title: 'Match Not Found - Tottenham Hotspur Women',
+    };
+  }
+
+  const homeTeam = match.home_team?.name || 'Home Team';
+  const awayTeam = match.away_team?.name || 'Away Team';
+  const matchDate = match.date ? new Date(match.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+
+  return {
+    title: `${homeTeam} vs ${awayTeam} (${matchDate}) - Tottenham Hotspur Women`,
+    description: `Match details for ${homeTeam} vs ${awayTeam} on ${matchDate}`,
   };
 }
 
