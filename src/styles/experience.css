@@ -1,0 +1,642 @@
+/* Experience Page Styles */
+
+.experience-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  padding-bottom: 120px;
+  width: 100%;
+}
+
+.tab-navigation {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  background: transparent;
+  padding: 0.5rem;
+  border-radius: 16px;
+  width: 100%;
+}
+
+.tab-navigation .tab-button {
+  padding: 1rem 2rem;
+  background: var(--bg-white);
+  color: var(--brand-primary-dark);
+  border: 1px solid rgba(45, 90, 45, 0.1);
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  min-width: 120px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.tab-navigation .tab-button:hover {
+  background: var(--bg-white);
+  color: var(--brand-primary-darker);
+  border-color: rgba(45, 90, 45, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.tab-navigation .tab-button.active {
+  background: linear-gradient(135deg, var(--brand-primary-dark) 0%, var(--brand-primary-light) 100%);
+  color: var(--bg-light-1);
+  border-color: var(--brand-primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(45, 90, 45, 0.3);
+}
+
+.tab-content {
+  min-height: 400px;
+}
+
+.experience-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+  width: 100%;
+}
+
+.experience-card {
+  background: var(--bg-white);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid var(--brand-primary-dark);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.experience-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--brand-primary-dark), var(--dark-accent));
+}
+
+.experience-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.company-logo {
+  border-radius: 8px;
+  object-fit: contain;
+  background: var(--light-gray);
+  padding: 8px;
+}
+
+.company-info {
+  flex: 1;
+}
+
+.company-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--brand-primary-dark);
+  margin: 0 0 0.5rem 0;
+}
+
+.job-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--brand-primary-darkest);
+  margin: 0 0 0.25rem 0;
+}
+
+.job-date {
+  font-size: 0.9rem;
+  color: var(--neutral-gray);
+  margin: 0;
+  font-weight: 500;
+}
+
+.card-content {
+  color: var(--brand-primary-darkest);
+}
+
+.job-description, .role-description {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.job-description li, .role-description li {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+}
+
+.job-description li::before, .role-description li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: var(--brand-primary-dark);
+  font-weight: bold;
+}
+
+.role-section {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(45, 90, 45, 0.1);
+}
+
+.role-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.role-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--brand-primary-dark);
+  margin: 0 0 0.25rem 0;
+}
+
+.role-date {
+  font-size: 0.9rem;
+  color: var(--neutral-gray);
+  margin: 0 0 1rem 0;
+  font-weight: 500;
+}
+
+/* Certification specific styles */
+.cert-flex-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .cert-flex-container {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cert-flex-container {
+    gap: 6px;
+  }
+}
+
+/* Certifications */
+.certification-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.certification-card {
+  background: var(--bg-white);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid var(--brand-primary-dark);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+.certification-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.cert-image {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+}
+
+.cert-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--brand-primary-dark);
+  margin: 0 0 0.5rem 0;
+}
+
+.cert-date {
+  font-size: 0.9rem;
+  color: var(--neutral-gray);
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Awards */
+.awards-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.award-card {
+  background: var(--bg-white);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border-left: 4px solid var(--brand-primary-dark);
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+.award-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.award-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
+}
+
+.award-image {
+  max-width: 100%;
+  height: auto;
+  max-height: 120px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.award-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--brand-primary-dark);
+  margin: 0 0 1rem 0;
+}
+
+.award-description {
+  color: var(--brand-primary-darkest);
+  line-height: 1.6;
+  margin: 0 0 1rem 0;
+}
+
+.award-date {
+  font-size: 0.9rem;
+  color: var(--neutral-gray);
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 2rem;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: var(--bg-white);
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(45, 90, 45, 0.1);
+  animation: modal-slide-in 0.3s ease-out;
+}
+
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: var(--brand-primary-dark);
+  color: var(--bg-light-1);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 1;
+}
+
+.modal-close:hover {
+  background: var(--brand-primary-darker);
+  transform: scale(1.1);
+}
+
+.modal-content h2 {
+  margin: 1.5rem 0 1rem 0;
+  color: var(--brand-primary-dark);
+  font-size: 1.5rem;
+}
+
+.modal-content p {
+  color: var(--brand-primary-darkest);
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+}
+
+.modal-content img {
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Additional content sections */
+.additional-images {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(45, 90, 45, 0.1);
+}
+
+.additional-images h3 {
+  color: var(--brand-primary-dark);
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.image-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.image-gallery img {
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.image-gallery img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.additional-info {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(45, 90, 45, 0.1);
+}
+
+.additional-info h3 {
+  color: var(--brand-primary-dark);
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.additional-info p {
+  line-height: 1.6;
+  color: var(--brand-primary-darkest);
+}
+
+/* Dark mode for Experience */
+.dark .experience-container {
+  color: var(--dark-text);
+}
+
+.dark .tab-navigation {
+  border-bottom-color: var(--dark-accent);
+  background: transparent;
+}
+
+.dark .tab-navigation .tab-button {
+  background: var(--dark-bg-2) !important;
+  color: var(--dark-gray-medium) !important;
+  border-color: transparent !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.dark .tab-navigation .tab-button:hover {
+  background: var(--dark-bg-1) !important;
+  color: var(--dark-gray-medium) !important;
+  border-color: transparent !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.dark .tab-navigation .tab-button.active {
+  background: var(--dark-bg-1) !important;
+  color: var(--dark-accent) !important;
+  border-color: rgba(134, 239, 172, 0.3) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 12px rgba(134, 239, 172, 0.15) !important;
+}
+
+.dark .experience-card {
+  background: rgba(6, 21, 6, 0.5);
+  border-left-color: var(--dark-accent);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.dark .experience-card::before {
+  background: linear-gradient(90deg, var(--dark-accent), var(--dark-accent-bright));
+}
+
+.dark .company-name {
+  color: var(--dark-accent);
+}
+
+.dark .job-title {
+  color: var(--dark-text);
+}
+
+.dark .job-date {
+  color: var(--dark-gray-medium);
+}
+
+.dark .card-content {
+  color: var(--dark-text);
+}
+
+.dark .job-description li::before, .dark .role-description li::before {
+  color: var(--dark-accent);
+}
+
+.dark .role-section {
+  border-bottom-color: rgba(134, 239, 172, 0.2);
+}
+
+.dark .role-title {
+  color: var(--dark-accent);
+}
+
+.dark .role-date {
+  color: var(--dark-gray-medium);
+}
+
+.dark .certification-card {
+  background: rgba(6, 21, 6, 0.5);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.dark .cert-name {
+  color: var(--dark-accent);
+}
+
+.dark .cert-date {
+  color: var(--dark-gray-medium);
+}
+
+.dark .award-card {
+  background: rgba(6, 21, 6, 0.5);
+  border-left-color: var(--dark-accent);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.dark .award-name {
+  color: var(--dark-accent);
+}
+
+.dark .award-description {
+  color: var(--dark-text);
+}
+
+.dark .award-date {
+  color: var(--dark-gray-medium);
+}
+
+/* Dark mode for modal */
+.dark .modal-overlay {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.dark .modal-content {
+  background: rgba(6, 21, 6, 0.95);
+  border-color: rgba(134, 239, 172, 0.2);
+  color: var(--dark-text);
+}
+
+.dark .modal-close {
+  background: var(--dark-accent);
+  color: var(--dark-text-darker);
+}
+
+.dark .modal-close:hover {
+  background: var(--dark-accent-bright);
+}
+
+.dark .modal-content h2 {
+  color: var(--dark-accent);
+}
+
+.dark .modal-content p {
+  color: var(--dark-text);
+}
+
+.dark .additional-images h3,
+.dark .additional-info h3 {
+  color: var(--dark-accent);
+}
+
+.dark .additional-info p {
+  color: var(--dark-text);
+}
+
+/* Modal animation */
+@keyframes modal-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Responsive for Experience */
+@media (max-width: 768px) {
+  .experience-container {
+    padding: 1rem;
+  }
+
+  .tab-navigation {
+    gap: 0.25rem;
+  }
+
+  .tab-navigation .tab-button {
+    padding: 0.75rem 1rem;
+    min-width: 100px;
+    font-size: 0.9rem;
+  }
+
+  .experience-card {
+    padding: 1rem;
+  }
+
+  .card-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .company-logo {
+    max-width: 60px;
+  }
+
+  .modal-content {
+    padding: 1.5rem;
+    max-width: 95vw;
+  }
+}
+
+@media (max-width: 480px) {
+  .experience-container {
+    padding: 0.75rem;
+  }
+
+  .tab-navigation .tab-button {
+    padding: 0.5rem 0.75rem;
+    min-width: 80px;
+    font-size: 0.85rem;
+  }
+
+  .cert-image {
+    width: 100px;
+    height: 100px;
+  }
+
+  .award-card {
+    padding: 1.5rem;
+  }
+}
