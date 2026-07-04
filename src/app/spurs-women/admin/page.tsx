@@ -8,13 +8,10 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/Button';
 import { MatchForm } from '@/components/admin/MatchForm';
-import { MediaForm } from '@/components/admin/MediaForm';
 import { TeamForm } from '@/components/admin/TeamForm';
 import { PlayerForm } from '@/components/admin/PlayerForm';
-import { PlayerStatsForm } from '@/components/admin/PlayerStatsForm';
-import { PlayerHistoryForm } from '@/components/admin/PlayerHistoryForm';
 import { StadiumForm } from '@/components/admin/StadiumForm';
-import { StadiumNameForm } from '@/components/admin/StadiumNameForm';
+import { RelatedList } from '@/components/admin/RelatedList';
 
 // Types for our data
 interface Team {
@@ -162,7 +159,7 @@ interface StadiumName {
 }
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<'matches' | 'media' | 'teams' | 'players' | 'player_stats' | 'player_history' | 'stadiums' | 'stadium_names'>('matches');
+  const [activeTab, setActiveTab] = useState<'matches' | 'teams' | 'players' | 'stadiums'>('matches');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [user, setUser] = useState<{ email: string } | null>(null);
@@ -174,17 +171,12 @@ export default function AdminPage() {
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
-  const [media, setMedia] = useState<Media[]>([]);
   const [stadiums, setStadiums] = useState<Stadium[]>([]);
   const [stadiumNames, setStadiumNames] = useState<StadiumName[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
 
   // Recent records for each entity type
-  const [recentMedia, setRecentMedia] = useState<Media[]>([]);
-  const [recentPlayerStats, setRecentPlayerStats] = useState<PlayerStats[]>([]);
-  const [recentPlayerHistory, setRecentPlayerHistory] = useState<PlayerHistory[]>([]);
   const [recentStadiums, setRecentStadiums] = useState<Stadium[]>([]);
-  const [recentStadiumNames, setRecentStadiumNames] = useState<StadiumName[]>([]);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -197,11 +189,6 @@ export default function AdminPage() {
   const [matchesTotalPages, setMatchesTotalPages] = useState(1);
   const matchesPerPage = 20;
 
-  // Media-specific pagination state
-  const [mediaCurrentPage, setMediaCurrentPage] = useState(1);
-  const [mediaTotalPages, setMediaTotalPages] = useState(1);
-  const mediaPerPage = 20;
-
   // Teams-specific pagination state
   const [teamsCurrentPage, setTeamsCurrentPage] = useState(1);
   const [teamsTotalPages, setTeamsTotalPages] = useState(1);
@@ -212,31 +199,13 @@ export default function AdminPage() {
   const [playersTotalPages, setPlayersTotalPages] = useState(1);
   const playersPerPage = 20;
 
-  // Player stats-specific pagination state
-  const [playerStatsCurrentPage, setPlayerStatsCurrentPage] = useState(1);
-  const [playerStatsTotalPages, setPlayerStatsTotalPages] = useState(1);
-  const playerStatsPerPage = 20;
-
-  // Player history-specific pagination state
-  const [playerHistoryCurrentPage, setPlayerHistoryCurrentPage] = useState(1);
-  const [playerHistoryTotalPages, setPlayerHistoryTotalPages] = useState(1);
-  const playerHistoryPerPage = 20;
-
   // Stadiums-specific pagination state
   const [stadiumsCurrentPage, setStadiumsCurrentPage] = useState(1);
   const [stadiumsTotalPages, setStadiumsTotalPages] = useState(1);
   const stadiumsPerPage = 20;
 
-  // Stadium names-specific pagination state
-  const [stadiumNamesCurrentPage, setStadiumNamesCurrentPage] = useState(1);
-  const [stadiumNamesTotalPages, setStadiumNamesTotalPages] = useState(1);
-  const stadiumNamesPerPage = 20;
-
   // Search state for matches
   const [matchSearch, setMatchSearch] = useState('');
-
-  // Search state for media
-  const [mediaSearch, setMediaSearch] = useState('');
 
   // Search state for teams
   const [teamSearch, setTeamSearch] = useState('');
@@ -244,32 +213,16 @@ export default function AdminPage() {
   // Search state for players
   const [playerSearch, setPlayerSearch] = useState('');
 
-  // Search state for player stats
-  const [playerStatsSearch, setPlayerStatsSearch] = useState('');
-
-  // Search state for player history
-  const [playerHistorySearch, setPlayerHistorySearch] = useState('');
-
   // Search state for stadiums
   const [stadiumSearch, setStadiumSearch] = useState('');
-
-  // Search state for stadium names
-  const [stadiumNameSearch, setStadiumNameSearch] = useState('');
 
   // Edit mode state
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingMatchId, setEditingMatchId] = useState<string | null>(null);
-  const [isMediaEditMode, setIsMediaEditMode] = useState(false);
-  const [editingMediaId, setEditingMediaId] = useState<string | null>(null);
   const [isTeamEditMode, setIsTeamEditMode] = useState(false);
   const [editingTeamId, setEditingTeamId] = useState<number | null>(null);
   const [isPlayerEditMode, setIsPlayerEditMode] = useState(false);
   const [editingPlayerId, setEditingPlayerId] = useState<string | null>(null);
-  const [isPlayerStatsEditMode, setIsPlayerStatsEditMode] = useState(false);
-  const [editingPlayerStatsId, setEditingPlayerStatsId] = useState<string | null>(null);
-  const [editingPlayerStats, setEditingPlayerStats] = useState<PlayerStats | null>(null);
-  const [isPlayerHistoryEditMode, setIsPlayerHistoryEditMode] = useState(false);
-  const [editingPlayerHistoryId, setEditingPlayerHistoryId] = useState<string | null>(null);
   const [isStadiumEditMode, setIsStadiumEditMode] = useState(false);
   const [editingStadiumId, setEditingStadiumId] = useState<string | null>(null);
   const [isStadiumNameEditMode, setIsStadiumNameEditMode] = useState(false);
@@ -278,6 +231,74 @@ export default function AdminPage() {
   // Collapsible section state
   const [showExtraTimeSection, setShowExtraTimeSection] = useState(false);
   const [showStatsSection, setShowStatsSection] = useState(false);
+
+  // Match edit tab state
+  const [matchEditTab, setMatchEditTab] = useState<'details' | 'related'>('details');
+
+  // Related records state
+  const [relatedMedia, setRelatedMedia] = useState<Media[]>([]);
+  const [relatedPlayerStats, setRelatedPlayerStats] = useState<PlayerStats[]>([]);
+
+  // Player edit tab state
+  const [playerEditTab, setPlayerEditTab] = useState<'details' | 'related'>('details');
+
+  // Player related records state
+  const [relatedPlayerStatsForPlayer, setRelatedPlayerStatsForPlayer] = useState<PlayerStats[]>([]);
+  const [relatedPlayerHistory, setRelatedPlayerHistory] = useState<PlayerHistory[]>([]);
+
+  // Stadium edit tab state
+  const [stadiumEditTab, setStadiumEditTab] = useState<'details' | 'related'>('details');
+
+  // Stadium related records state
+  const [relatedStadiumNames, setRelatedStadiumNames] = useState<StadiumName[]>([]);
+
+  // Modal state
+  const [showMediaModal, setShowMediaModal] = useState(false);
+  const [showPlayerStatsModal, setShowPlayerStatsModal] = useState(false);
+  const [showPlayerHistoryModal, setShowPlayerHistoryModal] = useState(false);
+  const [showStadiumNameModal, setShowStadiumNameModal] = useState(false);
+  const [playerStatsContext, setPlayerStatsContext] = useState<'match' | 'player'>('match');
+  const [editingMediaId, setEditingMediaId] = useState<string | null>(null);
+  const [editingPlayerStatsId, setEditingPlayerStatsId] = useState<string | null>(null);
+  const [editingPlayerHistoryId, setEditingPlayerHistoryId] = useState<string | null>(null);
+  const [newMediaForm, setNewMediaForm] = useState<Partial<Media>>({
+    match_id: '',
+    type: 'social media',
+    title: '',
+    url: '',
+    caption: '',
+    sort_order: 0,
+  });
+  const [newPlayerStatsForm, setNewPlayerStatsForm] = useState<Partial<PlayerStats>>({
+    player_id: '',
+    match_id: '',
+    team_id: 1,
+    started: false,
+    captain: false,
+    was_substitute: false,
+    was_unused_substitute: false,
+    minute_on: null,
+    minute_off: null,
+    minutes_played: 0,
+    goals: 0,
+    assists: 0,
+    yellow_cards: 0,
+    red_cards: 0,
+    clean_sheet: null,
+    saves: null,
+    shots: 0,
+    shots_on_target: 0,
+    passes_completed: null,
+    passes_attempted: null,
+    tackles: null,
+    interceptions: null,
+    clearances: null,
+    fouls_committed: null,
+    fouls_won: null,
+    offsides: null,
+    player_rating: null,
+    player_of_the_match: false,
+  });
 
   // Form states
   const [matchForm, setMatchForm] = useState<Partial<Match>>({
@@ -306,15 +327,6 @@ export default function AdminPage() {
     away_shots_on_target: null,
     home_corners: null,
     away_corners: null,
-  });
-
-  const [mediaForm, setMediaForm] = useState<Partial<Media>>({
-    match_id: '',
-    type: 'social media',
-    title: '',
-    url: '',
-    caption: '',
-    sort_order: 0,
   });
 
   const [teamForm, setTeamForm] = useState<Partial<Team>>({
@@ -366,10 +378,6 @@ export default function AdminPage() {
     valid_to: null,
   });
 
-  // Season filter states
-  const [playerStatsSeason, setPlayerStatsSeason] = useState('');
-  const [mediaSeason, setMediaSeason] = useState('');
-
   // Fetch user on mount
   useEffect(() => {
     const fetchUser = async () => {
@@ -420,13 +428,32 @@ export default function AdminPage() {
     return stadium.name;
   };
 
+  // Helper function to group media by type
+  const getMediaByType = useCallback(() => {
+    const grouped: Record<string, Media[]> = {
+      'photo': [],
+      'photo album': [],
+      'article': [],
+      'social media': [],
+      'video-external': [],
+    };
+    
+    relatedMedia.forEach(media => {
+      if (grouped[media.type]) {
+        grouped[media.type].push(media);
+      }
+    });
+    
+    return grouped;
+  }, [relatedMedia]);
+
   // Load dropdown data
   useEffect(() => {
     const loadDropdownData = async () => {
       setLoading(true);
       try {
         // Load all dropdown data via API calls
-        const [matchesRes, teamsRes, competitionsRes, seasonsRes, playersRes, stadiumsRes, stadiumNamesRes, mediaRes] = await Promise.all([
+        const [matchesRes, teamsRes, competitionsRes, seasonsRes, playersRes, stadiumsRes, stadiumNamesRes] = await Promise.all([
           callAdminApi('matches', 'GET'),
           callAdminApi('teams', 'GET'),
           callAdminApi('competitions', 'GET'),
@@ -434,14 +461,12 @@ export default function AdminPage() {
           callAdminApi('players', 'GET'),
           callAdminApi('stadia', 'GET'),
           callAdminApi('stadium-names', 'GET'),
-          callAdminApi('media', 'GET'),
         ]);
 
         if (teamsRes.data) setTeams(teamsRes.data as Team[]);
         if (competitionsRes.data) setCompetitions(competitionsRes.data as Competition[]);
         if (seasonsRes.data) setSeasons(seasonsRes.data as Season[]);
         if (matchesRes.data) setMatches(matchesRes.data as Match[]);
-        if (mediaRes.data) setMedia(mediaRes.data as Media[]);
         if (stadiumsRes.data) {
           setStadiums(stadiumsRes.data as Stadium[]);
         } else {
@@ -478,23 +503,11 @@ export default function AdminPage() {
       let tableName = '';
       
       switch (activeTab) {
-        case 'media':
-          tableName = 'media';
-          break;
         case 'players':
           tableName = 'players';
           break;
-        case 'player_stats':
-          tableName = 'player_stats';
-          break;
-        case 'player_history':
-          tableName = 'player_history';
-          break;
         case 'stadiums':
           tableName = 'stadia';
-          break;
-        case 'stadium_names':
-          tableName = 'stadium_names';
           break;
         case 'matches':
         case 'teams':
@@ -506,9 +519,6 @@ export default function AdminPage() {
       if (tableName) {
         // Fetch data via API - map table names to API endpoint names
         const apiEndpointMap: Record<string, string> = {
-          'player_stats': 'player-stats',
-          'player_history': 'player-history',
-          'stadium_names': 'stadium-names',
           'stadia': 'stadia',
         };
         const apiEndpoint = apiEndpointMap[tableName] || tableName;
@@ -517,38 +527,14 @@ export default function AdminPage() {
         // Set the appropriate state based on the active tab (store ALL data, not paginated)
         if (dataRes.data) {
           switch (activeTab) {
-            case 'media':
-              setRecentMedia(dataRes.data as Media[]);
-              break;
-            case 'player_stats':
-              setRecentPlayerStats(dataRes.data as PlayerStats[]);
-              break;
-            case 'player_history':
-              setRecentPlayerHistory(dataRes.data as PlayerHistory[]);
-              break;
             case 'stadiums':
               setRecentStadiums(dataRes.data as Stadium[]);
-              break;
-            case 'stadium_names':
-              setRecentStadiumNames(dataRes.data as StadiumName[]);
               break;
           }
         } else {
           switch (activeTab) {
-            case 'media':
-              setRecentMedia([]);
-              break;
-            case 'player_stats':
-              setRecentPlayerStats([]);
-              break;
-            case 'player_history':
-              setRecentPlayerHistory([]);
-              break;
             case 'stadiums':
               setRecentStadiums([]);
-              break;
-            case 'stadium_names':
-              setRecentStadiumNames([]);
               break;
           }
         }
@@ -561,7 +547,7 @@ export default function AdminPage() {
     } catch (error) {
       console.error('Error fetching recent records:', error);
     }
-  }, [activeTab, recordsPerPage, setRecentMedia, setRecentPlayerStats, setRecentPlayerHistory, setRecentStadiums, setRecentStadiumNames, setTotalCount, setTotalPages]);
+  }, [activeTab, recordsPerPage, setRecentStadiums, setTotalCount, setTotalPages]);
 
   // Reset pagination when tab changes
   useEffect(() => {
@@ -570,30 +556,18 @@ export default function AdminPage() {
     setTotalCount(0);
     setMatchesCurrentPage(1);
     setMatchesTotalPages(1);
-    setMediaCurrentPage(1);
-    setMediaTotalPages(1);
     setTeamsCurrentPage(1);
     setTeamsTotalPages(1);
     setPlayersCurrentPage(1);
     setPlayersTotalPages(1);
-    setPlayerStatsCurrentPage(1);
-    setPlayerStatsTotalPages(1);
-    setPlayerHistoryCurrentPage(1);
-    setPlayerHistoryTotalPages(1);
     setStadiumsCurrentPage(1);
     setStadiumsTotalPages(1);
-    setStadiumNamesCurrentPage(1);
-    setStadiumNamesTotalPages(1);
     fetchRecentRecords(1);
     
     // Reset edit modes when switching tabs
     if (activeTab !== 'matches') {
       setIsEditMode(false);
       setEditingMatchId(null);
-    }
-    if (activeTab !== 'media') {
-      setIsMediaEditMode(false);
-      setEditingMediaId(null);
     }
     if (activeTab !== 'teams') {
       setIsTeamEditMode(false);
@@ -603,21 +577,9 @@ export default function AdminPage() {
       setIsPlayerEditMode(false);
       setEditingPlayerId(null);
     }
-    if (activeTab !== 'player_stats') {
-      setIsPlayerStatsEditMode(false);
-      setEditingPlayerStatsId(null);
-    }
-    if (activeTab !== 'player_history') {
-      setIsPlayerHistoryEditMode(false);
-      setEditingPlayerHistoryId(null);
-    }
     if (activeTab !== 'stadiums') {
       setIsStadiumEditMode(false);
       setEditingStadiumId(null);
-    }
-    if (activeTab !== 'stadium_names') {
-      setIsStadiumNameEditMode(false);
-      setEditingStadiumNameId(null);
     }
   }, [activeTab]);
 
@@ -651,26 +613,6 @@ export default function AdminPage() {
     });
   }, [matches, teams, matchSearch]);
 
-  // Helper function for filtering media (searches across ALL media)
-  const getFilteredMedia = useCallback(() => {
-    return media.filter(mediaItem => {
-      if (!mediaSearch) return true;
-      const searchTerm = mediaSearch.toLowerCase();
-      const match = matches.find(m => m.id === mediaItem.match_id);
-      const homeTeam = teams.find(t => t.id === match?.home_team_id);
-      const awayTeam = teams.find(t => t.id === match?.away_team_id);
-      const matchDescription = match && homeTeam && awayTeam
-        ? `${homeTeam.short_name} vs ${awayTeam.short_name} (${match.date})`
-        : '';
-      return (
-        mediaItem.type?.toLowerCase().includes(searchTerm) ||
-        mediaItem.title?.toLowerCase().includes(searchTerm) ||
-        mediaItem.url?.toLowerCase().includes(searchTerm) ||
-        matchDescription.toLowerCase().includes(searchTerm)
-      );
-    });
-  }, [media, matches, teams, mediaSearch]);
-
   // Helper function for filtering teams (searches across ALL teams)
   const getFilteredTeams = useCallback(() => {
     return teams.filter(team => {
@@ -697,47 +639,6 @@ export default function AdminPage() {
     });
   }, [players, playerSearch]);
 
-  // Helper function for filtering player stats (searches across ALL player stats)
-  const getFilteredPlayerStats = useCallback(() => {
-    return recentPlayerStats.filter(stat => {
-      if (!playerStatsSearch) return true;
-      const searchTerm = playerStatsSearch.toLowerCase();
-      const player = players.find(p => p.id === stat.player_id);
-      const match = matches.find(m => m.id === stat.match_id);
-      const homeTeam = teams.find(t => t.id === match?.home_team_id);
-      const awayTeam = teams.find(t => t.id === match?.away_team_id);
-      const playerName = player ? `${player.first_name} ${player.last_name}` : '';
-      const matchDescription = match && homeTeam && awayTeam
-        ? `${homeTeam.short_name} vs ${awayTeam.short_name} (${match.date})`
-        : match?.date || '';
-      return (
-        playerName.toLowerCase().includes(searchTerm) ||
-        matchDescription.toLowerCase().includes(searchTerm) ||
-        stat.goals.toString().includes(searchTerm) ||
-        stat.assists.toString().includes(searchTerm)
-      );
-    });
-  }, [recentPlayerStats, players, matches, teams, playerStatsSearch]);
-
-  // Helper function for filtering player history (searches across ALL player history)
-  const getFilteredPlayerHistory = useCallback(() => {
-    return recentPlayerHistory.filter(history => {
-      if (!playerHistorySearch) return true;
-      const searchTerm = playerHistorySearch.toLowerCase();
-      const player = players.find(p => p.id === history.player_id);
-      const team = teams.find(t => t.id === history.team_id);
-      const playerName = player ? `${player.first_name} ${player.last_name}` : '';
-      const teamName = team?.name || '';
-      return (
-        playerName.toLowerCase().includes(searchTerm) ||
-        teamName.toLowerCase().includes(searchTerm) ||
-        history.squad_number?.toString().includes(searchTerm) ||
-        history.joined_on?.includes(searchTerm) ||
-        history.left_on?.includes(searchTerm)
-      );
-    });
-  }, [recentPlayerHistory, players, teams, playerHistorySearch]);
-
   // Helper function for filtering stadiums (searches across ALL stadiums)
   const getFilteredStadiums = useCallback(() => {
     return recentStadiums.filter(stadium => {
@@ -752,34 +653,11 @@ export default function AdminPage() {
     });
   }, [recentStadiums, stadiumSearch]);
 
-  // Helper function for filtering stadium names (searches across ALL stadium names)
-  const getFilteredStadiumNames = useCallback(() => {
-    return recentStadiumNames.filter(stadiumName => {
-      if (!stadiumNameSearch) return true;
-      const searchTerm = stadiumNameSearch.toLowerCase();
-      const stadium = stadiums.find(s => s.id === stadiumName.stadium_id);
-      return (
-        stadiumName.name?.toLowerCase().includes(searchTerm) ||
-        stadium?.name?.toLowerCase().includes(searchTerm) ||
-        stadiumName.valid_from?.includes(searchTerm) ||
-        stadiumName.valid_to?.includes(searchTerm)
-      );
-    });
-  }, [recentStadiumNames, stadiums, stadiumNameSearch]);
-
   // Get paginated matches (applies pagination to filtered results)
   const getPaginatedMatches = () => {
     const filtered = getFilteredMatches();
     const startIndex = (matchesCurrentPage - 1) * matchesPerPage;
     const endIndex = startIndex + matchesPerPage;
-    return filtered.slice(startIndex, endIndex);
-  };
-
-  // Get paginated media (applies pagination to filtered results)
-  const getPaginatedMedia = () => {
-    const filtered = getFilteredMedia();
-    const startIndex = (mediaCurrentPage - 1) * mediaPerPage;
-    const endIndex = startIndex + mediaPerPage;
     return filtered.slice(startIndex, endIndex);
   };
 
@@ -799,35 +677,11 @@ export default function AdminPage() {
     return filtered.slice(startIndex, endIndex);
   };
 
-  // Get paginated player stats (applies pagination to filtered results)
-  const getPaginatedPlayerStats = () => {
-    const filtered = getFilteredPlayerStats();
-    const startIndex = (playerStatsCurrentPage - 1) * playerStatsPerPage;
-    const endIndex = startIndex + playerStatsPerPage;
-    return filtered.slice(startIndex, endIndex);
-  };
-
-  // Get paginated player history (applies pagination to filtered results)
-  const getPaginatedPlayerHistory = () => {
-    const filtered = getFilteredPlayerHistory();
-    const startIndex = (playerHistoryCurrentPage - 1) * playerHistoryPerPage;
-    const endIndex = startIndex + playerHistoryPerPage;
-    return filtered.slice(startIndex, endIndex);
-  };
-
   // Get paginated stadiums (applies pagination to filtered results)
   const getPaginatedStadiums = () => {
     const filtered = getFilteredStadiums();
     const startIndex = (stadiumsCurrentPage - 1) * stadiumsPerPage;
     const endIndex = startIndex + stadiumsPerPage;
-    return filtered.slice(startIndex, endIndex);
-  };
-
-  // Get paginated stadium names (applies pagination to filtered results)
-  const getPaginatedStadiumNames = () => {
-    const filtered = getFilteredStadiumNames();
-    const startIndex = (stadiumNamesCurrentPage - 1) * stadiumNamesPerPage;
-    const endIndex = startIndex + stadiumNamesPerPage;
     return filtered.slice(startIndex, endIndex);
   };
 
@@ -841,17 +695,6 @@ export default function AdminPage() {
       setMatchesCurrentPage(1);
     }
   }, [getFilteredMatches, matchesCurrentPage, matchesPerPage]);
-
-  // Update media pagination when search or data changes
-  useEffect(() => {
-    const filtered = getFilteredMedia();
-    const newTotalPages = Math.ceil(filtered.length / mediaPerPage);
-    setMediaTotalPages(newTotalPages);
-    // Reset to page 1 if current page is beyond new total
-    if (mediaCurrentPage > newTotalPages && newTotalPages > 0) {
-      setMediaCurrentPage(1);
-    }
-  }, [getFilteredMedia, mediaCurrentPage, mediaPerPage]);
 
   // Update teams pagination when search or data changes
   useEffect(() => {
@@ -875,28 +718,6 @@ export default function AdminPage() {
     }
   }, [getFilteredPlayers, playersCurrentPage, playersPerPage]);
 
-  // Update player stats pagination when search or data changes
-  useEffect(() => {
-    const filtered = getFilteredPlayerStats();
-    const newTotalPages = Math.ceil(filtered.length / playerStatsPerPage);
-    setPlayerStatsTotalPages(newTotalPages);
-    // Reset to page 1 if current page is beyond new total
-    if (playerStatsCurrentPage > newTotalPages && newTotalPages > 0) {
-      setPlayerStatsCurrentPage(1);
-    }
-  }, [getFilteredPlayerStats, playerStatsCurrentPage, playerStatsPerPage]);
-
-  // Update player history pagination when search or data changes
-  useEffect(() => {
-    const filtered = getFilteredPlayerHistory();
-    const newTotalPages = Math.ceil(filtered.length / playerHistoryPerPage);
-    setPlayerHistoryTotalPages(newTotalPages);
-    // Reset to page 1 if current page is beyond new total
-    if (playerHistoryCurrentPage > newTotalPages && newTotalPages > 0) {
-      setPlayerHistoryCurrentPage(1);
-    }
-  }, [getFilteredPlayerHistory, playerHistoryCurrentPage, playerHistoryPerPage]);
-
   // Update stadiums pagination when search or data changes
   useEffect(() => {
     const filtered = getFilteredStadiums();
@@ -907,17 +728,6 @@ export default function AdminPage() {
       setStadiumsCurrentPage(1);
     }
   }, [getFilteredStadiums, stadiumsCurrentPage, stadiumsPerPage]);
-
-  // Update stadium names pagination when search or data changes
-  useEffect(() => {
-    const filtered = getFilteredStadiumNames();
-    const newTotalPages = Math.ceil(filtered.length / stadiumNamesPerPage);
-    setStadiumNamesTotalPages(newTotalPages);
-    // Reset to page 1 if current page is beyond new total
-    if (stadiumNamesCurrentPage > newTotalPages && newTotalPages > 0) {
-      setStadiumNamesCurrentPage(1);
-    }
-  }, [getFilteredStadiumNames, stadiumNamesCurrentPage, stadiumNamesPerPage]);
 
   const handleDeleteMatch = async (matchId: string) => {
     setLoading(true);
@@ -940,9 +750,15 @@ export default function AdminPage() {
     }
   };
 
-  const handleEditMatch = (match: Match) => {
+  const handleEditMatch = async (match: Match) => {
     setIsEditMode(true);
     setEditingMatchId(match.id);
+    setMatchEditTab('details');
+    window.scrollTo({
+      top: 250,
+      left: 0,
+      behavior: "smooth",
+    });
     
     // Try to match the stadium by comparing stadium_id with stadium_display_name
     const matchedStadium = stadiums.find(s => {
@@ -989,6 +805,26 @@ export default function AdminPage() {
       home_corners: match.home_corners,
       away_corners: match.away_corners,
     });
+
+    // Fetch related records
+    try {
+      const [mediaRes, playerStatsRes] = await Promise.all([
+        callAdminApi('media', 'GET'),
+        callAdminApi('player-stats', 'GET'),
+      ]);
+
+      if (mediaRes.data) {
+        const allMedia = mediaRes.data as Media[];
+        setRelatedMedia(allMedia.filter(m => m.match_id === match.id));
+      }
+
+      if (playerStatsRes.data) {
+        const allPlayerStats = playerStatsRes.data as PlayerStats[];
+        setRelatedPlayerStats(allPlayerStats.filter(ps => ps.match_id === match.id));
+      }
+    } catch (error) {
+      console.error('Error fetching related records:', error);
+    }
   };
 
   const handleCancelEdit = () => {
@@ -1025,42 +861,16 @@ export default function AdminPage() {
     });
   };
 
-  const handleEditMedia = (media: Media) => {
-    setIsMediaEditMode(true);
-    setEditingMediaId(media.id);
-    setMediaForm({
-      match_id: media.match_id,
-      type: media.type,
-      title: media.title || '',
-      url: media.url,
-      caption: media.caption || '',
-      sort_order: media.sort_order,
-    });
-  };
-
-  const handleCancelEditMedia = () => {
-    setIsMediaEditMode(false);
-    setEditingMediaId(null);
-    setMediaForm({
-      match_id: '',
-      type: 'social media',
-      title: '',
-      url: '',
-      caption: '',
-      sort_order: 0,
-    });
-  };
-
   const handleDeleteMedia = async (mediaId: string) => {
     setLoading(true);
     try {
       await callAdminApi('media', 'DELETE', { id: mediaId });
       showMessage('Media deleted successfully', 'success');
 
-      // Reload media data
+      // Reload related media data
       try {
         const mediaResponse = await callAdminApi('media', 'GET');
-        if (mediaResponse.data) setMedia(mediaResponse.data as Media[]);
+        if (mediaResponse.data) setRelatedMedia(mediaResponse.data as Media[]);
       } catch (error) {
         console.error('Error reloading media:', error);
       }
@@ -1096,6 +906,11 @@ export default function AdminPage() {
   const handleEditTeam = (team: Team) => {
     setIsTeamEditMode(true);
     setEditingTeamId(team.id);
+    window.scrollTo({
+      top: 250,
+      left: 0,
+      behavior: "smooth",
+    });
     setTeamForm({
       name: team.name,
       short_name: team.short_name,
@@ -1138,9 +953,35 @@ export default function AdminPage() {
     }
   };
 
-  const handleEditPlayer = (player: Player) => {
+  const handleEditPlayer = async (player: Player) => {
     setIsPlayerEditMode(true);
     setEditingPlayerId(player.id);
+    setPlayerEditTab('details');
+    window.scrollTo({
+      top: 250,
+      left: 0,
+      behavior: "smooth",
+    });
+
+    // Fetch related records
+    try {
+      const [playerStatsRes, playerHistoryRes] = await Promise.all([
+        callAdminApi('player-stats', 'GET'),
+        callAdminApi('player-history', 'GET'),
+      ]);
+
+      if (playerStatsRes.data) {
+        const allPlayerStats = playerStatsRes.data as PlayerStats[];
+        setRelatedPlayerStatsForPlayer(allPlayerStats.filter(ps => ps.player_id === player.id));
+      }
+
+      if (playerHistoryRes.data) {
+        const allPlayerHistory = playerHistoryRes.data as PlayerHistory[];
+        setRelatedPlayerHistory(allPlayerHistory.filter(ph => ph.player_id === player.id));
+      }
+    } catch (error) {
+      console.error('Error fetching related records:', error);
+    }
     setPlayerForm({
       first_name: player.first_name,
       last_name: player.last_name,
@@ -1176,10 +1017,10 @@ export default function AdminPage() {
       await callAdminApi('player-stats', 'DELETE', { id: playerStatsId });
       showMessage('Player stats deleted successfully', 'success');
 
-      // Reload player stats data
+      // Reload related player stats data
       try {
         const playerStatsResponse = await callAdminApi('player-stats', 'GET');
-        if (playerStatsResponse.data) setRecentPlayerStats(playerStatsResponse.data as PlayerStats[]);
+        if (playerStatsResponse.data) setRelatedPlayerStats(playerStatsResponse.data as PlayerStats[]);
       } catch (error) {
         console.error('Error reloading player stats:', error);
       }
@@ -1191,28 +1032,16 @@ export default function AdminPage() {
     }
   };
 
-  const handleEditPlayerStats = (stat: PlayerStats) => {
-    setIsPlayerStatsEditMode(true);
-    setEditingPlayerStatsId(stat.id);
-    setEditingPlayerStats(stat);
-  };
-
-  const handleCancelEditPlayerStats = () => {
-    setIsPlayerStatsEditMode(false);
-    setEditingPlayerStatsId(null);
-    setEditingPlayerStats(null);
-  };
-
   const handleDeletePlayerHistory = async (playerHistoryId: string) => {
     setLoading(true);
     try {
       await callAdminApi('player-history', 'DELETE', { id: playerHistoryId });
       showMessage('Player history deleted successfully', 'success');
 
-      // Reload player history data
+      // Reload related player history data
       try {
         const playerHistoryResponse = await callAdminApi('player-history', 'GET');
-        if (playerHistoryResponse.data) setRecentPlayerHistory(playerHistoryResponse.data as PlayerHistory[]);
+        if (playerHistoryResponse.data) setRelatedPlayerHistory(playerHistoryResponse.data as PlayerHistory[]);
       } catch (error) {
         console.error('Error reloading player history:', error);
       }
@@ -1222,30 +1051,6 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleEditPlayerHistory = (history: PlayerHistory) => {
-    setIsPlayerHistoryEditMode(true);
-    setEditingPlayerHistoryId(history.id);
-    setPlayerHistoryForm({
-      player_id: history.player_id,
-      team_id: history.team_id,
-      joined_on: history.joined_on,
-      left_on: history.left_on,
-      squad_number: history.squad_number,
-    });
-  };
-
-  const handleCancelEditPlayerHistory = () => {
-    setIsPlayerHistoryEditMode(false);
-    setEditingPlayerHistoryId(null);
-    setPlayerHistoryForm({
-      player_id: '',
-      team_id: 1,
-      joined_on: null,
-      left_on: null,
-      squad_number: null,
-    });
   };
 
   const handleDeleteStadium = async (stadiumId: string) => {
@@ -1272,9 +1077,27 @@ export default function AdminPage() {
     }
   };
 
-  const handleEditStadium = (stadium: Stadium) => {
+  const handleEditStadium = async (stadium: Stadium) => {
     setIsStadiumEditMode(true);
     setEditingStadiumId(stadium.id);
+    setStadiumEditTab('details');
+    window.scrollTo({
+      top: 250,
+      left: 0,
+      behavior: "smooth",
+    });
+
+    // Fetch related records
+    try {
+      const stadiumNamesRes = await callAdminApi('stadium-names', 'GET');
+
+      if (stadiumNamesRes.data) {
+        const allStadiumNames = stadiumNamesRes.data as StadiumName[];
+        setRelatedStadiumNames(allStadiumNames.filter(sn => sn.stadium_id === stadium.id));
+      }
+    } catch (error) {
+      console.error('Error fetching related records:', error);
+    }
     setStadiumForm({
       name: stadium.name,
       slug: stadium.slug,
@@ -1319,7 +1142,6 @@ export default function AdminPage() {
         const stadiumNamesResponse = await callAdminApi('stadium-names', 'GET');
         if (stadiumNamesResponse.data) {
           setStadiumNames(stadiumNamesResponse.data as StadiumName[]);
-          setRecentStadiumNames(stadiumNamesResponse.data as StadiumName[]);
         }
       } catch (error) {
         console.error('Error reloading stadium names:', error);
@@ -1335,6 +1157,11 @@ export default function AdminPage() {
   const handleEditStadiumName = (stadiumName: StadiumName) => {
     setIsStadiumNameEditMode(true);
     setEditingStadiumNameId(stadiumName.id);
+    window.scrollTo({
+      top: 250,
+      left: 0,
+      behavior: "smooth",
+    });
     setStadiumNameForm({
       stadium_id: stadiumName.stadium_id,
       name: stadiumName.name,
@@ -1352,81 +1179,6 @@ export default function AdminPage() {
       valid_from: null,
       valid_to: null,
     });
-  };
-
-  const handlePlayerHistorySubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      const payload = {
-        player_id: playerHistoryForm.player_id,
-        team_id: playerHistoryForm.team_id,
-        joined_on: playerHistoryForm.joined_on || null,
-        left_on: playerHistoryForm.left_on || null,
-        squad_number: playerHistoryForm.squad_number || null,
-      };
-
-      let response;
-      if (isPlayerHistoryEditMode && editingPlayerHistoryId) {
-        // Update existing player history
-        response = await fetch('/api/admin/player-history', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ id: editingPlayerHistoryId, ...payload }),
-        });
-      } else {
-        // Create new player history
-        response = await fetch('/api/admin/player-history', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
-        });
-      }
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || `Failed to ${isPlayerHistoryEditMode ? 'update' : 'create'} player history`);
-      }
-
-      showMessage(isPlayerHistoryEditMode ? 'Player history updated successfully' : 'Player history created successfully', 'success');
-      
-      // Reset form and edit mode
-      handleCancelEditPlayerHistory();
-      
-      // Reload player history data
-      try {
-        const playerHistoryResponse = await fetch('/api/admin/player-history');
-        const playerHistoryResult = await playerHistoryResponse.json();
-        if (playerHistoryResult.data) setRecentPlayerHistory(playerHistoryResult.data as PlayerHistory[]);
-      } catch (error) {
-        console.error('Error reloading player history:', error);
-      }
-    } catch (error) {
-      console.error(`Error ${isPlayerHistoryEditMode ? 'updating' : 'creating'} player history:`, error);
-      
-      let errorMessage = isPlayerHistoryEditMode ? 'Error updating player history' : 'Error creating player history';
-      if (error && typeof error === 'object') {
-        if ('message' in error) {
-          errorMessage = `${isPlayerHistoryEditMode ? 'Error updating player history' : 'Error creating player history'}: ${error.message}`;
-        } else if ('code' in error) {
-          errorMessage = `${isPlayerHistoryEditMode ? 'Error updating player history' : 'Error creating player history'}: ${error.code}`;
-        } else {
-          errorMessage = `${isPlayerHistoryEditMode ? 'Error updating player history' : 'Error creating player history'}: ${JSON.stringify(error)}`;
-        }
-      } else if (typeof error === 'string') {
-        errorMessage = `${isPlayerHistoryEditMode ? 'Error updating player history' : 'Error creating player history'}: ${error}`;
-      }
-      
-      showMessage(errorMessage, 'error');
-    } finally {
-      setLoading(false);
-    }
   };
 
   const handleTeamSubmit = async (e: React.FormEvent) => {
@@ -1691,81 +1443,12 @@ export default function AdminPage() {
     }
   };
 
-  const handleMediaSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      let response;
-      if (isMediaEditMode && editingMediaId) {
-        // Update existing media
-        response = await fetch('/api/admin/media', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ id: editingMediaId, ...mediaForm }),
-        });
-      } else {
-        // Create new media
-        response = await fetch('/api/admin/media', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(mediaForm),
-        });
-      }
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || `Failed to ${isMediaEditMode ? 'update' : 'create'} media`);
-      }
-
-      showMessage(isMediaEditMode ? 'Media updated successfully' : 'Media created successfully', 'success');
-      
-      // Reset form and edit mode
-      handleCancelEditMedia();
-      
-      // Reload recent media records
-      try {
-        const mediaResponse = await fetch('/api/admin/media');
-        const mediaResult = await mediaResponse.json();
-        if (mediaResult.data) {
-          setMedia(mediaResult.data as Media[]);
-        }
-      } catch (error) {
-        console.error('Error reloading recent media:', error);
-      }
-    } catch (error) {
-      console.error(`Error ${isMediaEditMode ? 'updating' : 'creating'} media:`, error);
-      
-      let errorMessage = isMediaEditMode ? 'Error updating media' : 'Error creating media';
-      if (error && typeof error === 'object') {
-        if ('message' in error) {
-          errorMessage = `${isMediaEditMode ? 'Error updating media' : 'Error creating media'}: ${error.message}`;
-        } else if ('code' in error) {
-          errorMessage = `${isMediaEditMode ? 'Error updating media' : 'Error creating media'}: ${error.code}`;
-        } else {
-          errorMessage = `${isMediaEditMode ? 'Error updating media' : 'Error creating media'}: ${JSON.stringify(error)}`;
-        }
-      } else if (typeof error === 'string') {
-        errorMessage = `${isMediaEditMode ? 'Error updating media' : 'Error creating media'}: ${error}`;
-      }
-      
-      showMessage(errorMessage, 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
 
   return (
     <div className="spurs-wrapper min-h-screen p-4 pb-20">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="spurs-text text-3xl font-bold">Supabase Admin Interface</h1>
+          <h1 className="spurs-text text-3xl font-bold">Spurs Women Admin</h1>
           {user && (
             <div className="flex items-center gap-4">
               <Link href="/spurs-women/profile" className="text-sm hover:opacity-80 transition-opacity" style={{ color: 'var(--spurs-dark-accent)' }}>
@@ -1812,22 +1495,6 @@ export default function AdminPage() {
             Add Match
           </button>
           <button
-            onClick={() => setActiveTab('media')}
-            className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
-              activeTab === 'media'
-                ? 'spurs-text'
-                : 'text-gray-300 hover:text-spurs-dark-accent'
-            }`}
-            style={{
-              backgroundColor: activeTab === 'media' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
-              borderBottomColor: activeTab === 'media' ? 'var(--spurs-dark-accent)' : 'transparent',
-              borderBottomWidth: activeTab === 'media' ? '2px' : '0',
-              color: activeTab === 'media' ? 'var(--spurs-dark-accent)' : '#d1d5db'
-            }}
-          >
-            Add Media
-          </button>
-          <button
             onClick={() => setActiveTab('teams')}
             className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
               activeTab === 'teams'
@@ -1860,38 +1527,6 @@ export default function AdminPage() {
             Add Player
           </button>
           <button
-            onClick={() => setActiveTab('player_stats')}
-            className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
-              activeTab === 'player_stats'
-                ? 'spurs-text'
-                : 'text-gray-300 hover:text-spurs-dark-accent'
-            }`}
-            style={{
-              backgroundColor: activeTab === 'player_stats' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
-              borderBottomColor: activeTab === 'player_stats' ? 'var(--spurs-dark-accent)' : 'transparent',
-              borderBottomWidth: activeTab === 'player_stats' ? '2px' : '0',
-              color: activeTab === 'player_stats' ? 'var(--spurs-dark-accent)' : '#d1d5db'
-            }}
-          >
-            Add Player Stats
-          </button>
-          <button
-            onClick={() => setActiveTab('player_history')}
-            className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
-              activeTab === 'player_history'
-                ? 'spurs-text'
-                : 'text-gray-300 hover:text-spurs-dark-accent'
-            }`}
-            style={{
-              backgroundColor: activeTab === 'player_history' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
-              borderBottomColor: activeTab === 'player_history' ? 'var(--spurs-dark-accent)' : 'transparent',
-              borderBottomWidth: activeTab === 'player_history' ? '2px' : '0',
-              color: activeTab === 'player_history' ? 'var(--spurs-dark-accent)' : '#d1d5db'
-            }}
-          >
-            Add Player History
-          </button>
-          <button
             onClick={() => setActiveTab('stadiums')}
             className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
               activeTab === 'stadiums'
@@ -1907,73 +1542,212 @@ export default function AdminPage() {
           >
             Add Stadium
           </button>
-          <button
-            onClick={() => setActiveTab('stadium_names')}
-            className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
-              activeTab === 'stadium_names'
-                ? 'spurs-text'
-                : 'text-gray-300 hover:text-spurs-dark-accent'
-            }`}
-            style={{
-              backgroundColor: activeTab === 'stadium_names' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
-              borderBottomColor: activeTab === 'stadium_names' ? 'var(--spurs-dark-accent)' : 'transparent',
-              borderBottomWidth: activeTab === 'stadium_names' ? '2px' : '0',
-              color: activeTab === 'stadium_names' ? 'var(--spurs-dark-accent)' : '#d1d5db'
-            }}
-          >
-            Add Stadium Name
-          </button>
         </div>
 
         {/* Match Form */}
         {activeTab === 'matches' && (
-          <MatchForm
-            matchForm={matchForm}
-            setMatchForm={setMatchForm}
-            seasons={seasons}
-            competitions={competitions}
-            teams={teams}
-            stadiums={stadiums}
-            isEditMode={isEditMode}
-            editingMatchId={editingMatchId}
-            loading={loading}
-            showStatsSection={showStatsSection}
-            showExtraTimeSection={showExtraTimeSection}
-            setShowStatsSection={setShowStatsSection}
-            setShowExtraTimeSection={setShowExtraTimeSection}
-            getCurrentStadiumName={getCurrentStadiumName}
-            onSubmit={handleMatchSubmit}
-            onDelete={() => {
-              if (confirm('Are you sure you want to delete this match?')) {
-                handleDeleteMatch(editingMatchId!);
-              }
-            }}
-            onCancel={handleCancelEdit}
-          />
-        )}
-
-        {/* Media Form */}
-        {activeTab === 'media' && (
-          <MediaForm
-            mediaForm={mediaForm}
-            setMediaForm={setMediaForm}
-            mediaSeason={mediaSeason}
-            setMediaSeason={setMediaSeason}
-            matches={matches}
-            seasons={seasons}
-            teams={teams}
-            competitions={competitions}
-            isMediaEditMode={isMediaEditMode}
-            editingMediaId={editingMediaId}
-            loading={loading}
-            onSubmit={handleMediaSubmit}
-            onDelete={() => {
-              if (editingMediaId && confirm('Are you sure you want to delete this media?')) {
-                handleDeleteMedia(editingMediaId);
-              }
-            }}
-            onCancel={handleCancelEditMedia}
-          />
+          <>
+            {isEditMode && (
+              <div className="mb-4 flex space-x-2">
+                <button
+                  onClick={() => setMatchEditTab('details')}
+                  className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
+                    matchEditTab === 'details'
+                      ? 'spurs-text'
+                      : 'text-gray-300 hover:text-spurs-dark-accent'
+                  }`}
+                  style={{
+                    backgroundColor: matchEditTab === 'details' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
+                    borderBottomColor: matchEditTab === 'details' ? 'var(--spurs-dark-accent)' : 'transparent',
+                    borderBottomWidth: matchEditTab === 'details' ? '2px' : '0',
+                    color: matchEditTab === 'details' ? 'var(--spurs-dark-accent)' : '#d1d5db'
+                  }}
+                >
+                  Details
+                </button>
+                <button
+                  onClick={() => setMatchEditTab('related')}
+                  className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
+                    matchEditTab === 'related'
+                      ? 'spurs-text'
+                      : 'text-gray-300 hover:text-spurs-dark-accent'
+                  }`}
+                  style={{
+                    backgroundColor: matchEditTab === 'related' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
+                    borderBottomColor: matchEditTab === 'related' ? 'var(--spurs-dark-accent)' : 'transparent',
+                    borderBottomWidth: matchEditTab === 'related' ? '2px' : '0',
+                    color: matchEditTab === 'related' ? 'var(--spurs-dark-accent)' : '#d1d5db'
+                  }}
+                >
+                  Related Records
+                </button>
+              </div>
+            )}
+            
+            {matchEditTab === 'details' && (
+              <MatchForm
+                matchForm={matchForm}
+                setMatchForm={setMatchForm}
+                seasons={seasons}
+                competitions={competitions}
+                teams={teams}
+                stadiums={stadiums}
+                isEditMode={isEditMode}
+                editingMatchId={editingMatchId}
+                loading={loading}
+                showStatsSection={showStatsSection}
+                showExtraTimeSection={showExtraTimeSection}
+                setShowStatsSection={setShowStatsSection}
+                setShowExtraTimeSection={setShowExtraTimeSection}
+                getCurrentStadiumName={getCurrentStadiumName}
+                onSubmit={handleMatchSubmit}
+                onDelete={() => {
+                  if (confirm('Are you sure you want to delete this match?')) {
+                    handleDeleteMatch(editingMatchId!);
+                  }
+                }}
+                onCancel={handleCancelEdit}
+              />
+            )}
+            
+            {matchEditTab === 'related' && isEditMode && (
+              <div className="space-y-4">
+                {/* Media related lists grouped by type */}
+                {Object.entries(getMediaByType()).map(([mediaType, mediaRecords]) => (
+                  <RelatedList
+                    key={mediaType}
+                    title={`${mediaType.charAt(0).toUpperCase() + mediaType.slice(1)}`}
+                    records={mediaRecords}
+                    columns={[
+                      { key: 'title', label: 'Title' },
+                      { key: 'url', label: 'URL', render: (value: unknown) => {
+                        const url = value as string;
+                        return (
+                          <a href={url} target="_blank" rel="noopener noreferrer" className="spurs-text hover:underline">
+                            {url.length > 50 ? `${url.substring(0, 50)}...` : url}
+                          </a>
+                        );
+                      }},
+                      { key: 'sort_order', label: 'Sort Order' },
+                    ]}
+                    onNew={() => {
+                      setNewMediaForm({
+                        match_id: editingMatchId!,
+                        type: mediaType as Media['type'],
+                        title: '',
+                        url: '',
+                        caption: '',
+                        sort_order: 0,
+                      });
+                      setShowMediaModal(true);
+                    }}
+                    onRecordClick={(media) => {
+                      setEditingMediaId(media.id);
+                      setNewMediaForm({
+                        match_id: media.match_id,
+                        type: media.type,
+                        title: media.title || '',
+                        url: media.url || '',
+                        caption: media.caption || '',
+                        sort_order: media.sort_order || 0,
+                      });
+                      setShowMediaModal(true);
+                    }}
+                    emptyMessage={`No ${mediaType} records found`}
+                  />
+                ))}
+                
+                {/* Player Stats related list */}
+                <RelatedList
+                  title="Player Stats"
+                  records={relatedPlayerStats}
+                  columns={[
+                    {
+                      key: 'player_id',
+                      label: 'Player',
+                      render: (value: unknown) => {
+                        const playerId = value as string;
+                        const player = players.find(p => p.id === playerId);
+                        return player ? `${player.first_name} ${player.last_name}` : playerId;
+                      }
+                    },
+                    { key: 'started', label: 'Started', render: (value: unknown) => (value as boolean) ? 'Yes' : 'No' },
+                    { key: 'captain', label: 'Captain', render: (value: unknown) => (value as boolean) ? 'Yes' : 'No' },
+                    { key: 'goals', label: 'Goals' },
+                    { key: 'assists', label: 'Assists' },
+                  ]}
+                  onNew={() => {
+                    setNewPlayerStatsForm({
+                      player_id: '',
+                      match_id: editingMatchId!,
+                      team_id: 1,
+                      started: false,
+                      captain: false,
+                      was_substitute: false,
+                      was_unused_substitute: false,
+                      minute_on: null,
+                      minute_off: null,
+                      minutes_played: 0,
+                      goals: 0,
+                      assists: 0,
+                      yellow_cards: 0,
+                      red_cards: 0,
+                      clean_sheet: null,
+                      saves: null,
+                      shots: 0,
+                      shots_on_target: 0,
+                      passes_completed: null,
+                      passes_attempted: null,
+                      tackles: null,
+                      interceptions: null,
+                      clearances: null,
+                      fouls_committed: null,
+                      fouls_won: null,
+                      offsides: null,
+                      player_rating: null,
+                      player_of_the_match: false,
+                    });
+                    setShowPlayerStatsModal(true);
+                  }}
+                  onRecordClick={(stat) => {
+                    setEditingPlayerStatsId(stat.id);
+                    setNewPlayerStatsForm({
+                      player_id: stat.player_id,
+                      match_id: stat.match_id,
+                      team_id: stat.team_id,
+                      started: stat.started,
+                      captain: stat.captain,
+                      was_substitute: stat.was_substitute,
+                      was_unused_substitute: stat.was_unused_substitute,
+                      minute_on: stat.minute_on,
+                      minute_off: stat.minute_off,
+                      minutes_played: stat.minutes_played,
+                      goals: stat.goals,
+                      assists: stat.assists,
+                      yellow_cards: stat.yellow_cards,
+                      red_cards: stat.red_cards,
+                      clean_sheet: stat.clean_sheet,
+                      saves: stat.saves,
+                      shots: stat.shots,
+                      shots_on_target: stat.shots_on_target,
+                      passes_completed: stat.passes_completed,
+                      passes_attempted: stat.passes_attempted,
+                      tackles: stat.tackles,
+                      interceptions: stat.interceptions,
+                      clearances: stat.clearances,
+                      fouls_committed: stat.fouls_committed,
+                      fouls_won: stat.fouls_won,
+                      offsides: stat.offsides,
+                      player_rating: stat.player_rating,
+                      player_of_the_match: stat.player_of_the_match,
+                    });
+                    setShowPlayerStatsModal(true);
+                  }}
+                  emptyMessage="No player stats records found"
+                />
+              </div>
+            )}
+          </>
         )}
 
         {/* Team Form */}
@@ -1996,318 +1770,350 @@ export default function AdminPage() {
 
         {/* Player Form */}
         {activeTab === 'players' && (
-          <PlayerForm
-            playerForm={playerForm}
-            setPlayerForm={setPlayerForm}
-            isPlayerEditMode={isPlayerEditMode}
-            editingPlayerId={editingPlayerId}
-            loading={loading}
-            onSubmit={handlePlayerSubmit}
-            onDelete={() => {
-              if (editingPlayerId && confirm('Are you sure you want to delete this player?')) {
-                handleDeletePlayer(editingPlayerId);
-              }
-            }}
-            onCancel={handleCancelEditPlayer}
-          />
+          <>
+            {isPlayerEditMode && (
+              <div className="mb-4 flex space-x-2">
+                <button
+                  onClick={() => setPlayerEditTab('details')}
+                  className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
+                    playerEditTab === 'details'
+                      ? 'spurs-text'
+                      : 'text-gray-300 hover:text-spurs-dark-accent'
+                  }`}
+                  style={{
+                    backgroundColor: playerEditTab === 'details' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
+                    borderBottomColor: playerEditTab === 'details' ? 'var(--spurs-dark-accent)' : 'transparent',
+                    borderBottomWidth: playerEditTab === 'details' ? '2px' : '0',
+                    color: playerEditTab === 'details' ? 'var(--spurs-dark-accent)' : '#d1d5db'
+                  }}
+                >
+                  Details
+                </button>
+                <button
+                  onClick={() => setPlayerEditTab('related')}
+                  className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
+                    playerEditTab === 'related'
+                      ? 'spurs-text'
+                      : 'text-gray-300 hover:text-spurs-dark-accent'
+                  }`}
+                  style={{
+                    backgroundColor: playerEditTab === 'related' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
+                    borderBottomColor: playerEditTab === 'related' ? 'var(--spurs-dark-accent)' : 'transparent',
+                    borderBottomWidth: playerEditTab === 'related' ? '2px' : '0',
+                    color: playerEditTab === 'related' ? 'var(--spurs-dark-accent)' : '#d1d5db'
+                  }}
+                >
+                  Related Records
+                </button>
+              </div>
+            )}
+
+            {playerEditTab === 'details' && (
+              <PlayerForm
+                playerForm={playerForm}
+                setPlayerForm={setPlayerForm}
+                isPlayerEditMode={isPlayerEditMode}
+                editingPlayerId={editingPlayerId}
+                loading={loading}
+                onSubmit={handlePlayerSubmit}
+                onDelete={() => {
+                  if (editingPlayerId && confirm('Are you sure you want to delete this player?')) {
+                    handleDeletePlayer(editingPlayerId);
+                  }
+                }}
+                onCancel={handleCancelEditPlayer}
+              />
+            )}
+
+            {playerEditTab === 'related' && isPlayerEditMode && (
+              <div className="space-y-4">
+                {/* Player Stats related list */}
+                <RelatedList
+                  title="Player Stats"
+                  records={relatedPlayerStatsForPlayer}
+                  columns={[
+                    {
+                      key: 'match_id',
+                      label: 'Match',
+                      render: (value: unknown) => {
+                        const matchId = value as string;
+                        const match = matches.find(m => m.id === matchId);
+                        return match ? `${match.date}` : matchId;
+                      }
+                    },
+                    { key: 'started', label: 'Started', render: (value: unknown) => (value as boolean) ? 'Yes' : 'No' },
+                    { key: 'goals', label: 'Goals' },
+                    { key: 'assists', label: 'Assists' },
+                  ]}
+                  onNew={() => {
+                    setNewPlayerStatsForm({
+                      player_id: editingPlayerId!,
+                      match_id: '',
+                      team_id: 1,
+                      started: false,
+                      captain: false,
+                      was_substitute: false,
+                      was_unused_substitute: false,
+                      minute_on: null,
+                      minute_off: null,
+                      minutes_played: 0,
+                      goals: 0,
+                      assists: 0,
+                      yellow_cards: 0,
+                      red_cards: 0,
+                      clean_sheet: null,
+                      saves: null,
+                      shots: 0,
+                      shots_on_target: 0,
+                      passes_completed: null,
+                      passes_attempted: null,
+                      tackles: null,
+                      interceptions: null,
+                      clearances: null,
+                      fouls_committed: null,
+                      fouls_won: null,
+                      offsides: null,
+                      player_rating: null,
+                      player_of_the_match: false,
+                    });
+                    setPlayerStatsContext('player');
+                    setShowPlayerStatsModal(true);
+                  }}
+                  onRecordClick={(stat) => {
+                    setEditingPlayerStatsId(stat.id);
+                    setNewPlayerStatsForm({
+                      player_id: stat.player_id,
+                      match_id: stat.match_id,
+                      team_id: stat.team_id,
+                      started: stat.started,
+                      captain: stat.captain,
+                      was_substitute: stat.was_substitute,
+                      was_unused_substitute: stat.was_unused_substitute,
+                      minute_on: stat.minute_on,
+                      minute_off: stat.minute_off,
+                      minutes_played: stat.minutes_played,
+                      goals: stat.goals,
+                      assists: stat.assists,
+                      yellow_cards: stat.yellow_cards,
+                      red_cards: stat.red_cards,
+                      clean_sheet: stat.clean_sheet,
+                      saves: stat.saves,
+                      shots: stat.shots,
+                      shots_on_target: stat.shots_on_target,
+                      passes_completed: stat.passes_completed,
+                      passes_attempted: stat.passes_attempted,
+                      tackles: stat.tackles,
+                      interceptions: stat.interceptions,
+                      clearances: stat.clearances,
+                      fouls_committed: stat.fouls_committed,
+                      fouls_won: stat.fouls_won,
+                      offsides: stat.offsides,
+                      player_rating: stat.player_rating,
+                      player_of_the_match: stat.player_of_the_match,
+                    });
+                    setPlayerStatsContext('player');
+                    setShowPlayerStatsModal(true);
+                  }}
+                  emptyMessage="No player stats records found"
+                />
+
+                {/* Player History related list */}
+                <RelatedList
+                  title="Player History"
+                  records={relatedPlayerHistory}
+                  columns={[
+                    {
+                      key: 'team_id',
+                      label: 'Team',
+                      render: (value: unknown) => {
+                        const teamId = value as number;
+                        const team = teams.find(t => t.id === teamId);
+                        return team ? team.name : teamId.toString();
+                      }
+                    },
+                    { key: 'joined_on', label: 'Joined On' },
+                    { key: 'left_on', label: 'Left On' },
+                    { key: 'squad_number', label: 'Squad Number' },
+                  ]}
+                  onNew={() => {
+                    setPlayerHistoryForm({
+                      player_id: editingPlayerId!,
+                      team_id: 1,
+                      joined_on: '',
+                      left_on: '',
+                      squad_number: null,
+                    });
+                    setEditingPlayerHistoryId(null);
+                    setShowPlayerHistoryModal(true);
+                  }}
+                  onRecordClick={(history) => {
+                    setEditingPlayerHistoryId(history.id);
+                    setPlayerHistoryForm({
+                      player_id: history.player_id,
+                      team_id: history.team_id,
+                      joined_on: history.joined_on,
+                      left_on: history.left_on,
+                      squad_number: history.squad_number,
+                    });
+                    setShowPlayerHistoryModal(true);
+                  }}
+                  emptyMessage="No player history records found"
+                />
+              </div>
+            )}
+          </>
         )}
 
         {/* Stadium Form */}
         {activeTab === 'stadiums' && (
-          <StadiumForm
-            teams={teams}
-            stadiumForm={stadiumForm}
-            setStadiumForm={setStadiumForm}
-            isStadiumEditMode={isStadiumEditMode}
-            editingStadiumId={editingStadiumId}
-            loading={loading}
-            onSubmit={async (e) => {
-              e.preventDefault();
-              setLoading(true);
-              try {
-                const payload = {
-                  name: stadiumForm.name,
-                  slug: stadiumForm.slug,
-                  city: stadiumForm.city,
-                  country: stadiumForm.country,
-                  capacity: stadiumForm.capacity,
-                  opened_date: stadiumForm.opened_date,
-                  address_line_1: stadiumForm.address_line_1,
-                  postcode: stadiumForm.postcode,
-                  latitude: stadiumForm.latitude,
-                  longitude: stadiumForm.longitude,
-                  home_team_id: stadiumForm.home_team_id,
-                };
+          <>
+            {isStadiumEditMode && (
+              <div className="mb-4 flex space-x-2">
+                <button
+                  onClick={() => setStadiumEditTab('details')}
+                  className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
+                    stadiumEditTab === 'details'
+                      ? 'spurs-text'
+                      : 'text-gray-300 hover:text-spurs-dark-accent'
+                  }`}
+                  style={{
+                    backgroundColor: stadiumEditTab === 'details' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
+                    borderBottomColor: stadiumEditTab === 'details' ? 'var(--spurs-dark-accent)' : 'transparent',
+                    borderBottomWidth: stadiumEditTab === 'details' ? '2px' : '0',
+                    color: stadiumEditTab === 'details' ? 'var(--spurs-dark-accent)' : '#d1d5db'
+                  }}
+                >
+                  Details
+                </button>
+                <button
+                  onClick={() => setStadiumEditTab('related')}
+                  className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
+                    stadiumEditTab === 'related'
+                      ? 'spurs-text'
+                      : 'text-gray-300 hover:text-spurs-dark-accent'
+                  }`}
+                  style={{
+                    backgroundColor: stadiumEditTab === 'related' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
+                    borderBottomColor: stadiumEditTab === 'related' ? 'var(--spurs-dark-accent)' : 'transparent',
+                    borderBottomWidth: stadiumEditTab === 'related' ? '2px' : '0',
+                    color: stadiumEditTab === 'related' ? 'var(--spurs-dark-accent)' : '#d1d5db'
+                  }}
+                >
+                  Related Records
+                </button>
+              </div>
+            )}
 
-                if (isStadiumEditMode && editingStadiumId) {
-                  // Update existing stadium
-                  const response = await fetch('/api/admin/stadia', {
-                    method: 'PUT',
-                    headers: {
-                      'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ id: editingStadiumId, ...payload }),
-                  });
-                  if (!response.ok) {
-                    throw new Error('Failed to update stadium');
+            {stadiumEditTab === 'details' && (
+              <StadiumForm
+                teams={teams}
+                stadiumForm={stadiumForm}
+                setStadiumForm={setStadiumForm}
+                isStadiumEditMode={isStadiumEditMode}
+                editingStadiumId={editingStadiumId}
+                loading={loading}
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  setLoading(true);
+                  try {
+                    const payload = {
+                      name: stadiumForm.name,
+                      slug: stadiumForm.slug,
+                      city: stadiumForm.city,
+                      country: stadiumForm.country,
+                      capacity: stadiumForm.capacity,
+                      opened_date: stadiumForm.opened_date,
+                      address_line_1: stadiumForm.address_line_1,
+                      postcode: stadiumForm.postcode,
+                      latitude: stadiumForm.latitude,
+                      longitude: stadiumForm.longitude,
+                      home_team_id: stadiumForm.home_team_id,
+                    };
+
+                    if (isStadiumEditMode && editingStadiumId) {
+                      // Update existing stadium
+                      const response = await fetch('/api/admin/stadia', {
+                        method: 'PUT',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ id: editingStadiumId, ...payload }),
+                      });
+                      if (!response.ok) {
+                        throw new Error('Failed to update stadium');
+                      }
+                      showMessage('Stadium updated successfully', 'success');
+                    } else {
+                      // Create new stadium
+                      await createEntityAndReload('stadia', payload, 'stadia', setStadiums);
+                      showMessage('Stadium created successfully', 'success');
+                    }
+
+                    // Reload stadiums data
+                    try {
+                      const stadiumsRes = await callAdminApi('stadia', 'GET');
+                      if (stadiumsRes.data) {
+                        setStadiums(stadiumsRes.data as Stadium[]);
+                        setRecentStadiums(stadiumsRes.data as Stadium[]);
+                      }
+                    } catch (error) {
+                      console.error('Error reloading stadiums:', error);
+                    }
+
+                    // Reset form
+                    handleCancelEditStadium();
+                  } catch (error) {
+                    showMessage(isStadiumEditMode ? 'Error updating stadium' : 'Error creating stadium', 'error');
+                    console.error('Error saving stadium:', error);
+                  } finally {
+                    setLoading(false);
                   }
-                  showMessage('Stadium updated successfully', 'success');
-                } else {
-                  // Create new stadium
-                  await createEntityAndReload('stadia', payload, 'stadia', setStadiums);
-                  showMessage('Stadium created successfully', 'success');
-                }
-                
-                // Reload stadiums data
-                try {
-                  const stadiumsRes = await callAdminApi('stadia', 'GET');
-                  if (stadiumsRes.data) {
-                    setStadiums(stadiumsRes.data as Stadium[]);
-                    setRecentStadiums(stadiumsRes.data as Stadium[]);
+                }}
+                onDelete={() => {
+                  if (editingStadiumId && confirm('Are you sure you want to delete this stadium?')) {
+                    handleDeleteStadium(editingStadiumId);
                   }
-                } catch (error) {
-                  console.error('Error reloading stadiums:', error);
-                }
-                
-                // Reset form
-                handleCancelEditStadium();
-              } catch (error) {
-                showMessage(isStadiumEditMode ? 'Error updating stadium' : 'Error creating stadium', 'error');
-                console.error('Error saving stadium:', error);
-              } finally {
-                setLoading(false);
-              }
-            }}
-            onDelete={() => {
-              if (editingStadiumId && confirm('Are you sure you want to delete this stadium?')) {
-                handleDeleteStadium(editingStadiumId);
-              }
-            }}
-            onCancel={handleCancelEditStadium}
-          />
-        )}
+                }}
+                onCancel={handleCancelEditStadium}
+              />
+            )}
 
-        {/* Player Stats Form */}
-        {activeTab === 'player_stats' && (
-          <PlayerStatsForm
-            playerStatsSeason={playerStatsSeason}
-            setPlayerStatsSeason={setPlayerStatsSeason}
-            players={players}
-            matches={matches}
-            teams={teams}
-            seasons={seasons}
-            isPlayerStatsEditMode={isPlayerStatsEditMode}
-            editingPlayerStatsId={editingPlayerStatsId}
-            editingPlayerStats={editingPlayerStats}
-            loading={loading}
-            onSubmit={async (e) => {
-              e.preventDefault();
-              setLoading(true);
-              try {
-                const formData = new FormData(e.currentTarget as HTMLFormElement);
-                const payload = {
-                  player_id: formData.get('player_id') as string,
-                  match_id: formData.get('match_id') as string,
-                  team_id: parseInt(formData.get('team_id') as string),
-                  started: formData.get('participation') === 'started',
-                  captain: formData.get('captain') === 'true',
-                  was_substitute: formData.get('participation') === 'substitute',
-                  was_unused_substitute: formData.get('participation') === 'unused_substitute',
-                  minute_on: formData.get('minute_on') ? parseInt(formData.get('minute_on') as string) : null,
-                  minute_off: formData.get('minute_off') ? parseInt(formData.get('minute_off') as string) : null,
-                  minutes_played: parseInt(formData.get('minutes_played') as string),
-                  goals: parseInt(formData.get('goals') as string),
-                  assists: parseInt(formData.get('assists') as string),
-                  yellow_cards: parseInt(formData.get('yellow_cards') as string),
-                  red_cards: parseInt(formData.get('red_cards') as string),
-                  clean_sheet: formData.get('clean_sheet') === 'true' ? true : null,
-                  saves: formData.get('saves') ? parseInt(formData.get('saves') as string) : null,
-                  shots: parseInt(formData.get('shots') as string),
-                  shots_on_target: parseInt(formData.get('shots_on_target') as string),
-                  passes_completed: formData.get('passes_completed') ? parseInt(formData.get('passes_completed') as string) : null,
-                  passes_attempted: formData.get('passes_attempted') ? parseInt(formData.get('passes_attempted') as string) : null,
-                  tackles: formData.get('tackles') ? parseInt(formData.get('tackles') as string) : null,
-                  interceptions: formData.get('interceptions') ? parseInt(formData.get('interceptions') as string) : null,
-                  clearances: formData.get('clearances') ? parseInt(formData.get('clearances') as string) : null,
-                  fouls_committed: formData.get('fouls_committed') ? parseInt(formData.get('fouls_committed') as string) : null,
-                  fouls_won: formData.get('fouls_won') ? parseInt(formData.get('fouls_won') as string) : null,
-                  offsides: formData.get('offsides') ? parseInt(formData.get('offsides') as string) : null,
-                  player_rating: formData.get('player_rating') ? parseFloat(formData.get('player_rating') as string) : null,
-                  player_of_the_match: formData.get('player_of_the_match') === 'true',
-                };
-
-                let response;
-                if (isPlayerStatsEditMode && editingPlayerStatsId) {
-                  // Update existing player stats
-                  response = await fetch('/api/admin/player-stats', {
-                    method: 'PUT',
-                    headers: {
-                      'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ id: editingPlayerStatsId, ...payload }),
-                  });
-                } else {
-                  // Create new player stats
-                  response = await fetch('/api/admin/player-stats', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(payload),
-                  });
-                }
-
-                const result = await response.json();
-
-                if (!response.ok) {
-                  throw new Error(result.error || `Failed to ${isPlayerStatsEditMode ? 'update' : 'create'} player stats`);
-                }
-
-                showMessage(isPlayerStatsEditMode ? 'Player stats updated successfully' : 'Player stats created successfully', 'success');
-                
-                // Reset form and edit mode
-                handleCancelEditPlayerStats();
-                
-                // Reload recent player stats records
-                try {
-                  const playerStatsRes = await callAdminApi('player-stats', 'GET');
-                  if (playerStatsRes.data) setRecentPlayerStats(playerStatsRes.data as PlayerStats[]);
-                } catch (error) {
-                  console.error('Error reloading recent player stats:', error);
-                }
-              } catch (error) {
-                console.error(`Error ${isPlayerStatsEditMode ? 'updating' : 'creating'} player stats:`, error);
-                
-                let errorMessage = isPlayerStatsEditMode ? 'Error updating player stats' : 'Error creating player stats';
-                if (error && typeof error === 'object') {
-                  if ('message' in error) {
-                    errorMessage = `${isPlayerStatsEditMode ? 'Error updating player stats' : 'Error creating player stats'}: ${error.message}`;
-                  } else if ('code' in error) {
-                    errorMessage = `${isPlayerStatsEditMode ? 'Error updating player stats' : 'Error creating player stats'}: ${error.code}`;
-                  } else {
-                    errorMessage = `${isPlayerStatsEditMode ? 'Error updating player stats' : 'Error creating player stats'}: ${JSON.stringify(error)}`;
-                  }
-                } else if (typeof error === 'string') {
-                  errorMessage = `${isPlayerStatsEditMode ? 'Error updating player stats' : 'Error creating player stats'}: ${error}`;
-                }
-                
-                showMessage(errorMessage, 'error');
-              } finally {
-                setLoading(false);
-              }
-            }}
-            onDelete={() => {
-              if (editingPlayerStatsId && confirm('Are you sure you want to delete this player stats record?')) {
-                handleDeletePlayerStats(editingPlayerStatsId);
-              }
-            }}
-            onCancel={handleCancelEditPlayerStats}
-          />
-        )}
-
-        {/* Player History Form */}
-        {activeTab === 'player_history' && (
-          <PlayerHistoryForm
-            players={players}
-            teams={teams}
-            loading={loading}
-            playerHistoryForm={playerHistoryForm}
-            setPlayerHistoryForm={setPlayerHistoryForm}
-            isEditMode={isPlayerHistoryEditMode}
-            onSubmit={handlePlayerHistorySubmit}
-            onDelete={() => {
-              if (editingPlayerHistoryId && confirm('Are you sure you want to delete this player history record?')) {
-                handleDeletePlayerHistory(editingPlayerHistoryId);
-              }
-            }}
-            onCancel={handleCancelEditPlayerHistory}
-          />
-        )}
-
-        {/* Stadium Names Form */}
-        {activeTab === 'stadium_names' && (
-          <StadiumNameForm
-            stadiums={stadiums}
-            stadiumNameForm={stadiumNameForm}
-            setStadiumNameForm={setStadiumNameForm}
-            isStadiumNameEditMode={isStadiumNameEditMode}
-            editingStadiumNameId={editingStadiumNameId}
-            loading={loading}
-            onSubmit={async (e) => {
-              e.preventDefault();
-              setLoading(true);
-              try {
-                const payload = {
-                  stadium_id: stadiumNameForm.stadium_id,
-                  name: stadiumNameForm.name,
-                  valid_from: stadiumNameForm.valid_from || null,
-                  valid_to: stadiumNameForm.valid_to || null,
-                };
-
-                if (isStadiumNameEditMode && editingStadiumNameId) {
-                  // Update existing stadium name
-                  const response = await fetch('/api/admin/stadium-names', {
-                    method: 'PUT',
-                    headers: {
-                      'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ id: editingStadiumNameId, ...payload }),
-                  });
-                  if (!response.ok) {
-                    throw new Error('Failed to update stadium name');
-                  }
-                  showMessage('Stadium name updated successfully', 'success');
-                } else {
-                  // Create new stadium name
-                  await createEntityAndReload('stadium-names', payload, 'stadium-names', () => {
-                    // Stadium names don't need to reload a list, just show success
-                  });
-                }
-
-                // Reload stadium names data
-                try {
-                  const stadiumNamesResponse = await callAdminApi('stadium-names', 'GET');
-                  if (stadiumNamesResponse.data) {
-                    setStadiumNames(stadiumNamesResponse.data as StadiumName[]);
-                    setRecentStadiumNames(stadiumNamesResponse.data as StadiumName[]);
-                  }
-                } catch (error) {
-                  console.error('Error reloading stadium names:', error);
-                }
-
-                // Reset form
-                setStadiumNameForm({
-                  stadium_id: '',
-                  name: '',
-                  valid_from: null,
-                  valid_to: null,
-                });
-                setIsStadiumNameEditMode(false);
-                setEditingStadiumNameId(null);
-              } catch (error) {
-                showMessage(isStadiumNameEditMode ? 'Error updating stadium name' : 'Error creating stadium name', 'error');
-                console.error('Error with stadium name:', error);
-              } finally {
-                setLoading(false);
-              }
-            }}
-            onDelete={async () => {
-              if (editingStadiumNameId) {
-                await handleDeleteStadiumName(editingStadiumNameId);
-                setStadiumNameForm({
-                  stadium_id: '',
-                  name: '',
-                  valid_from: null,
-                  valid_to: null,
-                });
-                setIsStadiumNameEditMode(false);
-                setEditingStadiumNameId(null);
-              }
-            }}
-            onCancel={() => {
-              handleCancelEditStadiumName();
-            }}
-          />
+            {stadiumEditTab === 'related' && isStadiumEditMode && (
+              <div className="space-y-4">
+                {/* Stadium Names related list */}
+                <RelatedList
+                  title="Stadium Names"
+                  records={relatedStadiumNames}
+                  columns={[
+                    { key: 'name', label: 'Name' },
+                    { key: 'valid_from', label: 'Valid From' },
+                    { key: 'valid_to', label: 'Valid To' },
+                  ]}
+                  onNew={() => {
+                    setStadiumNameForm({
+                      stadium_id: editingStadiumId!,
+                      name: '',
+                      valid_from: '',
+                      valid_to: null,
+                    });
+                    setEditingStadiumNameId(null);
+                    setShowStadiumNameModal(true);
+                  }}
+                  onRecordClick={(stadiumName) => {
+                    setEditingStadiumNameId(stadiumName.id);
+                    setStadiumNameForm({
+                      stadium_id: stadiumName.stadium_id,
+                      name: stadiumName.name,
+                      valid_from: stadiumName.valid_from,
+                      valid_to: stadiumName.valid_to,
+                    });
+                    setShowStadiumNameModal(true);
+                  }}
+                  emptyMessage="No stadium names found"
+                />
+              </div>
+            )}
+          </>
         )}
 
         {/* Recent Records Preview */}
@@ -2316,13 +2122,9 @@ export default function AdminPage() {
             <h3 className="text-xl font-semibold spurs-text">
               {activeTab === 'matches'
                 ? (matchSearch ? `All Matches (${getFilteredMatches().length} filtered)` : 'All Matches')
-                : activeTab === 'media' ? (mediaSearch ? `All Media (${getFilteredMedia().length} filtered)` : 'All Media') :
-                activeTab === 'teams' ? (teamSearch ? `All Teams (${getFilteredTeams().length} filtered)` : 'All Teams') :
+                : activeTab === 'teams' ? (teamSearch ? `All Teams (${getFilteredTeams().length} filtered)` : 'All Teams') :
                 activeTab === 'players' ? (playerSearch ? `All Players (${getFilteredPlayers().length} filtered)` : 'All Players') :
-                activeTab === 'player_stats' ? (playerStatsSearch ? `All Player Stats (${getFilteredPlayerStats().length} filtered)` : 'All Player Stats') :
-                activeTab === 'player_history' ? (playerHistorySearch ? `All Player History (${getFilteredPlayerHistory().length} filtered)` : 'All Player History') :
                 activeTab === 'stadiums' ? (stadiumSearch ? `All Stadiums (${getFilteredStadiums().length} filtered)` : 'All Stadiums') :
-                activeTab === 'stadium_names' ? (stadiumNameSearch ? `All Stadium Names (${getFilteredStadiumNames().length} filtered)` : 'All Stadium Names') :
                 'Recent Records'}
             </h3>
           </div>
@@ -2333,17 +2135,6 @@ export default function AdminPage() {
                 placeholder="Search matches by date, opponent, or stadium..."
                 value={matchSearch}
                 onChange={(e) => setMatchSearch(e.target.value)}
-                className="w-full px-4 py-2 rounded border border-gray-600 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          )}
-          {activeTab === 'media' && (
-            <div className="mb-4">
-              <input
-                type="text"
-                placeholder="Search media by type, title, URL, or match..."
-                value={mediaSearch}
-                onChange={(e) => setMediaSearch(e.target.value)}
                 className="w-full px-4 py-2 rounded border border-gray-600 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -2370,28 +2161,6 @@ export default function AdminPage() {
               />
             </div>
           )}
-          {activeTab === 'player_stats' && (
-            <div className="mb-4">
-              <input
-                type="text"
-                placeholder="Search player stats by player name, match, goals, or assists..."
-                value={playerStatsSearch}
-                onChange={(e) => setPlayerStatsSearch(e.target.value)}
-                className="w-full px-4 py-2 rounded border border-gray-600 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          )}
-          {activeTab === 'player_history' && (
-            <div className="mb-4">
-              <input
-                type="text"
-                placeholder="Search player history by player name, team, squad number, or dates..."
-                value={playerHistorySearch}
-                onChange={(e) => setPlayerHistorySearch(e.target.value)}
-                className="w-full px-4 py-2 rounded border border-gray-600 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          )}
           {activeTab === 'stadiums' && (
             <div className="mb-4">
               <input
@@ -2399,17 +2168,6 @@ export default function AdminPage() {
                 placeholder="Search stadiums by name, slug, city, or country..."
                 value={stadiumSearch}
                 onChange={(e) => setStadiumSearch(e.target.value)}
-                className="w-full px-4 py-2 rounded border border-gray-600 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          )}
-          {activeTab === 'stadium_names' && (
-            <div className="mb-4">
-              <input
-                type="text"
-                placeholder="Search stadium names by name, stadium, or dates..."
-                value={stadiumNameSearch}
-                onChange={(e) => setStadiumNameSearch(e.target.value)}
                 className="w-full px-4 py-2 rounded border border-gray-600 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -2427,13 +2185,6 @@ export default function AdminPage() {
                       <th className="text-left p-2 spurs-text">Venue</th>
                     </>
                   )}
-                  {activeTab === 'media' && (
-                    <>
-                      <th className="text-left p-2 spurs-text">Type</th>
-                      <th className="text-left p-2 spurs-text">Match</th>
-                      <th className="text-left p-2 spurs-text">URL</th>
-                    </>
-                  )}
                   {activeTab === 'teams' && (
                     <>
                       <th className="text-left p-2 spurs-text">Name</th>
@@ -2449,38 +2200,11 @@ export default function AdminPage() {
                       <th className="text-left p-2 spurs-text">Nationality</th>
                     </>
                   )}
-                  {activeTab === 'player_stats' && (
-                    <>
-                      <th className="text-left p-2 spurs-text">Player</th>
-                      <th className="text-left p-2 spurs-text">Match</th>
-                      <th className="text-left p-2 spurs-text">Started</th>
-                      <th className="text-left p-2 spurs-text">Captain</th>
-                      <th className="text-left p-2 spurs-text">Player of Match</th>
-                      <th className="text-left p-2 spurs-text">Goals</th>
-                    </>
-                  )}
-                  {activeTab === 'player_history' && (
-                    <>
-                      <th className="text-left p-2 spurs-text">Player</th>
-                      <th className="text-left p-2 spurs-text">Team</th>
-                      <th className="text-left p-2 spurs-text">Squad Number</th>
-                      <th className="text-left p-2 spurs-text">Joined</th>
-                      <th className="text-left p-2 spurs-text">Left</th>
-                    </>
-                  )}
                   {activeTab === 'stadiums' && (
                     <>
                       <th className="text-left p-2 spurs-text">Name</th>
                       <th className="text-left p-2 spurs-text">City</th>
                       <th className="text-left p-2 spurs-text">Capacity</th>
-                    </>
-                  )}
-                  {activeTab === 'stadium_names' && (
-                    <>
-                      <th className="text-left p-2 spurs-text">Stadium</th>
-                      <th className="text-left p-2 spurs-text">Name</th>
-                      <th className="text-left p-2 spurs-text">Valid From</th>
-                      <th className="text-left p-2 spurs-text">Valid To</th>
                     </>
                   )}
                 </tr>
@@ -2506,40 +2230,6 @@ export default function AdminPage() {
                     </tr>
                   );
                 })}
-                {activeTab === 'media' && (
-                  <>
-                    {getPaginatedMedia().length === 0 ? (
-                      <tr>
-                        <td colSpan={4} className="p-2 text-center text-gray-400">
-                          No media records found
-                        </td>
-                      </tr>
-                    ) : (
-                      getPaginatedMedia().map(mediaItem => {
-                        const match = matches.find(m => m.id === mediaItem.match_id);
-                        const homeTeam = teams.find(t => t.id === match?.home_team_id);
-                        const awayTeam = teams.find(t => t.id === match?.away_team_id);
-
-                        return (
-                          <tr 
-                            key={mediaItem.id} 
-                            className="border-b border-gray-600 cursor-pointer hover:bg-gray-700/50 transition-colors"
-                            onClick={() => handleEditMedia(mediaItem)}
-                          >
-                            <td className="p-2 spurs-text">{mediaItem.type}</td>
-                            <td className="p-2 spurs-text">
-                              {match && homeTeam && awayTeam
-                                ? `${homeTeam.short_name} vs ${awayTeam.short_name} (${match.date})`
-                                : '-'
-                              }
-                            </td>
-                            <td className="p-2 spurs-text max-w-xs truncate">{mediaItem.url}</td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </>
-                )}
                 {activeTab === 'teams' && (
                   <>
                     {getPaginatedTeams().length === 0 ? (
@@ -2617,74 +2307,6 @@ export default function AdminPage() {
                     )}
                   </>
                 )}
-                {activeTab === 'player_stats' && (
-                  <>
-                    {getPaginatedPlayerStats().length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="p-2 text-center text-gray-400">
-                          No player stats found
-                        </td>
-                      </tr>
-                    ) : (
-                      getPaginatedPlayerStats().map(stat => {
-                        const player = players.find(p => p.id === stat.player_id);
-                        const match = matches.find(m => m.id === stat.match_id);
-                        const homeTeam = teams.find(t => t.id === match?.home_team_id);
-                        const awayTeam = teams.find(t => t.id === match?.away_team_id);
-                        return (
-                          <tr 
-                            key={stat.id} 
-                            className="border-b border-gray-600 cursor-pointer hover:bg-gray-700/50 transition-colors"
-                            onClick={() => handleEditPlayerStats(stat)}
-                          >
-                            <td className="p-2 spurs-text">{player?.first_name ? `${player.first_name} ` : ''}{player?.last_name}</td>
-                            <td className="p-2 spurs-text">
-                              {match && homeTeam && awayTeam
-                                ? `${homeTeam.short_name} vs ${awayTeam.short_name} (${match.date})`
-                                : match?.date || '-'
-                              }
-                            </td>
-                            <td className="p-2 spurs-text">{stat.started ? 'Yes' : 'No'}</td>
-                            <td className="p-2 spurs-text">{stat.captain ? 'Yes' : 'No'}</td>
-                            <td className="p-2 spurs-text">{stat.player_of_the_match ? 'Yes' : 'No'}</td>
-                            <td className="p-2 spurs-text">{stat.goals}</td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </>
-                )}
-                {activeTab === 'player_history' && (
-                  <>
-                    {getPaginatedPlayerHistory().length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="p-2 text-center text-gray-400">
-                          No player history found
-                        </td>
-                      </tr>
-                    ) : (
-                      getPaginatedPlayerHistory().map(history => {
-                        const player = players.find(p => p.id === history.player_id);
-                        const team = teams.find(t => t.id === history.team_id);
-                        return (
-                          <tr 
-                            key={history.id} 
-                            className="border-b border-gray-600 cursor-pointer hover:bg-gray-700/50 transition-colors"
-                            onClick={() => handleEditPlayerHistory(history)}
-                          >
-                            <td className="p-2 spurs-text">
-                              {player ? `${player.first_name ? `${player.first_name} ` : ''}${player.last_name}` : `Player ID: ${history.player_id} (not found)`}
-                            </td>
-                            <td className="p-2 spurs-text">{team?.name || 'Unknown Team'}</td>
-                            <td className="p-2 spurs-text">{history.squad_number || '-'}</td>
-                            <td className="p-2 spurs-text">{history.joined_on || '-'}</td>
-                            <td className="p-2 spurs-text">{history.left_on || '-'}</td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </>
-                )}
                 {activeTab === 'stadiums' && (
                   <>
                     {getPaginatedStadiums().length === 0 ? (
@@ -2704,33 +2326,6 @@ export default function AdminPage() {
                             <td className="p-2 spurs-text">{stadium.name}</td>
                             <td className="p-2 spurs-text">{stadium.city || '-'}</td>
                             <td className="p-2 spurs-text">{stadium.capacity || '-'}</td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </>
-                )}
-                {activeTab === 'stadium_names' && (
-                  <>
-                    {getPaginatedStadiumNames().length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="p-2 text-center text-gray-400">
-                          No stadium names found
-                        </td>
-                      </tr>
-                    ) : (
-                      getPaginatedStadiumNames().map(stadiumName => {
-                        const stadium = stadiums.find(s => s.id === stadiumName.stadium_id);
-                        return (
-                          <tr
-                            key={stadiumName.id}
-                            className="border-b border-gray-600 cursor-pointer hover:bg-gray-700/50 transition-colors"
-                            onClick={() => handleEditStadiumName(stadiumName)}
-                          >
-                            <td className="p-2 spurs-text">{stadium?.name || 'Unknown Stadium'}</td>
-                            <td className="p-2 spurs-text">{stadiumName.name}</td>
-                            <td className="p-2 spurs-text">{stadiumName.valid_from || '-'}</td>
-                            <td className="p-2 spurs-text">{stadiumName.valid_to || '-'}</td>
                           </tr>
                         );
                       })
@@ -2764,34 +2359,6 @@ export default function AdminPage() {
                   size="sm"
                   onClick={() => setMatchesCurrentPage(matchesCurrentPage + 1)}
                   disabled={matchesCurrentPage === matchesTotalPages}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
-          )}
-          {activeTab === 'media' && mediaTotalPages > 1 && (
-            <div className="mt-4 flex items-center justify-between">
-              <div className="text-sm text-gray-400">
-                Showing {((mediaCurrentPage - 1) * mediaPerPage) + 1} to {Math.min(mediaCurrentPage * mediaPerPage, getFilteredMedia().length)} of {getFilteredMedia().length} media
-              </div>
-              <div className="flex space-x-2">
-                <Button
-                  variant="spurs"
-                  size="sm"
-                  onClick={() => setMediaCurrentPage(mediaCurrentPage - 1)}
-                  disabled={mediaCurrentPage === 1}
-                >
-                  Previous
-                </Button>
-                <span className="px-3 py-1 text-sm text-gray-300">
-                  Page {mediaCurrentPage} of {mediaTotalPages}
-                </span>
-                <Button
-                  variant="spurs"
-                  size="sm"
-                  onClick={() => setMediaCurrentPage(mediaCurrentPage + 1)}
-                  disabled={mediaCurrentPage === mediaTotalPages}
                 >
                   Next
                 </Button>
@@ -2854,62 +2421,6 @@ export default function AdminPage() {
               </div>
             </div>
           )}
-          {activeTab === 'player_stats' && playerStatsTotalPages > 1 && (
-            <div className="mt-4 flex items-center justify-between">
-              <div className="text-sm text-gray-400">
-                Showing {((playerStatsCurrentPage - 1) * playerStatsPerPage) + 1} to {Math.min(playerStatsCurrentPage * playerStatsPerPage, getFilteredPlayerStats().length)} of {getFilteredPlayerStats().length} player stats
-              </div>
-              <div className="flex space-x-2">
-                <Button
-                  variant="spurs"
-                  size="sm"
-                  onClick={() => setPlayerStatsCurrentPage(playerStatsCurrentPage - 1)}
-                  disabled={playerStatsCurrentPage === 1}
-                >
-                  Previous
-                </Button>
-                <span className="px-3 py-1 text-sm text-gray-300">
-                  Page {playerStatsCurrentPage} of {playerStatsTotalPages}
-                </span>
-                <Button
-                  variant="spurs"
-                  size="sm"
-                  onClick={() => setPlayerStatsCurrentPage(playerStatsCurrentPage + 1)}
-                  disabled={playerStatsCurrentPage === playerStatsTotalPages}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
-          )}
-          {activeTab === 'player_history' && playerHistoryTotalPages > 1 && (
-            <div className="mt-4 flex items-center justify-between">
-              <div className="text-sm text-gray-400">
-                Showing {((playerHistoryCurrentPage - 1) * playerHistoryPerPage) + 1} to {Math.min(playerHistoryCurrentPage * playerHistoryPerPage, getFilteredPlayerHistory().length)} of {getFilteredPlayerHistory().length} player history
-              </div>
-              <div className="flex space-x-2">
-                <Button
-                  variant="spurs"
-                  size="sm"
-                  onClick={() => setPlayerHistoryCurrentPage(playerHistoryCurrentPage - 1)}
-                  disabled={playerHistoryCurrentPage === 1}
-                >
-                  Previous
-                </Button>
-                <span className="px-3 py-1 text-sm text-gray-300">
-                  Page {playerHistoryCurrentPage} of {playerHistoryTotalPages}
-                </span>
-                <Button
-                  variant="spurs"
-                  size="sm"
-                  onClick={() => setPlayerHistoryCurrentPage(playerHistoryCurrentPage + 1)}
-                  disabled={playerHistoryCurrentPage === playerHistoryTotalPages}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
-          )}
           {activeTab === 'stadiums' && stadiumsTotalPages > 1 && (
             <div className="mt-4 flex items-center justify-between">
               <div className="text-sm text-gray-400">
@@ -2938,35 +2449,7 @@ export default function AdminPage() {
               </div>
             </div>
           )}
-          {activeTab === 'stadium_names' && stadiumNamesTotalPages > 1 && (
-            <div className="mt-4 flex items-center justify-between">
-              <div className="text-sm text-gray-400">
-                Showing {((stadiumNamesCurrentPage - 1) * stadiumNamesPerPage) + 1} to {Math.min(stadiumNamesCurrentPage * stadiumNamesPerPage, getFilteredStadiumNames().length)} of {getFilteredStadiumNames().length} stadium names
-              </div>
-              <div className="flex space-x-2">
-                <Button
-                  variant="spurs"
-                  size="sm"
-                  onClick={() => setStadiumNamesCurrentPage(stadiumNamesCurrentPage - 1)}
-                  disabled={stadiumNamesCurrentPage === 1}
-                >
-                  Previous
-                </Button>
-                <span className="px-3 py-1 text-sm text-gray-300">
-                  Page {stadiumNamesCurrentPage} of {stadiumNamesTotalPages}
-                </span>
-                <Button
-                  variant="spurs"
-                  size="sm"
-                  onClick={() => setStadiumNamesCurrentPage(stadiumNamesCurrentPage + 1)}
-                  disabled={stadiumNamesCurrentPage === stadiumNamesTotalPages}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
-          )}
-          {activeTab !== 'matches' && activeTab !== 'media' && activeTab !== 'stadium_names' && activeTab !== 'stadiums' && totalPages > 1 && (
+          {activeTab !== 'matches' && activeTab !== 'stadiums' && totalPages > 1 && (
             <div className="mt-4 flex items-center justify-between">
               <div className="text-sm text-gray-400">
                 Showing {((currentPage - 1) * recordsPerPage) + 1} to {Math.min(currentPage * recordsPerPage, totalCount)} of {totalCount} records
@@ -2996,6 +2479,566 @@ export default function AdminPage() {
           )}
         </div>
       </div>
+
+      {/* Media Modal */}
+      {showMediaModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-xl font-bold text-white mb-4">
+              {editingMediaId ? 'Edit Media' : 'Add New Media'}
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Type</label>
+                <select
+                  value={newMediaForm.type}
+                  onChange={(e) => setNewMediaForm({ ...newMediaForm, type: e.target.value as Media['type'] })}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                >
+                  <option value="photo">Photo</option>
+                  <option value="photo album">Photo Album</option>
+                  <option value="article">Article</option>
+                  <option value="social media">Social Media</option>
+                  <option value="video-external">Video (External)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Title</label>
+                <input
+                  type="text"
+                  value={newMediaForm.title || ''}
+                  onChange={(e) => setNewMediaForm({ ...newMediaForm, title: e.target.value })}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">URL</label>
+                <input
+                  type="text"
+                  value={newMediaForm.url || ''}
+                  onChange={(e) => setNewMediaForm({ ...newMediaForm, url: e.target.value })}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Caption</label>
+                <textarea
+                  value={newMediaForm.caption || ''}
+                  onChange={(e) => setNewMediaForm({ ...newMediaForm, caption: e.target.value })}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                  rows={3}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Sort Order</label>
+                <input
+                  type="number"
+                  value={newMediaForm.sort_order}
+                  onChange={(e) => setNewMediaForm({ ...newMediaForm, sort_order: parseInt(e.target.value) || 0 })}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2 mt-6">
+              <Button variant="spurs" onClick={() => {
+                setShowMediaModal(false);
+                setEditingMediaId(null);
+                setNewMediaForm({
+                  match_id: '',
+                  type: 'social media',
+                  title: '',
+                  url: '',
+                  caption: '',
+                  sort_order: 0,
+                });
+              }}>
+                Cancel
+              </Button>
+              <Button
+                variant="spurs"
+                onClick={async () => {
+                  try {
+                    setLoading(true);
+                    const response = editingMediaId
+                      ? await callAdminApi('media', 'PUT', { id: editingMediaId, ...newMediaForm })
+                      : await callAdminApi('media', 'POST', newMediaForm);
+                    if (response.error) {
+                      showMessage(response.error, 'error');
+                    } else {
+                      showMessage(editingMediaId ? 'Media updated successfully' : 'Media created successfully', 'success');
+                      setShowMediaModal(false);
+                      setEditingMediaId(null);
+                      setNewMediaForm({
+                        match_id: '',
+                        type: 'social media',
+                        title: '',
+                        url: '',
+                        caption: '',
+                        sort_order: 0,
+                      });
+                      // Reload media to update related records
+                      const mediaRes = await callAdminApi('media', 'GET');
+                      if (mediaRes.data) {
+                        const allMedia = mediaRes.data as Media[];
+                        setRelatedMedia(allMedia.filter(m => m.match_id === editingMatchId));
+                      }
+                    }
+                  } catch (error) {
+                    showMessage(editingMediaId ? 'Error updating media' : 'Error creating media', 'error');
+                    console.error('Error saving media:', error);
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+              >
+                {editingMediaId ? 'Update' : 'Create'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Player Stats Modal */}
+      {showPlayerStatsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-bold text-white mb-4">
+              {editingPlayerStatsId ? 'Edit Player Stats' : 'Add Player Stats'}
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Player</label>
+                <select
+                  value={newPlayerStatsForm.player_id}
+                  onChange={(e) => setNewPlayerStatsForm({ ...newPlayerStatsForm, player_id: e.target.value })}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                >
+                  <option value="">Select a player</option>
+                  {players.map((player) => (
+                    <option key={player.id} value={player.id}>
+                      {player.first_name} {player.last_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Started</label>
+                  <select
+                    value={newPlayerStatsForm.started ? 'true' : 'false'}
+                    onChange={(e) => setNewPlayerStatsForm({ ...newPlayerStatsForm, started: e.target.value === 'true' })}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                  >
+                    <option value="false">No</option>
+                    <option value="true">Yes</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Captain</label>
+                  <select
+                    value={newPlayerStatsForm.captain ? 'true' : 'false'}
+                    onChange={(e) => setNewPlayerStatsForm({ ...newPlayerStatsForm, captain: e.target.value === 'true' })}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                  >
+                    <option value="false">No</option>
+                    <option value="true">Yes</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Goals</label>
+                  <input
+                    type="number"
+                    value={newPlayerStatsForm.goals}
+                    onChange={(e) => setNewPlayerStatsForm({ ...newPlayerStatsForm, goals: parseInt(e.target.value) || 0 })}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Assists</label>
+                  <input
+                    type="number"
+                    value={newPlayerStatsForm.assists}
+                    onChange={(e) => setNewPlayerStatsForm({ ...newPlayerStatsForm, assists: parseInt(e.target.value) || 0 })}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Yellow Cards</label>
+                  <input
+                    type="number"
+                    value={newPlayerStatsForm.yellow_cards}
+                    onChange={(e) => setNewPlayerStatsForm({ ...newPlayerStatsForm, yellow_cards: parseInt(e.target.value) || 0 })}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Red Cards</label>
+                  <input
+                    type="number"
+                    value={newPlayerStatsForm.red_cards}
+                    onChange={(e) => setNewPlayerStatsForm({ ...newPlayerStatsForm, red_cards: parseInt(e.target.value) || 0 })}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Minute On</label>
+                  <input
+                    type="number"
+                    value={newPlayerStatsForm.minute_on || ''}
+                    onChange={(e) => setNewPlayerStatsForm({ ...newPlayerStatsForm, minute_on: e.target.value ? parseInt(e.target.value) : null })}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Minute Off</label>
+                  <input
+                    type="number"
+                    value={newPlayerStatsForm.minute_off || ''}
+                    onChange={(e) => setNewPlayerStatsForm({ ...newPlayerStatsForm, minute_off: e.target.value ? parseInt(e.target.value) : null })}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Player Rating</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  max="10"
+                  value={newPlayerStatsForm.player_rating || ''}
+                  onChange={(e) => setNewPlayerStatsForm({ ...newPlayerStatsForm, player_rating: e.target.value ? parseFloat(e.target.value) : null })}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2 mt-6">
+              <Button variant="spurs" onClick={() => {
+                setShowPlayerStatsModal(false);
+                setEditingPlayerStatsId(null);
+                setNewPlayerStatsForm({
+                  player_id: '',
+                  match_id: '',
+                  team_id: 1,
+                  started: false,
+                  captain: false,
+                  was_substitute: false,
+                  was_unused_substitute: false,
+                  minute_on: null,
+                  minute_off: null,
+                  minutes_played: 0,
+                  goals: 0,
+                  assists: 0,
+                  yellow_cards: 0,
+                  red_cards: 0,
+                  clean_sheet: null,
+                  saves: null,
+                  shots: 0,
+                  shots_on_target: 0,
+                  passes_completed: null,
+                  passes_attempted: null,
+                  tackles: null,
+                  interceptions: null,
+                  clearances: null,
+                  fouls_committed: null,
+                  fouls_won: null,
+                  offsides: null,
+                  player_rating: null,
+                  player_of_the_match: false,
+                });
+              }}>
+                Cancel
+              </Button>
+              <Button
+                variant="spurs"
+                onClick={async () => {
+                  try {
+                    setLoading(true);
+                    // Determine was_substitute and was_unused_substitute based on started and minute_on
+                    const wasSubstitute = !newPlayerStatsForm.started && newPlayerStatsForm.minute_on !== null;
+                    const wasUnusedSubstitute = !newPlayerStatsForm.started && newPlayerStatsForm.minute_on === null;
+
+                    const payload = {
+                      ...newPlayerStatsForm,
+                      was_substitute: wasSubstitute,
+                      was_unused_substitute: wasUnusedSubstitute,
+                    };
+
+                    const response = editingPlayerStatsId
+                      ? await callAdminApi('player-stats', 'PUT', { id: editingPlayerStatsId, ...payload })
+                      : await callAdminApi('player-stats', 'POST', payload);
+                    if (response.error) {
+                      showMessage(response.error, 'error');
+                    } else {
+                      showMessage(editingPlayerStatsId ? 'Player stats updated successfully' : 'Player stats created successfully', 'success');
+                      setShowPlayerStatsModal(false);
+                      setEditingPlayerStatsId(null);
+                      setNewPlayerStatsForm({
+                        player_id: '',
+                        match_id: '',
+                        team_id: 1,
+                        started: false,
+                        captain: false,
+                        was_substitute: false,
+                        was_unused_substitute: false,
+                        minute_on: null,
+                        minute_off: null,
+                        minutes_played: 0,
+                        goals: 0,
+                        assists: 0,
+                        yellow_cards: 0,
+                        red_cards: 0,
+                        clean_sheet: null,
+                        saves: null,
+                        shots: 0,
+                        shots_on_target: 0,
+                        passes_completed: null,
+                        passes_attempted: null,
+                        tackles: null,
+                        interceptions: null,
+                        clearances: null,
+                        fouls_committed: null,
+                        fouls_won: null,
+                        offsides: null,
+                        player_rating: null,
+                        player_of_the_match: false,
+                      });
+                      // Reload player stats to update related records based on context
+                      const playerStatsRes = await callAdminApi('player-stats', 'GET');
+                      if (playerStatsRes.data) {
+                        const allPlayerStats = playerStatsRes.data as PlayerStats[];
+                        if (playerStatsContext === 'match' && editingMatchId) {
+                          setRelatedPlayerStats(allPlayerStats.filter(ps => ps.match_id === editingMatchId));
+                        } else if (playerStatsContext === 'player' && editingPlayerId) {
+                          setRelatedPlayerStatsForPlayer(allPlayerStats.filter(ps => ps.player_id === editingPlayerId));
+                        }
+                      }
+                    }
+                  } catch (error) {
+                    showMessage(editingPlayerStatsId ? 'Error updating player stats' : 'Error creating player stats', 'error');
+                    console.error('Error saving player stats:', error);
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+              >
+                {editingPlayerStatsId ? 'Update' : 'Create'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Player History Modal */}
+      {showPlayerHistoryModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-bold text-white mb-4">
+              {editingPlayerHistoryId ? 'Edit Player History' : 'Add Player History'}
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Team</label>
+                <select
+                  value={playerHistoryForm.team_id}
+                  onChange={(e) => setPlayerHistoryForm({ ...playerHistoryForm, team_id: parseInt(e.target.value) })}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                >
+                  <option value="">Select a team</option>
+                  {teams.map((team) => (
+                    <option key={team.id} value={team.id}>
+                      {team.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Joined On</label>
+                <input
+                  type="date"
+                  value={playerHistoryForm.joined_on || ''}
+                  onChange={(e) => setPlayerHistoryForm({ ...playerHistoryForm, joined_on: e.target.value })}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Left On</label>
+                <input
+                  type="date"
+                  value={playerHistoryForm.left_on || ''}
+                  onChange={(e) => setPlayerHistoryForm({ ...playerHistoryForm, left_on: e.target.value })}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Squad Number</label>
+                <input
+                  type="number"
+                  value={playerHistoryForm.squad_number || ''}
+                  onChange={(e) => setPlayerHistoryForm({ ...playerHistoryForm, squad_number: e.target.value ? parseInt(e.target.value) : null })}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2 mt-6">
+              <Button variant="spurs" onClick={() => {
+                setShowPlayerHistoryModal(false);
+                setEditingPlayerHistoryId(null);
+                setPlayerHistoryForm({
+                  player_id: '',
+                  team_id: 1,
+                  joined_on: '',
+                  left_on: '',
+                  squad_number: null,
+                });
+              }}>
+                Cancel
+              </Button>
+              <Button
+                variant="spurs"
+                onClick={async () => {
+                  try {
+                    setLoading(true);
+                    // Convert empty strings to null for date fields
+                    const payload = {
+                      ...playerHistoryForm,
+                      joined_on: playerHistoryForm.joined_on || null,
+                      left_on: playerHistoryForm.left_on || null,
+                    };
+                    const response = editingPlayerHistoryId
+                      ? await callAdminApi('player-history', 'PUT', { id: editingPlayerHistoryId, ...payload })
+                      : await callAdminApi('player-history', 'POST', payload);
+                    if (response.error) {
+                      showMessage(response.error, 'error');
+                    } else {
+                      showMessage(editingPlayerHistoryId ? 'Player history updated successfully' : 'Player history created successfully', 'success');
+                      setShowPlayerHistoryModal(false);
+                      setEditingPlayerHistoryId(null);
+                      setPlayerHistoryForm({
+                        player_id: '',
+                        team_id: 1,
+                        joined_on: '',
+                        left_on: '',
+                        squad_number: null,
+                      });
+                      // Reload player history to update related records
+                      const playerHistoryRes = await callAdminApi('player-history', 'GET');
+                      if (playerHistoryRes.data) {
+                        const allPlayerHistory = playerHistoryRes.data as PlayerHistory[];
+                        setRelatedPlayerHistory(allPlayerHistory.filter(ph => ph.player_id === editingPlayerId));
+                      }
+                    }
+                  } catch (error) {
+                    showMessage(editingPlayerHistoryId ? 'Error updating player history' : 'Error creating player history', 'error');
+                    console.error('Error saving player history:', error);
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+              >
+                {editingPlayerHistoryId ? 'Update' : 'Create'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Stadium Name Modal */}
+      {showStadiumNameModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-bold text-white mb-4">
+              {editingStadiumNameId ? 'Edit Stadium Name' : 'Add Stadium Name'}
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Name</label>
+                <input
+                  type="text"
+                  value={stadiumNameForm.name}
+                  onChange={(e) => setStadiumNameForm({ ...stadiumNameForm, name: e.target.value })}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Valid From</label>
+                <input
+                  type="date"
+                  value={stadiumNameForm.valid_from || ''}
+                  onChange={(e) => setStadiumNameForm({ ...stadiumNameForm, valid_from: e.target.value })}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Valid To</label>
+                <input
+                  type="date"
+                  value={stadiumNameForm.valid_to || ''}
+                  onChange={(e) => setStadiumNameForm({ ...stadiumNameForm, valid_to: e.target.value || null })}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2 mt-6">
+              <Button variant="spurs" onClick={() => {
+                setShowStadiumNameModal(false);
+                setEditingStadiumNameId(null);
+                setStadiumNameForm({
+                  stadium_id: '',
+                  name: '',
+                  valid_from: '',
+                  valid_to: null,
+                });
+              }}>
+                Cancel
+              </Button>
+              <Button
+                variant="spurs"
+                onClick={async () => {
+                  try {
+                    setLoading(true);
+                    const response = editingStadiumNameId
+                      ? await callAdminApi('stadium-names', 'PUT', { id: editingStadiumNameId, ...stadiumNameForm })
+                      : await callAdminApi('stadium-names', 'POST', stadiumNameForm);
+                    if (response.error) {
+                      showMessage(response.error, 'error');
+                    } else {
+                      showMessage(editingStadiumNameId ? 'Stadium name updated successfully' : 'Stadium name created successfully', 'success');
+                      setShowStadiumNameModal(false);
+                      setEditingStadiumNameId(null);
+                      setStadiumNameForm({
+                        stadium_id: '',
+                        name: '',
+                        valid_from: '',
+                        valid_to: null,
+                      });
+                      // Reload stadium names to update related records
+                      const stadiumNamesRes = await callAdminApi('stadium-names', 'GET');
+                      if (stadiumNamesRes.data) {
+                        const allStadiumNames = stadiumNamesRes.data as StadiumName[];
+                        setRelatedStadiumNames(allStadiumNames.filter(sn => sn.stadium_id === editingStadiumId));
+                      }
+                    }
+                  } catch (error) {
+                    showMessage(editingStadiumNameId ? 'Error updating stadium name' : 'Error creating stadium name', 'error');
+                    console.error('Error saving stadium name:', error);
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+              >
+                {editingStadiumNameId ? 'Update' : 'Create'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
