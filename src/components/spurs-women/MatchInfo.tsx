@@ -1,4 +1,5 @@
 import { Card } from '@/components/Card';
+import ReactMarkdown from 'react-markdown';
 
 type MatchInfoProps = {
   stadium_display_name?: string | null;
@@ -60,7 +61,14 @@ export default function MatchInfo({ stadium_display_name, stadium_slug, attendan
           </p>
         )}
         {attendance && <p className="mb-2"><strong>Attendance:</strong> {attendance.toLocaleString()}</p>}
-        {notes && <p><strong>Notes:</strong> {notes}</p>}
+        {notes && (
+          <div>
+            <strong>Notes:</strong>
+            <div className="prose prose-sm mt-3">
+              <ReactMarkdown>{notes}</ReactMarkdown>
+            </div>
+          </div>
+        )}
       </div>
     </Card>
   );
