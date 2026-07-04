@@ -1,6 +1,7 @@
 'use client';
 
 import { Card } from '@/components/Card';
+import ReactMarkdown from 'react-markdown';
 
 interface SeasonReview {
   id?: number;
@@ -29,8 +30,8 @@ export default function SeasonReviewCard({ review }: SeasonReviewCardProps) {
       <Card variant="spursAccent" padding="lg" clickable={false}>
         <div className="space-y-4">
           <div className="prose prose-gray dark:prose-invert max-w-none">
-            <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed">
-              {review.content}
+            <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed prose prose-lg">
+              <ReactMarkdown>{review.content}</ReactMarkdown>
             </div>
           </div>
 
