@@ -8,7 +8,7 @@ interface ApiResponse {
 // Generic API call function for admin operations
 export async function callAdminApi(
   endpoint: string,
-  method: 'POST' | 'GET' | 'DELETE' = 'POST',
+  method: 'POST' | 'GET' | 'DELETE' | 'PUT' = 'POST',
   payload?: unknown
 ): Promise<ApiResponse> {
   try {
