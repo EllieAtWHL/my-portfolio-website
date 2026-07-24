@@ -32,6 +32,8 @@ export interface YouTubeVideo {
 // Sources for Spurs women's (prioritize dedicated sources but include professional coverage)
 const spursSources = [
   'https://spurswomen.uk/feed/',
+  'https://veintefutbol.blogspot.com/feeds/posts/default',
+  'https://spurs-across-the-pond.ghost.io/rss/',
   'https://feeds.bbci.co.uk/sport/football/womens-super-league/rss.xml',
   'https://fawslfulltime.co.uk/feed/',
   'https://shekicks.net/feed/',
@@ -61,6 +63,8 @@ export async function fetchSpursWomenNews(): Promise<NewsArticle[]> {
       
       let sourceName = 'Unknown';
       if (sourceUrl.includes('spurswomen')) sourceName = 'Spurs Women Blog';
+      else if (sourceUrl.includes('veintefutbol')) sourceName = 'Veinte Futbol';
+      else if (sourceUrl.includes('spurs-across-the-pond')) sourceName = 'Spurs Across the Pond';
       else if (sourceUrl.includes('bbc')) sourceName = 'BBC Sport';
       else if (sourceUrl.includes('fawslfulltime')) sourceName = 'WSL Full-Time';
       else if (sourceUrl.includes('shekicks')) sourceName = 'She Kicks';
@@ -105,16 +109,19 @@ export async function fetchSpursWomenNews(): Promise<NewsArticle[]> {
     }
     
     // Priority 2: Cartilage Free Captain with Tottenham Hotspur Women category - include automatically
-    if (article.source === 'Cartilage Free Captain' && 
-        article.categories?.includes('Tottenham Hotspur Women')) {
+    if ((article.source === 'Cartilage Free Captain' && 
+        article.categories?.includes('Tottenham Hotspur Women'))
+        ||
+        (article.source === 'Spurs Across the Pond') && 
+        article.categories?.includes('Women\'s Team')) {
       return true;
     }
     
     // Priority 3: Other sources - require explicit women's content indicators
     const spursKeywords = [
-      'tottenham', 'spurs', 'hotspur', 'n17', 'lilywhite',
-      'bethany england', 'martin ho', 'clare hunt', 'signe gaupset', 
-      'hanna wijk', 'matilda nilden', 'maika hamano'
+      'tottenham', 'spurs', 'hotspur', 'n17', 'lilywhite', 'martin ho', 'clare hunt', 'signe gaupset', 
+      'hanna wijk', 'matilda nilden', 'toko koga', 'kirsty hanson', 'alice sombath', 'shekiera martinez',
+      'victoria pelova', 'olivia holdt', 'caitlin dijkstra', 'tinka tandberg', 'lisa kop'
     ];
     
     // Women's-specific keywords that must be present
@@ -126,8 +133,8 @@ export async function fetchSpursWomenNews(): Promise<NewsArticle[]> {
     // Strong men's indicators to exclude
     const strongMensKeywords = [
       'men\'s team', 'men\'s squad', 'men\'s side', 'premier league men',
-      'male team', 'premier league', 'championship', 'loan', 'transfer fee',
-      'purchase option', 'hearts striker', 'de zerbi', 'palhinha'
+      'male team', 'premier league', 'championship',
+      'purchase option', 'de zerbi'
     ];
     
     // General content to exclude (open threads, roundups, etc.)
@@ -149,9 +156,10 @@ export async function fetchSpursWomenNews(): Promise<NewsArticle[]> {
     );
     
     const hasStrongMensKeywords = strongMensKeywords.some(keyword => 
-      title.includes(keyword) || 
-      content.includes(keyword) || 
-      contentText.includes(keyword)
+      // Use word boundary matching to avoid false positives like "women's team" matching "men's team"
+      new RegExp(`\\b${keyword}\\b`, 'i').test(title) || 
+      new RegExp(`\\b${keyword}\\b`, 'i').test(content) || 
+      new RegExp(`\\b${keyword}\\b`, 'i').test(contentText)
     );
     
     const hasGeneralContentKeywords = generalContentKeywords.some(keyword => 

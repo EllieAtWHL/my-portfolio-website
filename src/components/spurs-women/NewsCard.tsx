@@ -43,6 +43,10 @@ export default function NewsCard({ article }: NewsCardProps) {
               ? 'bg-teal-400 text-black'
               : article.source === 'She Kicks' || article.source === 'Girls on the Ball'
               ? 'bg-purple-700 text-white'
+              : article.source === 'Spurs Across the Pond'
+              ? 'bg-sky-400 text-black'
+              : article.source === 'Veinte Futbol'
+              ? 'bg-neutral-800 text-white'
               : 'bg-gray-100 text-gray-800'
           }`}>
             {article.source}
