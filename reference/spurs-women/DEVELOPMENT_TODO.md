@@ -275,6 +275,16 @@ Theme switching, dark mode color palette, localStorage persistence, and flash-of
 - [ ] Add alternative team kits
 - [ ] Implement team branding consistency
 
+### 23. SEO & Discovery
+**Status**: Pending
+**Effort**: Low
+**Impact**: Low
+
+**Tasks**:
+- [ ] Add schema.org structured data for matches and player profiles
+- [ ] Generate XML sitemaps covering matches/seasons/players/stadiums
+- [ ] Add Open Graph tags for match and player pages (social sharing previews)
+
 ## Security and Compliance
 
 ### 21. Security Audit
@@ -288,6 +298,7 @@ Theme switching, dark mode color palette, localStorage persistence, and flash-of
 - [ ] Add CSRF protection
 - [ ] Review API security
 - [ ] Implement security headers
+- [ ] Add API rate limiting for external integrations (YouTube/RSS proxying, admin endpoints)
 
 ### 22. GDPR Compliance
 **Status**: Pending
