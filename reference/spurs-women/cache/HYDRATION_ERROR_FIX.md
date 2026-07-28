@@ -36,9 +36,9 @@ export function formatDateConsistent(dateString: string): string {
 ### 2. Updated All Components Using Date Formatting
 
 **Fixed Components:**
-- `VideoCard.tsx` - Line 57: `{formatDateForCard(video.pubDate)}`
-- `MatchCard.tsx` - Line 27: `{formatDateForCard(match.date)}`
-- `NewsCard.tsx` - Line 51: `{formatDateForCard(article.isoDate)}`
+- `VideoCard.tsx` - Line 59 (as of last check; line numbers shift): `{formatDateForCard(video.pubDate)}`
+- `MatchCard.tsx` - Line 44 (as of last check): `{formatDateForCard(match.date)}`
+- `NewsCard.tsx` - Line 57 (as of last check): `{formatDateForCard(article.isoDate)}`
 
 ### 3. Key Changes Made
 

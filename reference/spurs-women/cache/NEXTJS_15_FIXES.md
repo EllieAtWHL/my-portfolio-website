@@ -1,5 +1,7 @@
 # Next.js 15 Compatibility Fixes
 
+**Historical note**: this doc describes fixes made while the project was on Next.js 15.x. The project has since been upgraded to **Next.js 16.2.6** (see `package.json`), and `src/app/spurs-women/matches/page.tsx` no longer has a `searchParams` prop at all - it's now a thin server component (`export default function MatchesPage() { return <MatchesClient />; }`) that delegates filtering to a client component, `MatchesClient.tsx`, which didn't exist when this doc was written. The `searchParams`-as-Promise pattern described below is still correct Next.js 15+/16 App Router behavior for any page that *does* read `searchParams` directly - kept here for reference - but the specific "Before/After" code no longer matches this file.
+
 ## Issues Fixed
 
 ### 1. searchParams Promise Issue

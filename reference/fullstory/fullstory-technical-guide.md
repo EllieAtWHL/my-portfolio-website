@@ -13,7 +13,7 @@ my-portfolio-website/
 │   └── fullstory-init.js     # FullStory initialization script
 ├── src/app/
 │   └── layout.tsx            # Root layout with Script component
-└── docs/
+└── reference/fullstory/
     ├── fullstory-implementation.md
     └── fullstory-technical-guide.md
 ```
@@ -162,13 +162,7 @@ window.FS?.event('Debug Test', { timestamp: Date.now() });
 
 ### Environment Variables
 
-Add to `.env.local` if needed:
-
-```env
-# FullStory configuration
-NEXT_PUBLIC_FULLSTORY_ORG=o-1J8NQN-na1
-NEXT_PUBLIC_FULLSTORY_DEBUG=false
-```
+**Not currently implemented.** Neither `NEXT_PUBLIC_FULLSTORY_ORG` nor `NEXT_PUBLIC_FULLSTORY_DEBUG` is read anywhere in `src/` or `public/` - the organization ID (`o-1J8NQN-na1`) is hardcoded directly in `/public/fullstory-init.js`, and there's no debug-mode env var check. If you want env-based configuration, it would need to be built (e.g. templating `fullstory-init.js` at build time, or reading `process.env.NEXT_PUBLIC_FULLSTORY_ORG` from a script that sets `window['_fs_org']`); as of now it's a hardcoded static file.
 
 ## Performance Optimization
 

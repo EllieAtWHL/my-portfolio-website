@@ -124,10 +124,10 @@ home_possession   INTEGER
 away_possession   INTEGER
 
 -- Shots  
-home_shots_total     INTEGER
-away_shots_total     INTEGER
-home_shots_ontarget  INTEGER
-away_shots_ontarget  INTEGER
+home_total_shots      INTEGER
+away_total_shots      INTEGER
+home_shots_on_target  INTEGER
+away_shots_on_target  INTEGER
 
 -- Corners
 home_corners   INTEGER
@@ -177,6 +177,8 @@ The MatchStats component is used in:
 The TeamPill component is used in:
 - `src/components/spurs-women/MatchNavigation.tsx` (page header)
 - `src/components/spurs-women/MatchCard.tsx` (match cards)
+- `src/app/spurs-women/teams/[teamId]/TeamClient.tsx`
+- `src/app/spurs-women/teams/page.tsx`
 
 ## Troubleshooting
 

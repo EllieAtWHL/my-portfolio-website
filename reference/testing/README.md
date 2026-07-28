@@ -238,28 +238,30 @@ jest.mock('@/lib/fullstory', () => ({
 
 ## Coverage
 
-Current coverage: **88.2% statements, 79.57% branches, 89.13% functions, 87.81% lines**
+Current coverage (as of last `npm run test:coverage` run): **78.68% statements, 69.39% branches, 77.77% functions, 78.18% lines**
 
 Coverage reports are generated in the `coverage/` directory when running `npm run test:coverage`.
 
 **Breakdown**:
-- Components: 100% coverage (Button, Card, Modal, Header)
-- Utilities: 100% coverage (utils.ts, date.ts, team-colors.ts)
-- Pages: 90% coverage (page.tsx)
-- lib: 97.05% statements, 93.33% branches, 100% functions, 100% lines
+- Components: 100% statements, 96.72% branches, 100% functions, 100% lines (Button 100/100/100/100, Card 100/92.3/100/100, Header 100/83.33/100/100, Modal 100/100/100/100)
+- Pages: 90% statements, 100% branches, 66.66% functions, 90% lines (page.tsx)
+- lib: 96.77% statements, 93.33% branches, 100% functions, 100% lines
   - admin-api.ts: 90% statements, 100% branches, 100% functions, 100% lines
   - api-client.ts: 100% statements, 88.88% branches, 100% functions, 100% lines
   - utils.ts: 100% coverage
-- lib/data: 71.42% statements, 52.94% branches, 76.47% functions, 68.57% lines
-  - cache-utils.ts: 89.74% statements, 87.5% branches, 100% functions, 88.88% lines
-  - stadiums.ts: 52.63% statements, 22.22% branches, 33.33% functions, 47.05% lines
+- lib/data: 58.73% statements, 46.91% branches, 57.69% functions, 56.77% lines
+  - cache-utils.ts: 92.3% statements, 87.5% branches, 100% functions, 91.66% lines
+  - generic-fetchers.ts: 3.03% statements, 0% branches, 0% functions, 3.03% lines (new, effectively untested)
+  - stadiums.ts: 68.51% statements, 66.66% branches, 44.44% functions, 67.34% lines
 - lib/utils: 100% coverage (date.ts, team-colors.ts)
 - utils: 90.9% statements, 54.54% branches, 100% functions, 88.88% lines (supabase.ts)
 - API routes: Not currently tested (see API Testing Status above)
 
-**Test Count**: 156 tests across 14 test suites
+**Test Count**: 172 tests across 14 test suites
 **Build Status**: ✅ Production ready - builds successfully
 **Lint Status**: ✅ Only minor optimization warnings (no blocking errors)
+
+**Note**: Overall coverage dropped from a previously-recorded 88.2%/79.57%/89.13%/87.81% mainly because `lib/data/generic-fetchers.ts` was added with no tests yet (3.03% statement coverage), pulling down the `lib/data` and overall averages.
 
 ## Recent Testing Progress
 

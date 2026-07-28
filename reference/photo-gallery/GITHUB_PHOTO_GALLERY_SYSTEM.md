@@ -45,10 +45,11 @@ spurs-women-photo-gallery/
 src/
 ├── lib/
 │   └── external-photo-loader.ts     # GitHub photo loading
-├── components/spurs-women/
-│   └── MediaGallery.tsx             # Gallery component
-└── scripts/
-    └── generate-external-manifest.js # Manifest generation
+└── components/spurs-women/
+    └── MediaGallery.tsx             # Gallery component
+
+scripts/                              # top-level, not under src/
+└── generate-external-manifest.js     # Manifest generation
 
 public/
 └── spurs-women/
@@ -92,26 +93,27 @@ public/
 
 4. **Regenerate Manifest**
    ```bash
-   npm run predev
+   npm run generate-external-manifest
    # or manually:
    node scripts/generate-external-manifest.js
    ```
 
 ### Development Workflow
 
-```bash
-# Start development (auto-generates manifest)
-npm run dev
+There is no `predev`/`prebuild` script - manifest generation is a separate, explicit step, not automatically triggered by `npm run dev` or `npm run build`:
 
+```bash
 # Manual manifest regeneration
-node scripts/generate-external-manifest.js
+npm run generate-external-manifest
 
 # Validate manifest
 npm run validate-manifest
 
-# Build for production (includes manifest)
+# Build for production (manifest is NOT auto-generated as part of this)
 npm run build
 ```
+
+In CI, `.github/workflows/validate-manifest.yml` runs `generate-external-manifest` then `validate-manifest` before `npm run build`, on every push/PR to main.
 
 ## Configuration
 
@@ -124,7 +126,7 @@ EXTERNAL_REPO_NAME=spurs-women-photo-gallery
 # Optional
 EXTERNAL_REPO_BRANCH=main
 CDN_PROVIDER=jsdelivr
-CDN_BASE_URL=
+CDN_BASE_URL=https://cdn.jsdelivr.net  # defaults to this if unset (see scripts/generate-external-manifest.js)
 GITHUB_TOKEN=ghp_your_token  # For private repos
 ```
 
@@ -223,8 +225,8 @@ cat public/spurs-women/photo-gallery.manifest.json
 # Test CDN URL (replace with actual path)
 curl -I "https://cdn.jsdelivr.net/gh/EllieAtWHL/spurs-women-photo-gallery@main/2025-26/folder/001.webp"
 
-# Validate configuration
-node -e "console.log(require('./src/lib/external-photo-loader.js').validateExternalRepoConfig())"
+# Validate configuration (file is .ts, not .js - use a TS-aware run, e.g. via ts-node or a small test script)
+# node -e "console.log(require('./src/lib/external-photo-loader.ts').validateExternalRepoConfig())"
 ```
 
 ## Migration Notes

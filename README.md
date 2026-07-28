@@ -30,7 +30,7 @@ This project includes a web-based admin interface for managing Spurs Women's foo
 
 ### 🛠️ Admin Features
 
-- **Admin UI**: Located at `/admin` - A React-based interface with tabbed navigation for managing different data entities
+- **Admin UI**: Located at `/spurs-women/admin` - A React-based interface with tabbed navigation for managing different data entities
 - **Authentication**: Supabase Auth with email-based authorization (restricted to a single admin email)
 - **API Routes**: Server-side API endpoints for CRUD operations on all data entities
 - **Data Management**: Manage matches, media, teams, players, player stats, player history, stadiums, and stadium names
@@ -60,10 +60,9 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 
 # Admin Authorization
 ADMIN_EMAIL=admin@example.com
-
-# FullStory (optional)
-NEXT_PUBLIC_FULLSTORY_ORG=your_fullstory_org_id
 ```
+
+Note: FullStory is configured separately - see below. It does not currently read any `NEXT_PUBLIC_FULLSTORY_*` environment variables; the organization ID is hardcoded directly in `public/fullstory-init.js`.
 
 ## Analytics & Monitoring
 

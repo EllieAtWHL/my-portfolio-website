@@ -4,8 +4,8 @@
 The UpdateBanner component is a **flexible, reusable notification system** that can be configured for different sections of the website. It supports multiple banner types, customizable messages, and can be placed in any layout.
 
 ## Current Implementations
-- **Spurs Women pages**: Warning banner about ongoing data updates
-- **London 2012 pages**: Info banner about blog expansion with more content being added
+- **Spurs Women pages**: ❌ No longer implemented - the warning banner was removed from `src/app/spurs-women/layout.tsx`; that layout no longer imports or renders `UpdateBanner` at all.
+- **London 2012 pages**: Info banner in `London2012Sidebar.tsx`, now with a shorter message ("More stories coming soon.") and no `highlightedText` prop set (see Usage Examples below).
 
 ## Component Features
 - **4 Banner Types**: warning, info, success, notice (each with unique colors and icons)
@@ -18,30 +18,20 @@ The UpdateBanner component is a **flexible, reusable notification system** that 
 
 ## Location
 - **Component**: `/src/components/UpdateBanner.tsx`
-- **Spurs Women Layout**: `/src/app/spurs-women/layout.tsx`
-- **London 2012 Sidebar**: `/src/components/London2012Sidebar.tsx`
+- **London 2012 Sidebar**: `/src/components/London2012Sidebar.tsx` (only current usage in the codebase)
 
 ## Usage Examples
 
-### Spurs Women Banner (Warning Type)
-```tsx
-<UpdateBanner 
-  message="is currently being updated with more data and content. Some information may be incomplete while we work to make it comprehensive."
-  highlightedText="Spurs Women section"
-  type="warning"
-  className="mt-20"
-/>
-```
-
-### London 2012 Banner (Info Type)
+### London 2012 Banner (Info Type) - current, actual usage
 ```tsx
 // Located in: /src/components/London2012Sidebar.tsx
 <UpdateBanner 
-  message="blog is currently being expanded with more stories and memories from my Olympic journey. Additional content and photos are being added regularly."
-  highlightedText="London 2012"
+  message="More stories coming soon."
   type="info"
+  className="mb-6"
 />
 ```
+Note: no `highlightedText` is set for this instance, so the message renders without a bold lead-in.
 
 ## Component Props
 

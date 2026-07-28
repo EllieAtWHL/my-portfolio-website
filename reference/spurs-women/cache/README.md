@@ -26,6 +26,12 @@ This folder contains all documentation related to the caching implementation and
 - Component fixes and updates
 - Production impact assessment
 
+### [NEXTJS_15_FIXES.md](./NEXTJS_15_FIXES.md)
+**Historical Next.js 15 compatibility fixes** (project has since upgraded to Next.js 16.2.6 - see note at top of that doc)
+
+### [caching-implementation-brief.md](./caching-implementation-brief.md)
+**Original design brief for the caching implementation**
+
 ## Quick Reference
 
 ### Environment Setup

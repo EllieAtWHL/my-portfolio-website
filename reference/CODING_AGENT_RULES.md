@@ -237,23 +237,23 @@ git add src/app/spurs-women/matches/[matchId]/page.tsx
 **Deployment**:
 - Direct deployment via Vercel
 - Git-based deploys from main branch
-- No complex CI pipeline (solo developer, low-risk changes)
+- GitHub Actions CI runs on push/PR to main: `.github/workflows/test.yml` (test suite + coverage) and `.github/workflows/validate-manifest.yml` (photo manifest generation/validation + build). No deployment gating beyond these checks - still a lightweight setup appropriate for a solo developer
 
 ## Specific Anti-Patterns to Avoid
 
 **CSS Violations** (Resolved):
-- ✅ Hardcoded `rgba()` values in globals.css have been replaced
-- Tailwind config contains hardcoded color arrays that contradict CSS variable approach
+- ✅ Hardcoded `rgba()` values in globals.css have been replaced (globals.css itself has zero `rgba()` calls; remaining `rgba()` usage lives in `variables.css` as intentional shadow/transparency variables, plus a handful in `experience.css`/`about-me.css`/`not-found.css`)
+- ✅ Tailwind config (`tailwind.config.ts`) no longer contains hardcoded color arrays - all colors reference CSS variables via `var(--...)`
 - Button component uses CSS classes instead of Tailwind utilities
 
 **Security Issues** (Mitigated):
-- `dangerouslySetInnerHTML` usage in MatchHeader.tsx and MatchCard.tsx for SVG rendering
+- `dangerouslySetInnerHTML` usage in MatchHeader.tsx, MatchCard.tsx, and `src/app/spurs-women/matches/[matchId]/page.tsx` for SVG rendering
 - ✅ Security comments added explaining content is from trusted Supabase database (admin-controlled only)
 - Content limited to SVG icons, not arbitrary HTML. No user-generated content.
 
-**Component Inconsistencies** (Resolved):
+**Component Inconsistencies** (Not Resolved):
 - Mixed styling approaches between CSS classes and Tailwind utilities
-- ✅ Button migration complete - all files migrated to Button component
+- ⚠️ Button migration is NOT complete - 13 files still render raw `<button>` elements outside the shared `Button` component (see `BUTTON_MIGRATION.md` for the current file list)
 
 ## Spurs Women Specific Rules
 
@@ -302,7 +302,7 @@ git add src/app/spurs-women/matches/[matchId]/page.tsx
 ## Non-Goals (Explicitly Out of Scope)
 
 - Multi-language support
-- Enterprise-grade CI/CD pipelines
+- Enterprise-grade CI/CD pipelines (a lightweight GitHub Actions setup does exist - see Deployment above - but there's no staged/gated deployment pipeline)
 - Advanced analytics or tracking
 - Full CMS integration
 - Automated testing - NOW IMPLEMENTED (see Testing Requirements above)
