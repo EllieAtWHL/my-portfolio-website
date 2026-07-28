@@ -1,23 +1,12 @@
-# CSS Migration Guide
+# CSS Architecture
 
 ## Overview
 
-This document documents the CSS migration performed to modularize the monolithic `globals.css` file into a maintainable, modular structure. This guide should be referenced when adding new styles or modifying existing ones.
+The site's CSS is organized into a modular structure - separate files for global
+theme, variables, and per-page styles - rather than one monolithic `globals.css`.
+This guide should be referenced when adding new styles or modifying existing ones.
 
-## Problem Statement
-
-The original `globals.css` file had grown to over 2,900 lines, containing:
-- Global utility styles
-- Page-specific styles (about-me, experience, projects, blog)
-- Component styles (buttons, navbar, footer)
-- Dark mode variants
-- Responsive breakpoints
-
-This made the file difficult to maintain, as changes to one page's styles could inadvertently affect others, and finding specific styles was time-consuming.
-
-## Solution
-
-Migrated to a modular CSS structure with separate files for different concerns:
+## Structure
 
 ```
 src/styles/
@@ -284,21 +273,6 @@ Keep related styles together in the file:
 
 ### 5. Test in Both Light and Dark Modes
 Always verify styles work correctly in both themes before committing.
-
-## Migration History
-
-### Commit 1: Extract common page header styles
-- Created global `.page-header`, `.page-title`, `.page-title-solid`, `.page-subtitle` classes
-- Updated about-me, experience, projects, and blog components to use global classes
-- Removed duplicate header styles from `globals.css`
-
-### Commit 2: Migrate page-specific styles to modular CSS files
-- Created `about-me.css` for about-me page styles
-- Created `experience.css` for experience page styles
-- Created `projects.css` for projects page styles
-- Created `blog.css` for blog/lightning rollout page styles
-- Updated `globals.css` to import all new page-specific CSS files
-- Removed ~2,160 lines of migrated styles from `globals.css`
 
 ## Future Considerations
 

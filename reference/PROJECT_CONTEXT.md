@@ -591,126 +591,27 @@ spurs-women-photo-gallery/
 
 ---
 
-## Code Review Findings (February 2026)
+## Related Documentation
 
-### Caching Feature Production Readiness Assessment
+This document covers architecture, technical decisions, and project boundaries.
+For implementation detail on specific systems, see:
 
-**Status**: ✅ PRODUCTION READY with configuration requirements
+- **CSS conventions**: `reference/CSS_ARCHITECTURE.md`
+- **Button component migration status**: `reference/BUTTON_MIGRATION.md`
+- **Dark mode flash prevention**: `reference/DARK_MODE_FLASH_FIX.md`
+- **Update banner component**: `reference/UPDATE_BANNER_MANAGEMENT.md`
+- **Admin related-lists config**: `reference/RELATED_LISTS_CONFIGURATION.md`
+- **Testing**: `reference/testing/README.md`
+- **FullStory analytics**: `reference/fullstory/README.md`
+- **Photo gallery system**: `reference/photo-gallery/README.md`
+- **Spurs Women site overview**: `reference/spurs-women/README.md`
+- **Spurs Women caching**: `reference/spurs-women/cache/README.md`
+- **Spurs Women admin system**: `reference/spurs-women/admin/ADMIN_SYSTEM_DOCUMENTATION.md`
+- **Open backlog / TODOs**: `reference/spurs-women/DEVELOPMENT_TODO.md`
 
-**Summary**: The caching implementation is well-architected and follows best practices, but requires security and monitoring improvements for full production deployment.
-
-**Key Findings**:
-- **Architecture**: Proper use of Next.js `unstable_cache` with tag-based invalidation
-- **Coverage**: All data access points properly cached with appropriate TTLs
-- **Error Handling**: Graceful fallback to fresh data on cache failures
-- **Security**: API key protection for cache invalidation endpoints
-
-**Production Requirements**:
-1. **API Key Security**: Remove default dev key `'default-cache-key-for-dev'` for production
-2. **Monitoring**: Add cache hit rate metrics and performance monitoring
-3. **Code Quality**: Consolidate duplicate authentication logic across routes
-
-**Tech Debt Items Added to Todo List**:
-- Remove default dev API key from cache routes (High Priority)
-- Add cache monitoring and metrics collection (High Priority)
-- Consolidate duplicate API key authentication logic (Medium Priority)
-- Add cache size monitoring and memory usage visibility (Medium Priority)
-- Improve error context in cache failures (Medium Priority)
-- Add automated tests for cache behavior (Low Priority)
-- Use more granular TTL values where appropriate (Low Priority)
-
----
-
-## Code Review Findings (January 2026)
-
-### Critical Compliance Issues
-
-#### 1. CSS Variable Usage Violations (Resolved)
-**Issue**: The project context states "**ALWAYS use CSS variables (via Tailwind config and `:root`) for colors - never hardcode color values in CSS**", but there were numerous violations:
-
-- **`globals.css`**: Previously contained 106 instances of hardcoded `rgba()` values
-- **Examples**: `rgba(45, 90, 45, 0.3)`, `rgba(120, 190, 232, 0.3)`, `rgba(0, 0, 0, 0.1)`
-
-**Status**: ✅ Resolved - All hardcoded `rgba()` values have been replaced with CSS variables or Tailwind utilities per context guidelines (lines 140-148).
-
-#### 2. Button Migration Incomplete (Still Not Resolved)
-**Issue**: The project has a new Button component but migration is incomplete:
-
-- **`Button.tsx`**: Uses CSS classes like `'button primary'` and `'button secondary'` instead of Tailwind utilities
-- **Migration guide exists**, and the original `.button primary`/`.button secondary` CSS-class migration it targeted is done
-- **However**, 13 production files still render raw `<button>` elements outside the shared `Button` component (admin/page.tsx, TeamClient.tsx, Modal.tsx, UpdateBanner.tsx, ExperienceContent.tsx, London2012Layout.tsx, London2012Gallery.tsx, regicide/StatsScreen.tsx, admin/MatchForm.tsx, admin/ColorPicker.tsx, spurs-women/LightboxGallery.tsx, spurs-women/PlayerModal.tsx, spurs-women/TeamLineup.tsx)
-
-**Status**: ⚠️ Not Resolved - see BUTTON_MIGRATION.md for the current file-by-file list.
-
-#### 3. dangerouslySetInnerHTML Usage (Mitigated)
-**Issue**: Two Spurs Women components use `dangerouslySetInnerHTML`:
-
-- **`MatchHeader.tsx`**: Line 33 renders `competition.icon_svg`
-- **`MatchCard.tsx`**: Line 56 renders `match.competitions.icon_svg`
-
-**Status**: ✅ Mitigated - Security comments added explaining content is from trusted Supabase database (admin-controlled only). Content limited to SVG icons, not arbitrary HTML. No user-generated content. While safer alternatives could be explored, the current implementation is documented and controlled.
-
-#### 4. Tailwind Config Issues (Resolved)
-**Issue**: The `tailwind.config.ts` previously contained hardcoded color arrays that contradicted the CSS variable approach.
-
-**Status**: ✅ Resolved - `tailwind.config.ts` now defines all `brand`/`spurs`/`dark` colors and gradients via `var(--...)` CSS variables, with no hardcoded hex/color arrays remaining.
-
-#### 5. Component Architecture Inconsistencies
-**Issue**: Some components don't follow established patterns:
-
-- **`MatchHeader.tsx`**: Contains TODO comment about H1 styling (line 64)
-- Mixed styling approaches between CSS classes and Tailwind utilities
-
-**Required Action**: Standardize component styling approaches.
-
-### Positive Compliance ✅
-
-- **TypeScript Usage**: All components use TypeScript properly with good type definitions
-- **Server Components by Default**: Most components are server components unless interaction is needed
-- **File Structure**: Follows the established `app/` and `components/` organization
-- **Technology Stack**: Next.js 16.1.1, Tailwind CSS v4, TypeScript 5 correctly implemented
-- **Supabase Integration**: Present as planned
-
-### Current Todo List Integration
-
-# Todo List
-
-**Main Site:**
-- ✅  Adjust width of cards for large screens on experience page
-- ✅  Lightning series is still showing a flicker of light mode when loading
-- [ ] Add London 2012 pages
-- [ ] Fix Regicide Game (Note: Game appears to have structure but is not functional)
-- [ ] Work on Salesforce Orgs page as sucks at the moment
-- [ ] **Configure Tailwind CSS to properly use CSS variables** - Currently CSS variables like `--brand-primary-dark` exist but aren't accessible via Tailwind classes, leading to confusion and inconsistent styling
-
-**Spurs Women Site:**
-- ✅  Fix the colour scheme in general
-- ✅ Add external video media type
-- ✅ Cache database for api calls on Spurs women
-- ✅ Ensure we have a backup primary and secondary colour in case they are not input - and teamname probably too
-- ✅ Add players (starters, subs, unused bench)
-- ✅ Add match stats where available
-- ✅ Add goal scorers to match page
-- [ ] **Improve competition dropdown UX** (Low Priority) - Current implementation has minor issues with event handling and positioning that could be optimized for better user experience
-
-**Caching Tech Debt:**
-- ✅ Remove default dev API key from cache routes for production security
-- [ ] Add cache monitoring and metrics collection for hit rates and performance
-- [ ] Consolidate duplicate API key authentication logic across cache routes
-- [ ] Add cache size monitoring and memory usage visibility
-- [ ] Improve error context in cache failures with better debugging info
-- [ ] Add automated tests for cache behavior and invalidation
-- [ ] Use more granular TTL values instead of generic STATIC_CONTENT where appropriate
-
-### Priority Action Items
-
-1. ~~**Fix CSS Variable Violations** (Critical) - 106 hardcoded rgba() values in globals.css~~ ✅ RESOLVED
-2. **Complete Button Migration** (High) - 13 files still render raw `<button>` elements outside the shared Button component (see BUTTON_MIGRATION.md)
-3. ~~**Address dangerouslySetInnerHTML** (High - Security) - SVG rendering in MatchHeader.tsx, MatchCard.tsx, and matches/[matchId]/page.tsx~~ ✅ MITIGATED
-4. ~~**Clean Up Tailwind Config** (Medium) - Hardcoded color arrays contradict CSS variable approach~~ ✅ RESOLVED
-5. **Standardize Component Styling** (Medium) - Mixed approaches between CSS classes and Tailwind utilities
-6. **Add Cache Monitoring** (Medium) - No visibility into cache performance or hit rates
-
----
+Known open tech debt at time of writing: Button migration is incomplete (13
+files still render raw `<button>` elements outside the shared component - see
+BUTTON_MIGRATION.md for the current list), and cache hit-rate monitoring/
+metrics collection has not been implemented (see DEVELOPMENT_TODO.md).
 
 This document should be used by both humans and AI as the source of truth for architectural intent. If code and documentation disagree, the documentation should be updated deliberately rather than ignored.

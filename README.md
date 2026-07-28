@@ -1,6 +1,6 @@
 # My Portfolio Website
 
-> **📋 Project Architecture:** See `reference/PROJECT_CONTEXT.md` for the complete architectural guide, technical decisions, and project boundaries.
+> **📋 Project Architecture:** See [`reference/README.md`](./reference/README.md) for the full documentation index, or [`reference/PROJECT_CONTEXT.md`](./reference/PROJECT_CONTEXT.md) directly for the architectural guide, technical decisions, and project boundaries.
 
 This is a [Next.js](https://nextjs.org) project that consolidates my personal portfolio and an unofficial Spurs Women fan site into a single application.
 
@@ -70,10 +70,7 @@ This site uses FullStory for user session recording and analytics:
 
 ### 📊 FullStory Implementation
 
-- **Overview**: [`reference/fullstory/README.md`](./reference/fullstory/README.md) - Documentation index and quick start
-- **Documentation**: [`reference/fullstory/fullstory-implementation.md`](./reference/fullstory/fullstory-implementation.md) - Complete implementation guide
-- **Technical Guide**: [`reference/fullstory/fullstory-technical-guide.md`](./reference/fullstory/fullstory-technical-guide.md) - Developer documentation
-- **Quick Reference**: [`reference/fullstory/fullstory-quick-reference.md`](./reference/fullstory/fullstory-quick-reference.md) - Common tasks and troubleshooting
+- **Documentation**: [`reference/fullstory/README.md`](./reference/fullstory/README.md) - architecture, configuration, event tracking API, privacy/security, troubleshooting
 
 #### Key Features
 - Session recording and replay
