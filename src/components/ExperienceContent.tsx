@@ -334,18 +334,23 @@ export default function ExperienceContent() {
       logo: '/img/salesforce-logo.svg',
       certs: [
         {
+          name: 'Salesforce Certified Platform Development Lifecycle and Deployment Architect',
+          image: '/img/2025-04_Badge_SF-Certified_Plat-Dev-LC-Dep-Arch_High-Res.png',
+          date: 'July 2026'
+        },
+        {
           name: 'Salesforce Certified JavaScript Developer',
           image: '/img/2021-03_Badge_SF-Certified_JavaScript-Developer-I_High-Res.png',
           date: 'June 2025'
         },
         {
-          name: 'Salesforce Certified Sharing and Visibility Architect',
-          image: '/img/Certified_Sharing-and-Visibility-Architect.png',
+          name: 'Salesforce Certified Application Architect',
+          image: '/img/Certified_Application-Architect.png',
           date: 'January 2025'
         },
         {
-          name: 'Salesforce Certified Application Architect',
-          image: '/img/Certified_Application-Architect.png',
+          name: 'Salesforce Certified Sharing and Visibility Architect',
+          image: '/img/Certified_Sharing-and-Visibility-Architect.png',
           date: 'January 2025'
         },
         {
