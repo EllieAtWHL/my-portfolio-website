@@ -371,22 +371,19 @@ This prevents the shell from interpreting the square brackets as pattern matchin
 
 ### Automated Testing
 
-Decision:
-  - No automated testing at MVP.
-  - TypeScript + manual testing provide sufficient confidence.
+Decision (superseded):
+  - This section originally decided against automated testing at MVP, relying on TypeScript + manual testing.
+  - That decision no longer holds: Jest + React Testing Library are now installed and automated testing is mandatory for new components/utilities (see "Testing Strategy" above and `reference/testing/README.md` - 172 tests across 14 suites as of the last coverage run).
 
 Future stance:
-  - Introduce Playwright for:
-    - Navigation sanity checks
-    - Key flows (home → Spurs Women → match page)
-  - No unit testing framework planned unless complexity increases.
+  - E2E testing (e.g. Playwright) for navigation sanity checks and key flows (home → Spurs Women → match page) is still not implemented - remains a future option, not current state.
 
 ### Deployment Pipeline
 
 Decision:
   - Direct deployment via Vercel.
   - Git-based deploys from main branch.
-  - No complex CI pipeline.
+  - A lightweight GitHub Actions CI setup now exists: `.github/workflows/test.yml` runs the Jest suite and coverage on push/PR to main, and `.github/workflows/validate-manifest.yml` regenerates/validates the photo manifest and runs a production build. Neither gates the Vercel deploy itself - still no staged/enterprise-grade pipeline.
 
 Rationale:
   - Solo developer
@@ -463,7 +460,7 @@ Rationale:
 ## Explicit Non-Goals (for Now)
 The following are intentionally out of scope for MVP:
   - Multi-language support
-  - Enterprise-grade CI/CD pipelines
+  - Enterprise-grade CI/CD pipelines (a lightweight GitHub Actions test/build check does exist - see Deployment Pipeline above - but there's no staged/gated deployment pipeline)
   - Advanced analytics or tracking
   - Full CMS integration
   - Automated testing - NOW IMPLEMENTED (see Testing Strategy above)
@@ -636,14 +633,14 @@ spurs-women-photo-gallery/
 
 **Status**: ✅ Resolved - All hardcoded `rgba()` values have been replaced with CSS variables or Tailwind utilities per context guidelines (lines 140-148).
 
-#### 2. Button Migration Incomplete (Resolved)
-**Issue**: The project has a new Button component but migration was incomplete:
+#### 2. Button Migration Incomplete (Still Not Resolved)
+**Issue**: The project has a new Button component but migration is incomplete:
 
 - **`Button.tsx`**: Uses CSS classes like `'button primary'` and `'button secondary'` instead of Tailwind utilities
-- **`contact-me/page.tsx`**: Line 152 showed `<Button className="button primary">` - mixing old and new patterns
-- **Migration guide exists** but many files still used old button patterns
+- **Migration guide exists**, and the original `.button primary`/`.button secondary` CSS-class migration it targeted is done
+- **However**, 13 production files still render raw `<button>` elements outside the shared `Button` component (admin/page.tsx, TeamClient.tsx, Modal.tsx, UpdateBanner.tsx, ExperienceContent.tsx, London2012Layout.tsx, London2012Gallery.tsx, regicide/StatsScreen.tsx, admin/MatchForm.tsx, admin/ColorPicker.tsx, spurs-women/LightboxGallery.tsx, spurs-women/PlayerModal.tsx, spurs-women/TeamLineup.tsx)
 
-**Status**: ✅ Resolved - Button migration is now complete. All files have been migrated to use the Button component (see BUTTON_MIGRATION.md for details).
+**Status**: ⚠️ Not Resolved - see BUTTON_MIGRATION.md for the current file-by-file list.
 
 #### 3. dangerouslySetInnerHTML Usage (Mitigated)
 **Issue**: Two Spurs Women components use `dangerouslySetInnerHTML`:
@@ -653,10 +650,10 @@ spurs-women-photo-gallery/
 
 **Status**: ✅ Mitigated - Security comments added explaining content is from trusted Supabase database (admin-controlled only). Content limited to SVG icons, not arbitrary HTML. No user-generated content. While safer alternatives could be explored, the current implementation is documented and controlled.
 
-#### 4. Tailwind Config Issues
-**Issue**: The `tailwind.config.ts` contains extensive hardcoded color arrays that contradict the CSS variable approach.
+#### 4. Tailwind Config Issues (Resolved)
+**Issue**: The `tailwind.config.ts` previously contained hardcoded color arrays that contradicted the CSS variable approach.
 
-**Required Action**: Remove hardcoded color arrays in favor of CSS variables.
+**Status**: ✅ Resolved - `tailwind.config.ts` now defines all `brand`/`spurs`/`dark` colors and gradients via `var(--...)` CSS variables, with no hardcoded hex/color arrays remaining.
 
 #### 5. Component Architecture Inconsistencies
 **Issue**: Some components don't follow established patterns:
@@ -708,9 +705,9 @@ spurs-women-photo-gallery/
 ### Priority Action Items
 
 1. ~~**Fix CSS Variable Violations** (Critical) - 106 hardcoded rgba() values in globals.css~~ ✅ RESOLVED
-2. ~~**Complete Button Migration** (High) - ~70% complete, 6 files still need migration~~ ✅ RESOLVED
-3. ~~**Address dangerouslySetInnerHTML** (High - Security) - SVG rendering in MatchHeader.tsx and MatchCard.tsx~~ ✅ MITIGATED
-4. **Clean Up Tailwind Config** (Medium) - Hardcoded color arrays contradict CSS variable approach
+2. **Complete Button Migration** (High) - 13 files still render raw `<button>` elements outside the shared Button component (see BUTTON_MIGRATION.md)
+3. ~~**Address dangerouslySetInnerHTML** (High - Security) - SVG rendering in MatchHeader.tsx, MatchCard.tsx, and matches/[matchId]/page.tsx~~ ✅ MITIGATED
+4. ~~**Clean Up Tailwind Config** (Medium) - Hardcoded color arrays contradict CSS variable approach~~ ✅ RESOLVED
 5. **Standardize Component Styling** (Medium) - Mixed approaches between CSS classes and Tailwind utilities
 6. **Add Cache Monitoring** (Medium) - No visibility into cache performance or hit rates
 

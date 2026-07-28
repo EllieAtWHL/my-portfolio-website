@@ -75,37 +75,27 @@ This document outlines the remaining work and improvements needed for the Totten
 ## Medium Priority Items
 
 ### 5. Player Profiles
-**Status**: Pending
+**Status**: ✅ Done - implemented
 **Effort**: High
 **Impact**: Medium
 
-**Tasks**:
-- [ ] Create player database schema
-- [ ] Design player profile pages
-- [ ] Add player statistics tracking
+Player database schema, profile pages, statistics tracking, and photo management are implemented. Remaining/open work:
 - [ ] Implement player comparison tools
-- [ ] Add player photo management system
 
-**Files to create**:
+**Files that now exist**:
 - `src/app/spurs-women/players/[playerId]/page.tsx`
 - `src/components/spurs-women/PlayerCard.tsx`
 - `src/lib/data/players.ts`
 
 ### 6. Interactive Charts
-**Status**: Pending
+**Status**: ✅ Done - implemented (Recharts)
 **Effort**: Medium
 **Impact**: Medium
 
-**Tasks**:
-- [ ] Integrate charting library (Chart.js or Recharts)
-- [ ] Create season performance charts
+Recharts (`recharts` in package.json) is integrated and used for season performance charts (`src/components/spurs-women/SeasonStatsChart.tsx`). Remaining/open work:
 - [ ] Add team comparison visualizations
 - [ ] Implement attendance trend charts
 - [ ] Create goal timeline visualizations
-
-**Files to create**:
-- `src/components/spurs-women/charts/`
-- Chart components for various statistics
 
 ### 7. Social Sharing
 **Status**: Pending
@@ -125,21 +115,11 @@ This document outlines the remaining work and improvements needed for the Totten
 - Add metadata generation
 
 ### 8. Dark Mode Support
-**Status**: Pending
+**Status**: ✅ Done - implemented site-wide
 **Effort**: Medium
 **Impact**: Medium
 
-**Tasks**:
-- [ ] Implement theme switching system
-- [ ] Create dark mode color palette
-- [ ] Update all components for dark mode compatibility
-- [ ] Add theme persistence in localStorage
-- [ ] Create smooth theme transitions
-
-**Files to modify**:
-- `src/app/spurs-women/layout.tsx`
-- All component files
-- Tailwind configuration
+Theme switching, dark mode color palette, localStorage persistence, and flash-of-light-mode prevention are all implemented (see `reference/DARK_MODE_FLASH_FIX.md`, `ThemeProvider`, `tailwind.config.ts` `darkMode: 'class'`). No remaining open tasks identified for the base implementation; ongoing work is just ensuring new components follow the existing `.dark` pattern.
 
 ### 9. Accessibility Improvements
 **Status**: Pending

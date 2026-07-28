@@ -47,8 +47,8 @@ FS.setUserVars({
 |------|---------|
 | `/public/fullstory-init.js` | FullStory initialization script |
 | `/src/app/layout.tsx` | Root layout with Script component |
-| `/docs/fullstory-implementation.md` | Full documentation |
-| `/docs/fullstory-technical-guide.md` | Technical details |
+| `/reference/fullstory/fullstory-implementation.md` | Full documentation |
+| `/reference/fullstory/fullstory-technical-guide.md` | Technical details |
 
 ## Common Issues & Solutions
 

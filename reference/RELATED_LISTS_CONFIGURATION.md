@@ -10,7 +10,7 @@ The related lists feature displays child records (media and player_stats) associ
 
 The related lists are implemented in:
 - Component: `/src/components/admin/RelatedList.tsx`
-- Usage: `/src/app/spurs-women/admin/page.tsx` (lines 2084-2172)
+- Usage: `/src/app/spurs-women/admin/page.tsx` - there are 5 `<RelatedList>` instances: Media (~line 1617, grouped by `media_type`), Player Stats (~line 1661), Player History (~line 1921), and Stadium Names (~line 2084). Line numbers shift as the file changes; search for `<RelatedList` to find current locations.
 
 ## Configuring Media Related Lists
 
@@ -25,13 +25,13 @@ Media records are grouped by `media_type` and displayed as separate related list
     { key: 'url', label: 'URL', render: (value: unknown) => {
       const url = value as string;
       return (
-        <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
+        <a href={url} target="_blank" rel="noopener noreferrer" className="spurs-text hover:underline">
           {url.length > 50 ? `${url.substring(0, 50)}...` : url}
         </a>
       );
     }},
-    { key: 'caption', label: 'Caption' },
-    // Add more columns here
+    { key: 'sort_order', label: 'Sort Order' },
+    // Add more columns here (e.g. 'caption' is available on the Media interface but not currently shown)
   ]}
   // ... other props
 />

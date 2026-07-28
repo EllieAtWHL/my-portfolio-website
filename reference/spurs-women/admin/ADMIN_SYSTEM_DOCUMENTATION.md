@@ -2,13 +2,13 @@
 
 ## Overview
 
-The admin system provides a web-based interface for managing Spurs Women's football data in the Supabase database. It includes a React-based UI at `/admin` and a set of API routes for CRUD operations on various data entities.
+The admin system provides a web-based interface for managing Spurs Women's football data in the Supabase database. It includes a React-based UI at `/spurs-women/admin` and a set of API routes for CRUD operations on various data entities.
 
 ## Architecture
 
 ### Components
 
-1. **Admin UI** (`src/app/admin/page.tsx`)
+1. **Admin UI** (`src/app/spurs-women/admin/page.tsx`)
    - Single-page application with tabbed interface
    - Client-side React component with form handling
    - Authentication via Supabase Auth
@@ -87,7 +87,7 @@ The admin system manages the following entities:
 ### Player
 - **Table**: `players`
 - **Fields**:
-  - `id` (number)
+  - `id` (string, UUID)
   - `first_name` (string)
   - `last_name` (string)
   - `date_of_birth` (string, nullable)
@@ -276,15 +276,15 @@ The admin system manages the following entities:
 ## Admin UI Features
 
 ### Tabbed Interface
-The admin page provides tabs for managing different entity types:
-- **Add Match** - Form to create new match records
-- **Add Media** - Form to create new media entries
-- **Add Team** - View recent teams (form not implemented)
-- **Add Player** - View recent players (form not implemented)
-- **Add Player Stats** - View recent player stats (form not implemented)
-- **Add Player History** - View recent player history (form not implemented)
-- **Add Stadium** - View recent stadiums (form not implemented)
-- **Add Stadium Name** - View recent stadium names (form not implemented)
+The admin page provides tabs for managing different entity types. All entity types now have full add/edit/delete forms (Team, Player, Stadium, Player Stats, Player History, and Stadium Name forms were added since this doc originally described them as unimplemented):
+- **Match** - Add/edit/delete match records
+- **Media** - Add/edit/delete media entries (grouped by media type, as related records under a match)
+- **Team** - Add/edit teams
+- **Player** - Add/edit/delete players
+- **Player Stats** - Add/edit player stats (related list under a match)
+- **Player History** - Add/edit player history (related list under a player)
+- **Stadium** - Add/edit stadiums
+- **Stadium Name** - Add/edit stadium name history (related list under a stadium)
 
 ### Match Form
 The match form includes:
@@ -382,7 +382,7 @@ Required environment variables:
 
 1. **Stadium Table Name**: The stadium table is named `stadia` (plural) in the database, but the code also tries `stadiums` and `stadium` as fallbacks.
 
-2. **ID Types**: Most entities use UUID strings for IDs, but teams and players use integer IDs.
+2. **ID Types**: Most entities use UUID strings for IDs, but teams use integer IDs (players use UUID strings, like most other entities).
 
 3. **Player Stats Upsert**: Player stats use `upsert` with conflict resolution on `player_id, match_id` to allow updating existing stats.
 
@@ -391,8 +391,6 @@ Required environment variables:
 ## Future Enhancements
 
 Potential improvements to the admin system:
-- Implement forms for all entity types (currently only Match and Media have forms)
-- Add edit and delete functionality
 - Add bulk import/export capabilities
 - Add data validation on the server side
 - Add audit logging for admin operations

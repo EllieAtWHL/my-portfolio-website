@@ -1,5 +1,7 @@
 # Requirements Document
 
+**Status: Implemented.** This was the original planning/spec document for the migration; the system it describes is now fully built (`scripts/generate-external-manifest.js`, `scripts/validate-manifest.js`, wired into `.github/workflows/validate-manifest.yml` on every push/PR to main). A few specifics below drifted from what was actually shipped - see the inline notes (folder-key format, `media.type` value, and MR-1). For the as-built system, prefer `GITHUB_PHOTO_GALLERY_SYSTEM.md` and `PHOTO_GALLERY_SYSTEM_GUIDE.md` in this folder; this doc is kept for historical/rationale context.
+
 ## Title
 
 Migration from Supabase Storage to External GitHub Repository Image Hosting
@@ -72,6 +74,8 @@ spurs-women-photo-gallery/
 
 Folder names represent a match identifier (date-opponent or similar).
 
+**As implemented**: the actual adopted convention is richer than this flat slug - folders are nested `SEASON/YYYYMMDD Competition Team1 vs Team2/`, e.g. `2023-24/20231008 WSL Spurs vs Bristol City/`.
+
 ---
 
 ### FR-2: Image Format and Size
@@ -94,7 +98,7 @@ A build-time script must:
 - Output a deterministic, sorted JSON file
 - Handle rate limiting and API quotas
 
-Example output:
+Example output (see note above - actual folder keys use the `SEASON/YYYYMMDD Competition Team1 vs Team2` format):
 ```json
 {
   "2024-01-28-chelsea": [
@@ -122,6 +126,8 @@ Example output:
   - `predev`
   - `prebuild`
 
+**As implemented**: no `predev`/`prebuild` hook was added. Manifest generation is instead an explicit step (`npm run generate-external-manifest`) run manually in local dev and as its own CI job step in `.github/workflows/validate-manifest.yml` before the build step - not auto-triggered by `npm run dev`/`npm run build`.
+
 ---
 
 ### FR-6: Frontend Consumption
@@ -138,7 +144,7 @@ Example output:
 
 - Existing records that store a Supabase folder path must be migrated to store a folder key only
 - Folder keys must be storage-agnostic and must not include base paths
-- The `photo-album` media type must be retained to represent the existence of a gallery
+- The `photo-album` media type must be retained to represent the existence of a gallery (as implemented, the actual DB/code value is `'photo album'` with a space, not the hyphenated `photo-album` used throughout this doc)
 - Supabase remains the source of truth for gallery metadata and relationships (eg match, title, publish state)
 - No Supabase Storage SDK calls should remain for image retrieval
 
@@ -216,6 +222,8 @@ Example output:
 - Existing images must be exported from Supabase Storage
 - Images must be optimised before committing to GitHub
 - Folder structure must be recreated under `public/spurs-women/photo-gallery`
+
+**As implemented**: images were never recreated under `public/spurs-women/photo-gallery` in this repo - they live solely in the external `spurs-women-photo-gallery` repository and are served via the jsDelivr CDN. `public/spurs-women/` only contains the generated manifest JSON (plus two unrelated logo images). `public/spurs-women/photo-gallery/` is created empty, on demand, only as a local dev stub by `npm run init-external-local`.
 
 ---
 

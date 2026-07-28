@@ -579,6 +579,7 @@ player_stats (
   
   -- Squad participation
   started BOOLEAN NOT NULL DEFAULT false,
+  captain BOOLEAN NOT NULL DEFAULT false,
   was_substitute BOOLEAN NOT NULL DEFAULT false,
   was_unused_substitute BOOLEAN NOT NULL DEFAULT false,
   
@@ -669,13 +670,14 @@ Automated cache clearing when data changes.
 ## Performance and Caching
 
 ### Caching Strategy
-**Implementation**: Custom in-memory caching with TTL
+**Implementation**: Next.js `unstable_cache` with tag-based invalidation (see `src/lib/data/cache-utils.ts`)
 
-**Cache Hierarchy**:
+**Cache Hierarchy** (matches the "Cache Categories" list earlier in this document - this section previously stated different, incorrect TTLs and has been corrected to match):
 1. **Static Content** (24 hours): Teams, seasons, competitions
-2. **Current Season Data** (1 hour): Matches, statistics
-3. **RSS Feeds** (30 minutes): News, podcasts
-4. **YouTube Videos** (2 hours): Video metadata
+2. **Current Season Matches** (30 minutes): Matches, statistics
+3. **RSS Feeds** (24 hours): News, podcasts
+4. **YouTube Videos** (1 hour): Video metadata
+5. **Player Data** (1 hour), **Player Statistics** (30 minutes)
 
 ### Performance Optimizations
 - Image optimization with Next.js Image component
