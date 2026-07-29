@@ -2970,9 +2970,15 @@ export default function AdminPage() {
                 onClick={async () => {
                   try {
                     setLoading(true);
+                    // Convert empty strings to null for date fields
+                    const payload = {
+                      ...stadiumNameForm,
+                      valid_from: stadiumNameForm.valid_from || null,
+                      valid_to: stadiumNameForm.valid_to || null,
+                    };
                     const response = editingStadiumNameId
-                      ? await callAdminApi('stadium-names', 'PUT', { id: editingStadiumNameId, ...stadiumNameForm })
-                      : await callAdminApi('stadium-names', 'POST', stadiumNameForm);
+                      ? await callAdminApi('stadium-names', 'PUT', { id: editingStadiumNameId, ...payload })
+                      : await callAdminApi('stadium-names', 'POST', payload);
                     if (response.error) {
                       showMessage(response.error, 'error');
                     } else {
