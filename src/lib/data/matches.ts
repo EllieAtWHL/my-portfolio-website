@@ -1,5 +1,5 @@
 import { createCachedFunction, CACHE_TTL, CACHE_TAGS } from './cache-utils';
-import { buildMatchQuery } from './query-builders';
+import { buildMatchQuery, buildMatchNavQuery } from './query-builders';
 
 export interface Match {
   id: string;
@@ -49,6 +49,22 @@ export interface Match {
   away_shots_on_target: number | null;
   home_corners: number | null;
   away_corners: number | null;
+}
+
+// Minimal shape needed to render a previous/next match nav link
+export interface MatchNavSummary {
+  id: string;
+  date: string;
+  home_team: {
+    id: number;
+    name: string;
+    short_name: string;
+  } | null;
+  away_team: {
+    id: number;
+    name: string;
+    short_name: string;
+  } | null;
 }
 
 async function fetchUpcomingMatchesFromDB(limit: number = 3): Promise<Match[]> {
@@ -243,22 +259,23 @@ async function fetchMatchByIdFromDB(matchId: string): Promise<Match | null> {
   return data as Match;
 }
 
-async function fetchAdjacentMatchesFromDB(matchId: string, currentMatchDate: string): Promise<{ previous: Match | null; next: Match | null }> {
-  const { data: previousData } = await buildMatchQuery()
-    .lt('date', currentMatchDate)
-    .order('date', { ascending: false })
-    .limit(1)
-    .single();
-
-  const { data: nextData } = await buildMatchQuery()
-    .gt('date', currentMatchDate)
-    .order('date', { ascending: true })
-    .limit(1)
-    .single();
+async function fetchAdjacentMatchesFromDB(matchId: string, currentMatchDate: string): Promise<{ previous: MatchNavSummary | null; next: MatchNavSummary | null }> {
+  const [{ data: previousData }, { data: nextData }] = await Promise.all([
+    buildMatchNavQuery()
+      .lt('date', currentMatchDate)
+      .order('date', { ascending: false })
+      .limit(1)
+      .single(),
+    buildMatchNavQuery()
+      .gt('date', currentMatchDate)
+      .order('date', { ascending: true })
+      .limit(1)
+      .single(),
+  ]);
 
   return {
-    previous: previousData as Match | null,
-    next: nextData as Match | null,
+    previous: previousData as MatchNavSummary | null,
+    next: nextData as MatchNavSummary | null,
   };
 }
 

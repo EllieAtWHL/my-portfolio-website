@@ -63,6 +63,8 @@ The admin system manages the following entities:
   - `home_team_id` (number)
   - `away_team_id` (number)
 
+  Blank score/stat fields must be saved as `null`, not `0` (a blank field and a genuine 0 mean different things — e.g. `matches.ts` uses `spurs_score is null` to detect upcoming/unscored fixtures). This is enforced by `buildMatchPayload` in `src/lib/admin-match-payload.ts`, which the admin match form's submit handler uses to build its API payload — reuse it rather than constructing the payload inline.
+
 ### Media
 - **Table**: `media`
 - **Fields**:

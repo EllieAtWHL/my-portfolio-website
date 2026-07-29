@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { callAdminApi, createEntityAndReload } from '@/lib/api-client';
+import { buildMatchPayload } from '@/lib/admin-match-payload';
 import { getTeamColor } from '@/lib/utils/team-colors';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
@@ -1353,33 +1354,7 @@ export default function AdminPage() {
         return;
       }
 
-      const payload = {
-        season_id: matchForm.season_id,
-        competition_id: matchForm.competition_id,
-        date: matchForm.date,
-        kickoff_time: matchForm.kickoff_time || null,
-        is_home_match: matchForm.is_home_match,
-        spurs_score: matchForm.spurs_score || 0,
-        opponent_score: matchForm.opponent_score || 0,
-        spurs_score_aet: matchForm.spurs_score_aet !== null && matchForm.spurs_score_aet !== undefined ? matchForm.spurs_score_aet : null,
-        opponent_score_aet: matchForm.opponent_score_aet !== null && matchForm.opponent_score_aet !== undefined ? matchForm.opponent_score_aet : null,
-        spurs_score_pens: matchForm.spurs_score_pens !== null && matchForm.spurs_score_pens !== undefined ? matchForm.spurs_score_pens : null,
-        opponent_score_pens: matchForm.opponent_score_pens !== null && matchForm.opponent_score_pens !== undefined ? matchForm.opponent_score_pens : null,
-        stadium_id: matchForm.stadium_id || '',
-        attended: matchForm.attended || false,
-        notes: matchForm.notes || '',
-        home_team_id: matchForm.is_home_match ? spursTeam.id : (matchForm.home_team_id || matchForm.away_team_id),
-        away_team_id: matchForm.is_home_match ? (matchForm.away_team_id || matchForm.home_team_id) : spursTeam.id,
-        attendance: matchForm.attendance !== null && matchForm.attendance !== undefined ? matchForm.attendance : null,
-        home_possession: matchForm.home_possession !== null && matchForm.home_possession !== undefined ? matchForm.home_possession : null,
-        away_possession: matchForm.away_possession !== null && matchForm.away_possession !== undefined ? matchForm.away_possession : null,
-        home_total_shots: matchForm.home_total_shots !== null && matchForm.home_total_shots !== undefined ? matchForm.home_total_shots : null,
-        away_total_shots: matchForm.away_total_shots !== null && matchForm.away_total_shots !== undefined ? matchForm.away_total_shots : null,
-        home_shots_on_target: matchForm.home_shots_on_target !== null && matchForm.home_shots_on_target !== undefined ? matchForm.home_shots_on_target : null,
-        away_shots_on_target: matchForm.away_shots_on_target !== null && matchForm.away_shots_on_target !== undefined ? matchForm.away_shots_on_target : null,
-        home_corners: matchForm.home_corners !== null && matchForm.home_corners !== undefined ? matchForm.home_corners : null,
-        away_corners: matchForm.away_corners !== null && matchForm.away_corners !== undefined ? matchForm.away_corners : null,
-      };
+      const payload = buildMatchPayload(matchForm, spursTeam);
 
       let response;
       if (isEditMode && editingMatchId) {
