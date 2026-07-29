@@ -278,15 +278,15 @@ The admin system manages the following entities:
 ## Admin UI Features
 
 ### Tabbed Interface
-The admin page provides tabs for managing different entity types. All entity types now have full add/edit/delete forms (Team, Player, Stadium, Player Stats, Player History, and Stadium Name forms were added since this doc originally described them as unimplemented):
+The admin page has four top-level tabs - Match, Team, Player, Stadium - each with its own paginated table and full add/edit/delete form. Media, Player Stats, Player History, and Stadium Name aren't separate tabs; they're related-record lists (unpaginated) shown inside a Match/Player/Stadium's edit view, each with its own add/edit/delete modal. All eight entity types now support add/edit/delete:
 - **Match** - Add/edit/delete match records
 - **Media** - Add/edit/delete media entries (grouped by media type, as related records under a match)
-- **Team** - Add/edit teams
+- **Team** - Add/edit/delete teams
 - **Player** - Add/edit/delete players
-- **Player Stats** - Add/edit player stats (related list under a match)
-- **Player History** - Add/edit player history (related list under a player)
-- **Stadium** - Add/edit stadiums
-- **Stadium Name** - Add/edit stadium name history (related list under a stadium)
+- **Player Stats** - Add/edit/delete player stats (related list under a match)
+- **Player History** - Add/edit/delete player history (related list under a player)
+- **Stadium** - Add/edit/delete stadiums
+- **Stadium Name** - Add/edit/delete stadium name history (related list under a stadium)
 
 ### Match Form
 The match form includes:
@@ -311,17 +311,16 @@ The media form includes:
 - Sort order input
 
 ### Data Tables
-Each tab displays a paginated table of recent records:
+Each of the four top-level tabs (Match, Team, Player, Stadium) displays a paginated table of records, filtered/paginated client-side over the full dataset already loaded for that tab:
 - 20 records per page
-- Pagination controls
 - Displays relevant fields for each entity type
-- Shows related data (e.g., player names in player stats table)
+
+Related-record lists (Media, Player Stats, Player History, Stadium Name) render in full, unpaginated, inside their parent record's edit view - they show related data such as player names in the player stats list.
 
 ### Pagination
-- Automatic pagination for large datasets
-- Page navigation controls
-- Total count and page indicators
-- Resets to page 1 when switching tabs
+- Each top-level tab tracks its own current page/total pages, independently of the others
+- Page navigation controls (Previous/Next) per tab
+- Resets to page 1 when switching tabs or when filtering/search changes the result count
 
 ## Utility Functions
 

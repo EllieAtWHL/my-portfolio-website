@@ -1,4 +1,3 @@
-import Footer from '@/components/Footer';
 import FantasyFootballContent from '@/components/FantasyFootballContent';
 import MainSitePage from '@/components/MainSitePage';
 

@@ -1,4 +1,5 @@
-// FullStory initialization script
+/* eslint-disable */
+// FullStory initialization script — verbatim vendor snippet, do not hand-edit.
 window['_fs_host'] = 'fullstory.com';
 window['_fs_script'] = 'edge.fullstory.com/s/fs.js';
 window['_fs_org'] = 'o-1J8NQN-na1';

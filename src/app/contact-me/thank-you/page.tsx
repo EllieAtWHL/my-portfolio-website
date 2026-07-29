@@ -38,7 +38,7 @@ export default function ThankYou() {
                 Your message has been successfully submitted.
               </p>
               <p className="text-lg text-gray-500 dark:text-gray-400 mb-12">
-                I'll get back to you as soon as possible. Looking forward to connecting with you!
+                I&apos;ll get back to you as soon as possible. Looking forward to connecting with you!
               </p>
             </div>
             
@@ -53,21 +53,21 @@ export default function ThankYou() {
                       <span className="text-blue-600 dark:text-blue-400 font-bold">1</span>
                     </div>
                     <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Review</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">I'll review your message carefully</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">I&apos;ll review your message carefully</p>
                   </div>
                   <div className="text-center">
                     <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mx-auto mb-3">
                       <span className="text-purple-600 dark:text-purple-400 font-bold">2</span>
                     </div>
                     <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Respond</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">I'll craft a thoughtful response</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">I&apos;ll craft a thoughtful response</p>
                   </div>
                   <div className="text-center">
                     <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-3">
                       <span className="text-green-600 dark:text-green-400 font-bold">3</span>
                     </div>
                     <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Connect</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">We'll connect via email or call</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">We&apos;ll connect via email or call</p>
                   </div>
                 </div>
               </div>

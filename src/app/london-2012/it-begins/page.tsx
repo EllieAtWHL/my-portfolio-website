@@ -34,33 +34,33 @@ export default function ItBeginsPage() {
 
           <div className="space-y-6 text-lg">
             <p>
-              People often ask me how I got involved in the Olympic Ceremonies. In all honesty, I don't remember the exact moment, but this is what I do know...
+              People often ask me how I got involved in the Olympic Ceremonies. In all honesty, I don&apos;t remember the exact moment, but this is what I do know...
             </p>
 
             <p>
-              Even before applying, I was obsessed with the Olympics. I spent way too much time during my maternity leave taking to the internet for any leads I could on how to get my hands on some tickets. I had already been in communication with a group of Twitter users, that I soon become part of, now known as "the 2012 Tweeps". A year before the ceremony, and before I even applied, I posted how excited I was - a whole year out!
+              Even before applying, I was obsessed with the Olympics. I spent way too much time during my maternity leave taking to the internet for any leads I could on how to get my hands on some tickets. I had already been in communication with a group of Twitter users, that I soon become part of, now known as &quot;the 2012 Tweeps&quot;. A year before the ceremony, and before I even applied, I posted how excited I was - a whole year out!
             </p>
 
             {/* Facebook post placeholder - in real implementation, you might want to embed this properly */}
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg border border-gray-300 dark:border-gray-600">
               <p className="italic mb-2">Facebook post from 27 July 2011:</p>
-              <p>"One year to go until the opening ceremony, I know some people are already bored of all the hype, but I don't think I ever will."</p>
+              <p>&quot;One year to go until the opening ceremony, I know some people are already bored of all the hype, but I don&apos;t think I ever will.&quot;</p>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Posted by Eleanor Matthewman</p>
             </div>
 
             <p>
-              As I said, I don't remember exactly how I came across it, but I suspect there was a link on one of the many email newsletters that I'd signed up to, looking for volunteers for the ceremonies, and on seeing the advert, I posted on Facebook how I was "tempted to apply".
+              As I said, I don&apos;t remember exactly how I came across it, but I suspect there was a link on one of the many email newsletters that I&apos;d signed up to, looking for volunteers for the ceremonies, and on seeing the advert, I posted on Facebook how I was &quot;tempted to apply&quot;.
             </p>
 
             {/* Another Facebook post placeholder */}
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg border border-gray-300 dark:border-gray-600">
               <p className="italic mb-2">Facebook post from 16 August 2011:</p>
-              <p>"So tempted to apply!"</p>
+              <p>&quot;So tempted to apply!&quot;</p>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Posted by Eleanor Matthewman</p>
             </div>
 
             <p>
-              Apply I did, and from what I remember, I didn't really think much of it, but that is where my official journey to become "part of the cultural record of London" began...
+              Apply I did, and from what I remember, I didn&apos;t really think much of it, but that is where my official journey to become &quot;part of the cultural record of London&quot; began...
             </p>
 
             {/* Application confirmation image */}

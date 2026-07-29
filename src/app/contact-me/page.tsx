@@ -8,7 +8,7 @@ import { trackFormInteraction, trackPageView } from '@/lib/fullstory';
 
 export default function ContactMe() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [submitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   useEffect(() => {
     // Track page view
@@ -61,8 +61,6 @@ export default function ContactMe() {
     // Track form start
     trackFormInteraction('contact', 'start');
 
-    const formData = new FormData(e.currentTarget);
-    
     // For localhost, simulate form submission and redirect immediately
     if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
       // Simulate a brief delay for UX
@@ -113,7 +111,7 @@ export default function ContactMe() {
                 Get In Touch
               </h1>
               <p className="text-lg form-label">
-                I'd love to hear from you! Whether you have a question, want to collaborate, or just want to say hello.
+                I&apos;d love to hear from you! Whether you have a question, want to collaborate, or just want to say hello.
               </p>
             </div>
 

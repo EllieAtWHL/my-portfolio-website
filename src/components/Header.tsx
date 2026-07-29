@@ -32,11 +32,11 @@ export default function Header() {
     <header className={`navbar ${isDarkMode ? 'dark' : ''}`}>
       <div className="brand-title">
         <Link href="/">
-          <Image 
-            src="/logo.png" 
-            alt={"EllieAtWHL"} 
+          <Image
+            src="/logo.png"
+            alt={"EllieAtWHL"}
             width={50}
-            height={50}
+            height={35}
             className="logo"
           />
         </Link>

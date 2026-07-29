@@ -22,11 +22,13 @@ export default function LightboxGallery({
 
   const currentPhoto = photos[currentIndex];
 
-  // Reset loading state when changing photos
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
+  // Reset loading state when changing photos (adjusting state during render,
+  // per https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes)
+  const [loadingForIndex, setLoadingForIndex] = useState(currentIndex);
+  if (currentIndex !== loadingForIndex) {
+    setLoadingForIndex(currentIndex);
     setIsLoading(true);
-  }, [currentIndex]);
+  }
 
   const navigatePrevious = useCallback(() => {
     setCurrentIndex((prev: number) => (prev - 1 + photos.length) % photos.length);

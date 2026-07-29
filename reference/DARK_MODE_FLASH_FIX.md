@@ -7,10 +7,10 @@ When the page loads on a device with dark mode enabled, there was a brief flash 
 The fix involves three key components:
 
 ### 1. Blocking Script in Layout
-Added a blocking script in `src/app/layout.tsx` that runs immediately in the `<head>` before any content renders:
+Added a blocking script in `src/app/layout.tsx` that runs immediately in the `<head>` before any content renders, via `next/script`'s `beforeInteractive` strategy (Next.js's supported way to inject a render-blocking script into the initial HTML - a plain sync `<script>` tag trips the `@next/next/no-sync-scripts` lint rule):
 
 ```tsx
-<script src="/theme-script.js" suppressHydrationWarning />
+<Script src="/theme-script.js" strategy="beforeInteractive" />
 ```
 
 The script is stored in an external file `public/theme-script.js` for better maintainability:
@@ -94,7 +94,7 @@ To verify the fix works:
 
 ## If This Fix Gets Broken
 If the dark mode flash returns, check these components in order:
-1. Ensure the blocking script reference is present in `layout.tsx` (`<script src="/theme-script.js" />`)
+1. Ensure the blocking script reference is present in `layout.tsx` (`<Script src="/theme-script.js" strategy="beforeInteractive" />`)
 2. Verify `public/theme-script.js` file exists and contains the theme logic
 3. Verify `data-theme-loading` attribute is on the `<html>` element
 4. Check CSS rules for `html[data-theme-loading]` are present

@@ -22,7 +22,7 @@ export default function LightningRolloutPart2() {
         </div>
 
         <Card variant="highlight" padding="lg">
-          <p>This is the second in my series to help you manage the completion of your Lighting roll-out successfully. I am currently working on my third roll-out of Lightning and so am sharing some of my learnings to help ensure yours goes smoothly. Everything I speak about below are things that have worked for me, however, that doesn't mean it is the only way to do it. As with most things Salesforce, there are multiple ways of doing things, these are the way I found to be successful.</p>
+          <p>This is the second in my series to help you manage the completion of your Lighting roll-out successfully. I am currently working on my third roll-out of Lightning and so am sharing some of my learnings to help ensure yours goes smoothly. Everything I speak about below are things that have worked for me, however, that doesn&apos;t mean it is the only way to do it. As with most things Salesforce, there are multiple ways of doing things, these are the way I found to be successful.</p>
         </Card>
         
         <section className="blog-section">
@@ -33,7 +33,7 @@ export default function LightningRolloutPart2() {
 
           <Card variant="accent" padding="lg" className="topic-block">
             <h4 className="topic-title">Rollout Strategy</h4>
-            <p>There are a variety of rollout strategies that can be used and what you decide upon will depend on the size and complexity of your Salesforce instance. The main two strategies are to roll out in groups of users (for example, either one team at a time, or one person from within each team) or a big bang approach of rolling it out to all users at once. I would highly recommend not considering the latter. My main reasoning is that even if you have managed to do as much research as possible into how the different areas of the business use Salesforce, there's almost always something somewhere that has been overlooked and the reputational risk of Lightning when this is discovered could lead to poor user adoption. If you move over teams at a time, you can ensure that it is working perfectly for one team before moving onto the next — and you can also learn from each iteration. The later teams should be quicker to roll out, as a lot of the changes will already have been made.</p>
+            <p>There are a variety of rollout strategies that can be used and what you decide upon will depend on the size and complexity of your Salesforce instance. The main two strategies are to roll out in groups of users (for example, either one team at a time, or one person from within each team) or a big bang approach of rolling it out to all users at once. I would highly recommend not considering the latter. My main reasoning is that even if you have managed to do as much research as possible into how the different areas of the business use Salesforce, there&apos;s almost always something somewhere that has been overlooked and the reputational risk of Lightning when this is discovered could lead to poor user adoption. If you move over teams at a time, you can ensure that it is working perfectly for one team before moving onto the next — and you can also learn from each iteration. The later teams should be quicker to roll out, as a lot of the changes will already have been made.</p>
           </Card>
           
           <Card variant="accent" padding="lg" className="topic-block">
@@ -76,7 +76,7 @@ export default function LightningRolloutPart2() {
 
           <Card variant="accent" padding="md" className="topic-block">
             <h4 className="topic-title">Marketing</h4>
-            <p>You'll need to market the change appropriately to gain as much buy-in with your end-users, increasing user adoption post rollout. If your company has a Marketing team, consider enlisting them to assist with this. Either way, Salesforce provides some email templates you could use as part of a drip campaign. They can be found as part of the <a href="https://help.salesforce.com/articleView?id=lex_enablement_pack.htm" target="_blank" rel="noopener noreferrer">Lightning Experience Enablement Pack</a>. Consider other ways you can market it to — office posters in the break room, an article on the company Intranet.</p>
+            <p>You&apos;ll need to market the change appropriately to gain as much buy-in with your end-users, increasing user adoption post rollout. If your company has a Marketing team, consider enlisting them to assist with this. Either way, Salesforce provides some email templates you could use as part of a drip campaign. They can be found as part of the <a href="https://help.salesforce.com/articleView?id=lex_enablement_pack.htm" target="_blank" rel="noopener noreferrer">Lightning Experience Enablement Pack</a>. Consider other ways you can market it to — office posters in the break room, an article on the company Intranet.</p>
 
             <p>Understanding the <a href="https://www.ballantine.com/understanding-the-marketing-rule-of-7/" target="_blank" rel="noopener noreferrer">Marketing Rule of 7</a> can help you understand different avenues you can use to help get engagement and buy-in. Although you are not selling anything externally for money, and therefore some of the suggestion may not be appropriate, it should give you some ideas for how to move things forward internally to sell the idea of Lightning.</p>
           </Card>
@@ -85,7 +85,7 @@ export default function LightningRolloutPart2() {
             <h4 className="topic-title">Training</h4>
             <p>Training will need to be provided to the majority of the end-users, and decisions will need to be made around who will deliver this. In a large company, you could consider a train the trainer with your Lightning Champions for them to train the rest of their areas. In smaller companies, you may be left to train them yourself.</p>
 
-            <p>Salesforce has provided a template PowerPoint presentation in their <a href="https://help.salesforce.com/s/articleView?id=sf.lex_enablement_pack.htm&type=5" target="_blank" rel="noopener noreferrer">Enablement Pack</a>, but ensure that you only use this as a guide for your presentation, which should follow your company's branding guidelines and only contain relevant information. Include screenshots from your own Salesforce instance where you can, and plan for live demos, but include videos in the presentation in case anything goes wrong with the demo, such issues connecting to the internet.</p>
+            <p>Salesforce has provided a template PowerPoint presentation in their <a href="https://help.salesforce.com/s/articleView?id=sf.lex_enablement_pack.htm&type=5" target="_blank" rel="noopener noreferrer">Enablement Pack</a>, but ensure that you only use this as a guide for your presentation, which should follow your company&apos;s branding guidelines and only contain relevant information. Include screenshots from your own Salesforce instance where you can, and plan for live demos, but include videos in the presentation in case anything goes wrong with the demo, such issues connecting to the internet.</p>
 
             <p>Trailhead also offers a wide range of free resources to help train a full spectrum of Salesforce users across a breadth of topics. Consider your different areas you are rolling out to and which trails might be most relevant to them and then guide your users to them. I can recommend this generic one to get started with — <a href="https://trailhead.salesforce.com/en/content/learn/trails/lex_user_learn_fundamentals" target="_blank" rel="noopener noreferrer">Learn to Work in Lightning Experience</a>.</p>
           </Card>
@@ -109,7 +109,7 @@ export default function LightningRolloutPart2() {
                     className="content-image"
                   />
                 </div>
-                <p>When you go to an object tab — such as Opportunities — for the first time in Lightning, it will default to your "Recently Viewed" list view, but it will be empty. This doesn't mean all of your Opportunities have gone, it simply means that you haven't viewed any Opportunities in Lightning yet. As you use Lightning, your recently viewed opportunities will show here, or you can access other List Views from the drop-down available — even pinning them so they become the default view on the tab home.</p>
+                <p>When you go to an object tab — such as Opportunities — for the first time in Lightning, it will default to your &quot;Recently Viewed&quot; list view, but it will be empty. This doesn&apos;t mean all of your Opportunities have gone, it simply means that you haven&apos;t viewed any Opportunities in Lightning yet. As you use Lightning, your recently viewed opportunities will show here, or you can access other List Views from the drop-down available — even pinning them so they become the default view on the tab home.</p>
               </Card>
 
               <Card variant="default" padding="md" className="subtopic">
@@ -121,7 +121,7 @@ export default function LightningRolloutPart2() {
                     className="content-image"
                   />
                 </div>
-                <p>When you go to the Reports tab, the default view is Recent. If this is your first time looking at your reports in Lightning, you won't have any reports showing. Even if you search using the search bar just above the list, your report will not appear as you have not viewed it. Be sure to change your view on the left-hand side to the appropriate view (probably All Reports or you can go to All Folders if you know where the report you are trying to find is). It is probably a good idea to use the new Favorite functionality with the reports you are going to want to access regularly.</p>
+                <p>When you go to the Reports tab, the default view is Recent. If this is your first time looking at your reports in Lightning, you won&apos;t have any reports showing. Even if you search using the search bar just above the list, your report will not appear as you have not viewed it. Be sure to change your view on the left-hand side to the appropriate view (probably All Reports or you can go to All Folders if you know where the report you are trying to find is). It is probably a good idea to use the new Favorite functionality with the reports you are going to want to access regularly.</p>
               </Card>
             </div>
           </Card>
@@ -129,18 +129,18 @@ export default function LightningRolloutPart2() {
 
         <section className="blog-section">
           <h2 className="section-title">Technical Implementation</h2>
-          <p>This is the technical tasks that need to be done to ensure that all of the existing functionality that is available in Classic, is readily available in Lightning. The good news is that there is most of the work is automatically done for you by Salesforce, and those that aren't, will be picked up in the Lightning Readiness Report that you ran as part of your Discovery phase.</p>
+          <p>This is the technical tasks that need to be done to ensure that all of the existing functionality that is available in Classic, is readily available in Lightning. The good news is that there is most of the work is automatically done for you by Salesforce, and those that aren&apos;t, will be picked up in the Lightning Readiness Report that you ran as part of your Discovery phase.</p>
           
           <p>I can sit here and tell you exactly what you need to do, as every implementation is different, so the only way you are going to be able to do this is to study the Readiness Report and test, test, test!</p>
           
-          <p>Some of the changes may be a simple point and click change, however, some may need code. You may find some functionality that is out of the box in Classic, isn't readily available in Lightning. In these instances, you will need to determine the time it would take to develop a replacement and compare it with how much the functionality is needed to determine if the functionality will remain available.</p>
+          <p>Some of the changes may be a simple point and click change, however, some may need code. You may find some functionality that is out of the box in Classic, isn&apos;t readily available in Lightning. In these instances, you will need to determine the time it would take to develop a replacement and compare it with how much the functionality is needed to determine if the functionality will remain available.</p>
           
           <p>A lot of how the technical tasks that need to be done are managed depends on the way the project is being done. You may have stories written in Jira or cases in Salesforce or just lines on an Excel spreadsheet — however you decide to do it, you should make sure that each task required is documented and status updated.</p>
           
           <div>
             <Card variant="accent" padding="md"  className="topic-block">
               <h5 className="subtopic-title">Lightning Experience Configuration Converter</h5>
-              <p>Salesforce continues to provide tools to help you migrate some of the functionality that doesn't convert into Lightning to work in Lightning. As of the time of writing, using the <a href="https://lightning-configuration.salesforce.com/home.xhtml" target="_blank" rel="noopener noreferrer">Lightning Experience Configuration Converter tool</a>, you can get assistance in migrating:</p>
+              <p>Salesforce continues to provide tools to help you migrate some of the functionality that doesn&apos;t convert into Lightning to work in Lightning. As of the time of writing, using the <a href="https://lightning-configuration.salesforce.com/home.xhtml" target="_blank" rel="noopener noreferrer">Lightning Experience Configuration Converter tool</a>, you can get assistance in migrating:</p>
               
               <ul>
                 <li><strong>JavaScript Buttons</strong> - Custom JavaScript buttons used in Classic may not work in Lightning due to different JavaScript handling</li>
@@ -157,9 +157,9 @@ export default function LightningRolloutPart2() {
               <h5 className="subtopic-title">Visualforce Pages</h5>
               <p>Custom Visualforce pages that were built for Classic may need to be rebuilt or updated for Lightning. Lightning uses a different UI framework, so some Visualforce components may not render correctly. You should test all your custom pages thoroughly and consider using Lightning Web Components (Aura or LWC) as replacements where appropriate.</p>
               
-              <p>If your Visualforce pages are simple without any JavaScript, then it may be as simple as adding a <code>lightningStylesheets="true"</code> tag to your page:</p>
+              <p>If your Visualforce pages are simple without any JavaScript, then it may be as simple as adding a <code>lightningStylesheets=&quot;true&quot;</code> tag to your page:</p>
               
-              <pre><code>&lt;apex:page lightningStylesheets="true"&gt;</code></pre>
+              <pre><code>&lt;apex:page lightningStylesheets=&quot;true&quot;&gt;</code></pre>
               
               <Card variant="default" padding="md" className="subtopic">
                 <p>Note: that you can use the Configuration Converter to add this tag without having to go into code and update it. One of the advantages of this tag is that is the user is in Classic, it will render to look like Classic, as usual, however, if the user is in Lightning Experience, the page will render to mimic the Lightning look and feel.</p>
@@ -206,7 +206,7 @@ export default function LightningRolloutPart2() {
         <hr className="blog-divider" />
 
         <section className="blog-section">
-          <p>Now that you have prepared both your users and the Salesforce instance to migrate to Lightning, you are now ready to launch it! But what do you do to keep the momentum going after it has been rolled out? I'll cover that in the last in the series.</p>
+          <p>Now that you have prepared both your users and the Salesforce instance to migrate to Lightning, you are now ready to launch it! But what do you do to keep the momentum going after it has been rolled out? I&apos;ll cover that in the last in the series.</p>
         </section>
 
         <div className="blog-navigation">

@@ -17,7 +17,6 @@ export default function NotFound() {
   const [showMiss, setShowMiss] = useState(false);
   const [missReason, setMissReason] = useState('');
   const [targetPosition, setTargetPosition] = useState({ x: 50, y: 10, z: 15 });
-  const [hasPlayedIntro, setHasPlayedIntro] = useState(false);
   const [isIntroPlaying, setIsIntroPlaying] = useState(false);
   const ballRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number | undefined>(undefined);
@@ -25,6 +24,7 @@ export default function NotFound() {
   const isTooFastRef = useRef(false);
   const ballWentThroughGoalRef = useRef(false);
   const scoreRef = useRef(0);
+  const hasPlayedIntroRef = useRef(false);
 
   const randomizeTarget = () => {
     // Random position within goal area (x: 20-80%, y: 5-18%, z: 10-25%)
@@ -54,16 +54,21 @@ export default function NotFound() {
     scoreRef.current = score;
   }, [score]);
 
-  // Load high score from localStorage on mount
+  // Load high score from localStorage on mount. This can only run client-side
+  // after hydration, so a synchronous setState here is unavoidable.
   useEffect(() => {
     const savedHighScore = localStorage.getItem('footballHighScore');
     if (savedHighScore) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setHighScore(parseInt(savedHighScore, 10));
     }
   }, []);
 
-  // Randomize ball position on initial load
+  // Randomize ball position on initial load. Randomizing during render would
+  // cause a hydration mismatch between server and client, so this must happen
+  // in an effect after mount.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     randomizeBallPosition();
   }, []);
 
@@ -317,9 +322,9 @@ export default function NotFound() {
   }, []);
 
   useEffect(() => {
-    if (hasPlayedIntro) return;
-    
-    setHasPlayedIntro(true);
+    if (hasPlayedIntroRef.current) return;
+    hasPlayedIntroRef.current = true;
+
     setIsIntroPlaying(true);
     
     const isLeft = Math.random() < 0.5;
@@ -360,7 +365,7 @@ export default function NotFound() {
     setTimeout(() => {
       animationRef.current = requestAnimationFrame(animateIntro);
     }, 500);
-  }, [hasPlayedIntro]);
+  }, []);
 
   return (
     <div className="not-found-container">

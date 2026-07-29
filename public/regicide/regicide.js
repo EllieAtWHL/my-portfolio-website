@@ -1,7 +1,6 @@
 import Deck from "./deck.js"
 import Toast from "../scripts/toast.js"
 
-const NUM_OF_PLAYERS = 1
 const TOTAL_JESTERS = 2
 const HAND_LIMIT = 8
 const CARD_VALUE_MAP = {
@@ -169,8 +168,6 @@ function startGameSetStats(){
         now = now.toLocaleString()
         localStorage.setItem('ellieatwhl_stats_date', now)
     }
-    const statsSinceDate = localStorage.getItem('ellieatwhl_stats_date')
-
     if(!localStorage.getItem('ellieatwhl_games_started')) localStorage.setItem('ellieatwhl_games_started', 0)
     let gamesStarted = parseInt(localStorage.getItem('ellieatwhl_games_started')) + 1
     localStorage.setItem('ellieatwhl_games_started', gamesStarted)
@@ -294,7 +291,7 @@ function cardSelected(){
     let selectedCard = {suit: cardValue.suit, value: cardValue.value}
     if(onAttack){
         if(invalidSelection(selectedCard)){
-            let toast = new Toast({
+            new Toast({
                 text: 'Illegal move',
                 error: true
             })
@@ -427,7 +424,7 @@ function handlePlayerAttack(){
             suitsActive.push(card.suit)
         }
         else {
-            const toast = new Toast({
+            new Toast({
                 text: `${card.suit} power is blocked`,
             })
         }
@@ -455,14 +452,14 @@ function handleHearts(){
     if (maxHeal > 0) {
         healFromDiscard(maxHeal)
     } else {
-        let toast =  new Toast({
+        new Toast({
             text: `Unable to heal from discard`
         })
     }
 }
 
 function healFromDiscard(maxHeal){
-    let toast = new Toast({
+    new Toast({
         text: `Healing ${maxHeal} ${maxHeal === 1 ? 'card' : 'cards'} from the discard pile`
     })
     discardDeck.shuffle()
@@ -483,7 +480,7 @@ function handleDiamonds(){
 }
 
 function drawFromTavern(maxDraw){
-    let toast = new Toast({
+    new Toast({
         text: `Drawing ${maxDraw} ${maxDraw === 1 ? 'card' : 'cards'} from tavern`
     })
     let drawnCards = []
@@ -500,7 +497,7 @@ function playerAttack(suits){
     let damageDealt = totalPlayerAttack()
     if(suits.includes('♣')) damageDealt += damageDealt
     currentRoyalHealth -= damageDealt
-    let toast = new Toast({
+    new Toast({
         text: `Attacking ${royalCard.value}${royalCard.suit} for ${damageDealt} damage`
     })
     if(currentRoyalHealth > 0) {
@@ -524,7 +521,7 @@ function handleRoyalAttack(suits){
         currentShield += shield
         updateAttackText()
     }
-    let toast = new Toast({
+    new Toast({
         text: `${royalCard.value}${royalCard.suit} is attacking for ${currentRoyalAttack}`
     })
     discardedRoyalAttack = currentRoyalAttack
@@ -560,13 +557,13 @@ function getCardShield(cards){
 
 function handleRoyalDefeated(exactKill){
     if(exactKill) {
-        let toast = new Toast({
+        new Toast({
             text: `${royalCard.value}${royalCard.suit} defeated with critical hit`
         })
         drawDeck = new Deck([royalCard].concat(drawDeck.cards))
     }
     else {
-        let toast = new Toast({
+        new Toast({
             text: `${royalCard.value}${royalCard.suit} defeated`
         })
         if(!discardDeck) discardDeck = new Deck([royalCard])

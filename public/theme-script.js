@@ -6,7 +6,7 @@
   function getStoredTheme() {
     try {
       return localStorage.getItem('theme');
-    } catch (e) {
+    } catch {
       return null;
     }
   }

@@ -22,7 +22,7 @@ export default function LightningRolloutPart1() {
         </div>
 
         <Card variant="highlight" padding="lg" className="blog-intro">
-          <p>This is the first in my series to help you complete your Lighting roll-out successfully. I am currently working on my third roll-out of Lightning and so am sharing some of my learnings to help ensure yours goes smoothly. Everything I speak about below are things that have worked for me, however, that doesn't mean it is the only way to do it. As with most things Salesforce, there are multiple ways of doing things, these are the way I found to be successful.</p>
+          <p>This is the first in my series to help you complete your Lighting roll-out successfully. I am currently working on my third roll-out of Lightning and so am sharing some of my learnings to help ensure yours goes smoothly. Everything I speak about below are things that have worked for me, however, that doesn&apos;t mean it is the only way to do it. As with most things Salesforce, there are multiple ways of doing things, these are the way I found to be successful.</p>
         </Card>
         
         <section className="blog-section">
@@ -50,7 +50,7 @@ export default function LightningRolloutPart1() {
             
             <Card variant="default" padding="md" className="subtopic">
               <h5 className="subtopic-title">Trailhead</h5>
-              <p>If you don't already have a <a href="https://trailhead.salesforce.com/en/home" target="_blank" rel="noopener noreferrer">Trailhead account</a>, you should set one up. There is a wealth of information as well as the opportunity to get hands-on with Lightning Experience within a controlled training environment. <a href="https://trailhead.salesforce.com/users/elliematthewman/trailmixes/lightning-migration" target="_blank" rel="noopener noreferrer">Here is a trailmix</a> I have put together to help you acquaint yourself to Lightning — but there is more out there than just in this Trailmix, depending on your type of business, how you are using Salesforce, and if you are an administrator or developer.</p>
+              <p>If you don&apos;t already have a <a href="https://trailhead.salesforce.com/en/home" target="_blank" rel="noopener noreferrer">Trailhead account</a>, you should set one up. There is a wealth of information as well as the opportunity to get hands-on with Lightning Experience within a controlled training environment. <a href="https://trailhead.salesforce.com/users/elliematthewman/trailmixes/lightning-migration" target="_blank" rel="noopener noreferrer">Here is a trailmix</a> I have put together to help you acquaint yourself to Lightning — but there is more out there than just in this Trailmix, depending on your type of business, how you are using Salesforce, and if you are an administrator or developer.</p>
             </Card>
             
             <Card variant="default" padding="md" className="subtopic">
@@ -66,22 +66,22 @@ export default function LightningRolloutPart1() {
 
           <Card variant="accent" padding="lg" className="topic-block">
             <h4 className="topic-title">Understand your business</h4>
-            <p>If you don't already understand the ins and outs of your business and how they use Salesforce, then now is the time to do so. You need to understand what drives your business to ensure that you pull at the right levers to persuade them that Lightning is the right fit for them.</p>
+            <p>If you don&apos;t already understand the ins and outs of your business and how they use Salesforce, then now is the time to do so. You need to understand what drives your business to ensure that you pull at the right levers to persuade them that Lightning is the right fit for them.</p>
             
             <p>For Sales teams, you should consider understanding how and why do they make money? How can you use this to show an improved ROI (return on investment)? Can you improve the efficiency of producing required documents for the sales process, for example?</p>
             
-            <p>For Service teams, understand how they currently manage their cases and communicate with the people they are "servicing". Find out how they escalate cases or find out answers they don't already know the answer too. You may be able to use some of the Lightning functionality to improve their efficiency at resolving the more complex cases — as well as automating more on the simple cases.</p>
+            <p>For Service teams, understand how they currently manage their cases and communicate with the people they are &quot;servicing&quot;. Find out how they escalate cases or find out answers they don&apos;t already know the answer too. You may be able to use some of the Lightning functionality to improve their efficiency at resolving the more complex cases — as well as automating more on the simple cases.</p>
             
             <p>Speak to both end-users and the decision-makers to understand existing pain points, defunct processes, and must-have functionality. Often some of these existing pain points could have been solved in Classic if you had just known about them. Use this to your advantage as quick wins in the transition to Lightning and help with end-user buy-in.</p>
           </Card>
 
           <Card variant="accent" padding="lg" className="topic-block">
             <h4 className="topic-title">Personalise your presentation</h4>
-            <p>Chances are at some point, you will have to provide a presentation about why you should move to Lightning. Don't fall into the trap of using the template presentation provided in the Enablement Pack. This deck is a great starting point, but it needs to be personalised to your business.</p>
+            <p>Chances are at some point, you will have to provide a presentation about why you should move to Lightning. Don&apos;t fall into the trap of using the template presentation provided in the Enablement Pack. This deck is a great starting point, but it needs to be personalised to your business.</p>
             
-            <p>Ensure that you brand your presentation deck using your company's brand guidelines. You may be working on the Salesforce application, but you are doing it for your company and that is what needs to be at the heart of this transformation.</p>
+            <p>Ensure that you brand your presentation deck using your company&apos;s brand guidelines. You may be working on the Salesforce application, but you are doing it for your company and that is what needs to be at the heart of this transformation.</p>
             
-            <p>Remove slides/sections of the template that cover functionality not currently in use. For example, if you don't use Chatter, then delete all references to it, rather than confusing your audiences. Pick out the highlights that affect your business and use them as the building blocks for your presentation.</p>
+            <p>Remove slides/sections of the template that cover functionality not currently in use. For example, if you don&apos;t use Chatter, then delete all references to it, rather than confusing your audiences. Pick out the highlights that affect your business and use them as the building blocks for your presentation.</p>
           </Card>
           
           <Card variant="accent" padding="lg" className="topic-block">
@@ -103,7 +103,7 @@ export default function LightningRolloutPart1() {
           </Card>
 
           <Card variant="accent" padding="lg" className="topic-block">
-            <h4 className="topic-title">Don't brush the crumbs under the carpet</h4>
+            <h4 className="topic-title">Don&apos;t brush the crumbs under the carpet</h4>
             <p>It is unlikely that everything regarding the rollout will be perfect, so try to make sure you consider the potential negatives and try to pre-empt some of the questions that will come from the business regarding the migration.</p>
             
             <p>Here are some of the potentials questions, and my responses to them.</p>
@@ -115,7 +115,7 @@ export default function LightningRolloutPart1() {
               </Card>
 
               <Card variant="default" padding="md" className="subtopic">
-                <h5 className="subtopic-title">Lightning looks like it uses client-side scripting, won't this mean it will be slower to load?</h5>
+                <h5 className="subtopic-title">Lightning looks like it uses client-side scripting, won&apos;t this mean it will be slower to load?</h5>
                 <p>Yes, the Lightning Experience uses a lot more client-side functionality than Classic, which makes it more responsive, this can also cause poor performances if not handled correctly. The latest version of Google Chrome is the recommended browser for Lightning and Internet Explorer is only being supported until the end of 2020 — as long as you opt into extending your IE support. You can find the supported browsers <a href="https://help.salesforce.com/articleView?id=getstart_browsers_sfx.htm&type=5" target="_blank" rel="noopener noreferrer">here</a>.</p>
                 <p>There a few other things you can do to improve the performance of Lightning Experience, the full list of recommended optimisations can be found <a href="https://help.salesforce.com/articleView?id=000316034&language=en_US&type=1&mode=1" target="_blank" rel="noopener noreferrer">here</a>, but they include things such as including Related Lists on a secondary tab.</p>
               </Card>
@@ -136,7 +136,7 @@ export default function LightningRolloutPart1() {
             <h4 className="topic-title">Be realistic</h4>
             <p>As well as the pitfalls mentioned above, there are other factors you need to ensure you are realistic about.</p>
             
-            <p>Not everyone is going to be happy about changing user interfaces. They may have been using Salesforce day in, day out for many years or they may just be resistant to change. You need to ensure you talk about the change management part of the project. Migrating to Lighting isn't just a technical task, but also involves managing that change across all users of the platform. This is no small task, which is why I would recommend transitioning teams at a time and start with the least change-resistant to being with, they can then help become "cheerleaders" for it.</p>
+            <p>Not everyone is going to be happy about changing user interfaces. They may have been using Salesforce day in, day out for many years or they may just be resistant to change. You need to ensure you talk about the change management part of the project. Migrating to Lighting isn&apos;t just a technical task, but also involves managing that change across all users of the platform. This is no small task, which is why I would recommend transitioning teams at a time and start with the least change-resistant to being with, they can then help become &quot;cheerleaders&quot; for it.</p>
             
             <p>More about this in the next instalment, where I will talk about how I have run the project to migrate Lightning.</p>
           </Card>

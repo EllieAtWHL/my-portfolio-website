@@ -35,7 +35,7 @@ describe('Header Component', () => {
     expect(logo).toBeInTheDocument()
     expect(logo).toHaveAttribute('src', '/logo.png')
     expect(logo).toHaveAttribute('width', '50')
-    expect(logo).toHaveAttribute('height', '50')
+    expect(logo).toHaveAttribute('height', '35')
     
     // Check navigation items
     expect(screen.getByText('Home')).toBeInTheDocument()

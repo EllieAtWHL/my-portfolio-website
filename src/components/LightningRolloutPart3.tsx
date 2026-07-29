@@ -7,7 +7,7 @@ export default function LightningRolloutPart3() {
   return (
     <div className="blog-article">
       <article className="blog-content">
-        <h1 className="blog-main-title">We've Migrated to Lightning, Now What?</h1>
+        <h1 className="blog-main-title">We&apos;ve Migrated to Lightning, Now What?</h1>
         
         <div className="blog-hero-image">
           <img 
@@ -29,7 +29,7 @@ export default function LightningRolloutPart3() {
           
           <Card variant="accent" padding="lg" className="topic-block">
             <h4 className="topic-title">Monitor User Adoption</h4>
-            <p>Now that the migration is complete, it's crucial to monitor how users are adapting to Lightning Experience. Keep an eye on user engagement metrics, feedback channels, and usage patterns to identify any areas where users might be struggling or need additional support.</p>
+            <p>Now that the migration is complete, it&apos;s crucial to monitor how users are adapting to Lightning Experience. Keep an eye on user engagement metrics, feedback channels, and usage patterns to identify any areas where users might be struggling or need additional support.</p>
           </Card>
 
           <Card variant="accent" padding="lg" className="topic-block">
@@ -39,7 +39,7 @@ export default function LightningRolloutPart3() {
 
           <Card variant="accent" padding="lg" className="topic-block">
             <h4 className="topic-title">Continuous Training and Support</h4>
-            <p>Training shouldn't stop after the initial rollout. Offer ongoing training sessions, create documentation and video tutorials, and establish a support system for users who need help. This ensures that both new and existing users can make the most of Lightning Experience.</p>
+            <p>Training shouldn&apos;t stop after the initial rollout. Offer ongoing training sessions, create documentation and video tutorials, and establish a support system for users who need help. This ensures that both new and existing users can make the most of Lightning Experience.</p>
           </Card>
 
           <Card variant="accent" padding="lg" className="topic-block">
@@ -63,7 +63,7 @@ export default function LightningRolloutPart3() {
           
           <p>Migrating from Salesforce Classic to Lightning Experience is a significant undertaking that requires careful planning, effective change management, and ongoing attention to user needs. By following the strategies outlined in this three-part series, you can ensure a successful migration that not only maintains existing functionality but also introduces new capabilities and improvements for your users.</p>
           
-          <p>Remember that the journey doesn't end with the technical migration. True success comes from continued user adoption, ongoing improvement, and the ability to leverage the full potential of Lightning Experience to drive business value and user satisfaction.</p>
+          <p>Remember that the journey doesn&apos;t end with the technical migration. True success comes from continued user adoption, ongoing improvement, and the ability to leverage the full potential of Lightning Experience to drive business value and user satisfaction.</p>
           
           <p>Thank you for following along with this series. I hope these insights from my experience with multiple Lightning rollouts help make your migration journey smoother and more successful. Feel free to share your own experiences and lessons learned in the comments or reach out with any questions!</p>
         </section>
