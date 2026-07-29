@@ -293,6 +293,7 @@ export default function AdminPage() {
     player_rating: null,
     player_of_the_match: false,
   });
+  const [playerStatsFormError, setPlayerStatsFormError] = useState<string | null>(null);
 
   // Form states
   const [matchForm, setMatchForm] = useState<Partial<Match>>({
@@ -350,6 +351,7 @@ export default function AdminPage() {
     left_on: null,
     squad_number: null,
   });
+  const [playerHistoryFormError, setPlayerHistoryFormError] = useState<string | null>(null);
 
   const [stadiumForm, setStadiumForm] = useState<Partial<Stadium>>({
     name: '',
@@ -371,6 +373,7 @@ export default function AdminPage() {
     valid_from: null,
     valid_to: null,
   });
+  const [stadiumNameFormError, setStadiumNameFormError] = useState<string | null>(null);
 
   // Fetch user on mount
   useEffect(() => {
@@ -1404,11 +1407,11 @@ export default function AdminPage() {
           )}
         </div>
 
-        {/* Message Display */}
+        {/* Message Display - fixed above modals (z-50) so it's visible even while one is open */}
         {message && (
-          <div className={`mb-4 p-4 rounded ${
-            message.type === 'success' 
-              ? 'bg-green-600 text-white' 
+          <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[60] p-4 rounded shadow-lg ${
+            message.type === 'success'
+              ? 'bg-green-600 text-white'
               : 'bg-red-600 text-white'
           }`}>
             {message.text}
@@ -1646,6 +1649,7 @@ export default function AdminPage() {
                       player_rating: null,
                       player_of_the_match: false,
                     });
+                    setPlayerStatsFormError(null);
                     setShowPlayerStatsModal(true);
                   }}
                   onRecordClick={(stat) => {
@@ -1680,6 +1684,7 @@ export default function AdminPage() {
                       player_rating: stat.player_rating,
                       player_of_the_match: stat.player_of_the_match,
                     });
+                    setPlayerStatsFormError(null);
                     setShowPlayerStatsModal(true);
                   }}
                   emptyMessage="No player stats records found"
@@ -1816,6 +1821,7 @@ export default function AdminPage() {
                       player_of_the_match: false,
                     });
                     setPlayerStatsContext('player');
+                    setPlayerStatsFormError(null);
                     setShowPlayerStatsModal(true);
                   }}
                   onRecordClick={(stat) => {
@@ -1851,6 +1857,7 @@ export default function AdminPage() {
                       player_of_the_match: stat.player_of_the_match,
                     });
                     setPlayerStatsContext('player');
+                    setPlayerStatsFormError(null);
                     setShowPlayerStatsModal(true);
                   }}
                   emptyMessage="No player stats records found"
@@ -1883,6 +1890,7 @@ export default function AdminPage() {
                       squad_number: null,
                     });
                     setEditingPlayerHistoryId(null);
+                    setPlayerHistoryFormError(null);
                     setShowPlayerHistoryModal(true);
                   }}
                   onRecordClick={(history) => {
@@ -1894,6 +1902,7 @@ export default function AdminPage() {
                       left_on: history.left_on,
                       squad_number: history.squad_number,
                     });
+                    setPlayerHistoryFormError(null);
                     setShowPlayerHistoryModal(true);
                   }}
                   emptyMessage="No player history records found"
@@ -2036,6 +2045,7 @@ export default function AdminPage() {
                       valid_to: null,
                     });
                     setEditingStadiumNameId(null);
+                    setStadiumNameFormError(null);
                     setShowStadiumNameModal(true);
                   }}
                   onRecordClick={(stadiumName) => {
@@ -2046,6 +2056,7 @@ export default function AdminPage() {
                       valid_from: stadiumName.valid_from,
                       valid_to: stadiumName.valid_to,
                     });
+                    setStadiumNameFormError(null);
                     setShowStadiumNameModal(true);
                   }}
                   emptyMessage="No stadium names found"
@@ -2530,6 +2541,11 @@ export default function AdminPage() {
             <h3 className="text-xl font-bold text-white mb-4">
               {editingPlayerStatsId ? 'Edit Player Stats' : 'Add Player Stats'}
             </h3>
+            {playerStatsFormError && (
+              <div className="mb-4 p-3 rounded bg-red-600 text-white text-sm">
+                {playerStatsFormError}
+              </div>
+            )}
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1">Player</label>
@@ -2544,6 +2560,25 @@ export default function AdminPage() {
                       {player.first_name} {player.last_name}
                     </option>
                   ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Match</label>
+                <select
+                  value={newPlayerStatsForm.match_id}
+                  onChange={(e) => setNewPlayerStatsForm({ ...newPlayerStatsForm, match_id: e.target.value })}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                >
+                  <option value="">Select a match</option>
+                  {matches.map((match) => {
+                    const homeTeam = teams.find(t => t.id === match.home_team_id);
+                    const awayTeam = teams.find(t => t.id === match.away_team_id);
+                    return (
+                      <option key={match.id} value={match.id}>
+                        {match.date} - {homeTeam?.short_name || 'TBC'} vs {awayTeam?.short_name || 'TBC'}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -2661,6 +2696,7 @@ export default function AdminPage() {
               <Button variant="spurs" onClick={() => {
                 setShowPlayerStatsModal(false);
                 setEditingPlayerStatsId(null);
+                setPlayerStatsFormError(null);
                 setNewPlayerStatsForm({
                   player_id: '',
                   match_id: '',
@@ -2697,8 +2733,13 @@ export default function AdminPage() {
               <Button
                 variant="spurs"
                 onClick={async () => {
+                  if (!newPlayerStatsForm.player_id || !newPlayerStatsForm.match_id) {
+                    setPlayerStatsFormError('Player and Match are both required');
+                    return;
+                  }
                   try {
                     setLoading(true);
+                    setPlayerStatsFormError(null);
                     // Determine was_substitute and was_unused_substitute based on started and minute_on
                     const wasSubstitute = !newPlayerStatsForm.started && newPlayerStatsForm.minute_on !== null;
                     const wasUnusedSubstitute = !newPlayerStatsForm.started && newPlayerStatsForm.minute_on === null;
@@ -2713,7 +2754,7 @@ export default function AdminPage() {
                       ? await callAdminApi('player-stats', 'PUT', { id: editingPlayerStatsId, ...payload })
                       : await callAdminApi('player-stats', 'POST', payload);
                     if (response.error) {
-                      showMessage(response.error, 'error');
+                      setPlayerStatsFormError(response.error);
                     } else {
                       showMessage(editingPlayerStatsId ? 'Player stats updated successfully' : 'Player stats created successfully', 'success');
                       setShowPlayerStatsModal(false);
@@ -2760,7 +2801,7 @@ export default function AdminPage() {
                       }
                     }
                   } catch (error) {
-                    showMessage(editingPlayerStatsId ? 'Error updating player stats' : 'Error creating player stats', 'error');
+                    setPlayerStatsFormError(editingPlayerStatsId ? 'Error updating player stats' : 'Error creating player stats');
                     console.error('Error saving player stats:', error);
                   } finally {
                     setLoading(false);
@@ -2781,6 +2822,11 @@ export default function AdminPage() {
             <h3 className="text-xl font-bold text-white mb-4">
               {editingPlayerHistoryId ? 'Edit Player History' : 'Add Player History'}
             </h3>
+            {playerHistoryFormError && (
+              <div className="mb-4 p-3 rounded bg-red-600 text-white text-sm">
+                {playerHistoryFormError}
+              </div>
+            )}
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1">Team</label>
@@ -2804,6 +2850,7 @@ export default function AdminPage() {
                   value={playerHistoryForm.joined_on || ''}
                   onChange={(e) => setPlayerHistoryForm({ ...playerHistoryForm, joined_on: e.target.value })}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                  required
                 />
               </div>
               <div>
@@ -2843,6 +2890,7 @@ export default function AdminPage() {
               <Button variant="spurs" onClick={() => {
                 setShowPlayerHistoryModal(false);
                 setEditingPlayerHistoryId(null);
+                setPlayerHistoryFormError(null);
                 setPlayerHistoryForm({
                   player_id: '',
                   team_id: 1,
@@ -2856,19 +2904,23 @@ export default function AdminPage() {
               <Button
                 variant="spurs"
                 onClick={async () => {
+                  if (!playerHistoryForm.joined_on) {
+                    setPlayerHistoryFormError('Joined On is required');
+                    return;
+                  }
                   try {
                     setLoading(true);
-                    // Convert empty strings to null for date fields
+                    setPlayerHistoryFormError(null);
+                    // Convert empty string to null for the optional date field
                     const payload = {
                       ...playerHistoryForm,
-                      joined_on: playerHistoryForm.joined_on || null,
                       left_on: playerHistoryForm.left_on || null,
                     };
                     const response = editingPlayerHistoryId
                       ? await callAdminApi('player-history', 'PUT', { id: editingPlayerHistoryId, ...payload })
                       : await callAdminApi('player-history', 'POST', payload);
                     if (response.error) {
-                      showMessage(response.error, 'error');
+                      setPlayerHistoryFormError(response.error);
                     } else {
                       showMessage(editingPlayerHistoryId ? 'Player history updated successfully' : 'Player history created successfully', 'success');
                       setShowPlayerHistoryModal(false);
@@ -2888,7 +2940,7 @@ export default function AdminPage() {
                       }
                     }
                   } catch (error) {
-                    showMessage(editingPlayerHistoryId ? 'Error updating player history' : 'Error creating player history', 'error');
+                    setPlayerHistoryFormError(editingPlayerHistoryId ? 'Error updating player history' : 'Error creating player history');
                     console.error('Error saving player history:', error);
                   } finally {
                     setLoading(false);
@@ -2909,6 +2961,11 @@ export default function AdminPage() {
             <h3 className="text-xl font-bold text-white mb-4">
               {editingStadiumNameId ? 'Edit Stadium Name' : 'Add Stadium Name'}
             </h3>
+            {stadiumNameFormError && (
+              <div className="mb-4 p-3 rounded bg-red-600 text-white text-sm">
+                {stadiumNameFormError}
+              </div>
+            )}
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1">Name</label>
@@ -2957,6 +3014,7 @@ export default function AdminPage() {
               <Button variant="spurs" onClick={() => {
                 setShowStadiumNameModal(false);
                 setEditingStadiumNameId(null);
+                setStadiumNameFormError(null);
                 setStadiumNameForm({
                   stadium_id: '',
                   name: '',
@@ -2970,11 +3028,12 @@ export default function AdminPage() {
                 variant="spurs"
                 onClick={async () => {
                   if (!stadiumNameForm.valid_from) {
-                    showMessage('Valid From is required', 'error');
+                    setStadiumNameFormError('Valid From is required');
                     return;
                   }
                   try {
                     setLoading(true);
+                    setStadiumNameFormError(null);
                     // Convert empty string to null for the optional date field
                     const payload = {
                       ...stadiumNameForm,
@@ -2984,7 +3043,7 @@ export default function AdminPage() {
                       ? await callAdminApi('stadium-names', 'PUT', { id: editingStadiumNameId, ...payload })
                       : await callAdminApi('stadium-names', 'POST', payload);
                     if (response.error) {
-                      showMessage(response.error, 'error');
+                      setStadiumNameFormError(response.error);
                     } else {
                       showMessage(editingStadiumNameId ? 'Stadium name updated successfully' : 'Stadium name created successfully', 'success');
                       setShowStadiumNameModal(false);
@@ -3003,7 +3062,7 @@ export default function AdminPage() {
                       }
                     }
                   } catch (error) {
-                    showMessage(editingStadiumNameId ? 'Error updating stadium name' : 'Error creating stadium name', 'error');
+                    setStadiumNameFormError(editingStadiumNameId ? 'Error updating stadium name' : 'Error creating stadium name');
                     console.error('Error saving stadium name:', error);
                   } finally {
                     setLoading(false);
