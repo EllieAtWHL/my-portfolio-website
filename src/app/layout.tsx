@@ -1,8 +1,16 @@
 import type { Metadata } from "next";
+import { Nokora } from "next/font/google";
 import "./globals.css";
 import ThemeProvider from "../components/ThemeProvider";
 import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
+
+const nokora = Nokora({
+  subsets: ["khmer", "latin"],
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-nokora",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "EllieAtWHL",
@@ -22,20 +30,15 @@ export default function RootLayout({
       lang="en"
       suppressHydrationWarning
       data-theme-loading
+      className={nokora.variable}
     >
       <head>
         <Script
           src="/fullstory-init.js"
           strategy="beforeInteractive"
         />
-        <script src="/theme-script.js" suppressHydrationWarning />
+        <Script src="/theme-script.js" strategy="beforeInteractive" />
         <meta name="theme-color" content="#2d5a2d" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Nokora:wght@100..900&display=swap"
-          rel="stylesheet"
-        />
       </head>
       <body suppressHydrationWarning>
         <ThemeProvider>
