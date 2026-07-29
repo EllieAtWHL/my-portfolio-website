@@ -40,7 +40,7 @@ interface Stats {
   averageCorners: number;
 }
 
-export default function SeasonStats({ matches, seasonName }: SeasonStatsProps) {
+export default function SeasonStats({ matches }: SeasonStatsProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 
   const calculateStats = (): Stats => {

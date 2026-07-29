@@ -25,23 +25,23 @@ export default function DrummingAuditionPage() {
 
               <div className="space-y-6 text-lg">
                 <p>
-                  As promised, I received my response within 48 hours, and to my surprise, I was invited to a second audition! The email didn't specify what the role was, but the date was non-negotiable and fortunately, it fell on the day before I was scheduled to start my new job.
+                  As promised, I received my response within 48 hours, and to my surprise, I was invited to a second audition! The email didn&apos;t specify what the role was, but the date was non-negotiable and fortunately, it fell on the day before I was scheduled to start my new job.
                 </p>
 
                 <p>
-                  The day before the audition, we received an email with further details. We were told that the audition would involve drumming, something I had no experience in other than playing on Guitar Hero. They also sent us a form to complete allowing them to use footage taken at the audition as they saw fit. Additionally, we were warned about engineering works on the District line that could have caused issues with my travel plans. With this warning in mind, I decided to walk from West Ham station, which Google Maps estimated would take about half an hour, and take a rail replacement bus from Laindon to Upminster. It wasn't the most convenient day to travel into London, but I had already come this far and wasn't about to let anything stop me from getting to my second audition.
+                  The day before the audition, we received an email with further details. We were told that the audition would involve drumming, something I had no experience in other than playing on Guitar Hero. They also sent us a form to complete allowing them to use footage taken at the audition as they saw fit. Additionally, we were warned about engineering works on the District line that could have caused issues with my travel plans. With this warning in mind, I decided to walk from West Ham station, which Google Maps estimated would take about half an hour, and take a rail replacement bus from Laindon to Upminster. It wasn&apos;t the most convenient day to travel into London, but I had already come this far and wasn&apos;t about to let anything stop me from getting to my second audition.
                 </p>
 
                 <p>
-                  As one of the earlier auditionees to arrive, I had plenty of time to talk to those around me and soon discovered that I wasn't the only one with no drumming experience, which helped put my mind at ease.
+                  As one of the earlier auditionees to arrive, I had plenty of time to talk to those around me and soon discovered that I wasn&apos;t the only one with no drumming experience, which helped put my mind at ease.
                 </p>
 
                 <p>
-                  Our first part of the audition involved learning some military-style moves, such as "At Ease" and "About Face," which were led by Steve Boyd. We were then led into a second room, where we were asked to vocalize rhythms. At one point, we were divided into four groups based on our drumming experience: absolute beginners, a little experience, some experience, and lots of experience. I placed myself in the absolute beginner group, but the rhythm we were given was very basic, and I immediately wished I had chosen the next group up.
+                  Our first part of the audition involved learning some military-style moves, such as &quot;At Ease&quot; and &quot;About Face,&quot; which were led by Steve Boyd. We were then led into a second room, where we were asked to vocalize rhythms. At one point, we were divided into four groups based on our drumming experience: absolute beginners, a little experience, some experience, and lots of experience. I placed myself in the absolute beginner group, but the rhythm we were given was very basic, and I immediately wished I had chosen the next group up.
                 </p>
 
                 <p>
-                  We were then moved into a third room, where we discovered plastic buckets with straps attached. These were to be our "drums" for the audition, little did we know that our drums for the big night, still eight months away, would be very similar.
+                  We were then moved into a third room, where we discovered plastic buckets with straps attached. These were to be our &quot;drums&quot; for the audition, little did we know that our drums for the big night, still eight months away, would be very similar.
                 </p>
 
                 <p>
@@ -49,11 +49,11 @@ export default function DrummingAuditionPage() {
                 </p>
 
                 <p>
-                  Our last part of the audition was very mysterious. We were taken back into the initial room and introduced to well-known photographer Emma Hardy. Certain bib numbers were called out and asked to stand in the center of the scene, while the rest of us were positioned around them. A number of photos were taken of us in various different positions. We were told nothing about what the photos were for, only that we weren't allowed to tell anyone about them and that all would become clear on July 27th of the following year. (In case you're wondering, I'll save that secret for a later post!)
+                  Our last part of the audition was very mysterious. We were taken back into the initial room and introduced to well-known photographer Emma Hardy. Certain bib numbers were called out and asked to stand in the center of the scene, while the rest of us were positioned around them. A number of photos were taken of us in various different positions. We were told nothing about what the photos were for, only that we weren&apos;t allowed to tell anyone about them and that all would become clear on July 27th of the following year. (In case you&apos;re wondering, I&apos;ll save that secret for a later post!)
                 </p>
 
                 <p>
-                  The audition was over, and although I had had such a fun time, I was extremely nervous, as I wasn't ready for my journey to end yet. We were told that we would hear back within 6-8 weeks. While that seemed like a very long time to wait, at least I had Christmas to keep me occupied in the meantime.
+                  The audition was over, and although I had had such a fun time, I was extremely nervous, as I wasn&apos;t ready for my journey to end yet. We were told that we would hear back within 6-8 weeks. While that seemed like a very long time to wait, at least I had Christmas to keep me occupied in the meantime.
                 </p>
               </div>
         </article>

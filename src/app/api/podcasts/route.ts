@@ -21,7 +21,9 @@ const PODCAST_FEEDS: PodcastFeed[] = [
   }
 ];
 
-async function fetchRSSFeed(url: string, feedUrl: string): Promise<any> {
+type RSSFeedData = Pick<PodcastEpisode, 'title' | 'description' | 'url' | 'publishDate' | 'duration'>;
+
+async function fetchRSSFeed(url: string, feedUrl: string): Promise<RSSFeedData | null> {
   try {
     const response = await fetch(url, {
       headers: {

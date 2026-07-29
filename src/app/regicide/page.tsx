@@ -1,6 +1,5 @@
 import Footer from '@/components/Footer';
 import MainSitePage from '@/components/MainSitePage';
-import RegicideGame from '@/components/RegicideGame';
 import { Card } from '@/components/Card';
 
 export const metadata = {

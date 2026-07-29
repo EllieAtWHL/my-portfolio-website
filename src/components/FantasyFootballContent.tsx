@@ -41,11 +41,11 @@ export default function FantasyFootballContent() {
               </Card>
               <Card variant="accent" padding="md" className="topic-block">
                 <h4 className="table-title">Team Owner | <code className="code">Team_Owner__c</code></h4>
-                <p>In order to transmit the final draft results to My Fantasy League, I needed to store information about which players were drafted by which teams, as well as the team's logo URL. This data was importable through the My Fantasy League API.</p>
+                <p>In order to transmit the final draft results to My Fantasy League, I needed to store information about which players were drafted by which teams, as well as the team&apos;s logo URL. This data was importable through the My Fantasy League API.</p>
               </Card>
               <Card variant="accent" padding="md" className="topic-block">
                 <h4 className="table-title">Pick | <code className="code">Pick__c</code></h4>
-                <p>During the draft, these records were dynamically created when each pick was made. The record would reference the player who was drafted and the player's team, which was determined by looking up the franchise owner associated with the pick. This allowed us to track which players were drafted by which teams.</p>
+                <p>During the draft, these records were dynamically created when each pick was made. The record would reference the player who was drafted and the player&apos;s team, which was determined by looking up the franchise owner associated with the pick. This allowed us to track which players were drafted by which teams.</p>
               </Card>
             </div>
           </div>
@@ -64,7 +64,7 @@ export default function FantasyFootballContent() {
         <section className="blog-section">
           <h2 className="section-title">Setting up the APIs</h2>
           <p>
-            With the data model in place, my next task was to set up the API calls to My Fantasy League to retrieve the necessary data and populate the records. While I won't go into detail about each individual API, I will mention that I used the following five exports to gather the data. (You can find more information about these exports in the <a href="https://www03.myfantasyleague.com/2022/api_info?L=" target="_blank" rel="noopener noreferrer">My Fantasy League documentation</a>.)
+            With the data model in place, my next task was to set up the API calls to My Fantasy League to retrieve the necessary data and populate the records. While I won&apos;t go into detail about each individual API, I will mention that I used the following five exports to gather the data. (You can find more information about these exports in the <a href="https://www03.myfantasyleague.com/2022/api_info?L=" target="_blank" rel="noopener noreferrer">My Fantasy League documentation</a>.)
           </p>
           <ul className="feature-list">
             <li>nflByeWeeks</li>
@@ -115,7 +115,7 @@ export default function FantasyFootballContent() {
             The commissioner controller panel is the more complex part of the application, as it allows the commissioner to make, delete, and upload picks. This panel is essential for ensuring that the draft process runs smoothly and that the picks are immediately available for viewing by the rest of the league.
           </p> 
           <p>
-            The draft template was constructed in a similar manner for the commissioner view, but it was displayed differently on the screen to suit the commissioner's needs. The commissioner needed three input options: make pick, delete pick, and upload to website. 
+            The draft template was constructed in a similar manner for the commissioner view, but it was displayed differently on the screen to suit the commissioner&apos;s needs. The commissioner needed three input options: make pick, delete pick, and upload to website. 
           </p>  
           
           <Card variant="accent" className="p-4 topic-block">

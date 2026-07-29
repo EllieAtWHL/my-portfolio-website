@@ -13,7 +13,7 @@ export default function RegicideGame() {
   useEffect(() => {
     // Initialize game when component mounts
     initializeGame();
-  }, []); // Empty dependency array to prevent infinite re-renders
+  }, [initializeGame]);
 
   const handleStartGame = () => {
     startGame();

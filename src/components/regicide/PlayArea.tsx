@@ -7,9 +7,10 @@ import { Deck } from './Deck';
 import { GameControls } from './GameControls';
 import { PowerDisplay } from './PowerDisplay';
 import { Button } from '@/components/Button';
+import type { GameData, Card as GameCardData } from '@/hooks/useRegicideGame';
 
 interface PlayAreaProps {
-  gameData?: any;
+  gameData?: GameData;
   onShowStats: () => void;
   playCard?: (cardIndex: number) => void;
   drawCard?: () => void;
@@ -70,8 +71,8 @@ export function PlayArea({ gameData, onShowStats, playCard, drawCard }: PlayArea
               <h4 className="text-lg font-semibold mb-4">Current Royal</h4>
               <UniversalCard padding="sm">
                 {gameData.currentRoyal ? (
-                  <GameCard 
-                    suit={gameData.currentRoyal.suit as any}
+                  <GameCard
+                    suit={gameData.currentRoyal.suit}
                     rank={gameData.currentRoyal.rank}
                     power={gameData.currentRoyal.power}
                     onClick={() => {}}
@@ -89,11 +90,11 @@ export function PlayArea({ gameData, onShowStats, playCard, drawCard }: PlayArea
             <div className="text-center">
               <h4 className="text-lg font-semibold mb-4">Your Card</h4>
               <UniversalCard padding="sm">
-                {gameData.playerHand.length > 0 && selectedCard !== null ? (
-                  <GameCard 
-                    suit={gameData.playerHand[selectedCard]?.suit as any}
-                    rank={gameData.playerHand[selectedCard]?.rank}
-                    power={gameData.playerHand[selectedCard]?.power}
+                {selectedCard !== null && gameData.playerHand[selectedCard] ? (
+                  <GameCard
+                    suit={gameData.playerHand[selectedCard].suit}
+                    rank={gameData.playerHand[selectedCard].rank}
+                    power={gameData.playerHand[selectedCard].power}
                     onClick={() => setSelectedCard(selectedCard)}
                     isSelected={true}
                     className="cursor-pointer transform hover:scale-105 transition-transform duration-200"
@@ -128,10 +129,10 @@ export function PlayArea({ gameData, onShowStats, playCard, drawCard }: PlayArea
           </div>
           
           <div className="flex justify-center gap-2 flex-wrap">
-            {gameData.playerHand.map((card: any, index: number) => (
+            {gameData.playerHand.map((card: GameCardData, index: number) => (
               <GameCard
                 key={index}
-                suit={card.suit as any}
+                suit={card.suit}
                 rank={card.rank}
                 power={card.power}
                 onClick={() => {

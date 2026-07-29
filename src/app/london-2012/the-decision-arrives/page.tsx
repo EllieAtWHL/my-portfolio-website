@@ -25,7 +25,7 @@ export default function TheDecisionArrivesPage() {
 
               <div className="space-y-6 text-lg">
                 <p>
-                  It was a typical Monday morning at work, and things were moving slowly as I headed out for lunch. As I walked out of the office, I saw that the email I had been eagerly awaiting for the past two weeks had finally arrived. It had been a day over 8 weeks since my second audition, and I couldn't help but feel anxious as I opened the email. However, the subject line immediately put me at ease.
+                  It was a typical Monday morning at work, and things were moving slowly as I headed out for lunch. As I walked out of the office, I saw that the email I had been eagerly awaiting for the past two weeks had finally arrived. It had been a day over 8 weeks since my second audition, and I couldn&apos;t help but feel anxious as I opened the email. However, the subject line immediately put me at ease.
                 </p>
 
                 <p>
@@ -33,11 +33,11 @@ export default function TheDecisionArrivesPage() {
                 </p>
 
                 <p>
-                  After my lunch break, I returned to work and faced the task of telling my boss the news and hoping that the time off I would require wouldn't be a problem. As I work in a different office from my manager, I decided to email her rather than call, where others might overhear. I was incredibly nervous, as I had only been working there for a little over a month and wasn't sure how they would react. However, I needn't have worried, as I immediately received a phone call congratulating me and offering all the support they could provide.
+                  After my lunch break, I returned to work and faced the task of telling my boss the news and hoping that the time off I would require wouldn&apos;t be a problem. As I work in a different office from my manager, I decided to email her rather than call, where others might overhear. I was incredibly nervous, as I had only been working there for a little over a month and wasn&apos;t sure how they would react. However, I needn&apos;t have worried, as I immediately received a phone call congratulating me and offering all the support they could provide.
                 </p>
 
                 <p>
-                  The news didn't take long to spread to the other department managers, and I am truly grateful for their supportive reactions.
+                  The news didn&apos;t take long to spread to the other department managers, and I am truly grateful for their supportive reactions.
                 </p>
 
                 <p>
@@ -49,11 +49,11 @@ export default function TheDecisionArrivesPage() {
                 </p>
 
                 <p>
-                  As I searched online, I stumbled upon a thread in a forum called "The Student Room" about auditions and cast offers. As I began reading it, I had no idea how valuable this source of information would become. Although I rarely posted, I read it every day, following all of the posters' ups and downs, and found it a great way to get to know some of my fellow marshals before rehearsals began.
+                  As I searched online, I stumbled upon a thread in a forum called &quot;The Student Room&quot; about auditions and cast offers. As I began reading it, I had no idea how valuable this source of information would become. Although I rarely posted, I read it every day, following all of the posters&apos; ups and downs, and found it a great way to get to know some of my fellow marshals before rehearsals began.
                 </p>
 
                 <p>
-                  For the next week, I found it difficult to sleep as I daydreamed about what the future held. This was a dream I hadn't even dared to dream, and although rehearsals weren't set to start for another four months, it would soon become a reality.
+                  For the next week, I found it difficult to sleep as I daydreamed about what the future held. This was a dream I hadn&apos;t even dared to dream, and although rehearsals weren&apos;t set to start for another four months, it would soon become a reality.
                 </p>
               </div>
         </article>

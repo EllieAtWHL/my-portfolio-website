@@ -1,13 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import { Card } from '@/components/Card';
 import Modal from '@/components/Modal';
 
+interface Award {
+  name: string;
+  description: string;
+  date: string;
+  image: string;
+  additionalInfo?: string;
+  additionalImages?: string[];
+}
+
 export default function ExperienceContent() {
   const [activeTab, setActiveTab] = useState('work');
-  const [selectedAward, setSelectedAward] = useState<any>(null);
+  const [selectedAward, setSelectedAward] = useState<Award | null>(null);
 
   const tabs = [
     { id: 'work', label: 'Work' },

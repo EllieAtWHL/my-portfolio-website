@@ -34,7 +34,7 @@ export default function MyFirstAuditionPage() {
 
               <div className="space-y-6 text-lg">
                 <p>
-                  The day of my audition had finally arrived, and I was a bundle of nerves. Initially, I had planned to keep it a secret, but I eventually opened up to a few close members of my family. I didn't want to bear the weight of potential disappointment alone, but at the same time, I didn't want to face a crowd in case this was the end of my dream.
+                  The day of my audition had finally arrived, and I was a bundle of nerves. Initially, I had planned to keep it a secret, but I eventually opened up to a few close members of my family. I didn&apos;t want to bear the weight of potential disappointment alone, but at the same time, I didn&apos;t want to face a crowd in case this was the end of my dream.
                 </p>
 
                 <p>
@@ -80,11 +80,11 @@ export default function MyFirstAuditionPage() {
                   >
                     Steve Boyd
                   </a>
-                  , the Director of Mass Movement. With a wealth of experience in Olympic and Commonwealth ceremonies, I couldn't help but feel that I was in good hands. Little did I know, his voice would become a familiar sound over the coming months.
+                  , the Director of Mass Movement. With a wealth of experience in Olympic and Commonwealth ceremonies, I couldn&apos;t help but feel that I was in good hands. Little did I know, his voice would become a familiar sound over the coming months.
                 </p>
 
                 <p>
-                  The audition was a thrilling three-part journey, starting with simple movements and gradually escalating in complexity. As a seasoned dancer, I felt confident and in my element, relishing each new challenge. One of the standout moments was when the iconic beats of Beyonce's "Love On Top" filled the room. This song will forever hold a special place in my heart as a reminder of this unforgettable day.
+                  The audition was a thrilling three-part journey, starting with simple movements and gradually escalating in complexity. As a seasoned dancer, I felt confident and in my element, relishing each new challenge. One of the standout moments was when the iconic beats of Beyonce&apos;s &quot;Love On Top&quot; filled the room. This song will forever hold a special place in my heart as a reminder of this unforgettable day.
                 </p>
 
                 {/* Spotify embed */}

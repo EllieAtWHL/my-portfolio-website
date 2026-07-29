@@ -72,7 +72,7 @@ class GitHubAPI {
   /**
    * Get download URL for a file from GitHub
    */
-  getFileDownloadUrl(filePath, sha) {
+  getFileDownloadUrl(filePath) {
     return `https://raw.githubusercontent.com/${CONFIG.externalRepo.owner}/${CONFIG.externalRepo.repo}/${CONFIG.externalRepo.branch}/${filePath}`;
   }
   

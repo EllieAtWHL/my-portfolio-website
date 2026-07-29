@@ -25,7 +25,7 @@ export default function OneThousandDrummersPage() {
 
               <div className="space-y-6 text-lg">
                 <p>
-                  As the curtain rose on today's Olympic rehearsal at the 1:1 venue in Dagenham, excitement and nerves were high. Located in the former Ford plant, this state-of-the-art rehearsal space was designed to replicate the actual Olympic venue in every detail. But getting there was no easy feat. While organizers encouraged the use of public transportation, those of us who made the journey found ourselves disembarking at Dagenham East and embarking on a short walk to catch a specially-run bus service. With circus tents in sight, we couldn't help but wonder what awaited us at this mysterious location.
+                  As the curtain rose on today&apos;s Olympic rehearsal at the 1:1 venue in Dagenham, excitement and nerves were high. Located in the former Ford plant, this state-of-the-art rehearsal space was designed to replicate the actual Olympic venue in every detail. But getting there was no easy feat. While organizers encouraged the use of public transportation, those of us who made the journey found ourselves disembarking at Dagenham East and embarking on a short walk to catch a specially-run bus service. With circus tents in sight, we couldn&apos;t help but wonder what awaited us at this mysterious location.
                 </p>
 
                 <p>
@@ -33,7 +33,7 @@ export default function OneThousandDrummersPage() {
                 </p>
 
                 <p>
-                  As we gathered in the circus tent at the Olympic rehearsal venue in Dagenham, Steve Boyd welcomed us with a playful remark about the similarity between drummers and marshals. Today's rehearsal was all about marshalling, and we were split into five groups of 200, each with a warrior name - I was a Samurai. The groups rotated through different stations, starting with military moves, dance routines, flippers, and cannons. We learned four dance routines inspired by London landmarks, including Big Ben, Rocking the Thames, Union Jack, and Buckingham Palace (which ended with the memorable line 'Ooo, Eee, Cup of Tea'). We also mastered nine cannons, including Usain Bolt, John Travolta, Freddie Mercury, Changing the Guard, Lambeth Walk, Union Jack, London Eye, Passing the Clap, and Jack in the Box.
+                  As we gathered in the circus tent at the Olympic rehearsal venue in Dagenham, Steve Boyd welcomed us with a playful remark about the similarity between drummers and marshals. Today&apos;s rehearsal was all about marshalling, and we were split into five groups of 200, each with a warrior name - I was a Samurai. The groups rotated through different stations, starting with military moves, dance routines, flippers, and cannons. We learned four dance routines inspired by London landmarks, including Big Ben, Rocking the Thames, Union Jack, and Buckingham Palace (which ended with the memorable line &apos;Ooo, Eee, Cup of Tea&apos;). We also mastered nine cannons, including Usain Bolt, John Travolta, Freddie Mercury, Changing the Guard, Lambeth Walk, Union Jack, London Eye, Passing the Clap, and Jack in the Box.
                 </p>
 
                 <p>

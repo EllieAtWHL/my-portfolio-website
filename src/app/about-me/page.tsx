@@ -49,7 +49,7 @@ export default function AboutMe() {
                 
                 <article className="intro-text">
                   <Card variant="highlight" padding="md" className="mb-6">
-                    <h2>Hi there! I'm Ellie</h2>
+                    <h2>Hi there! I&apos;m Ellie</h2>
                     <p>
                       A highly skilled and experienced Salesforce professional with a passion for technology and helping businesses succeed.
                     </p>
@@ -98,7 +98,7 @@ export default function AboutMe() {
                   <Card variant="accent" padding="md" className="mb-6">
                     <h3>Always Growing</h3>
                     <p>
-                      I am always looking for new challenges and opportunities to grow both personally and professionally. Thank you for stopping by my "About Me" page!
+                      I am always looking for new challenges and opportunities to grow both personally and professionally. Thank you for stopping by my &quot;About Me&quot; page!
                     </p>
                   </Card>
 

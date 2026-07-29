@@ -23,11 +23,8 @@ export function useTheme() {
 
 export default function ThemeProvider({ children }: ThemeProviderProps) {
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
-    
     function getSystemPreference() {
       return window.matchMedia('(prefers-color-scheme: dark)').matches;
     }
@@ -35,7 +32,7 @@ export default function ThemeProvider({ children }: ThemeProviderProps) {
     function getStoredTheme() {
       try {
         return localStorage.getItem('theme');
-      } catch (e) {
+      } catch {
         return null;
       }
     }
@@ -62,7 +59,7 @@ export default function ThemeProvider({ children }: ThemeProviderProps) {
     
     try {
       localStorage.setItem('theme', newMode ? 'dark' : 'light');
-    } catch (e) {
+    } catch {
       // Ignore localStorage errors
     }
     

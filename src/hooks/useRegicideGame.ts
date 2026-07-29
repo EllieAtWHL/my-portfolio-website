@@ -2,13 +2,13 @@
 
 import { useState, useCallback } from 'react';
 
-interface Card {
+export interface Card {
   suit: 'hearts' | 'diamonds' | 'clubs' | 'spades';
   rank: string;
   power: number;
 }
 
-interface GameData {
+export interface GameData {
   isPlaying: boolean;
   currentRoyal: Card | null;
   playerHand: Card[];
@@ -284,15 +284,15 @@ export function useRegicideGame() {
     saveStats(stats);
     
     setGameData(prev => ({ ...prev, isPlaying: false }));
-  }, []);
+  }, [loadStats, saveStats]);
 
   const loseGame = useCallback(() => {
     const stats = loadStats();
     stats.gamesLost += 1;
     saveStats(stats);
-    
+
     setGameData(prev => ({ ...prev, isPlaying: false }));
-  }, []);
+  }, [loadStats, saveStats]);
 
   return {
     isLoading,
