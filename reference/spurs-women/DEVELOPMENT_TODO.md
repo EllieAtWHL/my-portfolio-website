@@ -260,6 +260,17 @@ ESLint's `@next/next/no-img-element` currently flags 26 raw `<img>` tags across 
 - `src/components/__tests__/Header.test.tsx`
 - `src/components/spurs-women/LightboxGallery.tsx` (x2), `MediaGallery.tsx`, `PlayerCard.tsx`, `PodcastCard.tsx`, `VideoCard.tsx`
 
+### 25. Replace `rss-parser` (Node deprecation warning)
+**Status**: Pending
+**Effort**: Medium
+**Impact**: Low
+
+`src/lib/rss.ts` (used for the Spurs Women news/video RSS feeds, via `VideoGrid.tsx` and `src/lib/data/news.ts`) depends on `rss-parser`, which internally calls Node's deprecated `url.parse()` (`DEP0169`), producing a console warning server-side. `rss-parser` is already at its latest published version (3.13.0, April 2023 - no newer release exists), so there's no version bump that resolves this. It's cosmetic - RSS parsing still works correctly - so not worth fixing blind; revisit if a maintained alternative appears or if Node eventually removes `url.parse()` outright.
+
+**Tasks**:
+- [ ] Evaluate a replacement (differently-maintained RSS/XML parser, or a small hand-rolled parser using the WHATWG URL API) if this becomes higher priority
+- [ ] Re-check whether `rss-parser` has published a fix before doing the replacement work
+
 ## Content Management
 
 ### 18. Season Reviews
