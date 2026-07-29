@@ -235,7 +235,30 @@ Theme switching, dark mode color palette, localStorage persistence, and flash-of
 - [ ] Implement Core Web Vitals tracking
 - [ ] Add bundle size monitoring
 - [ ] Create performance budgets
-- [ ] Optimize image loading strategies
+- [ ] Optimize image loading strategies (see #24 below for the concrete first step)
+
+### 24. Migrate `<img>` to `next/image`
+**Status**: Pending
+**Effort**: Medium
+**Impact**: Medium
+
+ESLint's `@next/next/no-img-element` currently flags 26 raw `<img>` tags across 16 files (warnings only, doesn't fail `next build`). All of them render externally-hosted, dynamic-URL images (Supabase-stored player/media photos, RSS podcast art, the external photo-gallery CDN) - `next.config.ts` has no `images.remotePatterns` configured yet, so switching to `<Image>` without first allowlisting every source domain would break these images in production rather than just warn.
+
+**Tasks**:
+- [ ] Enumerate every external image domain in use (Supabase storage, RSS/podcast art hosts, `spurs-women-photo-gallery` CDN) and add them to `images.remotePatterns` in `next.config.ts`
+- [ ] Convert each `<img>` to `<Image>` with explicit `width`/`height` or `fill` + a sized/relative parent, matching existing `object-cover`/`object-contain` styling
+- [ ] Browser-test each affected page/gallery afterward (layout shift, aspect ratio, lazy-loading behavior)
+
+**Files affected** (26 instances):
+- `src/app/spurs-women/players/[playerId]/PlayerClient.tsx`
+- `src/components/ExperienceContent.tsx` (x5)
+- `src/components/FantasyFootballContent.tsx` (x2)
+- `src/components/LightningRolloutContent.tsx`, `LightningRolloutPart1.tsx` (x2), `LightningRolloutPart2.tsx` (x3), `LightningRolloutPart3.tsx`
+- `src/components/Modal.tsx` (x2)
+- `src/components/ProjectsContent.tsx`
+- `src/components/SalesforceOrgsContent.tsx`
+- `src/components/__tests__/Header.test.tsx`
+- `src/components/spurs-women/LightboxGallery.tsx` (x2), `MediaGallery.tsx`, `PlayerCard.tsx`, `PodcastCard.tsx`, `VideoCard.tsx`
 
 ## Content Management
 
