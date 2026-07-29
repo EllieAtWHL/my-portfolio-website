@@ -2926,6 +2926,7 @@ export default function AdminPage() {
                   value={stadiumNameForm.valid_from || ''}
                   onChange={(e) => setStadiumNameForm({ ...stadiumNameForm, valid_from: e.target.value })}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                  required
                 />
               </div>
               <div>
@@ -2968,12 +2969,15 @@ export default function AdminPage() {
               <Button
                 variant="spurs"
                 onClick={async () => {
+                  if (!stadiumNameForm.valid_from) {
+                    showMessage('Valid From is required', 'error');
+                    return;
+                  }
                   try {
                     setLoading(true);
-                    // Convert empty strings to null for date fields
+                    // Convert empty string to null for the optional date field
                     const payload = {
                       ...stadiumNameForm,
-                      valid_from: stadiumNameForm.valid_from || null,
                       valid_to: stadiumNameForm.valid_to || null,
                     };
                     const response = editingStadiumNameId
