@@ -278,7 +278,7 @@ The admin system manages the following entities:
 ## Admin UI Features
 
 ### Tabbed Interface
-The admin page has four top-level tabs - Match, Team, Player, Stadium - each with its own paginated table and full add/edit/delete form. Media, Player Stats, Player History, and Stadium Name aren't separate tabs; they're related-record lists (unpaginated) shown inside a Match/Player/Stadium's edit view, each with its own add/edit/delete modal. All eight entity types now support add/edit/delete:
+The admin page has four top-level tabs - Matches, Teams, Players, Stadiums - each with its own paginated table and full add/edit/delete form. The create form is hidden by default; a "+ New" button reveals it (and toggles to "Cancel" to hide it again), while clicking an existing record in the table opens the same form already populated for editing. Media, Player Stats, Player History, and Stadium Name aren't separate tabs; they're related-record lists (unpaginated) shown inside a Match/Player/Stadium's edit view, each with its own add/edit/delete modal. All eight entity types now support add/edit/delete:
 - **Match** - Add/edit/delete match records
 - **Media** - Add/edit/delete media entries (grouped by media type, as related records under a match)
 - **Team** - Add/edit/delete teams
@@ -315,7 +315,7 @@ Each of the four top-level tabs (Match, Team, Player, Stadium) displays a pagina
 - 20 records per page
 - Displays relevant fields for each entity type
 
-Related-record lists (Media, Player Stats, Player History, Stadium Name) render in full, unpaginated, inside their parent record's edit view - they show related data such as player names in the player stats list.
+Related-record lists (Media, Player Stats, Player History, Stadium Name) render in full, unpaginated, inside their parent record's edit view - they show related data such as player names in the player stats list, and the match opponent (derived from the match's home/away teams relative to the stat's `team_id`) in a player's Player Stats list.
 
 ### Pagination
 - Each top-level tab tracks its own current page/total pages, independently of the others

@@ -226,6 +226,12 @@ export default function AdminPage() {
   const [showExtraTimeSection, setShowExtraTimeSection] = useState(false);
   const [showStatsSection, setShowStatsSection] = useState(false);
 
+  // Create-form visibility state (forms are hidden until "New" is clicked, or an edit is started)
+  const [showMatchForm, setShowMatchForm] = useState(false);
+  const [showTeamForm, setShowTeamForm] = useState(false);
+  const [showPlayerForm, setShowPlayerForm] = useState(false);
+  const [showStadiumForm, setShowStadiumForm] = useState(false);
+
   // Match edit tab state
   const [matchEditTab, setMatchEditTab] = useState<'details' | 'related'>('details');
 
@@ -570,6 +576,12 @@ export default function AdminPage() {
       setIsStadiumEditMode(false);
       setEditingStadiumId(null);
     }
+
+    // Hide all create forms when switching tabs
+    setShowMatchForm(false);
+    setShowTeamForm(false);
+    setShowPlayerForm(false);
+    setShowStadiumForm(false);
   }
 
   // Fetch recent records whenever the active tab changes. fetchRecentRecords
@@ -732,6 +744,7 @@ export default function AdminPage() {
 
   const handleEditMatch = async (match: Match) => {
     setIsEditMode(true);
+    setShowMatchForm(true);
     setEditingMatchId(match.id);
     setMatchEditTab('details');
     window.scrollTo({
@@ -809,6 +822,7 @@ export default function AdminPage() {
 
   const handleCancelEdit = () => {
     setIsEditMode(false);
+    setShowMatchForm(false);
     setEditingMatchId(null);
     setShowExtraTimeSection(false);
     setShowStatsSection(false);
@@ -888,6 +902,7 @@ export default function AdminPage() {
 
   const handleEditTeam = (team: Team) => {
     setIsTeamEditMode(true);
+    setShowTeamForm(true);
     setEditingTeamId(team.id);
     window.scrollTo({
       top: 250,
@@ -905,6 +920,7 @@ export default function AdminPage() {
 
   const handleCancelEditTeam = () => {
     setIsTeamEditMode(false);
+    setShowTeamForm(false);
     setEditingTeamId(null);
     setTeamForm({
       name: '',
@@ -938,6 +954,7 @@ export default function AdminPage() {
 
   const handleEditPlayer = async (player: Player) => {
     setIsPlayerEditMode(true);
+    setShowPlayerForm(true);
     setEditingPlayerId(player.id);
     setPlayerEditTab('details');
     window.scrollTo({
@@ -980,6 +997,7 @@ export default function AdminPage() {
 
   const handleCancelEditPlayer = () => {
     setIsPlayerEditMode(false);
+    setShowPlayerForm(false);
     setEditingPlayerId(null);
     setPlayerForm({
       first_name: '',
@@ -1072,6 +1090,7 @@ export default function AdminPage() {
 
   const handleEditStadium = async (stadium: Stadium) => {
     setIsStadiumEditMode(true);
+    setShowStadiumForm(true);
     setEditingStadiumId(stadium.id);
     setStadiumEditTab('details');
     window.scrollTo({
@@ -1108,6 +1127,7 @@ export default function AdminPage() {
 
   const handleCancelEditStadium = () => {
     setIsStadiumEditMode(false);
+    setShowStadiumForm(false);
     setEditingStadiumId(null);
     setStadiumForm({
       name: '',
@@ -1387,12 +1407,12 @@ export default function AdminPage() {
 
 
   return (
-    <div className="spurs-wrapper min-h-screen p-4 pb-20">
+    <div className="p-4 pb-20">
       <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-8">
           <h1 className="spurs-text text-3xl font-bold">Spurs Women Admin</h1>
           {user && (
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center justify-end gap-4">
               <Link href="/spurs-women/profile" className="text-sm hover:opacity-80 transition-opacity" style={{ color: 'var(--spurs-dark-accent)' }}>
                 {user.email}
               </Link>
@@ -1419,71 +1439,94 @@ export default function AdminPage() {
         )}
 
         {/* Tab Navigation */}
-        <div className="flex flex-wrap border-b border-gray-600 mb-8 gap-2">
-          <button
-            onClick={() => setActiveTab('matches')}
-            className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
-              activeTab === 'matches'
-                ? 'spurs-text'
-                : 'text-gray-300 hover:text-spurs-dark-accent'
-            }`}
-            style={{
-              backgroundColor: activeTab === 'matches' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
-              borderBottomColor: activeTab === 'matches' ? 'var(--spurs-dark-accent)' : 'transparent',
-              borderBottomWidth: activeTab === 'matches' ? '2px' : '0',
-              color: activeTab === 'matches' ? 'var(--spurs-dark-accent)' : '#d1d5db'
-            }}
-          >
-            Add Match
-          </button>
-          <button
-            onClick={() => setActiveTab('teams')}
-            className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
-              activeTab === 'teams'
-                ? 'spurs-text'
-                : 'text-gray-300 hover:text-spurs-dark-accent'
-            }`}
-            style={{
-              backgroundColor: activeTab === 'teams' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
-              borderBottomColor: activeTab === 'teams' ? 'var(--spurs-dark-accent)' : 'transparent',
-              borderBottomWidth: activeTab === 'teams' ? '2px' : '0',
-              color: activeTab === 'teams' ? 'var(--spurs-dark-accent)' : '#d1d5db'
-            }}
-          >
-            Add Team
-          </button>
-          <button
-            onClick={() => setActiveTab('players')}
-            className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
-              activeTab === 'players'
-                ? 'spurs-text'
-                : 'text-gray-300 hover:text-spurs-dark-accent'
-            }`}
-            style={{
-              backgroundColor: activeTab === 'players' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
-              borderBottomColor: activeTab === 'players' ? 'var(--spurs-dark-accent)' : 'transparent',
-              borderBottomWidth: activeTab === 'players' ? '2px' : '0',
-              color: activeTab === 'players' ? 'var(--spurs-dark-accent)' : '#d1d5db'
-            }}
-          >
-            Add Player
-          </button>
-          <button
-            onClick={() => setActiveTab('stadiums')}
-            className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
-              activeTab === 'stadiums'
-                ? 'spurs-text'
-                : 'text-gray-300 hover:text-spurs-dark-accent'
-            }`}
-            style={{
-              backgroundColor: activeTab === 'stadiums' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
-              borderBottomColor: activeTab === 'stadiums' ? 'var(--spurs-dark-accent)' : 'transparent',
-              borderBottomWidth: activeTab === 'stadiums' ? '2px' : '0',
-              color: activeTab === 'stadiums' ? 'var(--spurs-dark-accent)' : '#d1d5db'
-            }}
-          >
-            Add Stadium
-          </button>
+        <div className="flex flex-wrap justify-between items-center border-b border-gray-600 mb-8 gap-2">
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setActiveTab('matches')}
+              className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
+                activeTab === 'matches'
+                  ? 'spurs-text'
+                  : 'text-gray-300 hover:text-spurs-dark-accent'
+              }`}
+              style={{
+                backgroundColor: activeTab === 'matches' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
+                borderBottomColor: activeTab === 'matches' ? 'var(--spurs-dark-accent)' : 'transparent',
+                borderBottomWidth: activeTab === 'matches' ? '2px' : '0',
+                color: activeTab === 'matches' ? 'var(--spurs-dark-accent)' : '#d1d5db'
+              }}
+            >
+              Matches
+            </button>
+            <button
+              onClick={() => setActiveTab('teams')}
+              className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
+                activeTab === 'teams'
+                  ? 'spurs-text'
+                  : 'text-gray-300 hover:text-spurs-dark-accent'
+              }`}
+              style={{
+                backgroundColor: activeTab === 'teams' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
+                borderBottomColor: activeTab === 'teams' ? 'var(--spurs-dark-accent)' : 'transparent',
+                borderBottomWidth: activeTab === 'teams' ? '2px' : '0',
+                color: activeTab === 'teams' ? 'var(--spurs-dark-accent)' : '#d1d5db'
+              }}
+            >
+              Teams
+            </button>
+            <button
+              onClick={() => setActiveTab('players')}
+              className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
+                activeTab === 'players'
+                  ? 'spurs-text'
+                  : 'text-gray-300 hover:text-spurs-dark-accent'
+              }`}
+              style={{
+                backgroundColor: activeTab === 'players' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
+                borderBottomColor: activeTab === 'players' ? 'var(--spurs-dark-accent)' : 'transparent',
+                borderBottomWidth: activeTab === 'players' ? '2px' : '0',
+                color: activeTab === 'players' ? 'var(--spurs-dark-accent)' : '#d1d5db'
+              }}
+            >
+              Players
+            </button>
+            <button
+              onClick={() => setActiveTab('stadiums')}
+              className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
+                activeTab === 'stadiums'
+                  ? 'spurs-text'
+                  : 'text-gray-300 hover:text-spurs-dark-accent'
+              }`}
+              style={{
+                backgroundColor: activeTab === 'stadiums' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
+                borderBottomColor: activeTab === 'stadiums' ? 'var(--spurs-dark-accent)' : 'transparent',
+                borderBottomWidth: activeTab === 'stadiums' ? '2px' : '0',
+                color: activeTab === 'stadiums' ? 'var(--spurs-dark-accent)' : '#d1d5db'
+              }}
+            >
+              Stadiums
+            </button>
+          </div>
+
+          {activeTab === 'matches' && !isEditMode && (
+            <Button className="mb-2" variant="spurs" size="sm" onClick={() => (showMatchForm ? handleCancelEdit() : setShowMatchForm(true))}>
+              {showMatchForm ? 'Cancel' : '+ New Match'}
+            </Button>
+          )}
+          {activeTab === 'teams' && !isTeamEditMode && (
+            <Button className="mb-2" variant="spurs" size="sm" onClick={() => (showTeamForm ? handleCancelEditTeam() : setShowTeamForm(true))}>
+              {showTeamForm ? 'Cancel' : '+ New Team'}
+            </Button>
+          )}
+          {activeTab === 'players' && !isPlayerEditMode && (
+            <Button className="mb-2" variant="spurs" size="sm" onClick={() => (showPlayerForm ? handleCancelEditPlayer() : setShowPlayerForm(true))}>
+              {showPlayerForm ? 'Cancel' : '+ New Player'}
+            </Button>
+          )}
+          {activeTab === 'stadiums' && !isStadiumEditMode && (
+            <Button className="mb-2" variant="spurs" size="sm" onClick={() => (showStadiumForm ? handleCancelEditStadium() : setShowStadiumForm(true))}>
+              {showStadiumForm ? 'Cancel' : '+ New Stadium'}
+            </Button>
+          )}
         </div>
 
         {/* Match Form */}
@@ -1526,7 +1569,7 @@ export default function AdminPage() {
               </div>
             )}
             
-            {matchEditTab === 'details' && (
+            {matchEditTab === 'details' && (isEditMode || showMatchForm) && (
               <MatchForm
                 matchForm={matchForm}
                 setMatchForm={setMatchForm}
@@ -1696,20 +1739,24 @@ export default function AdminPage() {
 
         {/* Team Form */}
         {activeTab === 'teams' && (
-          <TeamForm
-            teamForm={teamForm}
-            setTeamForm={setTeamForm}
-            isTeamEditMode={isTeamEditMode}
-            editingTeamId={editingTeamId}
-            loading={loading}
-            onSubmit={handleTeamSubmit}
-            onDelete={() => {
-              if (editingTeamId && confirm('Are you sure you want to delete this team?')) {
-                handleDeleteTeam(editingTeamId);
-              }
-            }}
-            onCancel={handleCancelEditTeam}
-          />
+          <>
+            {(isTeamEditMode || showTeamForm) && (
+              <TeamForm
+                teamForm={teamForm}
+                setTeamForm={setTeamForm}
+                isTeamEditMode={isTeamEditMode}
+                editingTeamId={editingTeamId}
+                loading={loading}
+                onSubmit={handleTeamSubmit}
+                onDelete={() => {
+                  if (editingTeamId && confirm('Are you sure you want to delete this team?')) {
+                    handleDeleteTeam(editingTeamId);
+                  }
+                }}
+                onCancel={handleCancelEditTeam}
+              />
+            )}
+          </>
         )}
 
         {/* Player Form */}
@@ -1752,7 +1799,7 @@ export default function AdminPage() {
               </div>
             )}
 
-            {playerEditTab === 'details' && (
+            {playerEditTab === 'details' && (isPlayerEditMode || showPlayerForm) && (
               <PlayerForm
                 playerForm={playerForm}
                 setPlayerForm={setPlayerForm}
@@ -1783,6 +1830,20 @@ export default function AdminPage() {
                         const matchId = value as string;
                         const match = matches.find(m => m.id === matchId);
                         return match ? `${match.date}` : matchId;
+                      }
+                    },
+                    {
+                      key: 'match_id',
+                      id: 'opponent',
+                      label: 'Opponent',
+                      render: (value: unknown, stat: PlayerStats) => {
+                        const match = matches.find(m => m.id === (value as string));
+                        if (!match) return '-';
+                        const opponentTeamId = match.home_team_id === stat.team_id
+                          ? match.away_team_id
+                          : match.home_team_id;
+                        const opponentTeam = teams.find(t => t.id === opponentTeamId);
+                        return opponentTeam?.short_name || opponentTeam?.name || '-';
                       }
                     },
                     { key: 'started', label: 'Started', render: (value: unknown) => (value as boolean) ? 'Yes' : 'No' },
@@ -1952,7 +2013,7 @@ export default function AdminPage() {
               </div>
             )}
 
-            {stadiumEditTab === 'details' && (
+            {stadiumEditTab === 'details' && (isStadiumEditMode || showStadiumForm) && (
               <StadiumForm
                 teams={teams}
                 stadiumForm={stadiumForm}
