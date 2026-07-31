@@ -56,9 +56,9 @@ describe('MatchesTable', () => {
     expect(onSelect).toHaveBeenCalledWith(match);
   });
 
-  it('renders no rows when there are no matches', () => {
+  it('shows an empty-state message when there are no matches', () => {
     render(<MatchesTable matches={[]} teams={[]} competitions={[]} onSelect={() => {}} />);
 
-    expect(screen.queryAllByRole('row')).toHaveLength(1); // header row only
+    expect(screen.getByText('No matches found')).toBeInTheDocument();
   });
 });
