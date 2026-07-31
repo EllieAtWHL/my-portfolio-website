@@ -1845,6 +1845,20 @@ export default function AdminPage() {
                         return match ? `${match.date}` : matchId;
                       }
                     },
+                    {
+                      key: 'match_id',
+                      id: 'opponent',
+                      label: 'Opponent',
+                      render: (value: unknown, stat: PlayerStats) => {
+                        const match = matches.find(m => m.id === (value as string));
+                        if (!match) return '-';
+                        const opponentTeamId = match.home_team_id === stat.team_id
+                          ? match.away_team_id
+                          : match.home_team_id;
+                        const opponentTeam = teams.find(t => t.id === opponentTeamId);
+                        return opponentTeam?.short_name || opponentTeam?.name || '-';
+                      }
+                    },
                     { key: 'started', label: 'Started', render: (value: unknown) => (value as boolean) ? 'Yes' : 'No' },
                     { key: 'goals', label: 'Goals' },
                     { key: 'assists', label: 'Assists' },

@@ -4,6 +4,8 @@ interface ColumnConfig<T> {
   key: keyof T;
   label: string;
   render?: (value: unknown, record: T) => React.ReactNode;
+  /** Overrides the React key when two columns share the same `key` (e.g. both deriving from the same field). */
+  id?: string;
 }
 
 interface RelatedListProps<T> {
@@ -41,7 +43,7 @@ export function RelatedList<T extends Record<string, unknown> | { id?: string }>
             <thead>
               <tr className="border-b border-gray-600 bg-gray-800/50">
                 {columns.map((column) => (
-                  <th key={String(column.key)} className="text-left p-2 text-gray-300">
+                  <th key={column.id ?? String(column.key)} className="text-left p-2 text-gray-300">
                     {column.label}
                   </th>
                 ))}
@@ -57,7 +59,7 @@ export function RelatedList<T extends Record<string, unknown> | { id?: string }>
                   onClick={() => onRecordClick?.(record)}
                 >
                   {columns.map((column) => (
-                    <td key={String(column.key)} className="p-2 text-gray-300">
+                    <td key={column.id ?? String(column.key)} className="p-2 text-gray-300">
                       {column.render
                         ? column.render(record[column.key], record)
                         : (record[column.key] as string | number | null) ?? '-'}
