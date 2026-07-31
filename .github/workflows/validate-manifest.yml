@@ -3,26 +3,36 @@ name: Validate Photo Manifest
 on:
   push:
     branches: [ main, develop ]
+    paths:
+      - 'scripts/generate-external-manifest.js'
+      - 'scripts/validate-manifest.js'
+      - 'public/spurs-women/photo-gallery.manifest.json'
+      - '.github/workflows/validate-manifest.yml'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'scripts/generate-external-manifest.js'
+      - 'scripts/validate-manifest.js'
+      - 'public/spurs-women/photo-gallery.manifest.json'
+      - '.github/workflows/validate-manifest.yml'
 
 jobs:
   validate-manifest:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '20'
         cache: 'npm'
-        
+
     - name: Install dependencies
       run: npm ci
-      
+
     - name: Generate photo manifest
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -32,20 +42,11 @@ jobs:
         CDN_BASE_URL: https://cdn.jsdelivr.net
       run: |
         npm run generate-external-manifest
-        
+
     - name: Validate photo manifest
       run: |
         npm run validate-manifest
-        
-    - name: Build project
-      if: success()
-      env:
-        NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-        SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
-      run: npm run build
-      
+
     - name: Upload manifest as artifact
       if: success()
       uses: actions/upload-artifact@v4
