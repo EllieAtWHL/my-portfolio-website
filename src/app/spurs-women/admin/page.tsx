@@ -1508,22 +1508,22 @@ export default function AdminPage() {
           </div>
 
           {activeTab === 'matches' && !isEditMode && (
-            <Button variant="spurs" size="sm" onClick={() => (showMatchForm ? handleCancelEdit() : setShowMatchForm(true))}>
+            <Button className="mb-2" variant="spurs" size="sm" onClick={() => (showMatchForm ? handleCancelEdit() : setShowMatchForm(true))}>
               {showMatchForm ? 'Cancel' : '+ New Match'}
             </Button>
           )}
           {activeTab === 'teams' && !isTeamEditMode && (
-            <Button variant="spurs" size="sm" onClick={() => (showTeamForm ? handleCancelEditTeam() : setShowTeamForm(true))}>
+            <Button className="mb-2" variant="spurs" size="sm" onClick={() => (showTeamForm ? handleCancelEditTeam() : setShowTeamForm(true))}>
               {showTeamForm ? 'Cancel' : '+ New Team'}
             </Button>
           )}
           {activeTab === 'players' && !isPlayerEditMode && (
-            <Button variant="spurs" size="sm" onClick={() => (showPlayerForm ? handleCancelEditPlayer() : setShowPlayerForm(true))}>
+            <Button className="mb-2" variant="spurs" size="sm" onClick={() => (showPlayerForm ? handleCancelEditPlayer() : setShowPlayerForm(true))}>
               {showPlayerForm ? 'Cancel' : '+ New Player'}
             </Button>
           )}
           {activeTab === 'stadiums' && !isStadiumEditMode && (
-            <Button variant="spurs" size="sm" onClick={() => (showStadiumForm ? handleCancelEditStadium() : setShowStadiumForm(true))}>
+            <Button className="mb-2" variant="spurs" size="sm" onClick={() => (showStadiumForm ? handleCancelEditStadium() : setShowStadiumForm(true))}>
               {showStadiumForm ? 'Cancel' : '+ New Stadium'}
             </Button>
           )}
