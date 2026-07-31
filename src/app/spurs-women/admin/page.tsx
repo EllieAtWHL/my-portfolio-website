@@ -1407,7 +1407,7 @@ export default function AdminPage() {
 
 
   return (
-    <div className="spurs-wrapper min-h-screen p-4 pb-20">
+    <div className="p-4 pb-20">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="spurs-text text-3xl font-bold">Spurs Women Admin</h1>
