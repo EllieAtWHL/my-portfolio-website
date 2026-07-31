@@ -13,6 +13,9 @@ const customJestConfig = {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   testEnvironment: 'jest-environment-jsdom',
+  // Jest's default testMatch picks up *.spec.ts anywhere, which would otherwise
+  // include the Playwright specs in <rootDir>/tests/.
+  testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/tests/'],
   // Floor set a few points below the current baseline (~81% statements/lines,
   // ~69% branches, ~79% functions as of this writing) so it catches a real
   // regression without being fragile to normal fluctuation. Only enforced by

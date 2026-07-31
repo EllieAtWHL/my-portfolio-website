@@ -36,7 +36,7 @@ export default async function TeamsPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <main className="container mx-auto px-4 py-8">
       <h1 className="spurs-text text-3xl font-bold mb-8 text-center">Teams</h1>
       
       {teams.length === 0 ? (
@@ -79,6 +79,6 @@ export default async function TeamsPage() {
           ))}
         </div>
       )}
-    </div>
+    </main>
   );
 }
