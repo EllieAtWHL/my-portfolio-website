@@ -14,7 +14,7 @@ export default function London2012Layout({ children, date, dateTime }: London201
   const [isNavigationOpen, setIsNavigationOpen] = useState(false);
 
   return (
-    <div className="content-with-footer min-h-screen bg-pale-green dark:bg-third-colour">
+    <div className="content-with-footer min-h-screen">
       <div className="flex flex-col lg:flex-row">
         {/* Mobile Accordion Navigation */}
         <div className="lg:hidden -mt-4">
@@ -51,7 +51,7 @@ export default function London2012Layout({ children, date, dateTime }: London201
         </div>
 
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:block lg:w-1/4 lg:fixed lg:left-0 lg:top-20 lg:h-screen lg:border-r lg:border-pale-green dark:lg:border-third-colour lg:pr-4 lg:py-8 lg:pl-6">
+        <aside className="hidden lg:block lg:w-1/4 lg:fixed lg:left-0 lg:top-20 lg:h-screen lg:border-r lg:border-brand-dark dark:lg:border-dark-accent lg:pr-4 lg:py-8 lg:pl-6">
           <div className="lg:sticky lg:top-0">
             <London2012Sidebar />
           </div>
