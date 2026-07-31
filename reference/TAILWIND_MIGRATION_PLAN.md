@@ -28,9 +28,9 @@ Verified via the compiled CSS bundle (correct `:where(.dark, .dark *)` selectors
 - `src/components/London2012Sidebar.tsx` — `border-brand-primary-dark` → `border-brand-dark`; and a bare `brand-primary-dark hover:brand-primary-darker` (missing the `text-` prefix entirely, so it was never a Tailwind class at all, in any version) → `text-brand-dark hover:text-brand-darker`
 - `src/components/admin/TabNav.tsx` — `hover:text-spurs-dark-accent` → `hover:text-spurs-accent`
 - Added `--color-dark-gray-medium` to `@theme` since `London2012Layout.tsx`'s `dark:text-dark-gray-medium` already had a backing CSS variable (`--dark-gray-medium`), just missing from the token list.
+- `src/components/spurs-women/PodcastCard.tsx:50` — `text-spurs-gray` matched no token and no CSS variable, but traced its accidental fallback color: with no matching utility, it was inheriting `var(--spurs-dark-text)` from `.spurs-wrapper`. `.spurs-text` (a real, already-used class elsewhere in this file) resolves to that exact same variable, so swapped to it — same rendered color, no longer a dead reference. Note the Spurs Women section has no light/dark toggle at all (see `reference/spurs-women/README.md`), so there was only one visual context to check here, not two.
 
 **Found, deliberately NOT fixed** (separate, pre-existing bugs, no clear correct answer to guess at):
-- `src/components/spurs-women/PodcastCard.tsx:50` — `text-spurs-gray` matches no token and no CSS variable. Left as-is rather than invent a color.
 - `src/components/London2012Layout.tsx:17,54` — `bg-pale-green`, `dark:bg-third-colour`, `border-pale-green`, `dark:lg:border-third-colour` have never been defined anywhere (not in the old JS config, not as CSS variables) since this component was first written. Currently invisible as a bug because an ancestor element's background shows through, but it's not intentionally transparent. Also `text-neutral-gray` on the same file's "Navigation" label doesn't match any token either.
 - `src/app/spurs-women/admin/page.tsx:373` — `bg-red-600` for a destructive-action state, with no brand equivalent to swap to (see "no error token" below).
 
@@ -79,7 +79,7 @@ Tried the obvious first step in Track A before the config bug was understood: ad
 
 1. Redo the `warning` token pilot on `regicide/page.tsx`: add a `warning` group to the `@theme` block in `globals.css` (bg/bg-light/accent/text/dark-bg/dark-border/dark-text, mirroring the `--warning-*` variables), point the banner at it, verify against the existing `.outdated-banner` styling in both themes.
 2. Sweep the remaining ~49 files using generic Tailwind palette colors; replace with `brand-*`/`spurs-*`/`dark-*` tokens where a semantic match exists.
-3. Decide what to do about the "found, deliberately not fixed" items above (`spurs-gray`, `pale-green`/`third-colour`, `neutral-gray`) — each needs an actual color decision, not a mechanical fix.
+3. Decide what to do about the remaining "found, deliberately not fixed" items above (`pale-green`/`third-colour`, `neutral-gray`) — each needs an actual color decision, not a mechanical fix.
 4. Decide on a brand error/danger token if the red-600 admin usage should match site identity rather than stay a universal "danger" red (there's a reasonable argument either way).
 5. If the cascade-layer issue (hand-written CSS beating valid Tailwind utilities on shared elements) turns out to matter beyond the one heading found so far, that's a separate, bigger piece of work — wrapping the hand-written CSS in `@layer` and re-verifying cascade order sitewide.
 6. Only after Track A is done and stable, revisit whether Track B (full CSS-to-Tailwind migration) is worth doing at all.

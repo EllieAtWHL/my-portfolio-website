@@ -47,7 +47,7 @@ export default function PodcastCard({ episode }: PodcastCardProps) {
         {episode.description}
       </p>
       
-      <div className="flex items-center justify-between text-xs text-spurs-gray mb-4">
+      <div className="flex items-center justify-between text-xs spurs-text mb-4">
         <span>{episode.duration}</span>
         <span>{episode.publishDate}</span>
       </div>
