@@ -1439,88 +1439,99 @@ export default function AdminPage() {
         )}
 
         {/* Tab Navigation */}
-        <div className="flex flex-wrap border-b border-gray-600 mb-8 gap-2">
-          <button
-            onClick={() => setActiveTab('matches')}
-            className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
-              activeTab === 'matches'
-                ? 'spurs-text'
-                : 'text-gray-300 hover:text-spurs-dark-accent'
-            }`}
-            style={{
-              backgroundColor: activeTab === 'matches' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
-              borderBottomColor: activeTab === 'matches' ? 'var(--spurs-dark-accent)' : 'transparent',
-              borderBottomWidth: activeTab === 'matches' ? '2px' : '0',
-              color: activeTab === 'matches' ? 'var(--spurs-dark-accent)' : '#d1d5db'
-            }}
-          >
-            Matches
-          </button>
-          <button
-            onClick={() => setActiveTab('teams')}
-            className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
-              activeTab === 'teams'
-                ? 'spurs-text'
-                : 'text-gray-300 hover:text-spurs-dark-accent'
-            }`}
-            style={{
-              backgroundColor: activeTab === 'teams' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
-              borderBottomColor: activeTab === 'teams' ? 'var(--spurs-dark-accent)' : 'transparent',
-              borderBottomWidth: activeTab === 'teams' ? '2px' : '0',
-              color: activeTab === 'teams' ? 'var(--spurs-dark-accent)' : '#d1d5db'
-            }}
-          >
-            Teams
-          </button>
-          <button
-            onClick={() => setActiveTab('players')}
-            className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
-              activeTab === 'players'
-                ? 'spurs-text'
-                : 'text-gray-300 hover:text-spurs-dark-accent'
-            }`}
-            style={{
-              backgroundColor: activeTab === 'players' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
-              borderBottomColor: activeTab === 'players' ? 'var(--spurs-dark-accent)' : 'transparent',
-              borderBottomWidth: activeTab === 'players' ? '2px' : '0',
-              color: activeTab === 'players' ? 'var(--spurs-dark-accent)' : '#d1d5db'
-            }}
-          >
-            Players
-          </button>
-          <button
-            onClick={() => setActiveTab('stadiums')}
-            className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
-              activeTab === 'stadiums'
-                ? 'spurs-text'
-                : 'text-gray-300 hover:text-spurs-dark-accent'
-            }`}
-            style={{
-              backgroundColor: activeTab === 'stadiums' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
-              borderBottomColor: activeTab === 'stadiums' ? 'var(--spurs-dark-accent)' : 'transparent',
-              borderBottomWidth: activeTab === 'stadiums' ? '2px' : '0',
-              color: activeTab === 'stadiums' ? 'var(--spurs-dark-accent)' : '#d1d5db'
-            }}
-          >
-            Stadiums
-          </button>
+        <div className="flex flex-wrap justify-between items-center border-b border-gray-600 mb-8 gap-2">
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setActiveTab('matches')}
+              className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
+                activeTab === 'matches'
+                  ? 'spurs-text'
+                  : 'text-gray-300 hover:text-spurs-dark-accent'
+              }`}
+              style={{
+                backgroundColor: activeTab === 'matches' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
+                borderBottomColor: activeTab === 'matches' ? 'var(--spurs-dark-accent)' : 'transparent',
+                borderBottomWidth: activeTab === 'matches' ? '2px' : '0',
+                color: activeTab === 'matches' ? 'var(--spurs-dark-accent)' : '#d1d5db'
+              }}
+            >
+              Matches
+            </button>
+            <button
+              onClick={() => setActiveTab('teams')}
+              className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
+                activeTab === 'teams'
+                  ? 'spurs-text'
+                  : 'text-gray-300 hover:text-spurs-dark-accent'
+              }`}
+              style={{
+                backgroundColor: activeTab === 'teams' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
+                borderBottomColor: activeTab === 'teams' ? 'var(--spurs-dark-accent)' : 'transparent',
+                borderBottomWidth: activeTab === 'teams' ? '2px' : '0',
+                color: activeTab === 'teams' ? 'var(--spurs-dark-accent)' : '#d1d5db'
+              }}
+            >
+              Teams
+            </button>
+            <button
+              onClick={() => setActiveTab('players')}
+              className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
+                activeTab === 'players'
+                  ? 'spurs-text'
+                  : 'text-gray-300 hover:text-spurs-dark-accent'
+              }`}
+              style={{
+                backgroundColor: activeTab === 'players' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
+                borderBottomColor: activeTab === 'players' ? 'var(--spurs-dark-accent)' : 'transparent',
+                borderBottomWidth: activeTab === 'players' ? '2px' : '0',
+                color: activeTab === 'players' ? 'var(--spurs-dark-accent)' : '#d1d5db'
+              }}
+            >
+              Players
+            </button>
+            <button
+              onClick={() => setActiveTab('stadiums')}
+              className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
+                activeTab === 'stadiums'
+                  ? 'spurs-text'
+                  : 'text-gray-300 hover:text-spurs-dark-accent'
+              }`}
+              style={{
+                backgroundColor: activeTab === 'stadiums' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
+                borderBottomColor: activeTab === 'stadiums' ? 'var(--spurs-dark-accent)' : 'transparent',
+                borderBottomWidth: activeTab === 'stadiums' ? '2px' : '0',
+                color: activeTab === 'stadiums' ? 'var(--spurs-dark-accent)' : '#d1d5db'
+              }}
+            >
+              Stadiums
+            </button>
+          </div>
+
+          {activeTab === 'matches' && !isEditMode && (
+            <Button variant="spurs" size="sm" onClick={() => (showMatchForm ? handleCancelEdit() : setShowMatchForm(true))}>
+              {showMatchForm ? 'Cancel' : '+ New Match'}
+            </Button>
+          )}
+          {activeTab === 'teams' && !isTeamEditMode && (
+            <Button variant="spurs" size="sm" onClick={() => (showTeamForm ? handleCancelEditTeam() : setShowTeamForm(true))}>
+              {showTeamForm ? 'Cancel' : '+ New Team'}
+            </Button>
+          )}
+          {activeTab === 'players' && !isPlayerEditMode && (
+            <Button variant="spurs" size="sm" onClick={() => (showPlayerForm ? handleCancelEditPlayer() : setShowPlayerForm(true))}>
+              {showPlayerForm ? 'Cancel' : '+ New Player'}
+            </Button>
+          )}
+          {activeTab === 'stadiums' && !isStadiumEditMode && (
+            <Button variant="spurs" size="sm" onClick={() => (showStadiumForm ? handleCancelEditStadium() : setShowStadiumForm(true))}>
+              {showStadiumForm ? 'Cancel' : '+ New Stadium'}
+            </Button>
+          )}
         </div>
 
         {/* Match Form */}
         {activeTab === 'matches' && (
           <>
-            {!isEditMode && (
-              <div className="mb-4">
-                <Button
-                  variant="spurs"
-                  size="sm"
-                  onClick={() => (showMatchForm ? handleCancelEdit() : setShowMatchForm(true))}
-                >
-                  {showMatchForm ? 'Cancel' : '+ New Match'}
-                </Button>
-              </div>
-            )}
-
             {isEditMode && (
               <div className="mb-4 flex space-x-2">
                 <button
@@ -1729,18 +1740,6 @@ export default function AdminPage() {
         {/* Team Form */}
         {activeTab === 'teams' && (
           <>
-            {!isTeamEditMode && (
-              <div className="mb-4">
-                <Button
-                  variant="spurs"
-                  size="sm"
-                  onClick={() => (showTeamForm ? handleCancelEditTeam() : setShowTeamForm(true))}
-                >
-                  {showTeamForm ? 'Cancel' : '+ New Team'}
-                </Button>
-              </div>
-            )}
-
             {(isTeamEditMode || showTeamForm) && (
               <TeamForm
                 teamForm={teamForm}
@@ -1763,18 +1762,6 @@ export default function AdminPage() {
         {/* Player Form */}
         {activeTab === 'players' && (
           <>
-            {!isPlayerEditMode && (
-              <div className="mb-4">
-                <Button
-                  variant="spurs"
-                  size="sm"
-                  onClick={() => (showPlayerForm ? handleCancelEditPlayer() : setShowPlayerForm(true))}
-                >
-                  {showPlayerForm ? 'Cancel' : '+ New Player'}
-                </Button>
-              </div>
-            )}
-
             {isPlayerEditMode && (
               <div className="mb-4 flex space-x-2">
                 <button
@@ -1989,18 +1976,6 @@ export default function AdminPage() {
         {/* Stadium Form */}
         {activeTab === 'stadiums' && (
           <>
-            {!isStadiumEditMode && (
-              <div className="mb-4">
-                <Button
-                  variant="spurs"
-                  size="sm"
-                  onClick={() => (showStadiumForm ? handleCancelEditStadium() : setShowStadiumForm(true))}
-                >
-                  {showStadiumForm ? 'Cancel' : '+ New Stadium'}
-                </Button>
-              </div>
-            )}
-
             {isStadiumEditMode && (
               <div className="mb-4 flex space-x-2">
                 <button
