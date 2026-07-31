@@ -144,7 +144,7 @@ Your new Button component consolidates all button patterns into a single, reusab
 
 Migration is **not** complete. As of the last audit, 13 production files still render raw `<button>` elements instead of the shared `Button` component (in addition to `Button.tsx` itself, which legitimately renders a native `<button>` internally):
 
-- `src/app/spurs-women/admin/page.tsx` (tab switchers — matches/teams/players/stadiums, match/player/stadium edit sub-tabs)
+- `src/components/admin/TabNav.tsx` (generic tab switcher, used for the admin page's matches/teams/players/stadiums tabs and edit sub-tabs — since the admin page decomposition, `src/app/spurs-women/admin/page.tsx` itself no longer renders any raw `<button>` directly)
 - `src/app/spurs-women/teams/[teamId]/TeamClient.tsx` (current/former squad tab toggle)
 - `src/components/Modal.tsx` (close button)
 - `src/components/UpdateBanner.tsx` (dismiss button)

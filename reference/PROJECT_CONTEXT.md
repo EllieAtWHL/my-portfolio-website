@@ -206,7 +206,6 @@ Guiding principles:
 **Future Phases:**
   - Performance optimization and bundle analysis
   - Documentation and deployment setup
-  - E2E testing with Playwright for critical user flows
 
 ## Testing Strategy
 
@@ -269,6 +268,9 @@ Approach:
   - Use error.tsx per route group (especially under /spurs-women) where needed.
   - Avoid try/catch in components unless handling a known failure case.
   - Prefer clear error states over silent fallbacks.
+
+Current state:
+  - `src/app/not-found.tsx` exists and is in use. No `error.tsx` files exist yet anywhere under `src/app` - the "where needed" case hasn't come up so far, not that the decision changed.
 
 Why this fits the project:
   - Next.js already provides strong primitives.
@@ -373,17 +375,17 @@ This prevents the shell from interpreting the square brackets as pattern matchin
 
 Decision (superseded):
   - This section originally decided against automated testing at MVP, relying on TypeScript + manual testing.
-  - That decision no longer holds: Jest + React Testing Library are now installed and automated testing is mandatory for new components/utilities (see "Testing Strategy" above and `reference/testing/README.md` - 172 tests across 14 suites as of the last coverage run).
+  - That decision no longer holds: Jest + React Testing Library are now installed and automated testing is mandatory for new components/utilities (see "Testing Strategy" above and `reference/testing/README.md` - 322 tests across 40 suites as of the last coverage run).
 
-Future stance:
-  - E2E testing (e.g. Playwright) for navigation sanity checks and key flows (home → Spurs Women → match page) is still not implemented - remains a future option, not current state.
+Current state:
+  - E2E testing with Playwright is now implemented: 12 spec files under `tests/` (personal-site pages plus `tests/spurs-women/*`), run via `npx playwright test` and in CI via `.github/workflows/playwright.yml` across chromium/firefox/webkit.
 
 ### Deployment Pipeline
 
 Decision:
   - Direct deployment via Vercel.
   - Git-based deploys from main branch.
-  - A lightweight GitHub Actions CI setup now exists: `.github/workflows/test.yml` runs the Jest suite and coverage on push/PR to main, and `.github/workflows/validate-manifest.yml` regenerates/validates the photo manifest and runs a production build. Neither gates the Vercel deploy itself - still no staged/enterprise-grade pipeline.
+  - A lightweight GitHub Actions CI setup now exists: `.github/workflows/ci.yml` runs lint, typecheck, the Jest suite + coverage, and a production build (as separate jobs) on push/PR to main; `.github/workflows/playwright.yml` runs the Playwright E2E suite across chromium/firefox/webkit; `.github/workflows/validate-manifest.yml` regenerates and validates the photo manifest (it does not run a production build - that's covered by `ci.yml`'s `build` job). None of these gate the Vercel deploy itself - still no staged/enterprise-grade pipeline.
 
 Rationale:
   - Solo developer
@@ -454,8 +456,10 @@ Rationale:
   - Whether the Spurs Women section should eventually be split into its own deployable unit
   - Whether analytics or content management will be added later
   - Performance monitoring and optimization strategy
-  - Testing automation approach for key user flows
   - **Layout Architecture**: Consider introducing BlogTemplate pattern for structured content sections (e.g., London 2012 blog expansion) while maintaining MainSitePage for varied portfolio pages
+
+**Resolved (cont'd):**
+  - ✅ E2E testing automation approach settled on Playwright (see "Automated Testing" above)
 
 ## Explicit Non-Goals (for Now)
 The following are intentionally out of scope for MVP:

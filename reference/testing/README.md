@@ -238,30 +238,40 @@ jest.mock('@/lib/fullstory', () => ({
 
 ## Coverage
 
-Current coverage (as of last `npm run test:coverage` run): **78.68% statements, 69.39% branches, 77.77% functions, 78.18% lines**
+Current coverage (as of last `npm run test:coverage` run): **76.49% statements, 60.09% branches, 74.63% functions, 76.26% lines**
 
 Coverage reports are generated in the `coverage/` directory when running `npm run test:coverage`.
 
 **Breakdown**:
-- Components: 100% statements, 96.72% branches, 100% functions, 100% lines (Button 100/100/100/100, Card 100/92.3/100/100, Header 100/83.33/100/100, Modal 100/100/100/100)
-- Pages: 90% statements, 100% branches, 66.66% functions, 90% lines (page.tsx)
-- lib: 96.77% statements, 93.33% branches, 100% functions, 100% lines
+- app: 90% statements, 100% branches, 66.66% functions, 90% lines (page.tsx)
+- app/spurs-women/admin: 72.09% statements, 52.4% branches, 53.33% functions, 71.87% lines (page.tsx)
+- components: 100% statements, 96.72% branches, 100% functions, 100% lines (Button 100/100/100/100, Card 100/92.3/100/100, Header 100/83.33/100/100, Modal 100/100/100/100)
+- components/admin: 77.04% statements, 84.29% branches, 70.83% functions, 76.66% lines (ColorPicker, FormField, FormWrapper, MatchForm, Pagination, PlayerForm, RelatedList, StadiumForm, TabNav, TeamForm)
+- components/admin/modals: 55% statements, 71.05% branches, 45.45% functions, 52.63% lines (FormModal is 100%; MediaModal, PlayerHistoryModal, PlayerStatsModal, StadiumNameModal are only partially covered)
+- components/admin/tables: 100% statements, 73.68% branches, 100% functions, 100% lines (DataTable, MatchesTable, PlayersTable, StadiumsTable, TeamsTable)
+- components/spurs-women: 93.02% statements, 66% branches, 80% functions, 95.23% lines (MatchNavigation, TeamPill)
+- hooks: 100% coverage (useSearchPagination.ts)
+- hooks/admin: 74.03% statements, 33.21% branches, 90% functions, 73.9% lines (useMatchesAdmin, usePlayerStatsModal, usePlayersAdmin, useStadiumsAdmin, useTeamsAdmin)
+- lib: 96.66% statements, 84.21% branches, 100% functions, 100% lines
   - admin-api.ts: 90% statements, 100% branches, 100% functions, 100% lines
+  - admin-match-payload.ts: 100% statements, 75% branches, 100% functions, 100% lines
+  - admin-stadium-names.ts: 95.65% statements, 86.36% branches, 100% functions, 100% lines
   - api-client.ts: 100% statements, 88.88% branches, 100% functions, 100% lines
   - utils.ts: 100% coverage
 - lib/data: 58.73% statements, 46.91% branches, 57.69% functions, 56.77% lines
   - cache-utils.ts: 92.3% statements, 87.5% branches, 100% functions, 91.66% lines
-  - generic-fetchers.ts: 3.03% statements, 0% branches, 0% functions, 3.03% lines (new, effectively untested)
+  - generic-fetchers.ts: 3.03% statements, 0% branches, 0% functions, 3.03% lines (still effectively untested)
   - stadiums.ts: 68.51% statements, 66.66% branches, 44.44% functions, 67.34% lines
 - lib/utils: 100% coverage (date.ts, team-colors.ts)
 - utils: 90.9% statements, 54.54% branches, 100% functions, 88.88% lines (supabase.ts)
 - API routes: Not currently tested (see API Testing Status above)
+- E2E: Not covered by this Jest/coverage report - see the Playwright suite under `tests/` (12 spec files, run via `npx playwright test` and in CI via `.github/workflows/playwright.yml`)
 
-**Test Count**: 172 tests across 14 test suites
+**Test Count**: 322 tests across 40 test suites
 **Build Status**: ✅ Production ready - builds successfully
 **Lint Status**: ✅ Only minor optimization warnings (no blocking errors)
 
-**Note**: Overall coverage dropped from a previously-recorded 88.2%/79.57%/89.13%/87.81% mainly because `lib/data/generic-fetchers.ts` was added with no tests yet (3.03% statement coverage), pulling down the `lib/data` and overall averages.
+**Note**: Overall coverage (76.49%/60.09%/74.63%/76.26%) is lower than an earlier-recorded 78.68%/69.39%/77.77%/78.18% snapshot, mainly because the admin page decomposition (see `reference/spurs-women/admin/ADMIN_SYSTEM_DOCUMENTATION.md`) added a large volume of new hooks/components/modals - several of which (e.g. `PlayerForm.tsx`, `StadiumForm.tsx`, `MediaModal.tsx`, `PlayerStatsModal.tsx`, `useStadiumsAdmin.ts`) are only partially tested - pulling down the overall averages even though total test count roughly doubled (172 → 322 tests, 14 → 40 suites).
 
 ## Recent Testing Progress
 
