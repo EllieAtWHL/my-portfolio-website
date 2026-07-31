@@ -15,7 +15,9 @@ src/styles/
 ├── about-me.css          # About-me page specific styles
 ├── experience.css        # Experience page specific styles
 ├── projects.css          # Projects page specific styles
-└── blog.css              # Blog/Lightning Rollout page specific styles
+├── blog.css              # Blog/Lightning Rollout page specific styles
+├── spurs-theme.css       # Spurs Women section theme styles
+└── not-found.css         # 404 page specific styles
 ```
 
 ## File Structure and Responsibilities
@@ -77,6 +79,21 @@ src/styles/
   - Dark mode variants
   - Responsive breakpoints
 - **Rule:** Only styles used exclusively on blog pages
+
+### `spurs-theme.css`
+- **Purpose:** Spurs Women section theme styles
+- **Contains:**
+  - `.spurs-wrapper` and other Spurs Women-specific theme classes
+  - Imported by `src/app/spurs-women/layout.tsx` (not `globals.css`), so it only loads for the `/spurs-women` route tree
+- **Rule:** Only styles used exclusively within the Spurs Women section
+
+### `not-found.css`
+- **Purpose:** 404 Not Found page specific styles (main site, green theme with football game)
+- **Contains:**
+  - `.not-found-container` and related layout/animation classes
+  - Dark mode variants
+  - Responsive breakpoints
+- **Rule:** Only styles used exclusively on the not-found page
 
 ### `globals.css`
 - **Purpose:** Entry point for CSS imports and truly global utilities

@@ -108,8 +108,11 @@ npm run validate-manifest
 There is **no** `predev`/`prebuild` hook - manifest generation is a separate,
 explicit step, not automatically triggered by `npm run dev` or `npm run
 build`. In CI, `.github/workflows/validate-manifest.yml` runs
-`generate-external-manifest` then `validate-manifest` before `npm run build`,
-on every push/PR to main.
+`generate-external-manifest` then `validate-manifest` and uploads the
+manifest as an artifact - it does **not** run `npm run build` itself (that's
+a separate job in `.github/workflows/ci.yml`). It triggers on push to
+main/develop and PRs to main, but only when the change touches the manifest
+script, validator, or manifest file itself (path-filtered, not every push/PR).
 
 ### 5. Test locally, then deploy
 
