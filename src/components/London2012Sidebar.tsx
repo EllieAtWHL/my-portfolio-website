@@ -45,11 +45,11 @@ export default function London2012Sidebar({ mode = 'small', showHeader = true }:
         {BLOGPOST_MAP.map((post) => (
           <li key={post.url}>
             {pathname === post.url ? (
-              <span className="active-page-text font-bold text-lg border-l-4 border-brand-primary-dark dark:border-dark-accent pl-3 py-1 block">{post.title}</span>
+              <span className="active-page-text font-bold text-lg border-l-4 border-brand-dark dark:border-dark-accent pl-3 py-1 block">{post.title}</span>
             ) : (
               <Link 
                 href={post.url}
-                className="brand-primary-dark hover:brand-primary-darker transition-colors"
+                className="text-brand-dark hover:text-brand-darker transition-colors"
               >
                 {post.title}
               </Link>

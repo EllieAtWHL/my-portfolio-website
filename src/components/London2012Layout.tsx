@@ -23,13 +23,13 @@ export default function London2012Layout({ children, date, dateTime }: London201
             className="w-full flex items-center justify-between p-4 mobile-nav-button rounded-lg hover:bg-gray-50 dark:hover:bg-dark-bg-2 transition-colors"
           >
             <div className="flex items-center gap-3">
-              <h3 className="text-lg font-bold text-brand-primary-dark dark:text-dark-text">
+              <h3 className="text-lg font-bold text-brand-dark dark:text-dark-text">
                 My Olympic Journey
               </h3>
               <span className="text-sm text-neutral-gray dark:text-dark-gray-medium">Navigation</span>
             </div>
             <svg
-              className="w-5 h-5 text-brand-primary-dark dark:text-dark-text transition-transform duration-200"
+              className="w-5 h-5 text-brand-dark dark:text-dark-text transition-transform duration-200"
               style={{ transform: isNavigationOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
               fill="none"
               stroke="currentColor"
@@ -44,7 +44,7 @@ export default function London2012Layout({ children, date, dateTime }: London201
             overflow-hidden transition-all duration-300 ease-in-out
             ${isNavigationOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}
           `}>
-            <div className="p-4 bg-white dark:bg-dark-bg-1 rounded-b-lg border-x border-b border-brand-primary-dark dark:border-dark-accent mobile-sidebar-content">
+            <div className="p-4 bg-white dark:bg-dark-bg-1 rounded-b-lg border-x border-b border-brand-dark dark:border-dark-accent mobile-sidebar-content">
               <London2012Sidebar showHeader={false} />
             </div>
           </div>

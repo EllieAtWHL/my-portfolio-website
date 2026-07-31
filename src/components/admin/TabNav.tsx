@@ -25,7 +25,7 @@ export function TabNav<K extends string>({
             key={tab.key}
             onClick={() => onChange(tab.key)}
             className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
-              isActive ? 'spurs-text' : 'text-gray-300 hover:text-spurs-dark-accent'
+              isActive ? 'spurs-text' : 'text-gray-300 hover:text-spurs-accent'
             }`}
             style={{
               backgroundColor: isActive ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
