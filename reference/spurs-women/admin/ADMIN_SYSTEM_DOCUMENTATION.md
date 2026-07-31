@@ -315,7 +315,7 @@ Each of the four top-level tabs (Match, Team, Player, Stadium) displays a pagina
 - 20 records per page
 - Displays relevant fields for each entity type
 
-Related-record lists (Media, Player Stats, Player History, Stadium Name) render in full, unpaginated, inside their parent record's edit view - they show related data such as player names in the player stats list.
+Related-record lists (Media, Player Stats, Player History, Stadium Name) render in full, unpaginated, inside their parent record's edit view - they show related data such as player names in the player stats list, and the match opponent (derived from the match's home/away teams relative to the stat's `team_id`) in a player's Player Stats list.
 
 ### Pagination
 - Each top-level tab tracks its own current page/total pages, independently of the others

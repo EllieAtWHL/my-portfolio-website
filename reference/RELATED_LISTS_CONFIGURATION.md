@@ -10,7 +10,7 @@ The related lists feature displays child records (media and player_stats) associ
 
 The related lists are implemented in:
 - Component: `/src/components/admin/RelatedList.tsx`
-- Usage: `/src/app/spurs-women/admin/page.tsx` - there are 5 `<RelatedList>` instances: Media (~line 1617, grouped by `media_type`), Player Stats (~line 1661), Player History (~line 1921), and Stadium Names (~line 2084). Line numbers shift as the file changes; search for `<RelatedList` to find current locations.
+- Usage: `/src/app/spurs-women/admin/page.tsx` - there are 5 `<RelatedList>` instances: Media (grouped by `media_type`, shown under a match), Player Stats (shown under a match), Player Stats (shown under a player - this one has the extra Opponent column, see below), Player History (shown under a player), and Stadium Names (shown under a stadium). Line numbers shift as the file changes; search for `<RelatedList` to find current locations.
 
 ## Configuring Media Related Lists
 
@@ -91,6 +91,28 @@ Each column object has:
 - `key`: The field name from the PlayerStats interface
 - `label`: The display label for the column header
 - `render` (optional): A custom render function for complex display logic
+- `id` (optional): Overrides the React key for this column - required when two columns derive from the same `key` (see below)
+
+The player-related Player Stats list (shown in a player's edit view, `relatedPlayerStatsForPlayer` in the admin page) adds an Opponent column that reads `match_id` but renders the *other* team from the match rather than the match itself:
+
+```typescript
+{
+  key: 'match_id',
+  id: 'opponent',
+  label: 'Opponent',
+  render: (value: unknown, stat: PlayerStats) => {
+    const match = matches.find(m => m.id === (value as string));
+    if (!match) return '-';
+    const opponentTeamId = match.home_team_id === stat.team_id
+      ? match.away_team_id
+      : match.home_team_id;
+    const opponentTeam = teams.find(t => t.id === opponentTeamId);
+    return opponentTeam?.short_name || opponentTeam?.name || '-';
+  }
+}
+```
+
+Because this column shares `key: 'match_id'` with the existing Match column, it needs its own `id` - otherwise `RelatedList` uses `key` as the React key for both the header (`<th>`) and each cell (`<td>`), and two columns with the same key produce duplicate React keys in the same row.
 
 ### Available Player Stats Fields
 
@@ -233,6 +255,13 @@ interface RelatedListProps<T> {
   onNew?: () => void;        // Callback for "New" button
   onRecordClick?: (record: T) => void; // Callback for clicking a record
   emptyMessage?: string;      // Message when no records exist
+}
+
+interface ColumnConfig<T> {
+  key: keyof T;
+  label: string;
+  render?: (value: unknown, record: T) => React.ReactNode;
+  id?: string; // Overrides the React key; required if another column shares the same `key`
 }
 ```
 
