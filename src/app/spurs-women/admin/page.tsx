@@ -1409,10 +1409,10 @@ export default function AdminPage() {
   return (
     <div className="p-4 pb-20">
       <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-8">
           <h1 className="spurs-text text-3xl font-bold">Spurs Women Admin</h1>
           {user && (
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-4">
               <Link href="/spurs-women/profile" className="text-sm hover:opacity-80 transition-opacity" style={{ color: 'var(--spurs-dark-accent)' }}>
                 {user.email}
               </Link>
