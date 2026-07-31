@@ -1,0 +1,627 @@
+openapi: 3.0.3
+info:
+  title: EllieAtWHL API
+  description: |
+    Public API for Tottenham Hotspur Women's content including news, videos, podcasts, seasons, and match data.
+
+    This API provides access to aggregated content from multiple sources (RSS feeds, YouTube, podcast platforms) alongside first-party match/season data.
+
+    ## Authentication
+    All endpoints documented here are publicly accessible - no authentication required.
+
+    The site also exposes `/cache/revalidate` and `/cache/revalidate-all`, which require a Bearer API key and are not part of this public API.
+
+    ## Rate Limiting
+    Currently no rate limiting is implemented. Please use the APIs responsibly.
+
+    ## Caching
+    Only the database-backed endpoints are cached server-side:
+    - News: not cached (fetched live)
+    - Videos: not cached (fetched live)
+    - Podcasts: not cached (fetched live)
+    - Upcoming/Previous Matches: 30 minutes
+    - Seasons: 24 hours
+  version: 1.0.0
+  contact:
+    name: API Support
+    url: https://www.ellieatwhl.co.uk
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://www.ellieatwhl.co.uk/api
+    description: Production server
+
+paths:
+  /spurs-women-news:
+    get:
+      tags:
+        - News
+      summary: Get Spurs Women news
+      description: |
+        Fetches the latest Tottenham Hotspur Women news by aggregating and filtering multiple RSS sources live on each request.
+
+        Sources include:
+        - Spurs Women Blog
+        - Veinte Futbol
+        - Spurs Across the Pond
+        - BBC Sport
+        - WSL Full-Time
+        - She Kicks
+        - The Guardian
+        - Cartilage Free Captain
+        - Girls on the Ball
+
+        Content is filtered to include only Spurs Women related articles.
+      operationId: getSpursWomenNews
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsResponse'
+              examples:
+                success:
+                  summary: Example news response
+                  value:
+                    news:
+                      - title: "Spurs Women sign new striker"
+                        link: "https://example.com/spurs-women-sign-striker"
+                        pubDate: "Wed, 15 Feb 2026 10:30:00 GMT"
+                        content: "Full article content about the new signing..."
+                        contentSnippet: "Tottenham Hotspur Women have announced the signing of a new striker..."
+                        guid: "article-123"
+                        isoDate: "2026-02-15T10:30:00.000Z"
+                        source: "BBC Sport"
+                        categories: ["Women's Team"]
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /spurs-women-videos:
+    get:
+      tags:
+        - Videos
+      summary: Get Spurs Women videos
+      description: |
+        Fetches the latest Tottenham Hotspur Women videos from the official YouTube channel, live on each request.
+
+        Returns up to 6 most recent videos with thumbnails and metadata.
+      operationId: getSpursWomenVideos
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideosResponse'
+              examples:
+                success:
+                  summary: Example videos response
+                  value:
+                    videos:
+                      - title: "Match Highlights: Spurs vs Arsenal"
+                        link: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                        pubDate: "Wed, 15 Feb 2026 10:30:00 GMT"
+                        videoId: "dQw4w9WgXcQ"
+                        thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg"
+                        description: "Extended highlights from today's match..."
+                    count: 6
+                    lastUpdated: "2026-02-15T10:30:00.000Z"
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /podcasts:
+    get:
+      tags:
+        - Podcasts
+      summary: Get Spurs Women podcasts
+      description: |
+        Fetches the latest episode from each Spurs Women related podcast, live on each request.
+
+        Currently includes:
+        - N17 Women (fan-produced podcast)
+        - Hometown Glory (Spurs culture podcast with women's team coverage)
+      operationId: getPodcasts
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PodcastsResponse'
+              examples:
+                success:
+                  summary: Example podcasts response
+                  value:
+                    episodes:
+                      - title: "Season Preview: What to Expect"
+                        episodeNumber: "N17 Women"
+                        description: "We preview the upcoming season with analysis and predictions..."
+                        duration: "45:30"
+                        publishDate: "15 Feb 2026"
+                        url: "https://shows.acast.com/n17women/episodes/season-preview"
+                        podcastName: "N17 Women"
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /cache/matches/upcoming:
+    get:
+      tags:
+        - Matches
+      summary: Get upcoming matches
+      description: |
+        Fetches upcoming Tottenham Hotspur Women matches, soonest first.
+
+        Despite the `/cache/` path segment (shared with the internal, key-protected cache-management routes), this endpoint itself is public and unauthenticated.
+      operationId: getUpcomingMatches
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          description: Number of matches to return
+          schema:
+            type: integer
+            default: 3
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchesResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /cache/matches/previous:
+    get:
+      tags:
+        - Matches
+      summary: Get previous matches
+      description: |
+        Fetches previous Tottenham Hotspur Women matches, most recent first. Same response shape as `/cache/matches/upcoming`, typically with scores and match statistics populated.
+      operationId: getPreviousMatches
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          description: Number of matches to return
+          schema:
+            type: integer
+            default: 3
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchesResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /seasons:
+    get:
+      tags:
+        - Seasons
+      summary: Get seasons data
+      description: |
+        Fetches all seasons with match counts.
+
+        Returns every season with a count of matches recorded for it, sorted most recent first. There is no "active season" flag in the response.
+      operationId: getSeasons
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeasonsResponse'
+              examples:
+                success:
+                  summary: Example seasons response
+                  value:
+                    seasons:
+                      - id: 12
+                        name: "2025-26"
+                        match_count: 18
+                      - id: 11
+                        name: "2024-25"
+                        match_count: 25
+                    count: 5
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    NewsArticle:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Article title
+          example: "Spurs Women sign new striker"
+        link:
+          type: string
+          format: uri
+          description: URL to the full article
+          example: "https://example.com/spurs-women-sign-striker"
+        pubDate:
+          type: string
+          description: Publication date in RSS format
+          example: "Wed, 15 Feb 2026 10:30:00 GMT"
+        content:
+          type: string
+          description: Full article content (may contain HTML)
+          example: "<p>Full article content about the new signing...</p>"
+        contentSnippet:
+          type: string
+          description: Plain text summary of the article
+          example: "Tottenham Hotspur Women have announced the signing of a new striker..."
+        guid:
+          type: string
+          description: Unique identifier for the article
+          example: "article-123"
+        isoDate:
+          type: string
+          format: date-time
+          description: Publication date in ISO 8601 format
+          example: "2026-02-15T10:30:00.000Z"
+        source:
+          type: string
+          description: Source of the article
+          example: "BBC Sport"
+        categories:
+          type: array
+          items:
+            type: string
+          description: RSS categories, when the source feed provides them. Empty array otherwise.
+          example: ["Women's Team"]
+      required:
+        - title
+        - link
+        - pubDate
+        - content
+        - contentSnippet
+        - guid
+        - isoDate
+
+    NewsResponse:
+      type: object
+      properties:
+        news:
+          type: array
+          items:
+            $ref: '#/components/schemas/NewsArticle'
+          description: Array of up to 20 news articles, newest first
+      required:
+        - news
+
+    Video:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Video title
+          example: "Match Highlights: Spurs vs Arsenal"
+        link:
+          type: string
+          format: uri
+          description: YouTube video URL
+          example: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+        pubDate:
+          type: string
+          description: Publication date in RSS format
+          example: "Wed, 15 Feb 2026 10:30:00 GMT"
+        videoId:
+          type: string
+          description: YouTube video ID
+          example: "dQw4w9WgXcQ"
+        thumbnail:
+          type: string
+          format: uri
+          description: URL to video thumbnail
+          example: "https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg"
+        description:
+          type: string
+          description: Video description
+          example: "Extended highlights from today's match..."
+      required:
+        - title
+        - link
+        - pubDate
+        - videoId
+        - thumbnail
+        - description
+
+    VideosResponse:
+      type: object
+      properties:
+        videos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Video'
+          description: Array of up to 6 videos
+        count:
+          type: integer
+          description: Number of videos returned
+          example: 6
+        lastUpdated:
+          type: string
+          format: date-time
+          description: Timestamp the response was generated
+          example: "2026-02-15T10:30:00.000Z"
+      required:
+        - videos
+        - count
+        - lastUpdated
+
+    PodcastEpisode:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Episode title
+          example: "Season Preview: What to Expect"
+        episodeNumber:
+          type: string
+          description: Currently just the podcast's name, not a numbered episode identifier
+          example: "N17 Women"
+        description:
+          type: string
+          description: Episode description
+          example: "We preview the upcoming season with analysis and predictions..."
+        duration:
+          type: string
+          description: Episode duration in MM:SS or HH:MM:SS format
+          example: "45:30"
+        publishDate:
+          type: string
+          description: Publication date in readable format
+          example: "15 Feb 2026"
+        url:
+          type: string
+          format: uri
+          description: URL to the episode
+          example: "https://shows.acast.com/n17women/episodes/season-preview"
+        podcastName:
+          type: string
+          description: Name of the podcast
+          example: "N17 Women"
+      required:
+        - title
+        - episodeNumber
+        - description
+        - duration
+        - publishDate
+        - url
+        - podcastName
+
+    PodcastsResponse:
+      type: object
+      properties:
+        episodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/PodcastEpisode'
+          description: Latest episode from each configured podcast
+      required:
+        - episodes
+
+    Team:
+      type: object
+      nullable: true
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          example: "Tottenham Hotspur"
+        short_name:
+          type: string
+          example: "Spurs"
+        primary_color:
+          type: string
+          nullable: true
+          example: "#132257"
+        secondary_color:
+          type: string
+          nullable: true
+          example: "#ffffff"
+        is_tottenham:
+          type: boolean
+
+    Competition:
+      type: object
+      nullable: true
+      properties:
+        name:
+          type: string
+          example: "Women's Super League"
+        icon_svg:
+          type: string
+          nullable: true
+
+    Match:
+      type: object
+      description: Raw match record from the database. Score/statistics fields are null until played or entered.
+      properties:
+        id:
+          type: string
+        date:
+          type: string
+          format: date-time
+        kickoff_time:
+          type: string
+          nullable: true
+        home_team:
+          $ref: '#/components/schemas/Team'
+        away_team:
+          $ref: '#/components/schemas/Team'
+        spurs_score:
+          type: integer
+          nullable: true
+        opponent_score:
+          type: integer
+          nullable: true
+        spurs_score_aet:
+          type: integer
+          nullable: true
+          description: Score after extra time, if applicable
+        opponent_score_aet:
+          type: integer
+          nullable: true
+        spurs_score_pens:
+          type: integer
+          nullable: true
+          description: Penalty shoot-out score, if applicable
+        opponent_score_pens:
+          type: integer
+          nullable: true
+        attended:
+          type: boolean
+        is_home_match:
+          type: boolean
+        is_neutral_venue:
+          type: boolean
+        stadium_id:
+          type: string
+        stadium_display_name:
+          type: string
+          nullable: true
+        stadium_slug:
+          type: string
+          nullable: true
+        attendance:
+          type: integer
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        competitions:
+          $ref: '#/components/schemas/Competition'
+        season_id:
+          type: integer
+        home_possession:
+          type: number
+          nullable: true
+        away_possession:
+          type: number
+          nullable: true
+        home_total_shots:
+          type: integer
+          nullable: true
+        away_total_shots:
+          type: integer
+          nullable: true
+        home_shots_on_target:
+          type: integer
+          nullable: true
+        away_shots_on_target:
+          type: integer
+          nullable: true
+        home_corners:
+          type: integer
+          nullable: true
+        away_corners:
+          type: integer
+          nullable: true
+      required:
+        - id
+        - date
+        - attended
+        - is_home_match
+        - is_neutral_venue
+        - stadium_id
+        - season_id
+
+    MatchesResponse:
+      type: object
+      properties:
+        matches:
+          type: array
+          items:
+            $ref: '#/components/schemas/Match'
+      required:
+        - matches
+
+    Season:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Season identifier
+          example: 12
+        name:
+          type: string
+          description: Season display name
+          example: "2025-26"
+        match_count:
+          type: integer
+          description: Number of matches recorded for the season
+          example: 18
+      required:
+        - id
+        - name
+
+    SeasonsResponse:
+      type: object
+      properties:
+        seasons:
+          type: array
+          items:
+            $ref: '#/components/schemas/Season'
+          description: Array of seasons
+        count:
+          type: integer
+          description: Number of seasons returned
+          example: 5
+      required:
+        - seasons
+        - count
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error description
+          example: "Failed to fetch news"
+      required:
+        - error
+
+tags:
+  - name: News
+    description: News articles from multiple RSS sources
+  - name: Videos
+    description: YouTube videos from the official channel
+  - name: Podcasts
+    description: Podcast episodes from Spurs Women shows
+  - name: Matches
+    description: Upcoming and previous match data
+  - name: Seasons
+    description: Season data with match statistics
