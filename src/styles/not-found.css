@@ -43,9 +43,9 @@
 .post {
   position: absolute;
   width: 12px;
-  background: #c8c8c8;
+  background: var(--goalpost-gray);
   border-radius: 6px;
-  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 2px 2px 4px var(--shadow-dark-medium);
 }
 
 .left-post {
@@ -66,9 +66,9 @@
   left: 0;
   right: 0;
   height: 12px;
-  background: #c8c8c8;
+  background: var(--goalpost-gray);
   border-radius: 6px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 8px var(--shadow-dark-medium);
 }
 
 .net {
@@ -78,8 +78,8 @@
   right: 12px;
   bottom: 0;
   background: 
-    linear-gradient(rgba(255, 255, 255, 0.3) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.3) 1px, transparent 1px),
+    linear-gradient(var(--white-opacity-30) 1px, transparent 1px),
+    linear-gradient(90deg, var(--white-opacity-30) 1px, transparent 1px),
     var(--brand-opacity-10);
   background-size: 8px 8px;
   border-radius: 0 0 4px 4px;
@@ -87,8 +87,8 @@
 
 .dark .net {
   background: 
-    linear-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.2) 1px, transparent 1px),
+    linear-gradient(var(--white-opacity-20) 1px, transparent 1px),
+    linear-gradient(90deg, var(--white-opacity-20) 1px, transparent 1px),
     var(--spurs-opacity-15);
   background-size: 8px 8px;
 }

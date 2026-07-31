@@ -381,7 +381,7 @@ input:checked + .slider:before {
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: linear-gradient(135deg, var(--warning-bg) 0%, #ffeeba 100%);
+  background: linear-gradient(135deg, var(--warning-bg) 0%, var(--warning-bg-light) 100%);
   border: 1px solid var(--warning-border);
   border-left: 4px solid var(--warning-accent);
   border-radius: 12px;
@@ -454,7 +454,7 @@ input:checked + .slider:before {
 
 .orgs-table th {
   background: var(--brand-primary-dark);
-  color: #ffffff;
+  color: var(--bg-white);
   font-weight: 600;
   font-size: 0.9rem;
   text-transform: uppercase;
@@ -517,7 +517,7 @@ input:checked + .slider:before {
 
 .dark .orgs-table th {
   background: var(--dark-accent);
-  color: #061506;
+  color: var(--dark-text-darker);
 }
 
 .dark .orgs-table tbody tr:hover {

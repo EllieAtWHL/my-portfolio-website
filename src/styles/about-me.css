@@ -267,9 +267,9 @@
 }
 
 .dark .accent-card {
-  background: rgba(6, 21, 6, 0.5) !important;
+  background: var(--dark-bg-opacity-50) !important;
   border-left-color: var(--dark-accent) !important;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 2px 16px var(--shadow-dark-medium) !important;
 }
 
 .dark .accent-card h3 {
