@@ -226,6 +226,12 @@ export default function AdminPage() {
   const [showExtraTimeSection, setShowExtraTimeSection] = useState(false);
   const [showStatsSection, setShowStatsSection] = useState(false);
 
+  // Create-form visibility state (forms are hidden until "New" is clicked, or an edit is started)
+  const [showMatchForm, setShowMatchForm] = useState(false);
+  const [showTeamForm, setShowTeamForm] = useState(false);
+  const [showPlayerForm, setShowPlayerForm] = useState(false);
+  const [showStadiumForm, setShowStadiumForm] = useState(false);
+
   // Match edit tab state
   const [matchEditTab, setMatchEditTab] = useState<'details' | 'related'>('details');
 
@@ -570,6 +576,12 @@ export default function AdminPage() {
       setIsStadiumEditMode(false);
       setEditingStadiumId(null);
     }
+
+    // Hide all create forms when switching tabs
+    setShowMatchForm(false);
+    setShowTeamForm(false);
+    setShowPlayerForm(false);
+    setShowStadiumForm(false);
   }
 
   // Fetch recent records whenever the active tab changes. fetchRecentRecords
@@ -732,6 +744,7 @@ export default function AdminPage() {
 
   const handleEditMatch = async (match: Match) => {
     setIsEditMode(true);
+    setShowMatchForm(true);
     setEditingMatchId(match.id);
     setMatchEditTab('details');
     window.scrollTo({
@@ -809,6 +822,7 @@ export default function AdminPage() {
 
   const handleCancelEdit = () => {
     setIsEditMode(false);
+    setShowMatchForm(false);
     setEditingMatchId(null);
     setShowExtraTimeSection(false);
     setShowStatsSection(false);
@@ -888,6 +902,7 @@ export default function AdminPage() {
 
   const handleEditTeam = (team: Team) => {
     setIsTeamEditMode(true);
+    setShowTeamForm(true);
     setEditingTeamId(team.id);
     window.scrollTo({
       top: 250,
@@ -905,6 +920,7 @@ export default function AdminPage() {
 
   const handleCancelEditTeam = () => {
     setIsTeamEditMode(false);
+    setShowTeamForm(false);
     setEditingTeamId(null);
     setTeamForm({
       name: '',
@@ -938,6 +954,7 @@ export default function AdminPage() {
 
   const handleEditPlayer = async (player: Player) => {
     setIsPlayerEditMode(true);
+    setShowPlayerForm(true);
     setEditingPlayerId(player.id);
     setPlayerEditTab('details');
     window.scrollTo({
@@ -980,6 +997,7 @@ export default function AdminPage() {
 
   const handleCancelEditPlayer = () => {
     setIsPlayerEditMode(false);
+    setShowPlayerForm(false);
     setEditingPlayerId(null);
     setPlayerForm({
       first_name: '',
@@ -1072,6 +1090,7 @@ export default function AdminPage() {
 
   const handleEditStadium = async (stadium: Stadium) => {
     setIsStadiumEditMode(true);
+    setShowStadiumForm(true);
     setEditingStadiumId(stadium.id);
     setStadiumEditTab('details');
     window.scrollTo({
@@ -1108,6 +1127,7 @@ export default function AdminPage() {
 
   const handleCancelEditStadium = () => {
     setIsStadiumEditMode(false);
+    setShowStadiumForm(false);
     setEditingStadiumId(null);
     setStadiumForm({
       name: '',
@@ -1434,7 +1454,7 @@ export default function AdminPage() {
               color: activeTab === 'matches' ? 'var(--spurs-dark-accent)' : '#d1d5db'
             }}
           >
-            Add Match
+            Matches
           </button>
           <button
             onClick={() => setActiveTab('teams')}
@@ -1450,7 +1470,7 @@ export default function AdminPage() {
               color: activeTab === 'teams' ? 'var(--spurs-dark-accent)' : '#d1d5db'
             }}
           >
-            Add Team
+            Teams
           </button>
           <button
             onClick={() => setActiveTab('players')}
@@ -1466,7 +1486,7 @@ export default function AdminPage() {
               color: activeTab === 'players' ? 'var(--spurs-dark-accent)' : '#d1d5db'
             }}
           >
-            Add Player
+            Players
           </button>
           <button
             onClick={() => setActiveTab('stadiums')}
@@ -1482,13 +1502,25 @@ export default function AdminPage() {
               color: activeTab === 'stadiums' ? 'var(--spurs-dark-accent)' : '#d1d5db'
             }}
           >
-            Add Stadium
+            Stadiums
           </button>
         </div>
 
         {/* Match Form */}
         {activeTab === 'matches' && (
           <>
+            {!isEditMode && (
+              <div className="mb-4">
+                <Button
+                  variant="spurs"
+                  size="sm"
+                  onClick={() => (showMatchForm ? handleCancelEdit() : setShowMatchForm(true))}
+                >
+                  {showMatchForm ? 'Cancel' : '+ New Match'}
+                </Button>
+              </div>
+            )}
+
             {isEditMode && (
               <div className="mb-4 flex space-x-2">
                 <button
@@ -1526,7 +1558,7 @@ export default function AdminPage() {
               </div>
             )}
             
-            {matchEditTab === 'details' && (
+            {matchEditTab === 'details' && (isEditMode || showMatchForm) && (
               <MatchForm
                 matchForm={matchForm}
                 setMatchForm={setMatchForm}
@@ -1696,25 +1728,53 @@ export default function AdminPage() {
 
         {/* Team Form */}
         {activeTab === 'teams' && (
-          <TeamForm
-            teamForm={teamForm}
-            setTeamForm={setTeamForm}
-            isTeamEditMode={isTeamEditMode}
-            editingTeamId={editingTeamId}
-            loading={loading}
-            onSubmit={handleTeamSubmit}
-            onDelete={() => {
-              if (editingTeamId && confirm('Are you sure you want to delete this team?')) {
-                handleDeleteTeam(editingTeamId);
-              }
-            }}
-            onCancel={handleCancelEditTeam}
-          />
+          <>
+            {!isTeamEditMode && (
+              <div className="mb-4">
+                <Button
+                  variant="spurs"
+                  size="sm"
+                  onClick={() => (showTeamForm ? handleCancelEditTeam() : setShowTeamForm(true))}
+                >
+                  {showTeamForm ? 'Cancel' : '+ New Team'}
+                </Button>
+              </div>
+            )}
+
+            {(isTeamEditMode || showTeamForm) && (
+              <TeamForm
+                teamForm={teamForm}
+                setTeamForm={setTeamForm}
+                isTeamEditMode={isTeamEditMode}
+                editingTeamId={editingTeamId}
+                loading={loading}
+                onSubmit={handleTeamSubmit}
+                onDelete={() => {
+                  if (editingTeamId && confirm('Are you sure you want to delete this team?')) {
+                    handleDeleteTeam(editingTeamId);
+                  }
+                }}
+                onCancel={handleCancelEditTeam}
+              />
+            )}
+          </>
         )}
 
         {/* Player Form */}
         {activeTab === 'players' && (
           <>
+            {!isPlayerEditMode && (
+              <div className="mb-4">
+                <Button
+                  variant="spurs"
+                  size="sm"
+                  onClick={() => (showPlayerForm ? handleCancelEditPlayer() : setShowPlayerForm(true))}
+                >
+                  {showPlayerForm ? 'Cancel' : '+ New Player'}
+                </Button>
+              </div>
+            )}
+
             {isPlayerEditMode && (
               <div className="mb-4 flex space-x-2">
                 <button
@@ -1752,7 +1812,7 @@ export default function AdminPage() {
               </div>
             )}
 
-            {playerEditTab === 'details' && (
+            {playerEditTab === 'details' && (isPlayerEditMode || showPlayerForm) && (
               <PlayerForm
                 playerForm={playerForm}
                 setPlayerForm={setPlayerForm}
@@ -1915,6 +1975,18 @@ export default function AdminPage() {
         {/* Stadium Form */}
         {activeTab === 'stadiums' && (
           <>
+            {!isStadiumEditMode && (
+              <div className="mb-4">
+                <Button
+                  variant="spurs"
+                  size="sm"
+                  onClick={() => (showStadiumForm ? handleCancelEditStadium() : setShowStadiumForm(true))}
+                >
+                  {showStadiumForm ? 'Cancel' : '+ New Stadium'}
+                </Button>
+              </div>
+            )}
+
             {isStadiumEditMode && (
               <div className="mb-4 flex space-x-2">
                 <button
@@ -1952,7 +2024,7 @@ export default function AdminPage() {
               </div>
             )}
 
-            {stadiumEditTab === 'details' && (
+            {stadiumEditTab === 'details' && (isStadiumEditMode || showStadiumForm) && (
               <StadiumForm
                 teams={teams}
                 stadiumForm={stadiumForm}

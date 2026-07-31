@@ -278,7 +278,7 @@ The admin system manages the following entities:
 ## Admin UI Features
 
 ### Tabbed Interface
-The admin page has four top-level tabs - Match, Team, Player, Stadium - each with its own paginated table and full add/edit/delete form. Media, Player Stats, Player History, and Stadium Name aren't separate tabs; they're related-record lists (unpaginated) shown inside a Match/Player/Stadium's edit view, each with its own add/edit/delete modal. All eight entity types now support add/edit/delete:
+The admin page has four top-level tabs - Matches, Teams, Players, Stadiums - each with its own paginated table and full add/edit/delete form. The create form is hidden by default; a "+ New" button reveals it (and toggles to "Cancel" to hide it again), while clicking an existing record in the table opens the same form already populated for editing. Media, Player Stats, Player History, and Stadium Name aren't separate tabs; they're related-record lists (unpaginated) shown inside a Match/Player/Stadium's edit view, each with its own add/edit/delete modal. All eight entity types now support add/edit/delete:
 - **Match** - Add/edit/delete match records
 - **Media** - Add/edit/delete media entries (grouped by media type, as related records under a match)
 - **Team** - Add/edit/delete teams
