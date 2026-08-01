@@ -35,16 +35,20 @@ export default function MatchNavigation({
     return team?.short_name || team?.name || 'Unknown Team';
   };
 
-  // Swaps the directional arrow for a same-size spinner in place, so the
-  // button's row layout (and height) never changes between states.
+  // Pulses the arrow in place while its navigation is pending, rather than
+  // swapping in a separate spinner element - keeps the button's row layout
+  // (and height) stable, and avoids a rotating spinner in favour of a calmer
+  // pulse, per the design system's loading-state guidance.
   const renderNavIcon = (direction: 'previous' | 'next', sizeClasses: string) => {
-    if (isPending && pendingDirection === direction) {
-      return <span className={`${sizeClasses} inline-block animate-spin rounded-full border-b-2 border-current`} />;
-    }
-
+    const isLoading = isPending && pendingDirection === direction;
     const path = direction === 'previous' ? 'M15 19l-7-7 7-7' : 'M9 5l7 7-7 7';
     return (
-      <svg className={sizeClasses} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg
+        className={`${sizeClasses} ${isLoading ? 'animate-pulse motion-reduce:animate-none' : ''}`}
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={path} />
       </svg>
     );
