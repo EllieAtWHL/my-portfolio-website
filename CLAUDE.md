@@ -10,6 +10,10 @@ This is a personal, non-commercial Next.js site that consolidates Ellie's person
 
 Because the Spurs Women section is an unofficial fan site: avoid using official club logos/crests/branding as primary design elements, prefer original or licensed imagery, and don't create visuals that could read as official merchandise or marketing material.
 
+## Working conventions
+
+When reviewing or fixing something in this repo, proactively flag **and fix** related issues you notice along the way (hardcoded colors instead of CSS variables, dead code, inline-style workarounds for cascade bugs, etc.) rather than only addressing what was explicitly asked about. Don't just note a problem and move on to something else without acting on it.
+
 ## Commands
 
 ```bash
