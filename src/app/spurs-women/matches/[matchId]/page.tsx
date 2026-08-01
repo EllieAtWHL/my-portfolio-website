@@ -178,21 +178,12 @@ export default async function MatchDetailPage({ params }: PageProps) {
           <div className="mb-6">
             <h2 className="font-bold media-title mb-4">Team Lineup</h2>
             <div className="space-y-8">
-              {teamLineups.map((lineup) => {
-                const teamColor = lineup.team_id === match.home_team?.id 
-                  ? match.home_team?.primary_color || 'blue'
-                  : lineup.team_id === match.away_team?.id 
-                    ? match.away_team?.primary_color || 'gray'
-                    : 'gray';
-
-                return (
-                  <TeamLineup
-                    key={lineup.team_id}
-                    lineup={lineup}
-                    teamColor={teamColor}
-                  />
-                );
-              })}
+              {teamLineups.map((lineup) => (
+                <TeamLineup
+                  key={lineup.team_id}
+                  lineup={lineup}
+                />
+              ))}
             </div>
           </div>
         )}

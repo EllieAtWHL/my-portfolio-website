@@ -3,17 +3,14 @@
 import { useState } from 'react';
 import type { TeamLineup } from '@/lib/data/players';
 import PlayerRow from './PlayerRow';
-import PlayerModal from './PlayerModal';
 
 interface TeamLineupProps {
   lineup: TeamLineup;
-  teamColor?: string;
 }
 
 type LineupTab = 'starters' | 'substitutes' | 'unused';
 
-export default function TeamLineup({ lineup, teamColor = '#081521' }: TeamLineupProps) {
-  const [selectedPlayer, setSelectedPlayer] = useState<null | typeof lineup.players[0]>(null);
+export default function TeamLineup({ lineup }: TeamLineupProps) {
   const [activeTab, setActiveTab] = useState<LineupTab>('starters');
 
   const sortByPosition = (players: typeof lineup.players) => {
@@ -94,6 +91,15 @@ export default function TeamLineup({ lineup, teamColor = '#081521' }: TeamLineup
   // Fallback for players without stats
   const hasNoStats = sortedStarters.length === 0 && sortedSubstitutes.length === 0 && sortedUnusedSubstitutes.length === 0;
 
+  const getTabClassName = (tab: LineupTab) => {
+    const isActive = activeTab === tab;
+    return `px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm border-b-2 ${
+      isActive
+        ? 'text-[var(--spurs-dark-accent)] bg-[var(--spurs-dark-bg-1)] border-[var(--spurs-dark-accent)]'
+        : 'text-gray-300 hover:text-[var(--spurs-dark-accent)] bg-[var(--spurs-dark-opacity-30)] border-transparent'
+    }`;
+  };
+
   return (
     <div className="mb-8">
       {!hasNoStats && (
@@ -102,51 +108,21 @@ export default function TeamLineup({ lineup, teamColor = '#081521' }: TeamLineup
           <div className="flex gap-4 mb-4">
             <button
               onClick={() => setActiveTab('starters')}
-              className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
-                activeTab === 'starters'
-                  ? 'text-[var(--spurs-dark-accent)]'
-                  : 'text-gray-300 hover:text-[var(--spurs-dark-accent)]'
-              }`}
-              style={{
-                backgroundColor: activeTab === 'starters' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
-                borderBottomColor: activeTab === 'starters' ? 'var(--spurs-dark-accent)' : 'transparent',
-                borderBottomWidth: activeTab === 'starters' ? '2px' : '0',
-                color: activeTab === 'starters' ? 'var(--spurs-dark-accent)' : '#d1d5db'
-              }}
+              className={getTabClassName('starters')}
               disabled={sortedStarters.length === 0}
             >
               Starting XI ({sortedStarters.length})
             </button>
             <button
               onClick={() => setActiveTab('substitutes')}
-              className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
-                activeTab === 'substitutes'
-                  ? 'text-[var(--spurs-dark-accent)]'
-                  : 'text-gray-300 hover:text-[var(--spurs-dark-accent)]'
-              }`}
-              style={{
-                backgroundColor: activeTab === 'substitutes' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
-                borderBottomColor: activeTab === 'substitutes' ? 'var(--spurs-dark-accent)' : 'transparent',
-                borderBottomWidth: activeTab === 'substitutes' ? '2px' : '0',
-                color: activeTab === 'substitutes' ? 'var(--spurs-dark-accent)' : '#d1d5db'
-              }}
+              className={getTabClassName('substitutes')}
               disabled={sortedSubstitutes.length === 0}
             >
               Substitutes ({sortedSubstitutes.length})
             </button>
             <button
               onClick={() => setActiveTab('unused')}
-              className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
-                activeTab === 'unused'
-                  ? 'text-[var(--spurs-dark-accent)]'
-                  : 'text-gray-300 hover:text-[var(--spurs-dark-accent)]'
-              }`}
-              style={{
-                backgroundColor: activeTab === 'unused' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
-                borderBottomColor: activeTab === 'unused' ? 'var(--spurs-dark-accent)' : 'transparent',
-                borderBottomWidth: activeTab === 'unused' ? '2px' : '0',
-                color: activeTab === 'unused' ? 'var(--spurs-dark-accent)' : '#d1d5db'
-              }}
+              className={getTabClassName('unused')}
               disabled={sortedUnusedSubstitutes.length === 0}
             >
               Unused ({sortedUnusedSubstitutes.length})
@@ -154,7 +130,7 @@ export default function TeamLineup({ lineup, teamColor = '#081521' }: TeamLineup
           </div>
 
           {/* Tab Content */}
-          <div className="bg-[#081521] rounded-lg border border-[#e2e8f0] overflow-hidden">
+          <div className="bg-spurs-dark rounded-lg border border-slate-200 overflow-hidden">
             {displayedPlayers.length > 0 ? (
               displayedPlayers.map((player) => (
                 <PlayerRow
@@ -173,7 +149,7 @@ export default function TeamLineup({ lineup, teamColor = '#081521' }: TeamLineup
 
       {/* Players without stats (fallback) */}
       {hasNoStats && (
-        <div className="bg-[#081521] rounded-lg border border-[#e2e8f0] overflow-hidden">
+        <div className="bg-spurs-dark rounded-lg border border-slate-200 overflow-hidden">
           {sortByPosition(lineup.players).map((player) => (
             <PlayerRow
               key={player.id}
@@ -182,13 +158,6 @@ export default function TeamLineup({ lineup, teamColor = '#081521' }: TeamLineup
           ))}
         </div>
       )}
-
-      {/* Player Modal */}
-      <PlayerModal
-        player={selectedPlayer}
-        onClose={() => setSelectedPlayer(null)}
-        teamColor={teamColor}
-      />
     </div>
   );
 }
