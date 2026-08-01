@@ -37,7 +37,7 @@ export default function PodcastCard({ episode }: PodcastCardProps) {
           <h3 className="font-semibold text-lg spurs-text mb-1">
             {episode.episodeNumber}
           </h3>
-          <h4 className="text-md font-medium spurs-text mb-2">
+          <h4 className="text-xl font-medium spurs-text mb-2">
             {episode.title}
           </h4>
         </div>

@@ -20,7 +20,7 @@ export default async function SeasonsPage() {
 
   return (
     <main className="p-8">
-      <h1 className="spurs-text text-2xl font-bold mb-6">Seasons</h1>
+      <h1 className="spurs-text text-2xl font-bold mb-6 text-center">Seasons</h1>
       
       {/* Season Stats Chart - Desktop only */}
       <div className="hidden md:block mb-8">
