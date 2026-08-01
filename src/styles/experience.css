@@ -385,7 +385,7 @@
 .additional-images {
   margin-top: 2rem;
   padding-top: 1.5rem;
-  border-top: 1px solid rgba(45, 90, 45, 0.1);
+  border-top: 1px solid var(--brand-opacity-10);
 }
 
 .additional-images h3 {
@@ -416,7 +416,7 @@
 .additional-info {
   margin-top: 2rem;
   padding-top: 1.5rem;
-  border-top: 1px solid rgba(45, 90, 45, 0.1);
+  border-top: 1px solid var(--brand-opacity-10);
 }
 
 .additional-info h3 {

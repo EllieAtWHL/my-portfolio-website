@@ -203,7 +203,7 @@
 }
 
 .dark .card-description {
-  color: #a0d0a0;
+  color: var(--dark-card-description);
 }
 
 .dark .project-link {

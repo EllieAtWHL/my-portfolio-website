@@ -37,6 +37,7 @@
   --spurs-dark-text: #f5f7fa;
   --spurs-dark-accent: #78BEE8;
   --spurs-dark-accent-bright: #aad0e8;
+  --dark-accent-glow: #5eead4;
   
   /* Neutral Colors */
   --neutral-gray: #333;
@@ -57,6 +58,7 @@
   --dark-border: #333;
   --light-gray: #f8f9fa;
   --warning-bg: #fff3cd;
+  --warning-bg-light: #ffeeba;
   --warning-accent: #f39c12;
   --warning-text: #856404;
   --warning-dark-bg: #8b6914;
@@ -150,4 +152,10 @@
   /* Existing specific variables (for backward compatibility) */
   --brand-bg-opacity-05: rgba(45, 90, 45, 0.05);
   --accent-bg-opacity-05: rgba(134, 239, 172, 0.05);
+
+  /* 404 page illustration */
+  --goalpost-gray: #c8c8c8;
+
+  /* Projects page dark mode */
+  --dark-card-description: #a0d0a0;
 }

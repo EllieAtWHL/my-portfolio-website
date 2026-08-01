@@ -209,7 +209,7 @@
 }
 
 .dark .button:hover {
-  background: linear-gradient(135deg, var(--dark-accent-bright) 0%, #5eead4 100%);
+  background: linear-gradient(135deg, var(--dark-accent-bright) 0%, var(--dark-accent-glow) 100%);
 }
 
 .dark .content .button.secondary {

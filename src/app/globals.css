@@ -1,12 +1,54 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* Tailwind v4 has no JS config by default; this replaces the old
+   `darkMode: 'class'` setting so `dark:` utilities follow the site's
+   .dark/.light class toggle (see ThemeProvider.tsx) instead of falling
+   back to prefers-color-scheme. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* @source inline("bg-{slate,gray,zinc,neutral,stone,red,orange,amber,yellow,lime,green,emerald,teal,cyan,sky,blue,indigo,violet,purple,fuchsia,pink,rose}-{50,{100..900..100},950}"); */
 /* @source inline("text-{slate,gray,zinc,neutral,stone,red,orange,amber,yellow,lime,green,emerald,teal,cyan,sky,blue,indigo,violet,purple,fuchsia,pink,rose}-{50,{100..900..100},950}"); */
 /* @source inline("bg-black bg-white text-black text-white"); */
 
 /* Modular style imports - for gradual migration */
 @import "../styles/variables.css";
+
+/* Brand color palette exposed to Tailwind utilities (bg-brand-dark, text-dark-accent, etc).
+   Values are pulled from variables.css so there's one source of truth.
+   This replaces tailwind.config.ts's theme.extend.colors, which Tailwind v4
+   does not read without an explicit @config directive (and @config was
+   tried and did not work in this Next.js/Turbopack setup - see
+   reference/TAILWIND_MIGRATION_PLAN.md). */
+@theme {
+  --color-brand-dark: var(--brand-primary-dark);
+  --color-brand-light: var(--brand-primary-light);
+  --color-brand-darker: var(--brand-primary-darker);
+  --color-brand-darkest: var(--brand-primary-darkest);
+
+  --color-spurs-dark: var(--spurs-primary-dark);
+  --color-spurs-light: var(--spurs-primary-light);
+  --color-spurs-darker: var(--spurs-primary-darker);
+  --color-spurs-darkest: var(--spurs-primary-darkest);
+  --color-spurs-accent: var(--spurs-dark-accent);
+  --color-spurs-accent-bright: var(--spurs-dark-accent-bright);
+  --color-spurs-bg-med: var(--spurs-bg-med);
+  --color-spurs-bg-light-1: var(--spurs-bg-light-1);
+  --color-spurs-bg-light-2: var(--spurs-bg-light-2);
+
+  --color-dark-bg-1: var(--dark-bg-1);
+  --color-dark-bg-2: var(--dark-bg-2);
+  --color-dark-text: var(--dark-text);
+  --color-dark-accent: var(--dark-accent);
+  --color-dark-accent-bright: var(--dark-accent-bright);
+  --color-dark-gray-medium: var(--dark-gray-medium);
+  --color-neutral-gray: var(--neutral-gray);
+
+  --background-image-brand-gradient: linear-gradient(135deg, var(--brand-primary-dark) 0%, var(--brand-primary-light) 100%);
+  --background-image-spurs-gradient: linear-gradient(135deg, var(--spurs-primary-dark) 0%, var(--spurs-primary-darker) 100%);
+  --background-image-spurs-wrapper-gradient: linear-gradient(90deg, var(--spurs-dark-bg-2) 0%, var(--spurs-dark-bg-1) 25%, var(--spurs-bg-med) 50%, var(--spurs-dark-bg-1) 75%, var(--spurs-dark-bg-2) 100%);
+}
+
 @import "../styles/main-theme.css";
 @import "../styles/about-me.css";
 @import "../styles/experience.css";
@@ -381,7 +423,7 @@ input:checked + .slider:before {
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: linear-gradient(135deg, var(--warning-bg) 0%, #ffeeba 100%);
+  background: linear-gradient(135deg, var(--warning-bg) 0%, var(--warning-bg-light) 100%);
   border: 1px solid var(--warning-border);
   border-left: 4px solid var(--warning-accent);
   border-radius: 12px;
@@ -454,7 +496,7 @@ input:checked + .slider:before {
 
 .orgs-table th {
   background: var(--brand-primary-dark);
-  color: #ffffff;
+  color: var(--bg-white);
   font-weight: 600;
   font-size: 0.9rem;
   text-transform: uppercase;
@@ -517,7 +559,7 @@ input:checked + .slider:before {
 
 .dark .orgs-table th {
   background: var(--dark-accent);
-  color: #061506;
+  color: var(--dark-text-darker);
 }
 
 .dark .orgs-table tbody tr:hover {
