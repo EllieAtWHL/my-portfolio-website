@@ -167,6 +167,11 @@ Secondary actions should remain visually subordinate.
 
 Button styling should communicate importance through hierarchy rather than excessive colour.
 
+A button showing an in-progress action (the shared `Button` component's
+`loading` prop) shows a small spinner alongside its label. This is a
+deliberate, accepted exception to the "skeleton over spinners" loading
+guidance - see "Loading States" in `VISUAL_LANGUAGE.md` for why.
+
 ---
 
 ## Button Priorities

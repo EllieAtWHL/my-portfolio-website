@@ -367,6 +367,16 @@ Whenever practical:
 
 Users should understand what is loading before it appears.
 
+**Exception - action feedback within a control.** A small spinner inside a
+button or similar control while an in-progress action completes (for
+example, a form submission) is an accepted pattern, not a violation of this
+principle. It communicates something different from content loading - "your
+action is being processed" rather than "content is on its way" - and a
+skeleton placeholder doesn't translate to that use case, since there is no
+content shape to preview. This exception is scoped narrowly: it applies to
+small, inline, control-level indicators, not to page or section content
+loading, which should still prefer skeleton placeholders over spinners.
+
 ---
 
 # Empty States
