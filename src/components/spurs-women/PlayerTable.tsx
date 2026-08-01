@@ -154,7 +154,7 @@ export default function PlayerTable({ players }: PlayerTableProps) {
         </thead>
         <tbody>
           {sortedPlayers.map((player) => (
-            <tr key={player.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-[var(--spurs-dark-opacity-30)]">
+            <tr key={player.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-[var(--spurs-opacity-20)]">
               <td className="py-3 px-4 text-center spurs-text font-bold">
                 {player.squad_number || '-'}
               </td>
