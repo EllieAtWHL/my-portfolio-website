@@ -54,7 +54,7 @@ export default function TeamClient({ team, teamId }: TeamClientProps) {
 
         {/* Players Section */}
         {(players.current.length > 0 || players.former.length > 0) && (
-          <div>
+          <div className="mb-8">
             <h2 className="spurs-text text-2xl font-bold mb-4">Players</h2>
             <Card variant="spursAccent" padding="md" hover={false}>
               {/* Tabs */}
