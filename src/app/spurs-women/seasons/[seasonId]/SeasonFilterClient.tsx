@@ -22,7 +22,7 @@ export default function SeasonFilterClient({ matches, seasonName, seasonReview }
   return (
     <main className="p-8">
       <div className="max-w-6xl mx-auto">
-        <h1 className="spurs-text text-3xl font-bold mb-6">
+        <h1 className="spurs-text text-3xl font-bold mb-6 text-center">
           {seasonName}
         </h1>
 
