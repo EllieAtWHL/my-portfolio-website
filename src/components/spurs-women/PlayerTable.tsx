@@ -94,7 +94,7 @@ export default function PlayerTable({ players }: PlayerTableProps) {
   return (
     <div className="overflow-x-auto max-h-96 overflow-y-auto">
       <table className="w-full">
-        <thead className="sticky top-0 bg-white dark:bg-gray-900 z-10">
+        <thead className="sticky top-0 z-10" style={{ backgroundColor: 'var(--spurs-dark-bg-1)' }}>
           <tr className="border-b border-gray-200 dark:border-gray-700">
             <th 
               className="text-center py-3 px-4 spurs-text font-semibold cursor-pointer hover:opacity-80"
@@ -154,7 +154,7 @@ export default function PlayerTable({ players }: PlayerTableProps) {
         </thead>
         <tbody>
           {sortedPlayers.map((player) => (
-            <tr key={player.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50">
+            <tr key={player.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-[var(--spurs-dark-opacity-30)]">
               <td className="py-3 px-4 text-center spurs-text font-bold">
                 {player.squad_number || '-'}
               </td>
