@@ -179,7 +179,7 @@ export default function MatchFilterControls({
       {/* Header with title, match count, and buttons outside the card */}
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-4">
-          <h2 className="spurs-text subsection-title font-semibold">Match Filter</h2>
+          <h2 className="spurs-text text-lg font-semibold">Match Filter</h2>
           <span className="spurs-text text-sm">
             {filteredMatches.length} of {matches.length} matches
             {hasActiveFilters && ` (${filterCount} filter${filterCount !== 1 ? 's' : ''})`}
