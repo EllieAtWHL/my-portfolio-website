@@ -6,13 +6,18 @@
   padding-top: 80px;
 }
 
-/* Bottom clearance for the fixed footer. margin, not padding - a page's own
-   <main> often carries its own Tailwind padding utility (p-4, p-8, etc.),
-   which (now that this file is properly layered) wins the cascade for any
-   property they both set. margin-bottom is a property pages don't already
-   use here, so this buffer can't be silently overridden the same way. */
+/* Bottom clearance for the fixed footer. !important is deliberate: a page's
+   own <main> often carries its own Tailwind padding utility (p-4, p-8,
+   etc.), which (now that this file is properly layered) would otherwise win
+   the cascade for padding-bottom specifically. A margin-based version of
+   this rule was tried first and reverted - margin sits outside the box, so
+   its background depends on whatever's behind it, and on some pages/layouts
+   that isn't the intended gradient, producing a visible white gap. Keeping
+   this as padding (contained within the element's own background) with
+   !important to guarantee it wins avoids that, at the cost of the
+   !important itself. */
 .spurs-wrapper main {
-  margin-bottom: 6rem;
+  padding-bottom: 6rem !important;
 }
 
 .content-with-footer {
