@@ -13,6 +13,7 @@ specific to the Spurs Women section.
 - **Match statistics component**: `match-stats.md`
 - **Season statistics calculations**: `SEASON_STATISTICS_CALCULATIONS.md`
 - **Open backlog / TODOs**: `DEVELOPMENT_TODO.md`
+- **Public API reference**: `api/API_DOCUMENTATION.md` (see also `api/openapi-spec.yaml`)
 
 ## Project Structure
 
