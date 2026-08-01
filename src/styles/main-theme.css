@@ -223,30 +223,6 @@
   color: var(--dark-text-darker);
 }
 
-body.dark .button.primary {
-  background: var(--button-hover-light);
-  color: var(--dark-text-darker);
-  border: 2px solid var(--button-hover-light);
-}
-
-body.dark .button.primary:hover {
-  background: var(--button-hover-light);
-  color: var(--dark-text-darker);
-  border: 2px solid var(--button-hover-light);
-}
-
-body:not(.dark) .button.primary {
-  background: var(--brand-primary-light);
-  color: var(--bg-light-1);
-  border: 2px solid var(--brand-primary-light);
-}
-
-body:not(.dark) .button.primary:hover {
-  background: var(--brand-primary-light);
-  color: var(--bg-light-1);
-  border: 2px solid var(--brand-primary-light);
-}
-
 /* Mobile nav button */
 .mobile-nav-button {
   background-color: var(--bg-white);

@@ -243,6 +243,19 @@ html {
   }
 }
 
+/* Everything below this point was previously unlayered, alongside the
+   heading/link rules above and the hand-written CSS files imported via
+   layer(base). Wrapping it into the same @layer base closes a bug found
+   after the fact: leaving it unlayered meant IT unconditionally beat the
+   now-layered main-theme.css/about-me.css/etc content regardless of
+   specificity, the exact same bug this file was created to fix, just
+   recreated between globals.css and the files it imports. Concretely:
+   .dark .button.primary in main-theme.css (specificity 0,3,0, the
+   correct gradient) was losing to .dark .button here (0,2,0, a flat
+   solid color) purely because this file was unlayered and main-theme.css
+   was not - not because of anything about the buttons themselves. */
+@layer base {
+
 /* Animations - more subtle and modern */
 h1.slideLeft {
   animation: slide-left 1.5s ease-out;
@@ -639,11 +652,11 @@ input:checked + .slider:before {
   color: var(--dark-text) !important;
 }
 
-.dark .blog-content a {
+.dark .blog-content a:not(.button) {
   color: var(--dark-accent);
 }
 
-.dark .blog-content a:hover {
+.dark .blog-content a:not(.button):hover {
   color: var(--dark-accent-bright);
 }
 
@@ -655,11 +668,17 @@ input:checked + .slider:before {
   color: var(--dark-text) !important;
 }
 
-.dark .blog-article a {
+/* :not(.button) - these are meant for plain text links in blog prose;
+   without it, they also capture .button-styled call-to-action links
+   (e.g. the Lightning Rollout post navigation), forcing light mint-green
+   text onto a light mint-green button background. Pre-existing bug,
+   predates the cascade-layers work - found while investigating a user
+   report of wrong-colored buttons on the Lightning Rollout pages. */
+.dark .blog-article a:not(.button) {
   color: var(--dark-accent) !important;
 }
 
-.dark .blog-article a:hover {
+.dark .blog-article a:not(.button):hover {
   color: var(--dark-accent-bright) !important;
 }
 
@@ -821,3 +840,5 @@ body:not(.dark) .moon-icon {
 }
 
 /* Ensure primary button with w-full spans full width - migrated to main-theme.css */
+
+} /* end @layer base */
