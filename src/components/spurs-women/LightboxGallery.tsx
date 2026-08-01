@@ -91,7 +91,11 @@ export default function LightboxGallery({
       {/* Loading indicator */}
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center z-10">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+          <div
+            className="h-12 w-12 rounded-full bg-white/40 animate-pulse motion-reduce:animate-none"
+            role="status"
+            aria-label="Loading image"
+          />
         </div>
       )}
 
@@ -139,6 +143,7 @@ export default function LightboxGallery({
             navigatePrevious();
           }}
           disabled={photos.length <= 1}
+          aria-label="Previous photo"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -152,6 +157,7 @@ export default function LightboxGallery({
             navigateNext();
           }}
           disabled={photos.length <= 1}
+          aria-label="Next photo"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

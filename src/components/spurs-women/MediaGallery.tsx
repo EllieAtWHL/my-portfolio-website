@@ -55,18 +55,29 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
     loadPhotoData();
   }, [photos]);
 
+  // Determine grid layout based on fullWidth prop
+  const gridClass = fullWidth
+    ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+    : "grid grid-cols-2 md:grid-cols-3 gap-4";
+
   if (!photos || photos.length === 0) return null;
 
-  // Show loading state while data is being fetched
+  // Show a skeleton grid (matching the real grid's shape and aspect ratio)
+  // while data is being fetched, rather than a spinner - preserves layout
+  // and previews what's about to appear, per the design system's loading
+  // state guidance.
   if (isLoadingManifest || isLoadingAlbums) {
     return (
       <div className="mb-6">
         <h2 className="font-bold mb-4">Photos</h2>
-        <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-400"></div>
-          <span className="ml-2 text-gray-500">
-            {isLoadingManifest ? 'Loading photo gallery...' : 'Loading photos...'}
-          </span>
+        <div className={gridClass} role="status" aria-label="Loading photos">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div
+              key={index}
+              className="rounded-lg overflow-hidden bg-gray-800 relative animate-pulse motion-reduce:animate-none"
+              style={{ paddingBottom: '66.67%' }}
+            />
+          ))}
         </div>
       </div>
     );
@@ -115,11 +126,6 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
     setInitialIndex(0);
     setLightboxOpen(true);
   };
-
-  // Determine grid layout based on fullWidth prop
-  const gridClass = fullWidth 
-    ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
-    : "grid grid-cols-2 md:grid-cols-3 gap-4";
 
   return (
     <>
