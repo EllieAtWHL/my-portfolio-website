@@ -7,73 +7,101 @@ interface SlideData {
   src: string;
   alt: string;
   caption: string;
+  width: number;
+  height: number;
 }
 
 const slides: SlideData[] = [
   {
     src: '/london-2012/ocDressingRoom.jpg',
     alt: 'In the dressing room for the Opening Ceremony',
-    caption: 'In the dressing room for the Opening Ceremony'
+    caption: 'In the dressing room for the Opening Ceremony',
+    width: 2048,
+    height: 1536
   },
   {
     src: '/london-2012/ocPreShow.jpg',
     alt: 'Outside the stadium prior to the Opening Ceremony',
-    caption: 'Outside the stadium prior to the Opening Ceremony'
+    caption: 'Outside the stadium prior to the Opening Ceremony',
+    width: 960,
+    height: 720
   },
   {
     src: '/london-2012/torDrummer.jpg',
     alt: 'Drumming on the Tor during the 2nd Technical Rehearsal',
-    caption: 'Drumming on the Tor during the 2nd Technical Rehearsal'
+    caption: 'Drumming on the Tor during the 2nd Technical Rehearsal',
+    width: 960,
+    height: 540
   },
   {
     src: '/london-2012/underRings.jpg',
     alt: 'We "made" the Olympic Rings!',
-    caption: 'We "made" the Olympic Rings!'
+    caption: 'We "made" the Olympic Rings!',
+    width: 1436,
+    height: 902
   },
   {
     src: '/london-2012/torDrummers.jpg',
     alt: 'The Tor Drummers',
-    caption: 'The Tor Drummers'
+    caption: 'The Tor Drummers',
+    width: 594,
+    height: 395
   },
   {
     src: '/london-2012/sideRings.jpg',
     alt: 'The rings forming during the 2nd Technical Rehearsal',
-    caption: 'The rings forming during the 2nd Technical Rehearsal'
+    caption: 'The rings forming during the 2nd Technical Rehearsal',
+    width: 960,
+    height: 540
   },
   {
     src: '/london-2012/parade1.jpg',
     alt: 'The "sheepdog" drummers in their pen',
-    caption: 'The "sheepdog" drummers in their pen'
+    caption: 'The "sheepdog" drummers in their pen',
+    width: 2048,
+    height: 1362
   },
   {
     src: '/london-2012/parade2.jpg',
     alt: 'Following Team GB',
-    caption: 'Following Team GB'
+    caption: 'Following Team GB',
+    width: 960,
+    height: 639
   },
   {
     src: '/london-2012/ccDressingRoom.jpg',
     alt: 'In the dressing room for the Closing Ceremony',
-    caption: 'In the dressing room for the Closing Ceremony'
+    caption: 'In the dressing room for the Closing Ceremony',
+    width: 720,
+    height: 960
   },
   {
     src: '/london-2012/ccDressSign.jpg',
     alt: 'Waiting backstage at the rehearsal the morning of the Closing Ceremony',
-    caption: 'Waiting backstage at the rehearsal the morning of the Closing Ceremony'
+    caption: 'Waiting backstage at the rehearsal the morning of the Closing Ceremony',
+    width: 720,
+    height: 960
   },
   {
     src: '/london-2012/DannyKristian.jpg',
     alt: 'With Olympic bronze medalists Danny Purvis and Kristian Thomas',
-    caption: 'With Olympic bronze medalists Danny Purvis and Kristian Thomas'
+    caption: 'With Olympic bronze medalists Danny Purvis and Kristian Thomas',
+    width: 960,
+    height: 720
   },
   {
     src: '/london-2012/Louis.jpg',
     alt: 'With Olympic bronze medalist Louis Smith',
-    caption: 'With Olympic bronze medalist Louis Smith'
+    caption: 'With Olympic bronze medalist Louis Smith',
+    width: 720,
+    height: 960
   },
   {
     src: '/london-2012/ccShowOver.jpg',
     alt: 'The End of the Closing Ceremony',
-    caption: 'The End of the Closing Ceremony'
+    caption: 'The End of the Closing Ceremony',
+    width: 960,
+    height: 720
   }
 ];
 
@@ -97,15 +125,18 @@ export default function London2012Gallery() {
       <h2 className="heading-2">Image Gallery</h2>
       
       <div className="relative slideshow-container">
-        <div className="relative h-[50vh] w-full overflow-hidden rounded-lg">
+        <div className="relative h-[50vh] w-full">
           {slides.map((slide, index) => (
             <div
               key={index}
-              className={`absolute inset-0 transition-opacity duration-500 ${
+              className={`absolute inset-0 flex items-center justify-center transition-opacity duration-500 ${
                 index === currentSlide ? 'opacity-100' : 'opacity-0'
               }`}
             >
-              <div className="relative h-full w-full">
+              <div
+                className="relative h-full w-auto max-w-full overflow-hidden rounded-lg"
+                style={{ aspectRatio: `${slide.width} / ${slide.height}` }}
+              >
                 <Image
                   src={slide.src}
                   alt={slide.alt}
@@ -113,10 +144,10 @@ export default function London2012Gallery() {
                   className="object-contain"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
                 />
-              </div>
-              <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-4">
-                <div className="text-sm mb-1">{index + 1} / {slides.length}</div>
-                <div className="text-base">{slide.caption}</div>
+                <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-4">
+                  <div className="text-sm mb-1">{index + 1} / {slides.length}</div>
+                  <div className="text-base">{slide.caption}</div>
+                </div>
               </div>
             </div>
           ))}
@@ -151,7 +182,7 @@ export default function London2012Gallery() {
             onClick={() => goToSlide(index)}
             className={`w-3 h-3 rounded-full transition-all ${
               index === currentSlide
-                ? 'bg-blue-600 dark:bg-blue-400'
+                ? 'bg-brand-dark dark:bg-dark-accent'
                 : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
             }`}
             aria-label={`Go to slide ${index + 1}`}
