@@ -78,6 +78,11 @@ export default function MatchNavigation({
   // Determine the label to show under the score
   const scoreLabel = hasPensScores ? 'PENS' : (hasAetScores ? 'AET' : null);
 
+  const desktopHeaderSizeClass = headerFontSize === 'text-lg' ? 'text-[1.625rem]' :
+    headerFontSize === 'text-xl' ? 'text-[1.875rem]' : 'text-[2rem]';
+  const mobileHeaderSizeClass = headerFontSize === 'text-lg' ? 'text-[1.5rem]' :
+    headerFontSize === 'text-xl' ? 'text-[1.75rem]' : 'text-[1.875rem]';
+
   return (
     <>
       {/* Mobile navigation buttons - stacked and centered */}
@@ -118,7 +123,6 @@ export default function MatchNavigation({
           disabled={!previousMatch || isPending}
           size="sm"
           className="text-xs !px-2 !py-1 !text-xs"
-          style={{ padding: '0.25rem 0.5rem !important', fontSize: '0.75rem !important' }}
         >
           <div className="flex items-center">
             <span className="mr-1">{renderNavIcon('previous', 'w-3 h-3')}</span>
@@ -127,11 +131,7 @@ export default function MatchNavigation({
         </Button>
 
         {/* Match header (team names and score) in the middle */}
-        <h1 className={`spurs-text font-bold flex items-center gap-2 sm:gap-4 flex-wrap text-center ${headerFontSize}`}
-            style={{
-              fontSize: headerFontSize === 'text-lg' ? '1.625rem' : 
-                       headerFontSize === 'text-xl' ? '1.875rem' : '2rem'
-            }}>
+        <h1 className={`spurs-text font-bold flex items-center gap-2 sm:gap-4 flex-wrap text-center ${desktopHeaderSizeClass}`}>
           <TeamPill 
             teamName={currentMatch.home_team?.name || 'Unknown Team'}
             primaryColor={currentMatch.home_team?.primary_color}
@@ -157,7 +157,6 @@ export default function MatchNavigation({
           disabled={!nextMatch || isPending}
           size="sm"
           className="text-xs !px-2 !py-1 !text-xs"
-          style={{ padding: '0.25rem 0.5rem !important', fontSize: '0.75rem !important' }}
         >
           <div className="flex items-center">
             {nextMatch ? `${getTeamDisplayName(nextMatch.home_team)} vs ${getTeamDisplayName(nextMatch.away_team)}` : 'No Next Match'}
@@ -168,11 +167,7 @@ export default function MatchNavigation({
 
       {/* Mobile match header - centered below buttons */}
       <div className="sm:hidden mb-4">
-        <h1 className={`spurs-text font-bold flex items-center justify-center gap-2 flex-wrap text-center ${headerFontSize}`}
-            style={{
-              fontSize: headerFontSize === 'text-lg' ? '1.5rem' : 
-                       headerFontSize === 'text-xl' ? '1.75rem' : '1.875rem'
-            }}>
+        <h1 className={`spurs-text font-bold flex items-center justify-center gap-2 flex-wrap text-center ${mobileHeaderSizeClass}`}>
           <span>
             {currentMatch.home_team?.name}
           </span>
