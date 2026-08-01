@@ -42,7 +42,7 @@ export default function London2012Sidebar({ showHeader = true }: London2012Sideb
             ) : (
               <Link 
                 href={post.url}
-                className="text-brand-dark hover:text-brand-darker transition-colors"
+                className="text-brand-dark hover:text-brand-darker dark:text-dark-accent dark:hover:text-dark-accent-bright transition-colors"
               >
                 {post.title}
               </Link>

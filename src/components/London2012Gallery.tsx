@@ -114,7 +114,7 @@ export default function London2012Gallery() {
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
                 />
               </div>
-              <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-4">
+              <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-4">
                 <div className="text-sm mb-1">{index + 1} / {slides.length}</div>
                 <div className="text-base">{slide.caption}</div>
               </div>
@@ -125,7 +125,7 @@ export default function London2012Gallery() {
         {/* Navigation arrows */}
         <button
           onClick={prevSlide}
-          className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
+          className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 dark:bg-dark-text dark:text-dark-text-darker dark:hover:bg-dark-text transition-all"
           aria-label="Previous slide"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -134,7 +134,7 @@ export default function London2012Gallery() {
         </button>
         <button
           onClick={nextSlide}
-          className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
+          className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 dark:bg-dark-text dark:text-dark-text-darker dark:hover:bg-dark-text transition-all"
           aria-label="Next slide"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
