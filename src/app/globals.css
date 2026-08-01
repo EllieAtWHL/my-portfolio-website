@@ -452,7 +452,11 @@ input:checked + .slider:before {
 
 .content-with-footer {
   padding-top: 80px;
-  padding-bottom: 6rem;
+  /* margin, not padding, for bottom clearance against the fixed footer - see
+     the equivalent .spurs-wrapper main rule in spurs-theme.css for why:
+     margin-bottom is a property no page combines this class with, so it
+     can't be silently overridden by a page's own Tailwind padding utility. */
+  margin-bottom: 6rem;
   background: linear-gradient(135deg, var(--bg-light-1) 0%, var(--bg-light-2) 100%);
 }
 

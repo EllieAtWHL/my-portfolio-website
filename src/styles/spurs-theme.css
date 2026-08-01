@@ -6,9 +6,13 @@
   padding-top: 80px;
 }
 
-/* Add bottom padding to main content to account for fixed footer */
+/* Bottom clearance for the fixed footer. margin, not padding - a page's own
+   <main> often carries its own Tailwind padding utility (p-4, p-8, etc.),
+   which (now that this file is properly layered) wins the cascade for any
+   property they both set. margin-bottom is a property pages don't already
+   use here, so this buffer can't be silently overridden the same way. */
 .spurs-wrapper main {
-  padding-bottom: 6rem;
+  margin-bottom: 6rem;
 }
 
 .content-with-footer {
