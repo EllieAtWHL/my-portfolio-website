@@ -37,7 +37,7 @@ export default async function TeamsPage() {
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <h1 className="spurs-text text-3xl font-bold mb-8 text-center">Teams</h1>
+      <h1 className="spurs-text font-bold mb-8 text-center">Teams</h1>
       
       {teams.length === 0 ? (
         <Card variant="spursAccent" padding="md">

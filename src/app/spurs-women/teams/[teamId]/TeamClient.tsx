@@ -55,7 +55,7 @@ export default function TeamClient({ team, teamId }: TeamClientProps) {
         {/* Players Section */}
         {(players.current.length > 0 || players.former.length > 0) && (
           <div className="mb-8">
-            <h2 className="spurs-text text-2xl font-bold mb-4">Players</h2>
+            <h2 className="spurs-text font-bold mb-4">Players</h2>
             <Card variant="spursAccent" padding="md" hover={false}>
               {/* Tabs */}
               <div className="flex gap-4 mb-4">
@@ -111,7 +111,7 @@ export default function TeamClient({ team, teamId }: TeamClientProps) {
 
         <div className="grid gap-8">
           <div className="lg:col-span-2">
-            <h2 className="spurs-text text-2xl font-bold mb-4">Matches involving {team.name}</h2>
+            <h2 className="spurs-text font-bold mb-4">Matches involving {team.name}</h2>
             
             <MatchFilterControls 
               matches={matches}

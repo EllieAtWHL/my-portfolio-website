@@ -25,7 +25,7 @@ export default function SeasonReviewCard({ review }: SeasonReviewCardProps) {
   return (
     <div className="mb-8">
       {/* Header outside the card */}
-      <h2 className="spurs-text text-2xl font-bold mb-4">Season Review</h2>
+      <h2 className="spurs-text font-bold mb-4">Season Review</h2>
       
       <Card variant="spursAccent" padding="lg" clickable={false}>
         <div className="space-y-4">

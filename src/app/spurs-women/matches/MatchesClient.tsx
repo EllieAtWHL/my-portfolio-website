@@ -47,7 +47,7 @@ export default function MatchesClient() {
     <main className="p-8">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
-          <h1 className="spurs-text text-3xl font-bold mb-4 text-center">All Tottenham Hotspur Women Matches</h1>
+          <h1 className="spurs-text font-bold mb-4 text-center">All Tottenham Hotspur Women Matches</h1>
           
           {/* Comprehensive filter controls */}
           <MatchFilterControls

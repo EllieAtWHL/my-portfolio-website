@@ -61,7 +61,7 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
   if (isLoadingManifest || isLoadingAlbums) {
     return (
       <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-4">Photos</h2>
+        <h2 className="font-bold mb-4">Photos</h2>
         <div className="flex items-center justify-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-400"></div>
           <span className="ml-2 text-gray-500">
@@ -125,7 +125,7 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
     <>
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold mb-4">Photos</h2>
+          <h2 className="font-bold mb-4">Photos</h2>
           {allPhotos.length > 0 && (
             <Button
               onClick={openGalleryFromStart}

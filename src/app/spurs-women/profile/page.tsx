@@ -46,7 +46,7 @@ export default function ProfilePage() {
       <div className="max-w-4xl mx-auto">
         <div className="spurs-accent-card rounded-lg p-8">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="spurs-text text-3xl font-bold">Profile</h1>
+            <h1 className="spurs-text font-bold">Profile</h1>
             <Button
               variant="spurs"
               onClick={handleLogout}
@@ -73,7 +73,7 @@ export default function ProfilePage() {
 
               {isAdmin && (
                 <div className="pt-4 border-t border-gray-600">
-                  <h2 className="spurs-text text-xl font-semibold mb-4">Admin Access</h2>
+                  <h2 className="spurs-text font-semibold mb-4">Admin Access</h2>
                   <Button variant="spurs" asChild>
                     <Link href="/spurs-women/admin">
                       Go to Admin Panel
@@ -83,7 +83,7 @@ export default function ProfilePage() {
               )}
 
               <div className="pt-4 border-t border-gray-600">
-                <h2 className="spurs-text text-xl font-semibold mb-4">Account Settings</h2>
+                <h2 className="spurs-text font-semibold mb-4">Account Settings</h2>
                 <p className="text-gray-400 text-sm">
                   More profile features coming soon...
                 </p>

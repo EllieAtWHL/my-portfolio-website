@@ -23,7 +23,7 @@ export default function NewsCard({ article }: NewsCardProps) {
   return (
     <Card variant="spursAccent" padding="md">
       <div className="flex justify-between items-start mb-2">
-        <h3 className="text-lg font-semibold spurs-text line-clamp-2 flex-1 mr-2">
+        <h3 className="font-semibold spurs-text line-clamp-2 flex-1 mr-2">
           <Link 
             href={article.link} 
             target="_blank" 

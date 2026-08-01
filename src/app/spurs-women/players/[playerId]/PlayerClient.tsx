@@ -12,7 +12,7 @@ export default function PlayerClient({ player }: PlayerClientProps) {
     <main className="p-4">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8 text-center">
-          <h1 className="spurs-text text-3xl font-bold">
+          <h1 className="spurs-text font-bold">
             {player.first_name && `${player.first_name} `}{player.last_name}
           </h1>
           {player.squad_number && (
@@ -23,7 +23,7 @@ export default function PlayerClient({ player }: PlayerClientProps) {
         <div className="grid gap-6 md:grid-cols-2">
           {/* Player Details */}
           <Card variant="spursAccent" padding="md" hover={false}>
-            <h2 className="spurs-text text-xl font-bold mb-4">Player Details</h2>
+            <h2 className="spurs-text font-bold mb-4">Player Details</h2>
             <div className="space-y-3 spurs-text">
               {player.nationality && (
                 <div>
@@ -59,7 +59,7 @@ export default function PlayerClient({ player }: PlayerClientProps) {
           {/* Profile Image */}
           {player.profile_image_url && (
             <Card variant="spursAccent" padding="md" hover={false}>
-              <h2 className="spurs-text text-xl font-bold mb-4">Profile Image</h2>
+              <h2 className="spurs-text font-bold mb-4">Profile Image</h2>
               <img 
                 src={player.profile_image_url} 
                 alt={`${player.first_name} ${player.last_name}`}

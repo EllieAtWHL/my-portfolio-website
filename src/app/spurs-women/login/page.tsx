@@ -34,7 +34,7 @@ export default function LoginPage() {
   return (
     <div className="flex-grow flex items-center justify-center p-4">
       <div className="spurs-accent-card rounded-lg p-8 max-w-md w-full">
-        <h1 className="spurs-text text-3xl font-bold mb-6 text-center">Admin Login</h1>
+        <h1 className="spurs-text font-bold mb-6 text-center">Admin Login</h1>
         
         {error && (
           <div className="mb-4 p-4 bg-red-600 text-white rounded">

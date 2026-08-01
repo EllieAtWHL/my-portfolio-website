@@ -213,7 +213,7 @@ export default function SeasonStats({ matches }: SeasonStatsProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* League Record Section */}
           <div className="space-y-3">
-            <h3 className="font-semibold text-lg spurs-text">League Record</h3>
+            <h3 className="font-semibold spurs-text">League Record</h3>
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-gray-600 dark:text-gray-400">Total Matches:</span>
@@ -244,7 +244,7 @@ export default function SeasonStats({ matches }: SeasonStatsProps) {
 
           {/* Goals Section */}
           <div className="space-y-3">
-            <h3 className="font-semibold text-lg spurs-text">Goals</h3>
+            <h3 className="font-semibold spurs-text">Goals</h3>
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-gray-600 dark:text-gray-400">Goals Scored:</span>
@@ -275,7 +275,7 @@ export default function SeasonStats({ matches }: SeasonStatsProps) {
 
           {/* Match Stats Section */}
           <div className="space-y-3">
-            <h3 className="font-semibold text-lg spurs-text">Match Stats</h3>
+            <h3 className="font-semibold spurs-text">Match Stats</h3>
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-gray-600 dark:text-gray-400">Avg Possession:</span>
@@ -304,7 +304,7 @@ export default function SeasonStats({ matches }: SeasonStatsProps) {
 
           {/* Attendance Section */}
           <div className="space-y-3">
-            <h3 className="font-semibold text-lg spurs-text">Attendance</h3>
+            <h3 className="font-semibold spurs-text">Attendance</h3>
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-gray-600 dark:text-gray-400">Games Attended:</span>
@@ -333,7 +333,7 @@ export default function SeasonStats({ matches }: SeasonStatsProps) {
     <div className="mb-8">
       {/* Header with title and expand/collapse button */}
       <div className="flex justify-between items-center mb-4">
-        <h2 className="spurs-text text-2xl font-bold">Season Statistics</h2>
+        <h2 className="spurs-text font-bold">Season Statistics</h2>
         <Button
           variant="spurs"
           size="xs"

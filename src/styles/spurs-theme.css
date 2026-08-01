@@ -61,6 +61,14 @@ header.spurs.navbar .spurs-links li:hover a {
   color: var(--spurs-dark-text);
 }
 
+/* Sub-heading variant - for h2s that introduce a control/filter panel
+   rather than a new page section, so they read as subordinate to the
+   section heading above them (e.g. "Match Filter" under "Matches
+   involving {team}"). */
+.spurs-wrapper h2.subsection-title {
+  font-size: 1.125rem;
+}
+
 .spurs-wrapper h3 {
   color: var(--spurs-dark-text);
 }

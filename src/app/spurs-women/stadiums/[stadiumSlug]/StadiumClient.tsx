@@ -43,7 +43,7 @@ export default function StadiumClient({ stadium, stadiumSlug }: StadiumClientPro
     <main className="p-4">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8 text-center">
-          <h1 className="spurs-text text-4xl font-bold mb-2">{stadium.name}</h1>
+          <h1 className="spurs-text font-bold mb-2">{stadium.name}</h1>
           {stadium.city && stadium.country && (
             <p className="spurs-text text-xl mb-4">
               {stadium.city}, {stadium.country}
@@ -55,7 +55,7 @@ export default function StadiumClient({ stadium, stadiumSlug }: StadiumClientPro
           {(stadium.address_line_1 || stadium.home_team || stadium.opened_date || stadium.capacity || stadiumNames.length > 0) && (
             <div className="lg:col-span-1">
               <Card variant="spursAccent" padding="md" hover={false}>
-                <h3 className="text-xl font-bold mb-4">Stadium Details</h3>
+                <h3 className="font-bold mb-4">Stadium Details</h3>
               
               <div className="space-y-3">
                 {stadium.address_line_1 && (
@@ -106,7 +106,7 @@ export default function StadiumClient({ stadium, stadiumSlug }: StadiumClientPro
           {stadium.latitude && stadium.longitude && (
             <div className="lg:col-span-1">
               <Card variant="spursAccent" padding="md" hover={false}>
-                <h3 className="text-xl font-bold mb-4">Location</h3>
+                <h3 className="font-bold mb-4">Location</h3>
                 <InteractiveMap 
                   latitude={stadium.latitude}
                   longitude={stadium.longitude}
@@ -117,7 +117,7 @@ export default function StadiumClient({ stadium, stadiumSlug }: StadiumClientPro
           )}
 
           <div className="lg:col-span-2">
-            <h2 className="spurs-text text-2xl font-bold mb-4">Matches at {stadium.name}</h2>
+            <h2 className="spurs-text font-bold mb-4">Matches at {stadium.name}</h2>
             
             <MatchFilterControls 
               matches={matches}

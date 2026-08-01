@@ -37,7 +37,7 @@ export default async function StadiumsPage() {
 
   return (
     <main className="p-8">
-      <h1 className="spurs-text text-2xl font-bold mb-6 text-center">Stadiums</h1>
+      <h1 className="spurs-text font-bold mb-6 text-center">Stadiums</h1>
       
       {stadiumsWithCurrentNames.length === 0 ? (
         <Card variant="spursAccent">

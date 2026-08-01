@@ -122,7 +122,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
 
         {/* Match Info Section - Always Full Width */}
         <div className="mb-6">
-          <h2 className="text-2xl font-bold media-title mb-4">Match Info</h2>
+          <h2 className="font-bold media-title mb-4">Match Info</h2>
           <MatchInfo 
             stadium_display_name={match.stadium_display_name}
             stadium_slug={match.stadium_slug}
@@ -136,7 +136,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
         {/* Articles Section - Full Width when present */}
         {articles.length > 0 && (
           <div className="mb-6">
-            <h2 className="text-2xl font-bold media-title mb-4">Articles</h2>
+            <h2 className="font-bold media-title mb-4">Articles</h2>
             <div className="space-y-4">
               {articles.map((article) => (
                 <ArticleCard key={article.id} article={article} />
@@ -176,7 +176,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
         {/* Team Lineups Section - Player Information */}
         {teamLineups && teamLineups.length > 0 && (
           <div className="mb-6">
-            <h2 className="text-2xl font-bold media-title mb-4">Team Lineup</h2>
+            <h2 className="font-bold media-title mb-4">Team Lineup</h2>
             <div className="space-y-8">
               {teamLineups.map((lineup) => {
                 const teamColor = lineup.team_id === match.home_team?.id 
