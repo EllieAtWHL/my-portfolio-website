@@ -45,6 +45,7 @@ supabase/.temp/*
 
 # AI
 .agents/
+.claude/settings.local.json
 
 # Playwright
 .playwright-mcp/
