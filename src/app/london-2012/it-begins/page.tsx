@@ -30,7 +30,7 @@ export default function ItBeginsPage() {
         dateTime="2011-08-16"
       >
         <article>
-          <h1 className="text-3xl font-bold mb-6">It Begins...</h1>
+          <h1 className="heading-1">It Begins...</h1>
 
           <div className="space-y-6 text-lg">
             <p>

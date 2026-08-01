@@ -94,7 +94,7 @@ export default function London2012Gallery() {
 
   return (
     <div className="london-2012-gallery">
-      <h2 className="text-2xl font-bold mb-6">Image Gallery</h2>
+      <h2 className="heading-2">Image Gallery</h2>
       
       <div className="relative slideshow-container">
         <div className="relative h-[50vh] w-full overflow-hidden rounded-lg">

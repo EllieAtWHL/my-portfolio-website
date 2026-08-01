@@ -21,7 +21,7 @@ export default function CostumeFittingPage() {
         dateTime="2012-05-29"
       >
         <article>
-          <h1 className="text-3xl font-bold mb-6">Costume Fittings & Goodbye to 3 Mills</h1>
+          <h1 className="heading-1">Costume Fittings & Goodbye to 3 Mills</h1>
 
               <div className="space-y-6 text-lg">
                 <p>

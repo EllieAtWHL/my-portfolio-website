@@ -37,7 +37,7 @@ export default function Regicide() {
             <Card variant="accent" padding="lg" className="max-w-2xl text-center">
               <div className="mb-6">
                 <div className="text-6xl mb-4">🃏</div>
-                <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">Regicide Game</h1>
+                <h1 className="heading-1">Regicide Game</h1>
               </div>
               
               <div className="space-y-4">

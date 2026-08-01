@@ -23,7 +23,7 @@ export default function London2012Layout({ children, date, dateTime }: London201
             className="w-full flex items-center justify-between p-4 mobile-nav-button rounded-lg hover:bg-gray-50 dark:hover:bg-dark-bg-2 transition-colors"
           >
             <div className="flex items-center gap-3">
-              <h3 className="text-lg font-bold text-brand-dark dark:text-dark-text">
+              <h3 className="heading-3">
                 My Olympic Journey
               </h3>
               <span className="text-sm text-neutral-gray dark:text-dark-gray-medium">Navigation</span>

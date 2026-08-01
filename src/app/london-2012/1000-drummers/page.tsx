@@ -21,7 +21,7 @@ export default function OneThousandDrummersPage() {
         dateTime="2012-05-26"
       >
         <article>
-          <h1 className="text-3xl font-bold mb-6">1,000 Drummers</h1>
+          <h1 className="heading-1">1,000 Drummers</h1>
 
               <div className="space-y-6 text-lg">
                 <p>

@@ -50,7 +50,7 @@ export default function Modal({ isOpen, onClose, title, image, additionalImages,
           />
         )}
         
-        <h2>{title}</h2>
+        <h2 className="heading-2">{title}</h2>
         
         {description && <p>{description}</p>}
         
@@ -58,7 +58,7 @@ export default function Modal({ isOpen, onClose, title, image, additionalImages,
         
         {additionalImages && additionalImages.length > 0 && (
           <div className="additional-images">
-            <h3>Additional Images</h3>
+            <h3 className="heading-3">Additional Images</h3>
             <div className="image-gallery">
               {additionalImages.map((img, index) => (
                 <img 
@@ -74,7 +74,7 @@ export default function Modal({ isOpen, onClose, title, image, additionalImages,
         
         {additionalInfo && (
           <div className="additional-info">
-            <h3>Additional Information</h3>
+            <h3 className="heading-3">Additional Information</h3>
             <p>{additionalInfo}</p>
           </div>
         )}

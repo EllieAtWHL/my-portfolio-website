@@ -49,12 +49,86 @@
   --background-image-spurs-wrapper-gradient: linear-gradient(90deg, var(--spurs-dark-bg-2) 0%, var(--spurs-dark-bg-1) 25%, var(--spurs-bg-med) 50%, var(--spurs-dark-bg-1) 75%, var(--spurs-dark-bg-2) 100%);
 }
 
-@import "../styles/main-theme.css";
-@import "../styles/about-me.css";
-@import "../styles/experience.css";
-@import "../styles/projects.css";
-@import "../styles/blog.css";
-@import "../styles/not-found.css";
+/* Shared heading styles, built from Tailwind utilities via @apply so they're
+   defined once and applied consistently (className="heading-1" etc), rather
+   than either a bare unlayered element selector (the old approach - see
+   TAILWIND_MIGRATION_PLAN.md) or copy-pasting the same utility soup onto
+   every heading. Deliberately in @layer base, NOT @layer components: several
+   pages have their own more-specific container-scoped heading overrides
+   (e.g. .accent-card h3 in about-me.css) that need to keep winning via normal
+   specificity, the same way they did before this file existed. @layer
+   components would always beat @layer base regardless of specificity and
+   silently break those overrides. A plain Tailwind utility class still wins
+   over any of this either way (utilities always beats base). Not applied to
+   Spurs Women pages - that section has its own color system (.spurs-text)
+   and, once these bare rules stop capturing every heading, only needs its
+   existing Tailwind size/weight classes.
+
+   .heading-1 sets an explicit line-height because every real usage
+   previously had a Tailwind text-3xl/4xl/5xl class supplying one (1.2ish) -
+   without it, these headings would inherit the ambient 1.6 from
+   .main-wrapper instead, taller than they've ever actually rendered.
+   .heading-2/3/4 deliberately do NOT set line-height: their usages are a
+   mix of "used to have a Tailwind text-size class" and "never had one,
+   correctly inherits 1.6" (e.g. about-me.css, Modal.tsx), and there's no
+   single ratio that's right for both. Left as the default inherited value -
+   a few headings end up a little more tightly spaced than they used to be,
+   which is an acceptable trade for not needing a bespoke override at every
+   call site. */
+@layer base {
+  .heading-1 {
+    @apply font-bold text-center my-4;
+    font-size: clamp(2.5rem, 8vw, 5rem);
+    line-height: 1.2;
+    background: linear-gradient(135deg, var(--brand-primary-dark) 0%, var(--brand-primary-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 2px 2px 4px var(--shadow-dark);
+  }
+  .dark .heading-1 {
+    background: linear-gradient(135deg, var(--dark-accent) 0%, var(--dark-accent-bright) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .heading-2 {
+    @apply font-semibold text-brand-dark;
+    font-size: clamp(2rem, 6vw, 3rem);
+    margin: 2rem 0 1rem;
+  }
+  .dark .heading-2 {
+    @apply text-dark-accent;
+  }
+
+  .heading-3 {
+    @apply font-medium text-brand-darker;
+    font-size: clamp(1.5rem, 4vw, 2rem);
+  }
+  .dark .heading-3 {
+    @apply text-dark-accent;
+  }
+
+  .heading-4 {
+    @apply font-medium text-brand-dark;
+    font-size: clamp(1.2rem, 3vw, 1.5rem);
+  }
+  .dark .heading-4 {
+    @apply text-dark-accent;
+  }
+}
+
+/* Loaded into Tailwind's own "base" layer (rather than left unlayered) so
+   that an explicit Tailwind utility class always wins over these hand-written
+   rules when both target the same element - see TAILWIND_MIGRATION_PLAN.md
+   for the bug this fixes. */
+@import "../styles/main-theme.css" layer(base);
+@import "../styles/about-me.css" layer(base);
+@import "../styles/experience.css" layer(base);
+@import "../styles/projects.css" layer(base);
+@import "../styles/blog.css" layer(base);
+@import "../styles/not-found.css" layer(base);
 
 /* Hide content until theme is applied to prevent flash */
 html[data-theme-loading] {
@@ -137,52 +211,36 @@ html {
   padding-bottom: 120px;
 }
 
-/* Typography */
-h1 {
-  font-size: clamp(2.5rem, 8vw, 5rem);
-  font-weight: 700;
-  text-align: center;
-  margin: 1rem 0;
-  background: linear-gradient(135deg, var(--brand-primary-dark) 0%, var(--brand-primary-light) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-shadow: 2px 2px 4px var(--shadow-dark);
-}
+/* Typography: see .heading-1 .heading-2 .heading-3 .heading-4 in the
+   @layer components block above. Headings have no bare-element default
+   any more - apply the appropriate .heading-N class explicitly. */
 
-h2 {
-  font-size: clamp(2rem, 6vw, 3rem);
-  font-weight: 600;
-  color: var(--brand-primary-dark);
-  margin: 2rem 0 1rem;
-}
+/* Links: sitewide default, not opt-in, so this stays a plain element
+   selector - but @layer base means an explicit Tailwind utility on a
+   specific link can still override it. */
+@layer base {
+  a {
+    color: var(--brand-primary-dark);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+  }
 
-h3 {
-  font-weight: 500;
-  font-size: clamp(1.5rem, 4vw, 2rem);
-  color: var(--brand-primary-darker);
-}
+  a:hover {
+    color: var(--brand-primary-darker);
+    text-decoration: underline;
+    text-decoration-color: var(--brand-primary-dark);
+    text-decoration-thickness: 2px;
+  }
 
-h4 {
-  font-weight: 500;
-  font-size: clamp(1.2rem, 3vw, 1.5rem);
-  color: var(--brand-primary-dark);
-}
+  .dark a {
+    color: var(--dark-accent);
+  }
 
-/* Links */
-a {
-  color: var(--brand-primary-dark);
-  text-decoration: none;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-a:hover {
-  color: var(--brand-primary-darker);
-  text-decoration: underline;
-  text-decoration-color: var(--brand-primary-dark);
-  text-decoration-thickness: 2px;
+  .dark a:hover {
+    color: var(--dark-accent-bright);
+  }
 }
 
 /* Animations - more subtle and modern */
@@ -387,25 +445,6 @@ input:checked + .slider:before {
 .dark .content-with-footer {
   background: linear-gradient(135deg, var(--dark-bg-1) 0%, var(--dark-bg-2) 100%);
   color: var(--dark-text);
-}
-
-.dark h1 {
-  background: linear-gradient(135deg, var(--dark-accent) 0%, var(--dark-accent-bright) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.dark h2, .dark h3, .dark h4 {
-  color: var(--dark-accent);
-}
-
-.dark a {
-  color: var(--dark-accent);
-}
-
-.dark a:hover {
-  color: var(--dark-accent-bright);
 }
 
 .dark .findMe a {
@@ -629,14 +668,6 @@ input:checked + .slider:before {
 .dark .content {
   background: linear-gradient(135deg, var(--dark-bg-2) 0%, var(--dark-bg-1) 100%) !important;
   color: var(--dark-text) !important;
-}
-
-.dark a {
-  color: var(--dark-accent);
-}
-
-.dark a:hover {
-  color: var(--dark-accent-bright);
 }
 
 .dark button,
