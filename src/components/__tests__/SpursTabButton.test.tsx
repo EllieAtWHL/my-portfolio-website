@@ -56,4 +56,15 @@ describe('SpursTabButton', () => {
 
     expect(screen.getByRole('button', { name: 'Disabled tab' })).toBeDisabled()
   })
+
+  it('applies a caller-supplied className alongside the default styling', () => {
+    render(
+      <SpursTabButton isActive={false} onClick={() => {}} className="custom-test-class">
+        Custom tab
+      </SpursTabButton>
+    )
+
+    const button = screen.getByRole('button', { name: 'Custom tab' })
+    expect(button).toHaveClass('custom-test-class', 'text-gray-300', 'border-transparent')
+  })
 })
