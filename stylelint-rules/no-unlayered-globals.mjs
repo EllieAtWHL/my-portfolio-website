@@ -5,6 +5,8 @@ const { report, ruleMessages, validateOptions } = utils;
 
 const ruleName = 'portfolio/no-unlayered-globals';
 
+const KEYFRAMES_RE = /^(-\w+-)?keyframes$/i;
+
 const messages = ruleMessages(ruleName, {
   rejected: (selector) =>
     `Selector "${selector}" is not nested inside an @layer block. ` +
@@ -27,7 +29,7 @@ function hasLayerAncestor(node) {
 
 function hasKeyframesAncestor(node) {
   for (let parent = node.parent; parent; parent = parent.parent) {
-    if (parent.type === 'atrule' && /^(-\w+-)?keyframes$/i.test(parent.name)) return true;
+    if (parent.type === 'atrule' && KEYFRAMES_RE.test(parent.name)) return true;
   }
   return false;
 }
