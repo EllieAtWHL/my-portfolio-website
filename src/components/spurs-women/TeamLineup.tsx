@@ -92,33 +92,28 @@ export default function TeamLineup({ lineup }: TeamLineupProps) {
   // Fallback for players without stats
   const hasNoStats = sortedStarters.length === 0 && sortedSubstitutes.length === 0 && sortedUnusedSubstitutes.length === 0;
 
+  const tabs: { key: LineupTab; label: string; count: number }[] = [
+    { key: 'starters', label: 'Starting XI', count: sortedStarters.length },
+    { key: 'substitutes', label: 'Substitutes', count: sortedSubstitutes.length },
+    { key: 'unused', label: 'Unused', count: sortedUnusedSubstitutes.length },
+  ];
+
   return (
     <div className="mb-8">
       {!hasNoStats && (
         <>
           {/* Tabs */}
           <div className="flex gap-4 mb-4">
-            <SpursTabButton
-              isActive={activeTab === 'starters'}
-              onClick={() => setActiveTab('starters')}
-              disabled={sortedStarters.length === 0}
-            >
-              Starting XI ({sortedStarters.length})
-            </SpursTabButton>
-            <SpursTabButton
-              isActive={activeTab === 'substitutes'}
-              onClick={() => setActiveTab('substitutes')}
-              disabled={sortedSubstitutes.length === 0}
-            >
-              Substitutes ({sortedSubstitutes.length})
-            </SpursTabButton>
-            <SpursTabButton
-              isActive={activeTab === 'unused'}
-              onClick={() => setActiveTab('unused')}
-              disabled={sortedUnusedSubstitutes.length === 0}
-            >
-              Unused ({sortedUnusedSubstitutes.length})
-            </SpursTabButton>
+            {tabs.map((tab) => (
+              <SpursTabButton
+                key={tab.key}
+                isActive={activeTab === tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                disabled={tab.count === 0}
+              >
+                {tab.label} ({tab.count})
+              </SpursTabButton>
+            ))}
           </div>
 
           {/* Tab Content */}

@@ -60,20 +60,19 @@ export default function TeamClient({ team, teamId }: TeamClientProps) {
             <Card variant="spursAccent" padding="md" hover={false}>
               {/* Tabs */}
               <div className="flex gap-4 mb-4">
-                <SpursTabButton
-                  isActive={activeTab === 'current'}
-                  onClick={() => setActiveTab('current')}
-                  disabled={players.current.length === 0}
-                >
-                  Current ({players.current.length})
-                </SpursTabButton>
-                <SpursTabButton
-                  isActive={activeTab === 'former'}
-                  onClick={() => setActiveTab('former')}
-                  disabled={players.former.length === 0}
-                >
-                  Former ({players.former.length})
-                </SpursTabButton>
+                {([
+                  { key: 'current', label: 'Current', count: players.current.length },
+                  { key: 'former', label: 'Former', count: players.former.length },
+                ] as const).map((tab) => (
+                  <SpursTabButton
+                    key={tab.key}
+                    isActive={activeTab === tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    disabled={tab.count === 0}
+                  >
+                    {tab.label} ({tab.count})
+                  </SpursTabButton>
+                ))}
               </div>
 
               {/* Tab Content */}
