@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { TeamLineup } from '@/lib/data/players';
 import PlayerRow from './PlayerRow';
+import SpursTabButton from './SpursTabButton';
 
 interface TeamLineupProps {
   lineup: TeamLineup;
@@ -91,42 +92,33 @@ export default function TeamLineup({ lineup }: TeamLineupProps) {
   // Fallback for players without stats
   const hasNoStats = sortedStarters.length === 0 && sortedSubstitutes.length === 0 && sortedUnusedSubstitutes.length === 0;
 
-  const getTabClassName = (tab: LineupTab) => {
-    const isActive = activeTab === tab;
-    return `px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm border-b-2 ${
-      isActive
-        ? 'text-[var(--spurs-dark-accent)] bg-[var(--spurs-dark-bg-1)] border-[var(--spurs-dark-accent)]'
-        : 'text-gray-300 hover:text-[var(--spurs-dark-accent)] bg-[var(--spurs-dark-opacity-30)] border-transparent'
-    }`;
-  };
-
   return (
     <div className="mb-8">
       {!hasNoStats && (
         <>
           {/* Tabs */}
           <div className="flex gap-4 mb-4">
-            <button
+            <SpursTabButton
+              isActive={activeTab === 'starters'}
               onClick={() => setActiveTab('starters')}
-              className={getTabClassName('starters')}
               disabled={sortedStarters.length === 0}
             >
               Starting XI ({sortedStarters.length})
-            </button>
-            <button
+            </SpursTabButton>
+            <SpursTabButton
+              isActive={activeTab === 'substitutes'}
               onClick={() => setActiveTab('substitutes')}
-              className={getTabClassName('substitutes')}
               disabled={sortedSubstitutes.length === 0}
             >
               Substitutes ({sortedSubstitutes.length})
-            </button>
-            <button
+            </SpursTabButton>
+            <SpursTabButton
+              isActive={activeTab === 'unused'}
               onClick={() => setActiveTab('unused')}
-              className={getTabClassName('unused')}
               disabled={sortedUnusedSubstitutes.length === 0}
             >
               Unused ({sortedUnusedSubstitutes.length})
-            </button>
+            </SpursTabButton>
           </div>
 
           {/* Tab Content */}

@@ -5,6 +5,7 @@ import { Card } from '@/components/Card';
 import MatchCard from '@/components/spurs-women/MatchCard';
 import MatchFilterControls from '@/components/spurs-women/MatchFilterControls';
 import PlayerTable from '@/components/spurs-women/PlayerTable';
+import SpursTabButton from '@/components/spurs-women/SpursTabButton';
 import { getMatchesForTeam, getPlayersForTeam, TeamPlayers } from '@/lib/data/teams';
 import { Match } from '@/lib/data/matches';
 import TeamPill from '@/components/spurs-women/TeamPill';
@@ -59,48 +60,20 @@ export default function TeamClient({ team, teamId }: TeamClientProps) {
             <Card variant="spursAccent" padding="md" hover={false}>
               {/* Tabs */}
               <div className="flex gap-4 mb-4">
-                <button
+                <SpursTabButton
+                  isActive={activeTab === 'current'}
                   onClick={() => setActiveTab('current')}
-                  className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
-                    activeTab === 'current'
-                      ? 'text-[var(--spurs-dark-accent)]'
-                      : 'text-gray-300 hover:text-[var(--spurs-dark-accent)]'
-                  }`}
-                  style={{
-                    '--tab-bg': activeTab === 'current' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
-                    '--tab-border-color': activeTab === 'current' ? 'var(--spurs-dark-accent)' : 'transparent',
-                    '--tab-border-width': activeTab === 'current' ? '2px' : '0',
-                    '--tab-color': activeTab === 'current' ? 'var(--spurs-dark-accent)' : '#d1d5db',
-                    backgroundColor: 'var(--tab-bg)',
-                    borderBottomColor: 'var(--tab-border-color)',
-                    borderBottomWidth: 'var(--tab-border-width)',
-                    color: 'var(--tab-color)'
-                  } as React.CSSProperties}
                   disabled={players.current.length === 0}
                 >
                   Current ({players.current.length})
-                </button>
-                <button
+                </SpursTabButton>
+                <SpursTabButton
+                  isActive={activeTab === 'former'}
                   onClick={() => setActiveTab('former')}
-                  className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
-                    activeTab === 'former'
-                      ? 'text-[var(--spurs-dark-accent)]'
-                      : 'text-gray-300 hover:text-[var(--spurs-dark-accent)]'
-                  }`}
-                  style={{
-                    '--tab-bg': activeTab === 'former' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
-                    '--tab-border-color': activeTab === 'former' ? 'var(--spurs-dark-accent)' : 'transparent',
-                    '--tab-border-width': activeTab === 'former' ? '2px' : '0',
-                    '--tab-color': activeTab === 'former' ? 'var(--spurs-dark-accent)' : '#d1d5db',
-                    backgroundColor: 'var(--tab-bg)',
-                    borderBottomColor: 'var(--tab-border-color)',
-                    borderBottomWidth: 'var(--tab-border-width)',
-                    color: 'var(--tab-color)'
-                  } as React.CSSProperties}
                   disabled={players.former.length === 0}
                 >
                   Former ({players.former.length})
-                </button>
+                </SpursTabButton>
               </div>
 
               {/* Tab Content */}
