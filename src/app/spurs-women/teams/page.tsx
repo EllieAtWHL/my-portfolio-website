@@ -36,7 +36,7 @@ export default async function TeamsPage() {
   };
 
   return (
-    <main className="container mx-auto px-4 py-8 pb-24">
+    <main className="container mx-auto px-4 py-8 pb-footer-clearance">
       <h1 className="spurs-text font-bold mb-8 text-center">Teams</h1>
       
       {teams.length === 0 ? (

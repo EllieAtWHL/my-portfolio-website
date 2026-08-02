@@ -48,6 +48,14 @@
   --background-image-brand-gradient: linear-gradient(135deg, var(--brand-primary-dark) 0%, var(--brand-primary-light) 100%);
   --background-image-spurs-gradient: linear-gradient(135deg, var(--spurs-primary-dark) 0%, var(--spurs-primary-darker) 100%);
   --background-image-spurs-wrapper-gradient: linear-gradient(90deg, var(--spurs-dark-bg-2) 0%, var(--spurs-dark-bg-1) 25%, var(--spurs-bg-med) 50%, var(--spurs-dark-bg-1) 75%, var(--spurs-dark-bg-2) 100%);
+
+  /* Single source of truth for the fixed-footer clearance value, consumed
+     by both the main site (.content-with-footer below) and Spurs Women
+     (.spurs-wrapper main + every Spurs <main>'s own pb-footer-clearance
+     class in spurs-theme.css) - two independent mechanisms by design (see
+     CLAUDE.md on the two site sections), but sharing one number so they
+     can't drift out of sync. */
+  --spacing-footer-clearance: 6rem;
 }
 
 /* Shared heading styles, built from Tailwind utilities via @apply so they're
@@ -477,7 +485,7 @@ input:checked + .slider:before {
 
 .content-with-footer {
   padding-top: 80px;
-  padding-bottom: 6rem;
+  padding-bottom: var(--spacing-footer-clearance);
   background: linear-gradient(135deg, var(--bg-light-1) 0%, var(--bg-light-2) 100%);
 }
 

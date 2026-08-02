@@ -7,19 +7,21 @@
 }
 
 /* Bottom clearance for the fixed footer, in two parts:
-   1. Every Spurs Women <main> now carries an explicit `pb-24` Tailwind
-      class (6rem, matching the value below) alongside its own p-4/p-8/etc.
-      Tailwind generates pb-* utilities after the compound p-* ones in its
-      own stylesheet (verified in the compiled bundle), so pb-24 reliably
-      wins the padding-bottom property on a normal specificity tie - no
-      !important needed. This was tried as a margin-based rule first and
-      reverted (margin sits outside the box, so its background depends on
-      whatever's behind it - produced a visible white gap on some pages).
+   1. Every Spurs Women <main> now carries an explicit `pb-footer-clearance`
+      Tailwind class (generated from the --spacing-footer-clearance token in
+      globals.css's @theme block, currently 6rem, matching the value below)
+      alongside its own p-4/p-8/etc. Tailwind generates pb-* utilities after
+      the compound p-* ones in its own stylesheet (verified in the compiled
+      bundle), so pb-footer-clearance reliably wins the padding-bottom
+      property on a normal specificity tie - no !important needed. This was
+      tried as a margin-based rule first and reverted (margin sits outside
+      the box, so its background depends on whatever's behind it - produced
+      a visible white gap on some pages).
    2. This rule stays as a defensive fallback (no !important - it only
       matters when nothing more specific claims padding-bottom) for any
-      future <main> that forgets its own pb-24. */
+      future <main> that forgets its own pb-footer-clearance. */
 .spurs-wrapper main {
-  padding-bottom: 6rem;
+  padding-bottom: var(--spacing-footer-clearance);
 }
 
 .spurs.navbar,

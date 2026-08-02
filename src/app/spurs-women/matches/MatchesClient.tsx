@@ -33,7 +33,7 @@ export default function MatchesClient() {
 
   if (loading) {
     return (
-      <main className="p-8 pb-24">
+      <main className="p-8 pb-footer-clearance">
         <div className="max-w-6xl mx-auto">
           <div className="text-center">
             <p className="spurs-text text-lg">Loading matches...</p>
@@ -44,7 +44,7 @@ export default function MatchesClient() {
   }
 
   return (
-    <main className="p-8 pb-24">
+    <main className="p-8 pb-footer-clearance">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
           <h1 className="spurs-text font-bold mb-4 text-center">All Tottenham Hotspur Women Matches</h1>
