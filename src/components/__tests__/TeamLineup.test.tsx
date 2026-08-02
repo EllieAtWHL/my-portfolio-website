@@ -110,6 +110,30 @@ describe('TeamLineup', () => {
     expect(screen.getByRole('button', { name: 'Unused (0)' })).toBeDisabled()
   })
 
+  it('sorts by position using a partial-match fallback for non-exact position strings', () => {
+    const lineup: TeamLineupData = {
+      team_id: 1,
+      players: [
+        { ...makePlayer('fwd', { started: true }), position: 'Left Winger' },
+        { ...makePlayer('unknown', { started: true }), position: 'Utility Player' },
+        { ...makePlayer('gk', { started: true }), position: 'Backup GK' },
+        { ...makePlayer('mid', { started: true }), position: 'Attacking Mid' },
+        { ...makePlayer('def', { started: true }), position: 'Right Back' },
+      ],
+    }
+
+    render(<TeamLineup lineup={lineup} />)
+
+    const names = screen.getAllByText(/^First Player/).map((el) => el.textContent)
+    expect(names).toEqual([
+      'First Playergk',
+      'First Playerdef',
+      'First Playermid',
+      'First Playerfwd',
+      'First Playerunknown',
+    ])
+  })
+
   it('does not render tabs and falls back to a flat list when no player has stats', () => {
     const lineup: TeamLineupData = {
       team_id: 1,

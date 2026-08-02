@@ -8,6 +8,18 @@ jest.mock('@/lib/data/teams', () => ({
   getPlayersForTeam: jest.fn(),
 }))
 
+// This file only exercises the Current/Former players tab behaviour, not the
+// matches/filter section below it - stubbed out so these tests stay scoped
+// to what they actually assert on (rather than incidentally exercising two
+// large, separately-tested components with every render).
+jest.mock('@/components/spurs-women/MatchCard', () => {
+  return function MockMatchCard() { return null; };
+});
+
+jest.mock('@/components/spurs-women/MatchFilterControls', () => {
+  return function MockMatchFilterControls() { return null; };
+});
+
 import { getMatchesForTeam, getPlayersForTeam } from '@/lib/data/teams'
 
 const mockGetMatchesForTeam = getMatchesForTeam as jest.Mock
