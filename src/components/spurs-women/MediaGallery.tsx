@@ -12,6 +12,10 @@ type MediaGalleryProps = {
   fullWidth?: boolean;
 };
 
+// 3:2 aspect ratio, enforced via the padding-bottom trick. Shared between the
+// loading skeleton and the real photo grid so they can't silently desync.
+const PHOTO_ASPECT_RATIO_PADDING = '66.67%';
+
 export default function MediaGallery({ photos, fullWidth = false }: MediaGalleryProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [initialIndex, setInitialIndex] = useState(0);
@@ -72,7 +76,7 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
             <div
               key={index}
               className="rounded-lg overflow-hidden bg-gray-800 relative animate-pulse motion-reduce:animate-none"
-              style={{ paddingBottom: '66.67%' }}
+              style={{ paddingBottom: PHOTO_ASPECT_RATIO_PADDING }}
             />
           ))}
         </div>
@@ -147,7 +151,7 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
                 key={photo.id} 
                 className="cursor-pointer group rounded-lg overflow-hidden bg-gray-800 relative"
                 onClick={() => openLightbox(index)}
-                style={{ paddingBottom: '66.67%' }} // 3:2 aspect ratio
+                style={{ paddingBottom: PHOTO_ASPECT_RATIO_PADDING }}
               >
                 <img
                   src={photo.url}
