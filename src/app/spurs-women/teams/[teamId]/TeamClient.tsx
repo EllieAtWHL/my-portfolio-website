@@ -103,7 +103,7 @@ export default function TeamClient({ team, teamId }: TeamClientProps) {
               </div>
             ) : (
               <Card variant="spursAccent" padding="md" hover={false}>
-                <p className="text-gray-600">
+                <p className="spurs-text">
                   No matches found for this team.
                 </p>
               </Card>

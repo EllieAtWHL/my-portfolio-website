@@ -38,7 +38,7 @@ export default function ArticleCard({ article }: ArticleCardProps) {
               {displayTitle}
             </h3>
             {domain && (
-              <p className="text-xs text-gray-500 truncate">{domain}</p>
+              <p className="text-xs spurs-text opacity-75 truncate">{domain}</p>
             )}
           </div>
 

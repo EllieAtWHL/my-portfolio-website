@@ -137,7 +137,7 @@ export default function StadiumClient({ stadium, stadiumSlug }: StadiumClientPro
               </div>
             ) : (
               <Card variant="spursAccent" padding="md" hover={false}>
-                <p className="text-gray-600">
+                <p className="spurs-text">
                   No matches found at this stadium.
                 </p>
               </Card>

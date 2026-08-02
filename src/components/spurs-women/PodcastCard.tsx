@@ -43,7 +43,7 @@ export default function PodcastCard({ episode }: PodcastCardProps) {
         </div>
       </div>
       
-      <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+      <p className="spurs-text text-sm mb-4 line-clamp-3">
         {episode.description}
       </p>
       

@@ -201,7 +201,7 @@ export default function SeasonStats({ matches }: SeasonStatsProps) {
     if (stats.totalMatches === 0) {
       return (
         <Card variant="spursAccent" padding="lg" clickable={false}>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="spurs-text">
             No completed matches available for statistics calculation.
           </p>
         </Card>
