@@ -131,6 +131,24 @@
 @import "../styles/blog.css" layer(base);
 @import "../styles/not-found.css" layer(base);
 
+/* This whole block, through to the next @layer base { below, was left
+   unlayered - contradicting an earlier commit's claim that all of this
+   file was layered. Confirmed via code review (two independent passes)
+   that it genuinely wasn't: @layer base {} closes above after the
+   .heading-* rules, doesn't reopen until the `a`/`a:hover` block below,
+   and everything in between (theme-loading visibility, .prose overrides,
+   the box-sizing reset, .mobile-sidebar-content, .toggle-button,
+   .scrollable, and .content-with-footer .scrollable) was unlayered CSS
+   silently beating any Tailwind utility on the same property/element -
+   the exact bug class this whole branch exists to fix, just missed here.
+   Audited every selector below for a competing Tailwind utility before
+   wrapping (none found: .prose's overrides target markdown-rendered
+   p/blockquote with no Tailwind classes of their own; the one
+   box-sizing-adjacent utility in use, Card.tsx's `box-border`, resolves
+   to the identical value; .mobile-sidebar-content is !important-protected;
+   .toggle-button and .scrollable are used standalone everywhere). */
+@layer base {
+
 /* Hide content until theme is applied to prevent flash */
 html[data-theme-loading] {
   visibility: hidden;
@@ -222,6 +240,8 @@ html {
 .content-with-footer .scrollable {
   padding-bottom: 1rem;
 }
+
+} /* end @layer base */
 
 /* Typography: see .heading-1 .heading-2 .heading-3 .heading-4 in the
    @layer components block above. Headings have no bare-element default
