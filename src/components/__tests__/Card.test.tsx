@@ -12,7 +12,7 @@ describe('Card Component', () => {
     
     const card = screen.getByText('Card content').closest('.rounded-xl')
     expect(card).toBeInTheDocument()
-    expect(card).toHaveClass('transition-all', 'duration-300', 'w-full', 'max-w-full', 'box-border')
+    expect(card).toHaveClass('transition-all', 'duration-300', 'w-full', 'max-w-full')
     expect(card).toHaveClass('bg-white', 'dark:bg-gray-800', 'shadow-lg', 'p-6', 'no-hover')
   })
 
@@ -154,7 +154,7 @@ describe('Card Component', () => {
     
     const card = screen.getByText('Combined props card').closest('.rounded-xl')
     expect(card).toHaveClass(
-      'transition-all', 'duration-300', 'w-full', 'max-w-full', 'box-border',
+      'transition-all', 'duration-300', 'w-full', 'max-w-full',
       'bg-white', 'dark:bg-gray-800', 'border-2', 'border-gray-200', 'dark:border-gray-600',
       'shadow-lg', 'p-8', 'cursor-pointer', 'test-combined'
     )

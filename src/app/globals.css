@@ -137,16 +137,20 @@
    that it genuinely wasn't: @layer base {} closes above after the
    .heading-* rules, doesn't reopen until the `a`/`a:hover` block below,
    and everything in between (theme-loading visibility, .prose overrides,
-   the box-sizing reset, .mobile-sidebar-content, .toggle-button,
-   .scrollable, and .content-with-footer .scrollable) was unlayered CSS
-   silently beating any Tailwind utility on the same property/element -
-   the exact bug class this whole branch exists to fix, just missed here.
-   Audited every selector below for a competing Tailwind utility before
-   wrapping (none found: .prose's overrides target markdown-rendered
-   p/blockquote with no Tailwind classes of their own; the one
-   box-sizing-adjacent utility in use, Card.tsx's `box-border`, resolves
-   to the identical value; .mobile-sidebar-content is !important-protected;
-   .toggle-button and .scrollable are used standalone everywhere). */
+   the box-sizing reset, .toggle-button, .scrollable, and
+   .content-with-footer .scrollable) was unlayered CSS silently beating
+   any Tailwind utility on the same property/element - the exact bug
+   class this whole branch exists to fix, just missed here. Audited every
+   selector below for a competing Tailwind utility before wrapping
+   (.prose's overrides target markdown-rendered p/blockquote with no
+   Tailwind classes of their own; .toggle-button and .scrollable are used
+   standalone everywhere). Two more duplicate/!important cases turned up
+   in the same audit and were removed outright rather than just wrapped:
+   .mobile-sidebar-content (was !important, but redundant - the one
+   consumer already carries bg-white dark:bg-dark-bg-1, the identical
+   values, as real Tailwind classes) and Card.tsx's `box-border` utility
+   (redundant with the box-sizing reset below, since it applies to every
+   element already). */
 @layer base {
 
 /* Hide content until theme is applied to prevent flash */
@@ -180,16 +184,6 @@ html {
 *::before,
 *::after {
   box-sizing: border-box;
-}
-
-/* CSS Classes for Brand Colors (to use instead of Tailwind) */
-
-.mobile-sidebar-content {
-  background-color: var(--bg-white) !important;
-}
-
-.dark .mobile-sidebar-content {
-  background-color: var(--dark-bg-1) !important;
 }
 
 /* Footer and navbar links migrated to main-theme.css */

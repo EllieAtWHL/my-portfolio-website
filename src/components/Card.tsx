@@ -21,7 +21,10 @@ export function Card({
   clickable = false,
   onClick 
 }: CardProps) {
-  const baseClasses = 'transition-all duration-300 w-full max-w-full box-border';
+  // No box-border utility here: globals.css's universal `*, *::before,
+  // *::after { box-sizing: border-box; }` reset already covers every
+  // element, so an explicit box-border class would only duplicate it.
+  const baseClasses = 'transition-all duration-300 w-full max-w-full';
   
   const variantClasses = {
     default: 'bg-white dark:bg-gray-800 shadow-lg',

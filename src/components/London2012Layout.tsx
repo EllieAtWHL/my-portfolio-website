@@ -44,7 +44,7 @@ export default function London2012Layout({ children, date, dateTime }: London201
             overflow-hidden transition-all duration-300 ease-in-out
             ${isNavigationOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}
           `}>
-            <div className="p-4 bg-white dark:bg-dark-bg-1 rounded-b-lg border-x border-b border-brand-dark dark:border-dark-accent mobile-sidebar-content">
+            <div className="p-4 bg-white dark:bg-dark-bg-1 rounded-b-lg border-x border-b border-brand-dark dark:border-dark-accent">
               <London2012Sidebar showHeader={false} />
             </div>
           </div>
