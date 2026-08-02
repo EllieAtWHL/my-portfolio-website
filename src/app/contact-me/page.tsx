@@ -156,7 +156,7 @@ export default function ContactMe() {
                         name="first_name" 
                         size={20} 
                         type="text"
-                        className="w-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-200 form-input-tall"
+                        className="w-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 form-input-tall"
                         required
                       />
                     </div>
@@ -171,7 +171,7 @@ export default function ContactMe() {
                         name="last_name" 
                         size={20} 
                         type="text"
-                        className="w-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-200 form-input-tall"
+                        className="w-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 form-input-tall"
                         required
                       />
                     </div>
@@ -187,7 +187,7 @@ export default function ContactMe() {
                       name="email" 
                       size={20} 
                       type="email"
-                      className="w-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-200 form-input-tall"
+                      className="w-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 form-input-tall"
                       required
                     />
                   </div>
