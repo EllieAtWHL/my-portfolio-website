@@ -23,10 +23,13 @@ export default function LightboxGallery({
   const currentPhoto = photos[currentIndex];
 
   // Reset loading state when changing photos (adjusting state during render,
-  // per https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes)
-  const [loadingForIndex, setLoadingForIndex] = useState(currentIndex);
-  if (currentIndex !== loadingForIndex) {
-    setLoadingForIndex(currentIndex);
+  // per https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes).
+  // Keyed on photo id rather than index so a photos-array change that leaves
+  // currentIndex numerically the same (e.g. the list gets reordered/filtered
+  // while the lightbox is open) still triggers a reload of the new photo.
+  const [loadingForPhotoId, setLoadingForPhotoId] = useState(currentPhoto?.id);
+  if (currentPhoto && currentPhoto.id !== loadingForPhotoId) {
+    setLoadingForPhotoId(currentPhoto.id);
     setIsLoading(true);
   }
 

@@ -122,7 +122,7 @@ export default function TeamLineup({ lineup }: TeamLineupProps) {
           </div>
 
           {/* Tab Content */}
-          <div className="bg-spurs-dark rounded-lg border border-slate-200 overflow-hidden">
+          <div className="bg-[var(--spurs-dark-bg-1)] rounded-lg border border-slate-200 overflow-hidden">
             {displayedPlayers.length > 0 ? (
               displayedPlayers.map((player) => (
                 <PlayerRow
@@ -141,7 +141,7 @@ export default function TeamLineup({ lineup }: TeamLineupProps) {
 
       {/* Players without stats (fallback) */}
       {hasNoStats && (
-        <div className="bg-spurs-dark rounded-lg border border-slate-200 overflow-hidden">
+        <div className="bg-[var(--spurs-dark-bg-1)] rounded-lg border border-slate-200 overflow-hidden">
           {sortByPosition(lineup.players).map((player) => (
             <PlayerRow
               key={player.id}

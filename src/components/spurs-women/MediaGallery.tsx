@@ -16,16 +16,14 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [initialIndex, setInitialIndex] = useState(0);
   const [albumPhotos, setAlbumPhotos] = useState<Record<string, string[]>>({});
-  const [isLoadingManifest, setIsLoadingManifest] = useState(true);
-  const [isLoadingAlbums, setIsLoadingAlbums] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Fetch photo manifest and load album photos on component mount
   useEffect(() => {
     async function loadPhotoData() {
       try {
-        setIsLoadingManifest(true);
-        setIsLoadingAlbums(true);
-        
+        setIsLoading(true);
+
         // Load manifest for GitHub-based photos
         const manifest = await fetchPhotoManifest();
         
@@ -47,8 +45,7 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
       } catch (error) {
         console.error('Error loading photo data:', error);
       } finally {
-        setIsLoadingManifest(false);
-        setIsLoadingAlbums(false);
+        setIsLoading(false);
       }
     }
 
@@ -66,10 +63,10 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
   // while data is being fetched, rather than a spinner - preserves layout
   // and previews what's about to appear, per the design system's loading
   // state guidance.
-  if (isLoadingManifest || isLoadingAlbums) {
+  if (isLoading) {
     return (
       <div className="mb-6">
-        <h2 className="font-bold mb-4">Photos</h2>
+        <h2 className="font-bold media-title mb-4">Photos</h2>
         <div className={gridClass} role="status" aria-label="Loading photos">
           {Array.from({ length: 6 }).map((_, index) => (
             <div
@@ -131,7 +128,7 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
     <>
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-bold mb-4">Photos</h2>
+          <h2 className="font-bold media-title mb-4">Photos</h2>
           {allPhotos.length > 0 && (
             <Button
               onClick={openGalleryFromStart}
