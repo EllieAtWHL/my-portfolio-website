@@ -246,7 +246,7 @@ html {
 } /* end @layer base */
 
 /* Typography: see .heading-1 .heading-2 .heading-3 .heading-4 in the
-   @layer components block above. Headings have no bare-element default
+   @layer base block above. Headings have no bare-element default
    any more - apply the appropriate .heading-N class explicitly. */
 
 /* Links: sitewide default, not opt-in, so this stays a plain element
