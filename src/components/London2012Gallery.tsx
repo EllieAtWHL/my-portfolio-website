@@ -133,15 +133,22 @@ export default function London2012Gallery() {
                 index === currentSlide ? 'opacity-100' : 'opacity-0'
               }`}
             >
-              <div
-                className="relative h-full w-auto max-w-full overflow-hidden rounded-lg"
-                style={{ aspectRatio: `${slide.width} / ${slide.height}` }}
-              >
+              {/* inline-block (rather than the old fixed-height/aspect-ratio
+                  box) shrink-wraps to the <img>'s actual rendered size - the
+                  caption's absolute bottom-0 then always sits flush against
+                  the image's real bottom edge. The previous approach (h-full
+                  + aspect-ratio, sized via `fill`) locked the box's height to
+                  the full 50vh regardless of how much max-w-full clamped its
+                  width, so a wide-landscape photo on a narrow viewport got
+                  letterboxed well short of that height - visibly detaching
+                  the caption from the photo underneath it. */}
+              <div className="relative inline-block max-w-full overflow-hidden rounded-lg">
                 <Image
                   src={slide.src}
                   alt={slide.alt}
-                  fill
-                  className="object-contain"
+                  width={slide.width}
+                  height={slide.height}
+                  className="block max-h-[50vh] max-w-full w-auto h-auto object-contain"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
                 />
                 <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-4">
