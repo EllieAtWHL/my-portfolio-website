@@ -6,12 +6,22 @@ import { Button } from '@/components/Button';
 import { Match, MatchNavSummary } from '@/lib/data/matches';
 import TeamPill from '@/components/spurs-women/TeamPill';
 
+export type HeaderFontSize = 'text-lg' | 'text-xl' | 'text-2xl';
+
 interface MatchNavigationProps {
   previousMatch: MatchNavSummary | null;
   nextMatch: MatchNavSummary | null;
   currentMatch: Match;
-  headerFontSize: string;
+  headerFontSize: HeaderFontSize;
 }
+
+// Desktop/mobile header sizes scale up from the base Tailwind size so long
+// team names still fit; text-2xl (the default) needs no scaling on desktop.
+const HEADER_SIZE_CLASSES: Record<HeaderFontSize, { desktop: string; mobile: string }> = {
+  'text-lg': { desktop: 'text-[1.625rem]', mobile: 'text-[1.5rem]' },
+  'text-xl': { desktop: 'text-[1.875rem]', mobile: 'text-[1.75rem]' },
+  'text-2xl': { desktop: 'text-[2rem]', mobile: 'text-[1.875rem]' },
+};
 
 export default function MatchNavigation({
   previousMatch,
@@ -82,10 +92,7 @@ export default function MatchNavigation({
   // Determine the label to show under the score
   const scoreLabel = hasPensScores ? 'PENS' : (hasAetScores ? 'AET' : null);
 
-  const desktopHeaderSizeClass = headerFontSize === 'text-lg' ? 'text-[1.625rem]' :
-    headerFontSize === 'text-xl' ? 'text-[1.875rem]' : 'text-[2rem]';
-  const mobileHeaderSizeClass = headerFontSize === 'text-lg' ? 'text-[1.5rem]' :
-    headerFontSize === 'text-xl' ? 'text-[1.75rem]' : 'text-[1.875rem]';
+  const { desktop: desktopHeaderSizeClass, mobile: mobileHeaderSizeClass } = HEADER_SIZE_CLASSES[headerFontSize];
 
   return (
     <>

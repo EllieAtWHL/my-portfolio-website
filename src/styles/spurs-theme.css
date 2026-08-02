@@ -22,16 +22,6 @@
   padding-bottom: 6rem;
 }
 
-.content-with-footer {
-  padding-top: 80px;
-  padding-bottom: 6rem;
-}
-
-.dark .content-with-footer {
-  background-color: var(--dark-bg-1);
-  color: var(--dark-text);
-}
-
 .spurs.navbar,
 .dark .spurs.navbar,
 .spurs.footer,

@@ -9,7 +9,7 @@ import MediaGallery from '@/components/spurs-women/MediaGallery';
 import MediaList from '@/components/spurs-women/MediaList';
 import VideoGrid from '@/components/spurs-women/VideoGrid';
 import ArticleCard from '@/components/spurs-women/ArticleCard';
-import MatchNavigation from '@/components/spurs-women/MatchNavigation';
+import MatchNavigation, { HeaderFontSize } from '@/components/spurs-women/MatchNavigation';
 import TeamLineup from '@/components/spurs-women/TeamLineup';
 import { Media } from '@/lib/data/media';
 import { PhotoMedia } from '@/lib/data/media';
@@ -77,11 +77,11 @@ export default async function MatchDetailPage({ params }: PageProps) {
                                 awayScoreStr.length + 
                                 7; // +7 for " vs " and " - " and spaces
   
-  const getHeaderFontSize = () => {
-    let fontSize = 'text-2xl';
+  const getHeaderFontSize = (): HeaderFontSize => {
+    let fontSize: HeaderFontSize = 'text-2xl';
     if (totalHeaderTextLength > 45) fontSize = 'text-lg';
     else if (totalHeaderTextLength > 38) fontSize = 'text-xl';
-    
+
     return fontSize;
   };
 

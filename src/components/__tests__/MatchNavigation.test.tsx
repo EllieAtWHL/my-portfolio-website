@@ -279,4 +279,26 @@ describe('MatchNavigation', () => {
       });
     });
   });
+
+  describe('header font sizing', () => {
+    it.each([
+      ['text-lg', 'text-[1.625rem]', 'text-[1.5rem]'],
+      ['text-xl', 'text-[1.875rem]', 'text-[1.75rem]'],
+      ['text-2xl', 'text-[2rem]', 'text-[1.875rem]'],
+    ] as const)('maps headerFontSize=%s to the desktop/mobile scaled classes', (headerFontSize, desktopClass, mobileClass) => {
+      render(
+        <MatchNavigation
+          previousMatch={previousMatch}
+          nextMatch={nextMatch}
+          currentMatch={baseMatch}
+          headerFontSize={headerFontSize}
+        />
+      );
+
+      const headings = screen.getAllByRole('heading', { level: 1 });
+      expect(headings).toHaveLength(2);
+      expect(headings[0]).toHaveClass(desktopClass);
+      expect(headings[1]).toHaveClass(mobileClass);
+    });
+  });
 });
