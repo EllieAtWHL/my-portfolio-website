@@ -6,18 +6,20 @@
   padding-top: 80px;
 }
 
-/* Bottom clearance for the fixed footer. !important is deliberate: a page's
-   own <main> often carries its own Tailwind padding utility (p-4, p-8,
-   etc.), which (now that this file is properly layered) would otherwise win
-   the cascade for padding-bottom specifically. A margin-based version of
-   this rule was tried first and reverted - margin sits outside the box, so
-   its background depends on whatever's behind it, and on some pages/layouts
-   that isn't the intended gradient, producing a visible white gap. Keeping
-   this as padding (contained within the element's own background) with
-   !important to guarantee it wins avoids that, at the cost of the
-   !important itself. */
+/* Bottom clearance for the fixed footer, in two parts:
+   1. Every Spurs Women <main> now carries an explicit `pb-24` Tailwind
+      class (6rem, matching the value below) alongside its own p-4/p-8/etc.
+      Tailwind generates pb-* utilities after the compound p-* ones in its
+      own stylesheet (verified in the compiled bundle), so pb-24 reliably
+      wins the padding-bottom property on a normal specificity tie - no
+      !important needed. This was tried as a margin-based rule first and
+      reverted (margin sits outside the box, so its background depends on
+      whatever's behind it - produced a visible white gap on some pages).
+   2. This rule stays as a defensive fallback (no !important - it only
+      matters when nothing more specific claims padding-bottom) for any
+      future <main> that forgets its own pb-24. */
 .spurs-wrapper main {
-  padding-bottom: 6rem !important;
+  padding-bottom: 6rem;
 }
 
 .content-with-footer {

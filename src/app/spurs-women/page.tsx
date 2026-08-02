@@ -37,7 +37,7 @@ export default async function HomePage() {
   };
 
   return (
-    <main className="p-8">
+    <main className="p-8 pb-24">
       <h1 className="spurs-text font-bold mb-8 text-center">Tottenham Hotspur Women</h1>
 
       <div className="lg:grid lg:grid-cols-2 lg:gap-8 space-y-8 lg:space-y-0">

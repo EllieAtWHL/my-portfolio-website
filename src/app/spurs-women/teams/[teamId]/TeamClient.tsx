@@ -41,7 +41,7 @@ export default function TeamClient({ team, teamId }: TeamClientProps) {
   }, [teamId]);
 
   return (
-    <main className="p-4">
+    <main className="p-4 pb-24">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8 text-center">
           <TeamPill 
