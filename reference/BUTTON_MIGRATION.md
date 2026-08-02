@@ -142,10 +142,9 @@ Your new Button component consolidates all button patterns into a single, reusab
 
 ### ⚠️ Migration Incomplete
 
-Migration is **not** complete. As of the last audit, 13 production files still render raw `<button>` elements instead of the shared `Button` component (in addition to `Button.tsx` itself, which legitimately renders a native `<button>` internally):
+Migration is **not** complete. As of the last audit, 10 production files still render raw `<button>` elements instead of the shared `Button` component (in addition to `Button.tsx` itself and `spurs-women/SpursTabButton.tsx` — a shared Spurs Women tab-button component, same exemption as `Button.tsx`: it legitimately renders a native `<button>` internally so its own two consumers don't have to):
 
 - `src/components/admin/TabNav.tsx` (generic tab switcher, used for the admin page's matches/teams/players/stadiums tabs and edit sub-tabs — since the admin page decomposition, `src/app/spurs-women/admin/page.tsx` itself no longer renders any raw `<button>` directly)
-- `src/app/spurs-women/teams/[teamId]/TeamClient.tsx` (current/former squad tab toggle)
 - `src/components/Modal.tsx` (close button)
 - `src/components/UpdateBanner.tsx` (dismiss button)
 - `src/components/ExperienceContent.tsx` (tab switcher)
@@ -155,13 +154,13 @@ Migration is **not** complete. As of the last audit, 13 production files still r
 - `src/components/admin/MatchForm.tsx` (collapsible section toggles)
 - `src/components/admin/ColorPicker.tsx` (swatch/custom color buttons)
 - `src/components/spurs-women/LightboxGallery.tsx` (prev/next/close/thumbnail buttons)
-- `src/components/spurs-women/PlayerModal.tsx` (close button)
-- `src/components/spurs-women/TeamLineup.tsx` (starters/substitutes/unused tab toggle)
+
+`TeamClient.tsx`'s current/former squad toggle and `TeamLineup.tsx`'s starters/substitutes/unused toggle no longer appear here - both now use the shared `SpursTabButton` above instead of a raw `<button>` each. `PlayerModal.tsx` (previously listed) has been deleted outright - it was dead code, never actually triggered to open from anywhere.
 
 Most of these are small icon-only or tab-toggle buttons with bespoke styling (not the `.button primary`/`.button secondary` CSS classes this guide was originally written to migrate away from), so they may be a lower priority than the original `.button` class cleanup — but they are still raw `<button>` elements outside the shared component, and this list should be treated as the current source of truth rather than the "100% complete" claim below.
 
 ### 📊 Migration Progress
-**Not 100% complete** — the original `.button primary`/`.button secondary` CSS-class migration described above is done, but 13 files still use native `<button>` elements outside the `Button` component (see list above). Re-run `grep -rn "<button" src --include='*.tsx'` (excluding `Button.tsx` and `__tests__/`) to get a current count.
+**Not 100% complete** — the original `.button primary`/`.button secondary` CSS-class migration described above is done, but 10 files still use native `<button>` elements outside the `Button` component (see list above). Re-run `grep -rn "<button" src --include='*.tsx'` (excluding `Button.tsx`, `SpursTabButton.tsx`, and `__tests__/`) to get a current count.
 
 ## Benefits
 
