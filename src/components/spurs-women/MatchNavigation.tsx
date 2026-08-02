@@ -6,28 +6,32 @@ import { Button } from '@/components/Button';
 import { Match, MatchNavSummary } from '@/lib/data/matches';
 import TeamPill from '@/components/spurs-women/TeamPill';
 
-export type HeaderFontSize = 'text-lg' | 'text-xl' | 'text-2xl';
+// Tiers, not Tailwind classes: these are opaque lookup keys into
+// HEADER_SIZE_CLASSES below, matching Button.tsx's sm/md/lg size-prop
+// naming convention. Don't rename these to look like Tailwind classes again
+// - none of the three values is ever applied directly as a className.
+export type HeaderSizeTier = 'sm' | 'md' | 'lg';
 
 interface MatchNavigationProps {
   previousMatch: MatchNavSummary | null;
   nextMatch: MatchNavSummary | null;
   currentMatch: Match;
-  headerFontSize: HeaderFontSize;
+  headerSizeTier: HeaderSizeTier;
 }
 
 // Desktop/mobile header sizes scale up from the base Tailwind size so long
-// team names still fit; text-2xl (the default) needs no scaling on desktop.
-const HEADER_SIZE_CLASSES: Record<HeaderFontSize, { desktop: string; mobile: string }> = {
-  'text-lg': { desktop: 'text-[1.625rem]', mobile: 'text-[1.5rem]' },
-  'text-xl': { desktop: 'text-[1.875rem]', mobile: 'text-[1.75rem]' },
-  'text-2xl': { desktop: 'text-[2rem]', mobile: 'text-[1.875rem]' },
+// team names still fit; 'lg' (the default) needs no scaling on desktop.
+const HEADER_SIZE_CLASSES: Record<HeaderSizeTier, { desktop: string; mobile: string }> = {
+  sm: { desktop: 'text-[1.625rem]', mobile: 'text-[1.5rem]' },
+  md: { desktop: 'text-[1.875rem]', mobile: 'text-[1.75rem]' },
+  lg: { desktop: 'text-[2rem]', mobile: 'text-[1.875rem]' },
 };
 
 export default function MatchNavigation({
   previousMatch,
   nextMatch,
   currentMatch,
-  headerFontSize
+  headerSizeTier
 }: MatchNavigationProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -92,7 +96,7 @@ export default function MatchNavigation({
   // Determine the label to show under the score
   const scoreLabel = hasPensScores ? 'PENS' : (hasAetScores ? 'AET' : null);
 
-  const { desktop: desktopHeaderSizeClass, mobile: mobileHeaderSizeClass } = HEADER_SIZE_CLASSES[headerFontSize];
+  const { desktop: desktopHeaderSizeClass, mobile: mobileHeaderSizeClass } = HEADER_SIZE_CLASSES[headerSizeTier];
 
   return (
     <>

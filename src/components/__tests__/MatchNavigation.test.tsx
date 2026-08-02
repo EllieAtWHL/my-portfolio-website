@@ -92,7 +92,7 @@ describe('MatchNavigation', () => {
         previousMatch={previousMatch}
         nextMatch={nextMatch}
         currentMatch={baseMatch}
-        headerFontSize="text-2xl"
+        headerSizeTier="lg"
       />
     );
 
@@ -106,7 +106,7 @@ describe('MatchNavigation', () => {
         previousMatch={null}
         nextMatch={null}
         currentMatch={baseMatch}
-        headerFontSize="text-2xl"
+        headerSizeTier="lg"
       />
     );
 
@@ -124,7 +124,7 @@ describe('MatchNavigation', () => {
         previousMatch={previousMatch}
         nextMatch={nextMatch}
         currentMatch={baseMatch}
-        headerFontSize="text-2xl"
+        headerSizeTier="lg"
       />
     );
 
@@ -140,7 +140,7 @@ describe('MatchNavigation', () => {
         previousMatch={previousMatch}
         nextMatch={nextMatch}
         currentMatch={baseMatch}
-        headerFontSize="text-2xl"
+        headerSizeTier="lg"
       />
     );
 
@@ -156,7 +156,7 @@ describe('MatchNavigation', () => {
         previousMatch={null}
         nextMatch={nextMatch}
         currentMatch={baseMatch}
-        headerFontSize="text-2xl"
+        headerSizeTier="lg"
       />
     );
 
@@ -173,7 +173,7 @@ describe('MatchNavigation', () => {
           previousMatch={previousMatch}
           nextMatch={nextMatch}
           currentMatch={baseMatch}
-          headerFontSize="text-2xl"
+          headerSizeTier="lg"
         />
       );
 
@@ -194,7 +194,7 @@ describe('MatchNavigation', () => {
           previousMatch={previousMatch}
           nextMatch={nextMatch}
           currentMatch={aetMatch}
-          headerFontSize="text-2xl"
+          headerSizeTier="lg"
         />
       );
 
@@ -218,7 +218,7 @@ describe('MatchNavigation', () => {
           previousMatch={previousMatch}
           nextMatch={nextMatch}
           currentMatch={pensMatch}
-          headerFontSize="text-2xl"
+          headerSizeTier="lg"
         />
       );
 
@@ -234,7 +234,7 @@ describe('MatchNavigation', () => {
           previousMatch={previousMatch}
           nextMatch={nextMatch}
           currentMatch={baseMatch}
-          headerFontSize="text-2xl"
+          headerSizeTier="lg"
         />
       );
 
@@ -248,7 +248,7 @@ describe('MatchNavigation', () => {
           previousMatch={previousMatch}
           nextMatch={nextMatch}
           currentMatch={baseMatch}
-          headerFontSize="text-2xl"
+          headerSizeTier="lg"
         />
       );
 
@@ -282,16 +282,16 @@ describe('MatchNavigation', () => {
 
   describe('header font sizing', () => {
     it.each([
-      ['text-lg', 'text-[1.625rem]', 'text-[1.5rem]'],
-      ['text-xl', 'text-[1.875rem]', 'text-[1.75rem]'],
-      ['text-2xl', 'text-[2rem]', 'text-[1.875rem]'],
-    ] as const)('maps headerFontSize=%s to the desktop/mobile scaled classes', (headerFontSize, desktopClass, mobileClass) => {
+      ['sm', 'text-[1.625rem]', 'text-[1.5rem]'],
+      ['md', 'text-[1.875rem]', 'text-[1.75rem]'],
+      ['lg', 'text-[2rem]', 'text-[1.875rem]'],
+    ] as const)('maps headerSizeTier=%s to the desktop/mobile scaled classes', (headerSizeTier, desktopClass, mobileClass) => {
       render(
         <MatchNavigation
           previousMatch={previousMatch}
           nextMatch={nextMatch}
           currentMatch={baseMatch}
-          headerFontSize={headerFontSize}
+          headerSizeTier={headerSizeTier}
         />
       );
 

@@ -9,7 +9,7 @@ import MediaGallery from '@/components/spurs-women/MediaGallery';
 import MediaList from '@/components/spurs-women/MediaList';
 import VideoGrid from '@/components/spurs-women/VideoGrid';
 import ArticleCard from '@/components/spurs-women/ArticleCard';
-import MatchNavigation, { HeaderFontSize } from '@/components/spurs-women/MatchNavigation';
+import MatchNavigation, { HeaderSizeTier } from '@/components/spurs-women/MatchNavigation';
 import TeamLineup from '@/components/spurs-women/TeamLineup';
 import { Media } from '@/lib/data/media';
 import { PhotoMedia } from '@/lib/data/media';
@@ -77,12 +77,12 @@ export default async function MatchDetailPage({ params }: PageProps) {
                                 awayScoreStr.length + 
                                 7; // +7 for " vs " and " - " and spaces
   
-  const getHeaderFontSize = (): HeaderFontSize => {
-    let fontSize: HeaderFontSize = 'text-2xl';
-    if (totalHeaderTextLength > 45) fontSize = 'text-lg';
-    else if (totalHeaderTextLength > 38) fontSize = 'text-xl';
+  const getHeaderSizeTier = (): HeaderSizeTier => {
+    let sizeTier: HeaderSizeTier = 'lg';
+    if (totalHeaderTextLength > 45) sizeTier = 'sm';
+    else if (totalHeaderTextLength > 38) sizeTier = 'md';
 
-    return fontSize;
+    return sizeTier;
   };
 
   return (
@@ -92,7 +92,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
           previousMatch={previousMatch} 
           nextMatch={nextMatch}
           currentMatch={match}
-          headerFontSize={getHeaderFontSize()}
+          headerSizeTier={getHeaderSizeTier()}
         />
 
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-4">
