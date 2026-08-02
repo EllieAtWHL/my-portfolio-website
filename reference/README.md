@@ -10,7 +10,9 @@ AI agents working in this codebase.
 | Doc | Covers |
 |-----|--------|
 | [`PROJECT_CONTEXT.md`](./PROJECT_CONTEXT.md) | Architecture, tech stack, decisions, rules for coding agents |
+| [`ellieatwhl-design-system/README.md`](./ellieatwhl-design-system/README.md) | Design philosophy, visual language, and component library conventions |
 | [`CSS_ARCHITECTURE.md`](./CSS_ARCHITECTURE.md) | Modular CSS file structure and conventions |
+| [`TAILWIND_MIGRATION_PLAN.md`](./TAILWIND_MIGRATION_PLAN.md) | Tailwind/hand-written-CSS coexistence, cascade-layers fix, open next steps |
 | [`BUTTON_MIGRATION.md`](./BUTTON_MIGRATION.md) | Shared `Button` component usage and migration status |
 | [`DARK_MODE_FLASH_FIX.md`](./DARK_MODE_FLASH_FIX.md) | How flash-of-light-mode-on-load is prevented |
 | [`UPDATE_BANNER_MANAGEMENT.md`](./UPDATE_BANNER_MANAGEMENT.md) | The reusable `UpdateBanner` notification component |
@@ -29,6 +31,7 @@ AI agents working in this codebase.
 | [`spurs-women/match-stats.md`](./spurs-women/match-stats.md) | `MatchStats`/`TeamPill` components and team-color utility |
 | [`spurs-women/SEASON_STATISTICS_CALCULATIONS.md`](./spurs-women/SEASON_STATISTICS_CALCULATIONS.md) | How `SeasonStats` figures are calculated |
 | [`spurs-women/DEVELOPMENT_TODO.md`](./spurs-women/DEVELOPMENT_TODO.md) | Open backlog, prioritized |
+| [`spurs-women/api/API_DOCUMENTATION.md`](./spurs-women/api/API_DOCUMENTATION.md) | Public API endpoints (see also `openapi-spec.yaml` in the same folder) |
 
 ## Conventions
 

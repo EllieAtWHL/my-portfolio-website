@@ -30,7 +30,7 @@ export default function MyFirstAuditionPage() {
         dateTime="2011-11-04"
       >
         <article>
-          <h1 className="text-3xl font-bold mb-6">My First Audition</h1>
+          <h1 className="heading-1">My First Audition</h1>
 
               <div className="space-y-6 text-lg">
                 <p>

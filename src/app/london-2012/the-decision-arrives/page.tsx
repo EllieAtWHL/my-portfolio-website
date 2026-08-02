@@ -21,7 +21,7 @@ export default function TheDecisionArrivesPage() {
         dateTime="2012-01-16"
       >
         <article>
-          <h1 className="text-3xl font-bold mb-6">The Decision Arrives</h1>
+          <h1 className="heading-1">The Decision Arrives</h1>
 
               <div className="space-y-6 text-lg">
                 <p>

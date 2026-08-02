@@ -92,7 +92,7 @@ describe('MatchNavigation', () => {
         previousMatch={previousMatch}
         nextMatch={nextMatch}
         currentMatch={baseMatch}
-        headerFontSize="text-2xl"
+        headerSizeTier="lg"
       />
     );
 
@@ -106,7 +106,7 @@ describe('MatchNavigation', () => {
         previousMatch={null}
         nextMatch={null}
         currentMatch={baseMatch}
-        headerFontSize="text-2xl"
+        headerSizeTier="lg"
       />
     );
 
@@ -124,7 +124,7 @@ describe('MatchNavigation', () => {
         previousMatch={previousMatch}
         nextMatch={nextMatch}
         currentMatch={baseMatch}
-        headerFontSize="text-2xl"
+        headerSizeTier="lg"
       />
     );
 
@@ -140,7 +140,7 @@ describe('MatchNavigation', () => {
         previousMatch={previousMatch}
         nextMatch={nextMatch}
         currentMatch={baseMatch}
-        headerFontSize="text-2xl"
+        headerSizeTier="lg"
       />
     );
 
@@ -156,7 +156,7 @@ describe('MatchNavigation', () => {
         previousMatch={null}
         nextMatch={nextMatch}
         currentMatch={baseMatch}
-        headerFontSize="text-2xl"
+        headerSizeTier="lg"
       />
     );
 
@@ -173,7 +173,7 @@ describe('MatchNavigation', () => {
           previousMatch={previousMatch}
           nextMatch={nextMatch}
           currentMatch={baseMatch}
-          headerFontSize="text-2xl"
+          headerSizeTier="lg"
         />
       );
 
@@ -194,7 +194,7 @@ describe('MatchNavigation', () => {
           previousMatch={previousMatch}
           nextMatch={nextMatch}
           currentMatch={aetMatch}
-          headerFontSize="text-2xl"
+          headerSizeTier="lg"
         />
       );
 
@@ -218,7 +218,7 @@ describe('MatchNavigation', () => {
           previousMatch={previousMatch}
           nextMatch={nextMatch}
           currentMatch={pensMatch}
-          headerFontSize="text-2xl"
+          headerSizeTier="lg"
         />
       );
 
@@ -228,13 +228,13 @@ describe('MatchNavigation', () => {
   });
 
   describe('pending navigation state', () => {
-    it('swaps only the clicked button\'s arrow for a same-size spinner, without adding an extra element to the button', () => {
+    it('pulses only the clicked button\'s arrow in place, without adding an extra element to the button', () => {
       const { rerender } = render(
         <MatchNavigation
           previousMatch={previousMatch}
           nextMatch={nextMatch}
           currentMatch={baseMatch}
-          headerFontSize="text-2xl"
+          headerSizeTier="lg"
         />
       );
 
@@ -248,7 +248,7 @@ describe('MatchNavigation', () => {
           previousMatch={previousMatch}
           nextMatch={nextMatch}
           currentMatch={baseMatch}
-          headerFontSize="text-2xl"
+          headerSizeTier="lg"
         />
       );
 
@@ -258,25 +258,47 @@ describe('MatchNavigation', () => {
       // Both buttons are disabled while any navigation is pending.
       [...prevButtons, ...nextButtons].forEach((btn) => expect(btn).toBeDisabled());
 
-      // The clicked (previous) button shows exactly one spinner, matching the
-      // arrow icon's original size classes, and the button itself still has
+      // The clicked (previous) button's arrow gets the pulse class in place,
+      // matching its original size classes, and the button itself still has
       // only one child element (no second element stacked in from Button's
       // own `loading` render path, which is what previously grew the button's
       // height).
-      expect(prevButtons[0].querySelectorAll('.animate-spin')).toHaveLength(1);
-      expect(prevButtons[0].querySelector('.animate-spin')).toHaveClass('w-4', 'h-4');
+      expect(prevButtons[0].querySelectorAll('.animate-pulse')).toHaveLength(1);
+      expect(prevButtons[0].querySelector('.animate-pulse')).toHaveClass('w-4', 'h-4');
       expect(prevButtons[0].children).toHaveLength(1);
 
-      expect(prevButtons[1].querySelectorAll('.animate-spin')).toHaveLength(1);
-      expect(prevButtons[1].querySelector('.animate-spin')).toHaveClass('w-3', 'h-3');
+      expect(prevButtons[1].querySelectorAll('.animate-pulse')).toHaveLength(1);
+      expect(prevButtons[1].querySelector('.animate-pulse')).toHaveClass('w-3', 'h-3');
       expect(prevButtons[1].children).toHaveLength(1);
 
-      // The next button is unaffected — still shows its arrow, not a spinner.
+      // The next button is unaffected — its arrow isn't pulsing.
       nextButtons.forEach((btn) => {
-        expect(btn.querySelector('.animate-spin')).not.toBeInTheDocument();
+        expect(btn.querySelector('.animate-pulse')).not.toBeInTheDocument();
         expect(btn.querySelector('svg')).toBeInTheDocument();
         expect(btn.children).toHaveLength(1);
       });
+    });
+  });
+
+  describe('header font sizing', () => {
+    it.each([
+      ['sm', 'text-[1.625rem]', 'text-[1.5rem]'],
+      ['md', 'text-[1.875rem]', 'text-[1.75rem]'],
+      ['lg', 'text-[2rem]', 'text-[1.875rem]'],
+    ] as const)('maps headerSizeTier=%s to the desktop/mobile scaled classes', (headerSizeTier, desktopClass, mobileClass) => {
+      render(
+        <MatchNavigation
+          previousMatch={previousMatch}
+          nextMatch={nextMatch}
+          currentMatch={baseMatch}
+          headerSizeTier={headerSizeTier}
+        />
+      );
+
+      const headings = screen.getAllByRole('heading', { level: 1 });
+      expect(headings).toHaveLength(2);
+      expect(headings[0]).toHaveClass(desktopClass);
+      expect(headings[1]).toHaveClass(mobileClass);
     });
   });
 });

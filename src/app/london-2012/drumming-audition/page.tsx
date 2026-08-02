@@ -21,7 +21,7 @@ export default function DrummingAuditionPage() {
         dateTime="2011-11-20"
       >
         <article>
-          <h1 className="text-3xl font-bold mb-6">Drumming?!?</h1>
+          <h1 className="heading-1">Drumming?!?</h1>
 
               <div className="space-y-6 text-lg">
                 <p>

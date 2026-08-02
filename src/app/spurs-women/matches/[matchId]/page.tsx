@@ -9,7 +9,7 @@ import MediaGallery from '@/components/spurs-women/MediaGallery';
 import MediaList from '@/components/spurs-women/MediaList';
 import VideoGrid from '@/components/spurs-women/VideoGrid';
 import ArticleCard from '@/components/spurs-women/ArticleCard';
-import MatchNavigation from '@/components/spurs-women/MatchNavigation';
+import MatchNavigation, { HeaderSizeTier } from '@/components/spurs-women/MatchNavigation';
 import TeamLineup from '@/components/spurs-women/TeamLineup';
 import { Media } from '@/lib/data/media';
 import { PhotoMedia } from '@/lib/data/media';
@@ -77,22 +77,22 @@ export default async function MatchDetailPage({ params }: PageProps) {
                                 awayScoreStr.length + 
                                 7; // +7 for " vs " and " - " and spaces
   
-  const getHeaderFontSize = () => {
-    let fontSize = 'text-2xl';
-    if (totalHeaderTextLength > 45) fontSize = 'text-lg';
-    else if (totalHeaderTextLength > 38) fontSize = 'text-xl';
-    
-    return fontSize;
+  const getHeaderSizeTier = (): HeaderSizeTier => {
+    let sizeTier: HeaderSizeTier = 'lg';
+    if (totalHeaderTextLength > 45) sizeTier = 'sm';
+    else if (totalHeaderTextLength > 38) sizeTier = 'md';
+
+    return sizeTier;
   };
 
   return (
-    <main className="p-4">
+    <main className="p-4 pb-footer-clearance">
       <div className="max-w-6xl mx-auto">
         <MatchNavigation 
           previousMatch={previousMatch} 
           nextMatch={nextMatch}
           currentMatch={match}
-          headerFontSize={getHeaderFontSize()}
+          headerSizeTier={getHeaderSizeTier()}
         />
 
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-4">
@@ -122,7 +122,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
 
         {/* Match Info Section - Always Full Width */}
         <div className="mb-6">
-          <h2 className="text-2xl font-bold media-title mb-4">Match Info</h2>
+          <h2 className="font-bold media-title mb-4">Match Info</h2>
           <MatchInfo 
             stadium_display_name={match.stadium_display_name}
             stadium_slug={match.stadium_slug}
@@ -136,7 +136,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
         {/* Articles Section - Full Width when present */}
         {articles.length > 0 && (
           <div className="mb-6">
-            <h2 className="text-2xl font-bold media-title mb-4">Articles</h2>
+            <h2 className="font-bold media-title mb-4">Articles</h2>
             <div className="space-y-4">
               {articles.map((article) => (
                 <ArticleCard key={article.id} article={article} />
@@ -176,23 +176,14 @@ export default async function MatchDetailPage({ params }: PageProps) {
         {/* Team Lineups Section - Player Information */}
         {teamLineups && teamLineups.length > 0 && (
           <div className="mb-6">
-            <h2 className="text-2xl font-bold media-title mb-4">Team Lineup</h2>
+            <h2 className="font-bold media-title mb-4">Team Lineup</h2>
             <div className="space-y-8">
-              {teamLineups.map((lineup) => {
-                const teamColor = lineup.team_id === match.home_team?.id 
-                  ? match.home_team?.primary_color || 'blue'
-                  : lineup.team_id === match.away_team?.id 
-                    ? match.away_team?.primary_color || 'gray'
-                    : 'gray';
-
-                return (
-                  <TeamLineup
-                    key={lineup.team_id}
-                    lineup={lineup}
-                    teamColor={teamColor}
-                  />
-                );
-              })}
+              {teamLineups.map((lineup) => (
+                <TeamLineup
+                  key={lineup.team_id}
+                  lineup={lineup}
+                />
+              ))}
             </div>
           </div>
         )}

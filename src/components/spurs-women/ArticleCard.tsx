@@ -34,11 +34,11 @@ export default function ArticleCard({ article }: ArticleCardProps) {
         <div className="flex items-start space-x-3 p-4">
           {/* Content */}
           <div className="flex-1 min-w-0">
-            <h3 className="font-medium text-sm line-clamp-2 mb-1">
+            <h3 className="font-medium line-clamp-2">
               {displayTitle}
             </h3>
             {domain && (
-              <p className="text-xs text-gray-500 truncate">{domain}</p>
+              <p className="text-xs spurs-text opacity-75 truncate">{domain}</p>
             )}
           </div>
 

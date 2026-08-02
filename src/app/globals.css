@@ -39,6 +39,7 @@
   --color-dark-bg-1: var(--dark-bg-1);
   --color-dark-bg-2: var(--dark-bg-2);
   --color-dark-text: var(--dark-text);
+  --color-dark-text-darker: var(--dark-text-darker);
   --color-dark-accent: var(--dark-accent);
   --color-dark-accent-bright: var(--dark-accent-bright);
   --color-dark-gray-medium: var(--dark-gray-medium);
@@ -47,14 +48,118 @@
   --background-image-brand-gradient: linear-gradient(135deg, var(--brand-primary-dark) 0%, var(--brand-primary-light) 100%);
   --background-image-spurs-gradient: linear-gradient(135deg, var(--spurs-primary-dark) 0%, var(--spurs-primary-darker) 100%);
   --background-image-spurs-wrapper-gradient: linear-gradient(90deg, var(--spurs-dark-bg-2) 0%, var(--spurs-dark-bg-1) 25%, var(--spurs-bg-med) 50%, var(--spurs-dark-bg-1) 75%, var(--spurs-dark-bg-2) 100%);
+
+  /* Single source of truth for the fixed-footer clearance value, consumed
+     by both the main site (.content-with-footer below) and Spurs Women
+     (.spurs-wrapper main + every Spurs <main>'s own pb-footer-clearance
+     class in spurs-theme.css) - two independent mechanisms by design (see
+     CLAUDE.md on the two site sections), but sharing one number so they
+     can't drift out of sync. */
+  --spacing-footer-clearance: 6rem;
 }
 
-@import "../styles/main-theme.css";
-@import "../styles/about-me.css";
-@import "../styles/experience.css";
-@import "../styles/projects.css";
-@import "../styles/blog.css";
-@import "../styles/not-found.css";
+/* Shared heading styles, built from Tailwind utilities via @apply so they're
+   defined once and applied consistently (className="heading-1" etc), rather
+   than either a bare unlayered element selector (the old approach - see
+   TAILWIND_MIGRATION_PLAN.md) or copy-pasting the same utility soup onto
+   every heading. Deliberately in @layer base, NOT @layer components: several
+   pages have their own more-specific container-scoped heading overrides
+   (e.g. .accent-card h3 in about-me.css) that need to keep winning via normal
+   specificity, the same way they did before this file existed. @layer
+   components would always beat @layer base regardless of specificity and
+   silently break those overrides. A plain Tailwind utility class still wins
+   over any of this either way (utilities always beats base). Not applied to
+   Spurs Women pages - that section has its own color system (.spurs-text)
+   and, once these bare rules stop capturing every heading, only needs its
+   existing Tailwind size/weight classes.
+
+   .heading-1 sets an explicit line-height because every real usage
+   previously had a Tailwind text-3xl/4xl/5xl class supplying one (1.2ish) -
+   without it, these headings would inherit the ambient 1.6 from
+   .main-wrapper instead, taller than they've ever actually rendered.
+   .heading-2/3/4 deliberately do NOT set line-height: their usages are a
+   mix of "used to have a Tailwind text-size class" and "never had one,
+   correctly inherits 1.6" (e.g. about-me.css, Modal.tsx), and there's no
+   single ratio that's right for both. Left as the default inherited value -
+   a few headings end up a little more tightly spaced than they used to be,
+   which is an acceptable trade for not needing a bespoke override at every
+   call site. */
+@layer base {
+  .heading-1 {
+    @apply font-bold text-center my-4;
+    font-size: clamp(2.5rem, 8vw, 5rem);
+    line-height: 1.2;
+    background: linear-gradient(135deg, var(--brand-primary-dark) 0%, var(--brand-primary-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 2px 2px 4px var(--shadow-dark);
+  }
+  .dark .heading-1 {
+    background: linear-gradient(135deg, var(--dark-accent) 0%, var(--dark-accent-bright) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .heading-2 {
+    @apply font-semibold text-brand-dark;
+    font-size: clamp(2rem, 6vw, 3rem);
+    margin: 2rem 0 1rem;
+  }
+  .dark .heading-2 {
+    @apply text-dark-accent;
+  }
+
+  .heading-3 {
+    @apply font-medium text-brand-darker;
+    font-size: clamp(1.5rem, 4vw, 2rem);
+  }
+  .dark .heading-3 {
+    @apply text-dark-accent;
+  }
+
+  .heading-4 {
+    @apply font-medium text-brand-dark;
+    font-size: clamp(1.2rem, 3vw, 1.5rem);
+  }
+  .dark .heading-4 {
+    @apply text-dark-accent;
+  }
+}
+
+/* Loaded into Tailwind's own "base" layer (rather than left unlayered) so
+   that an explicit Tailwind utility class always wins over these hand-written
+   rules when both target the same element - see TAILWIND_MIGRATION_PLAN.md
+   for the bug this fixes. */
+@import "../styles/main-theme.css" layer(base);
+@import "../styles/about-me.css" layer(base);
+@import "../styles/experience.css" layer(base);
+@import "../styles/projects.css" layer(base);
+@import "../styles/blog.css" layer(base);
+@import "../styles/not-found.css" layer(base);
+
+/* This whole block, through to the next @layer base { below, was left
+   unlayered - contradicting an earlier commit's claim that all of this
+   file was layered. Confirmed via code review (two independent passes)
+   that it genuinely wasn't: @layer base {} closes above after the
+   .heading-* rules, doesn't reopen until the `a`/`a:hover` block below,
+   and everything in between (theme-loading visibility, .prose overrides,
+   the box-sizing reset, .toggle-button, .scrollable, and
+   .content-with-footer .scrollable) was unlayered CSS silently beating
+   any Tailwind utility on the same property/element - the exact bug
+   class this whole branch exists to fix, just missed here. Audited every
+   selector below for a competing Tailwind utility before wrapping
+   (.prose's overrides target markdown-rendered p/blockquote with no
+   Tailwind classes of their own; .toggle-button and .scrollable are used
+   standalone everywhere). Two more duplicate/!important cases turned up
+   in the same audit and were removed outright rather than just wrapped:
+   .mobile-sidebar-content (was !important, but redundant - the one
+   consumer already carries bg-white dark:bg-dark-bg-1, the identical
+   values, as real Tailwind classes) and Card.tsx's `box-border` utility
+   (redundant with the box-sizing reset below, since it applies to every
+   element already). */
+@layer base {
 
 /* Hide content until theme is applied to prevent flash */
 html[data-theme-loading] {
@@ -87,16 +192,6 @@ html {
 *::before,
 *::after {
   box-sizing: border-box;
-}
-
-/* CSS Classes for Brand Colors (to use instead of Tailwind) */
-
-.mobile-sidebar-content {
-  background-color: var(--bg-white) !important;
-}
-
-.dark .mobile-sidebar-content {
-  background-color: var(--dark-bg-1) !important;
 }
 
 /* Footer and navbar links migrated to main-theme.css */
@@ -137,53 +232,63 @@ html {
   padding-bottom: 120px;
 }
 
-/* Typography */
-h1 {
-  font-size: clamp(2.5rem, 8vw, 5rem);
-  font-weight: 700;
-  text-align: center;
-  margin: 1rem 0;
-  background: linear-gradient(135deg, var(--brand-primary-dark) 0%, var(--brand-primary-light) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-shadow: 2px 2px 4px var(--shadow-dark);
+/* .scrollable's own 120px bottom buffer exists for pages that use it without
+   .content-with-footer (e.g. salesforce-orgs). Every page that nests
+   .scrollable inside .content-with-footer already gets that wrapper's own
+   96px buffer - stacking both added up to 216px of empty space below the
+   footer's actual ~66px height. Higher specificity than either .scrollable
+   rule above (including the mobile media query version), so this applies at
+   all viewport sizes. */
+.content-with-footer .scrollable {
+  padding-bottom: 1rem;
 }
 
-h2 {
-  font-size: clamp(2rem, 6vw, 3rem);
-  font-weight: 600;
-  color: var(--brand-primary-dark);
-  margin: 2rem 0 1rem;
+} /* end @layer base */
+
+/* Typography: see .heading-1 .heading-2 .heading-3 .heading-4 in the
+   @layer base block above. Headings have no bare-element default
+   any more - apply the appropriate .heading-N class explicitly. */
+
+/* Links: sitewide default, not opt-in, so this stays a plain element
+   selector - but @layer base means an explicit Tailwind utility on a
+   specific link can still override it. */
+@layer base {
+  a {
+    color: var(--brand-primary-dark);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  a:hover {
+    color: var(--brand-primary-darker);
+    text-decoration: underline;
+    text-decoration-color: var(--brand-primary-dark);
+    text-decoration-thickness: 2px;
+  }
+
+  .dark a {
+    color: var(--dark-accent);
+  }
+
+  .dark a:hover {
+    color: var(--dark-accent-bright);
+  }
 }
 
-h3 {
-  font-weight: 500;
-  font-size: clamp(1.5rem, 4vw, 2rem);
-  color: var(--brand-primary-darker);
-}
-
-h4 {
-  font-weight: 500;
-  font-size: clamp(1.2rem, 3vw, 1.5rem);
-  color: var(--brand-primary-dark);
-}
-
-/* Links */
-a {
-  color: var(--brand-primary-dark);
-  text-decoration: none;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-a:hover {
-  color: var(--brand-primary-darker);
-  text-decoration: underline;
-  text-decoration-color: var(--brand-primary-dark);
-  text-decoration-thickness: 2px;
-}
+/* Everything below this point was previously unlayered, alongside the
+   heading/link rules above and the hand-written CSS files imported via
+   layer(base). Wrapping it into the same @layer base closes a bug found
+   after the fact: leaving it unlayered meant IT unconditionally beat the
+   now-layered main-theme.css/about-me.css/etc content regardless of
+   specificity, the exact same bug this file was created to fix, just
+   recreated between globals.css and the files it imports. Concretely:
+   .dark .button.primary in main-theme.css (specificity 0,3,0, the
+   correct gradient) was losing to .dark .button here (0,2,0, a flat
+   solid color) purely because this file was unlayered and main-theme.css
+   was not - not because of anything about the buttons themselves. */
+@layer base {
 
 /* Animations - more subtle and modern */
 h1.slideLeft {
@@ -380,32 +485,13 @@ input:checked + .slider:before {
 
 .content-with-footer {
   padding-top: 80px;
-  padding-bottom: 6rem;
+  padding-bottom: var(--spacing-footer-clearance);
   background: linear-gradient(135deg, var(--bg-light-1) 0%, var(--bg-light-2) 100%);
 }
 
 .dark .content-with-footer {
   background: linear-gradient(135deg, var(--dark-bg-1) 0%, var(--dark-bg-2) 100%);
   color: var(--dark-text);
-}
-
-.dark h1 {
-  background: linear-gradient(135deg, var(--dark-accent) 0%, var(--dark-accent-bright) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.dark h2, .dark h3, .dark h4 {
-  color: var(--dark-accent);
-}
-
-.dark a {
-  color: var(--dark-accent);
-}
-
-.dark a:hover {
-  color: var(--dark-accent-bright);
 }
 
 .dark .findMe a {
@@ -600,11 +686,11 @@ input:checked + .slider:before {
   color: var(--dark-text) !important;
 }
 
-.dark .blog-content a {
+.dark .blog-content a:not(.button) {
   color: var(--dark-accent);
 }
 
-.dark .blog-content a:hover {
+.dark .blog-content a:not(.button):hover {
   color: var(--dark-accent-bright);
 }
 
@@ -616,11 +702,17 @@ input:checked + .slider:before {
   color: var(--dark-text) !important;
 }
 
-.dark .blog-article a {
+/* :not(.button) - these are meant for plain text links in blog prose;
+   without it, they also capture .button-styled call-to-action links
+   (e.g. the Lightning Rollout post navigation), forcing light mint-green
+   text onto a light mint-green button background. Pre-existing bug,
+   predates the cascade-layers work - found while investigating a user
+   report of wrong-colored buttons on the Lightning Rollout pages. */
+.dark .blog-article a:not(.button) {
   color: var(--dark-accent) !important;
 }
 
-.dark .blog-article a:hover {
+.dark .blog-article a:not(.button):hover {
   color: var(--dark-accent-bright) !important;
 }
 
@@ -629,14 +721,6 @@ input:checked + .slider:before {
 .dark .content {
   background: linear-gradient(135deg, var(--dark-bg-2) 0%, var(--dark-bg-1) 100%) !important;
   color: var(--dark-text) !important;
-}
-
-.dark a {
-  color: var(--dark-accent);
-}
-
-.dark a:hover {
-  color: var(--dark-accent-bright);
 }
 
 .dark button,
@@ -790,3 +874,5 @@ body:not(.dark) .moon-icon {
 }
 
 /* Ensure primary button with w-full spans full width - migrated to main-theme.css */
+
+} /* end @layer base */

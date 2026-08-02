@@ -223,30 +223,6 @@
   color: var(--dark-text-darker);
 }
 
-body.dark .button.primary {
-  background: var(--button-hover-light);
-  color: var(--dark-text-darker);
-  border: 2px solid var(--button-hover-light);
-}
-
-body.dark .button.primary:hover {
-  background: var(--button-hover-light);
-  color: var(--dark-text-darker);
-  border: 2px solid var(--button-hover-light);
-}
-
-body:not(.dark) .button.primary {
-  background: var(--brand-primary-light);
-  color: var(--bg-light-1);
-  border: 2px solid var(--brand-primary-light);
-}
-
-body:not(.dark) .button.primary:hover {
-  background: var(--brand-primary-light);
-  color: var(--bg-light-1);
-  border: 2px solid var(--brand-primary-light);
-}
-
 /* Mobile nav button */
 .mobile-nav-button {
   background-color: var(--bg-white);
@@ -396,7 +372,10 @@ body:not(.dark) .button.primary:hover {
 
 .page-title {
   font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 700;
+  margin-top: 1rem;
   margin-bottom: 0.5rem;
+  text-shadow: 2px 2px 4px var(--shadow-dark);
   background: linear-gradient(135deg, var(--brand-primary-dark) 0%, var(--brand-primary-light) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -416,6 +395,7 @@ body:not(.dark) .button.primary:hover {
   color: var(--brand-primary-dark);
   margin: 0 0 1rem 0;
   font-weight: 700;
+  text-shadow: 2px 2px 4px var(--shadow-dark);
 }
 
 /* Dark mode page header styles */

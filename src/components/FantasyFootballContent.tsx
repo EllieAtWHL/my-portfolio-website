@@ -32,19 +32,19 @@ export default function FantasyFootballContent() {
           <div className="data-model-table">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card variant="accent" padding="md" className="topic-block">
-                <h4 className="table-title">NFL Team | <code className="code">NFL_Team__c</code></h4>
+                <h4 className="table-title heading-4">NFL Team | <code className="code">NFL_Team__c</code></h4>
                 <p>I created this object to efficiently store the team and bye week information for each player without having to repeat it for each player individually. This information can be obtained through the My Fantasy League API.</p>
               </Card>
               <Card variant="accent" padding="md" className="topic-block">
-                <h4 className="table-title">Player | <code className="code">Player__c</code></h4>
+                <h4 className="table-title heading-4">Player | <code className="code">Player__c</code></h4>
                 <p>In order to ensure that all players listed in the My Fantasy League database were available for selection during the draft, I needed to create a player record for each of them. If a player did not have a corresponding record, it meant they were not listed in the My Fantasy League database and could not be drafted. As with the team and bye week information, this data was obtained through the My Fantasy League API.</p>
               </Card>
               <Card variant="accent" padding="md" className="topic-block">
-                <h4 className="table-title">Team Owner | <code className="code">Team_Owner__c</code></h4>
+                <h4 className="table-title heading-4">Team Owner | <code className="code">Team_Owner__c</code></h4>
                 <p>In order to transmit the final draft results to My Fantasy League, I needed to store information about which players were drafted by which teams, as well as the team&apos;s logo URL. This data was importable through the My Fantasy League API.</p>
               </Card>
               <Card variant="accent" padding="md" className="topic-block">
-                <h4 className="table-title">Pick | <code className="code">Pick__c</code></h4>
+                <h4 className="table-title heading-4">Pick | <code className="code">Pick__c</code></h4>
                 <p>During the draft, these records were dynamically created when each pick was made. The record would reference the player who was drafted and the player&apos;s team, which was determined by looking up the franchise owner associated with the pick. This allowed us to track which players were drafted by which teams.</p>
               </Card>
             </div>

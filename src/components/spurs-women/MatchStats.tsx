@@ -47,7 +47,7 @@ export default function MatchStats({
 
   return (
     <div className="mb-6">
-      <h2 className="text-2xl font-bold media-title mb-4">Match Statistics</h2>
+      <h2 className="font-bold media-title mb-4">Match Statistics</h2>
       
       {/* Mobile: Single column, Tablet+: Responsive grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

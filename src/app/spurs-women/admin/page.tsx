@@ -348,7 +348,7 @@ export default function AdminPage() {
     <div className="p-4 pb-20">
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-8">
-          <h1 className="spurs-text text-3xl font-bold">Spurs Women Admin</h1>
+          <h1 className="spurs-text font-bold">Spurs Women Admin</h1>
           {user && (
             <div className="flex flex-wrap items-center justify-end gap-4">
               <Link href="/spurs-women/profile" className="text-sm hover:opacity-80 transition-opacity" style={{ color: 'var(--spurs-dark-accent)' }}>
@@ -682,7 +682,7 @@ export default function AdminPage() {
         {/* Recent Records Preview */}
         <div className="mt-8 spurs-accent-card rounded-lg p-6">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-semibold spurs-text">
+            <h3 className="font-semibold spurs-text">
               {activeTab === 'matches'
                 ? (matchSearch ? `All Matches (${filteredMatchesCount} filtered)` : 'All Matches')
                 : activeTab === 'teams' ? (teamSearch ? `All Teams (${filteredTeamsCount} filtered)` : 'All Teams') :

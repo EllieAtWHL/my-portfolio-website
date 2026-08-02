@@ -82,10 +82,10 @@ export default function VideoGrid({ videos }: VideoGridProps) {
   if (loading) {
     return (
       <div className="mb-6">
-        <h2 className="text-2xl font-bold media-title mb-4">Videos</h2>
+        <h2 className="font-bold media-title mb-4">Videos</h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {videos.map((video) => (
-            <div key={video.id} className="animate-pulse">
+            <div key={video.id} className="animate-pulse motion-reduce:animate-none">
               <div className="w-full h-48 bg-gray-300 rounded-t-lg"></div>
               <div className="p-4 bg-white dark:bg-gray-800 rounded-b-lg">
                 <div className="h-4 bg-gray-300 rounded mb-2"></div>
@@ -100,7 +100,7 @@ export default function VideoGrid({ videos }: VideoGridProps) {
 
   return (
     <div className="mb-6">
-      <h2 className="text-2xl font-bold media-title mb-4">Videos</h2>
+      <h2 className="font-bold media-title mb-4">Videos</h2>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {videos.map((video) => {
           const metadata = videoMetadata.get(video.url);

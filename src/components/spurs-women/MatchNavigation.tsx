@@ -6,18 +6,32 @@ import { Button } from '@/components/Button';
 import { Match, MatchNavSummary } from '@/lib/data/matches';
 import TeamPill from '@/components/spurs-women/TeamPill';
 
+// Tiers, not Tailwind classes: these are opaque lookup keys into
+// HEADER_SIZE_CLASSES below, matching Button.tsx's sm/md/lg size-prop
+// naming convention. Don't rename these to look like Tailwind classes again
+// - none of the three values is ever applied directly as a className.
+export type HeaderSizeTier = 'sm' | 'md' | 'lg';
+
 interface MatchNavigationProps {
   previousMatch: MatchNavSummary | null;
   nextMatch: MatchNavSummary | null;
   currentMatch: Match;
-  headerFontSize: string;
+  headerSizeTier: HeaderSizeTier;
 }
+
+// Desktop/mobile header sizes scale up from the base Tailwind size so long
+// team names still fit; 'lg' (the default) needs no scaling on desktop.
+const HEADER_SIZE_CLASSES: Record<HeaderSizeTier, { desktop: string; mobile: string }> = {
+  sm: { desktop: 'text-[1.625rem]', mobile: 'text-[1.5rem]' },
+  md: { desktop: 'text-[1.875rem]', mobile: 'text-[1.75rem]' },
+  lg: { desktop: 'text-[2rem]', mobile: 'text-[1.875rem]' },
+};
 
 export default function MatchNavigation({
   previousMatch,
   nextMatch,
   currentMatch,
-  headerFontSize
+  headerSizeTier
 }: MatchNavigationProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -35,16 +49,20 @@ export default function MatchNavigation({
     return team?.short_name || team?.name || 'Unknown Team';
   };
 
-  // Swaps the directional arrow for a same-size spinner in place, so the
-  // button's row layout (and height) never changes between states.
+  // Pulses the arrow in place while its navigation is pending, rather than
+  // swapping in a separate spinner element - keeps the button's row layout
+  // (and height) stable, and avoids a rotating spinner in favour of a calmer
+  // pulse, per the design system's loading-state guidance.
   const renderNavIcon = (direction: 'previous' | 'next', sizeClasses: string) => {
-    if (isPending && pendingDirection === direction) {
-      return <span className={`${sizeClasses} inline-block animate-spin rounded-full border-b-2 border-current`} />;
-    }
-
+    const isLoading = isPending && pendingDirection === direction;
     const path = direction === 'previous' ? 'M15 19l-7-7 7-7' : 'M9 5l7 7-7 7';
     return (
-      <svg className={sizeClasses} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg
+        className={`${sizeClasses} ${isLoading ? 'animate-pulse motion-reduce:animate-none' : ''}`}
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={path} />
       </svg>
     );
@@ -77,6 +95,8 @@ export default function MatchNavigation({
   
   // Determine the label to show under the score
   const scoreLabel = hasPensScores ? 'PENS' : (hasAetScores ? 'AET' : null);
+
+  const { desktop: desktopHeaderSizeClass, mobile: mobileHeaderSizeClass } = HEADER_SIZE_CLASSES[headerSizeTier];
 
   return (
     <>
@@ -118,7 +138,6 @@ export default function MatchNavigation({
           disabled={!previousMatch || isPending}
           size="sm"
           className="text-xs !px-2 !py-1 !text-xs"
-          style={{ padding: '0.25rem 0.5rem !important', fontSize: '0.75rem !important' }}
         >
           <div className="flex items-center">
             <span className="mr-1">{renderNavIcon('previous', 'w-3 h-3')}</span>
@@ -127,11 +146,7 @@ export default function MatchNavigation({
         </Button>
 
         {/* Match header (team names and score) in the middle */}
-        <h1 className={`spurs-text font-bold flex items-center gap-2 sm:gap-4 flex-wrap text-center ${headerFontSize}`}
-            style={{
-              fontSize: headerFontSize === 'text-lg' ? '1.625rem' : 
-                       headerFontSize === 'text-xl' ? '1.875rem' : '2rem'
-            }}>
+        <h1 className={`spurs-text font-bold flex items-center gap-2 sm:gap-4 flex-wrap text-center ${desktopHeaderSizeClass}`}>
           <TeamPill 
             teamName={currentMatch.home_team?.name || 'Unknown Team'}
             primaryColor={currentMatch.home_team?.primary_color}
@@ -157,7 +172,6 @@ export default function MatchNavigation({
           disabled={!nextMatch || isPending}
           size="sm"
           className="text-xs !px-2 !py-1 !text-xs"
-          style={{ padding: '0.25rem 0.5rem !important', fontSize: '0.75rem !important' }}
         >
           <div className="flex items-center">
             {nextMatch ? `${getTeamDisplayName(nextMatch.home_team)} vs ${getTeamDisplayName(nextMatch.away_team)}` : 'No Next Match'}
@@ -168,11 +182,7 @@ export default function MatchNavigation({
 
       {/* Mobile match header - centered below buttons */}
       <div className="sm:hidden mb-4">
-        <h1 className={`spurs-text font-bold flex items-center justify-center gap-2 flex-wrap text-center ${headerFontSize}`}
-            style={{
-              fontSize: headerFontSize === 'text-lg' ? '1.5rem' : 
-                       headerFontSize === 'text-xl' ? '1.75rem' : '1.875rem'
-            }}>
+        <h1 className={`spurs-text font-bold flex items-center justify-center gap-2 flex-wrap text-center ${mobileHeaderSizeClass}`}>
           <span>
             {currentMatch.home_team?.name}
           </span>

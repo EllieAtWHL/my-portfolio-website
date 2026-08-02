@@ -16,7 +16,7 @@ export default function UnauthorisedPage() {
   return (
     <div className="flex items-center justify-center p-4">
       <div className="spurs-accent-card rounded-lg p-8 max-w-md w-full text-center">
-        <h1 className="spurs-text text-3xl font-bold mb-4">Access Denied</h1>
+        <h1 className="spurs-text font-bold mb-4">Access Denied</h1>
         
         <div className="text-6xl mb-6">🔒</div>
         

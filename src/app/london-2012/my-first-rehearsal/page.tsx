@@ -21,7 +21,7 @@ export default function MyFirstRehearsalPage() {
         dateTime="2012-05-22"
       >
         <article>
-          <h1 className="text-3xl font-bold mb-6">My First Rehearsal</h1>
+          <h1 className="heading-1">My First Rehearsal</h1>
 
               <div className="space-y-6 text-lg">
                 <p>

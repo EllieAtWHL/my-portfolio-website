@@ -13,6 +13,7 @@ specific to the Spurs Women section.
 - **Match statistics component**: `match-stats.md`
 - **Season statistics calculations**: `SEASON_STATISTICS_CALCULATIONS.md`
 - **Open backlog / TODOs**: `DEVELOPMENT_TODO.md`
+- **Public API reference**: `api/API_DOCUMENTATION.md` (see also `api/openapi-spec.yaml`)
 
 ## Project Structure
 
@@ -55,7 +56,7 @@ Key components under `src/components/spurs-women/`:
 - **Layout**: `SpursHeader`, `SpursFooter`
 - **Matches**: `MatchCard`, `MatchStats` (see `match-stats.md`), `MatchFilterControls`, `SeasonStats` (see `SEASON_STATISTICS_CALCULATIONS.md`)
 - **Media**: `NewsCard`, `VideoCard`, `PodcastCard`, `LightboxGallery`, `SeasonReviewCard`, `MediaGallery` (see `reference/photo-gallery/README.md`)
-- **Players**: `PlayerCard`, `PlayerModal`, `TeamLineup`
+- **Players**: `PlayerCard`, `TeamLineup`
 - **Utility**: `TeamPill` (team-colored name pill), `InteractiveMap` (stadium location)
 
 ## Data Layer

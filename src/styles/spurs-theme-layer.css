@@ -1,0 +1,8 @@
+/* Next.js CSS imports from .tsx files can't attach `layer(...)` directly
+   (`import "./spurs-theme.css" layer(base)` isn't valid JS-import syntax),
+   so this wrapper exists purely to do the @import-with-layer at the CSS
+   level. layout.tsx imports this file, never spurs-theme.css itself -
+   importing spurs-theme.css directly from anywhere would land its rules
+   unlayered, where they'd beat every layered Tailwind utility regardless
+   of specificity (the exact bug this repo's cascade-layers work fixed). */
+@import "./spurs-theme.css" layer(base);

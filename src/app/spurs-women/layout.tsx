@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "../globals.css";
-import "../../styles/spurs-theme.css";
+import "../../styles/spurs-theme-layer.css";
 import SpursHeader from "../../components/spurs-women/SpursHeader";
 import SpursFooter from "../../components/spurs-women/SpursFooter";
 import { SpursWrapper } from "../../components/SpursWrapper";

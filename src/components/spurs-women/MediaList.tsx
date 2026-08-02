@@ -20,7 +20,7 @@ export default function MediaList({ items, title, layout = 'full-width' }: Media
 
   return (
     <div>
-      <h2 className="text-2xl font-bold media-title">{title}</h2>
+      <h2 className="font-bold media-title">{title}</h2>
       
       {socialMediaItems.length > 0 && (
         <div className="mb-4">

@@ -20,9 +20,9 @@ export default function SeasonFilterClient({ matches, seasonName, seasonReview }
   const [filteredMatches, setFilteredMatches] = useState<Match[]>(matches);
 
   return (
-    <main className="p-8">
+    <main className="p-8 pb-footer-clearance">
       <div className="max-w-6xl mx-auto">
-        <h1 className="spurs-text text-3xl font-bold mb-6">
+        <h1 className="spurs-text font-bold mb-6 text-center">
           {seasonName}
         </h1>
 

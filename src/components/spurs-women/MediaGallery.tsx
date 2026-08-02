@@ -12,20 +12,22 @@ type MediaGalleryProps = {
   fullWidth?: boolean;
 };
 
+// 3:2 aspect ratio, enforced via the padding-bottom trick. Shared between the
+// loading skeleton and the real photo grid so they can't silently desync.
+const PHOTO_ASPECT_RATIO_PADDING = '66.67%';
+
 export default function MediaGallery({ photos, fullWidth = false }: MediaGalleryProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [initialIndex, setInitialIndex] = useState(0);
   const [albumPhotos, setAlbumPhotos] = useState<Record<string, string[]>>({});
-  const [isLoadingManifest, setIsLoadingManifest] = useState(true);
-  const [isLoadingAlbums, setIsLoadingAlbums] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Fetch photo manifest and load album photos on component mount
   useEffect(() => {
     async function loadPhotoData() {
       try {
-        setIsLoadingManifest(true);
-        setIsLoadingAlbums(true);
-        
+        setIsLoading(true);
+
         // Load manifest for GitHub-based photos
         const manifest = await fetchPhotoManifest();
         
@@ -47,26 +49,36 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
       } catch (error) {
         console.error('Error loading photo data:', error);
       } finally {
-        setIsLoadingManifest(false);
-        setIsLoadingAlbums(false);
+        setIsLoading(false);
       }
     }
 
     loadPhotoData();
   }, [photos]);
 
+  // Determine grid layout based on fullWidth prop
+  const gridClass = fullWidth
+    ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+    : "grid grid-cols-2 md:grid-cols-3 gap-4";
+
   if (!photos || photos.length === 0) return null;
 
-  // Show loading state while data is being fetched
-  if (isLoadingManifest || isLoadingAlbums) {
+  // Show a skeleton grid (matching the real grid's shape and aspect ratio)
+  // while data is being fetched, rather than a spinner - preserves layout
+  // and previews what's about to appear, per the design system's loading
+  // state guidance.
+  if (isLoading) {
     return (
       <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-4">Photos</h2>
-        <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-400"></div>
-          <span className="ml-2 text-gray-500">
-            {isLoadingManifest ? 'Loading photo gallery...' : 'Loading photos...'}
-          </span>
+        <h2 className="font-bold media-title mb-4">Photos</h2>
+        <div className={gridClass} role="status" aria-label="Loading photos">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div
+              key={index}
+              className="rounded-lg overflow-hidden bg-gray-800 relative animate-pulse motion-reduce:animate-none"
+              style={{ paddingBottom: PHOTO_ASPECT_RATIO_PADDING }}
+            />
+          ))}
         </div>
       </div>
     );
@@ -116,16 +128,11 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
     setLightboxOpen(true);
   };
 
-  // Determine grid layout based on fullWidth prop
-  const gridClass = fullWidth 
-    ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
-    : "grid grid-cols-2 md:grid-cols-3 gap-4";
-
   return (
     <>
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold mb-4">Photos</h2>
+          <h2 className="font-bold media-title mb-4">Photos</h2>
           {allPhotos.length > 0 && (
             <Button
               onClick={openGalleryFromStart}
@@ -144,7 +151,7 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
                 key={photo.id} 
                 className="cursor-pointer group rounded-lg overflow-hidden bg-gray-800 relative"
                 onClick={() => openLightbox(index)}
-                style={{ paddingBottom: '66.67%' }} // 3:2 aspect ratio
+                style={{ paddingBottom: PHOTO_ASPECT_RATIO_PADDING }}
               >
                 <img
                   src={photo.url}

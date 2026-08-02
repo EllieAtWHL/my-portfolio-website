@@ -5,6 +5,7 @@ import { Card } from '@/components/Card';
 import MatchCard from '@/components/spurs-women/MatchCard';
 import MatchFilterControls from '@/components/spurs-women/MatchFilterControls';
 import PlayerTable from '@/components/spurs-women/PlayerTable';
+import SpursTabButton from '@/components/spurs-women/SpursTabButton';
 import { getMatchesForTeam, getPlayersForTeam, TeamPlayers } from '@/lib/data/teams';
 import { Match } from '@/lib/data/matches';
 import TeamPill from '@/components/spurs-women/TeamPill';
@@ -41,7 +42,7 @@ export default function TeamClient({ team, teamId }: TeamClientProps) {
   }, [teamId]);
 
   return (
-    <main className="p-4">
+    <main className="p-4 pb-footer-clearance">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8 text-center">
           <TeamPill 
@@ -54,53 +55,24 @@ export default function TeamClient({ team, teamId }: TeamClientProps) {
 
         {/* Players Section */}
         {(players.current.length > 0 || players.former.length > 0) && (
-          <div>
-            <h2 className="spurs-text text-2xl font-bold mb-4">Players</h2>
+          <div className="mb-8">
+            <h2 className="spurs-text font-bold mb-4">Players</h2>
             <Card variant="spursAccent" padding="md" hover={false}>
               {/* Tabs */}
               <div className="flex gap-4 mb-4">
-                <button
-                  onClick={() => setActiveTab('current')}
-                  className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
-                    activeTab === 'current'
-                      ? 'text-[var(--spurs-dark-accent)]'
-                      : 'text-gray-300 hover:text-[var(--spurs-dark-accent)]'
-                  }`}
-                  style={{
-                    '--tab-bg': activeTab === 'current' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
-                    '--tab-border-color': activeTab === 'current' ? 'var(--spurs-dark-accent)' : 'transparent',
-                    '--tab-border-width': activeTab === 'current' ? '2px' : '0',
-                    '--tab-color': activeTab === 'current' ? 'var(--spurs-dark-accent)' : '#d1d5db',
-                    backgroundColor: 'var(--tab-bg)',
-                    borderBottomColor: 'var(--tab-border-color)',
-                    borderBottomWidth: 'var(--tab-border-width)',
-                    color: 'var(--tab-color)'
-                  } as React.CSSProperties}
-                  disabled={players.current.length === 0}
-                >
-                  Current ({players.current.length})
-                </button>
-                <button
-                  onClick={() => setActiveTab('former')}
-                  className={`px-3 py-2 font-medium transition-all duration-200 rounded-t-lg text-sm ${
-                    activeTab === 'former'
-                      ? 'text-[var(--spurs-dark-accent)]'
-                      : 'text-gray-300 hover:text-[var(--spurs-dark-accent)]'
-                  }`}
-                  style={{
-                    '--tab-bg': activeTab === 'former' ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
-                    '--tab-border-color': activeTab === 'former' ? 'var(--spurs-dark-accent)' : 'transparent',
-                    '--tab-border-width': activeTab === 'former' ? '2px' : '0',
-                    '--tab-color': activeTab === 'former' ? 'var(--spurs-dark-accent)' : '#d1d5db',
-                    backgroundColor: 'var(--tab-bg)',
-                    borderBottomColor: 'var(--tab-border-color)',
-                    borderBottomWidth: 'var(--tab-border-width)',
-                    color: 'var(--tab-color)'
-                  } as React.CSSProperties}
-                  disabled={players.former.length === 0}
-                >
-                  Former ({players.former.length})
-                </button>
+                {([
+                  { key: 'current', label: 'Current', count: players.current.length },
+                  { key: 'former', label: 'Former', count: players.former.length },
+                ] as const).map((tab) => (
+                  <SpursTabButton
+                    key={tab.key}
+                    isActive={activeTab === tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    disabled={tab.count === 0}
+                  >
+                    {tab.label} ({tab.count})
+                  </SpursTabButton>
+                ))}
               </div>
 
               {/* Tab Content */}
@@ -111,7 +83,7 @@ export default function TeamClient({ team, teamId }: TeamClientProps) {
 
         <div className="grid gap-8">
           <div className="lg:col-span-2">
-            <h2 className="spurs-text text-2xl font-bold mb-4">Matches involving {team.name}</h2>
+            <h2 className="spurs-text font-bold mb-4">Matches involving {team.name}</h2>
             
             <MatchFilterControls 
               matches={matches}
@@ -131,7 +103,7 @@ export default function TeamClient({ team, teamId }: TeamClientProps) {
               </div>
             ) : (
               <Card variant="spursAccent" padding="md" hover={false}>
-                <p className="text-gray-600">
+                <p className="spurs-text">
                   No matches found for this team.
                 </p>
               </Card>

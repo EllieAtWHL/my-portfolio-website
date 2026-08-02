@@ -1,0 +1,12 @@
+{
+  "plugins": ["./stylelint-rules/no-unlayered-globals.mjs"],
+  "rules": {},
+  "overrides": [
+    {
+      "files": ["src/app/globals.css"],
+      "rules": {
+        "portfolio/no-unlayered-globals": true
+      }
+    }
+  ]
+}

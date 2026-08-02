@@ -49,14 +49,14 @@ export default function AboutMe() {
                 
                 <article className="intro-text">
                   <Card variant="highlight" padding="md" className="mb-6">
-                    <h2>Hi there! I&apos;m Ellie</h2>
+                    <h2 className="heading-2">Hi there! I&apos;m Ellie</h2>
                     <p>
                       A highly skilled and experienced Salesforce professional with a passion for technology and helping businesses succeed.
                     </p>
                   </Card>
                   
                   <Card variant="accent" padding="md" className="mb-6">
-                    <h3>Professional Excellence</h3>
+                    <h3 className="heading-3">Professional Excellence</h3>
                     <p>
                       With over 14 years of experience in the Salesforce ecosystem, I have a proven track record of leading development teams and staying up to date with the latest industry developments. I am 11 times Salesforce certified and an All-Star Trailhead ranger.
                     </p>
@@ -66,7 +66,7 @@ export default function AboutMe() {
                   </Card>
 
                   <Card variant="accent" padding="md" className="mb-6">
-                    <h3>Community & Volunteering</h3>
+                    <h3 className="heading-3">Community & Volunteering</h3>
                     <p>
                       In my free time, I volunteer both within the Salesforce community - including co-leading the{' '}
                       <a 
@@ -88,7 +88,7 @@ export default function AboutMe() {
                   </Card>
 
                   <Card variant="accent" padding="md" className="mb-6">
-                    <h3>Olympic Pride</h3>
+                    <h3 className="heading-3">Olympic Pride</h3>
                     <p>
                       One of my proudest accomplishments is volunteering at the London 2012 Olympic Ceremonies. I am working my way through updating{' '}
                       <a href="/london-2012/" className="highlight-link">my blog</a> with my experiences.
@@ -96,7 +96,7 @@ export default function AboutMe() {
                   </Card>
 
                   <Card variant="accent" padding="md" className="mb-6">
-                    <h3>Always Growing</h3>
+                    <h3 className="heading-3">Always Growing</h3>
                     <p>
                       I am always looking for new challenges and opportunities to grow both personally and professionally. Thank you for stopping by my &quot;About Me&quot; page!
                     </p>

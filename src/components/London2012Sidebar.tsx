@@ -16,30 +16,23 @@ const BLOGPOST_MAP = [
 ];
 
 interface London2012SidebarProps {
-  mode?: 'large' | 'small';
   showHeader?: boolean;
 }
 
-export default function London2012Sidebar({ mode = 'small', showHeader = true }: London2012SidebarProps) {
+export default function London2012Sidebar({ showHeader = true }: London2012SidebarProps) {
   const pathname = usePathname();
 
   return (
-    <div className={`london-2012-sidebar ${mode === 'large' ? 'centre' : ''}`}>
+    <div className="london-2012-sidebar">
       {showHeader && (
-        <>
-          {mode === 'large' ? (
-            <h1 className="text-3xl font-bold mb-2">My Olympic Journey</h1>
-          ) : (
-            <h3 className="text-xl font-bold mb-2">My Olympic Journey</h3>
-          )}
-        </>
+        <h3 className="heading-3 mb-2">My Olympic Journey</h3>
       )}
-      <UpdateBanner 
+      <UpdateBanner
         message="More stories coming soon."
         type="info"
         className="mb-6"
       />
-      <h4 className="text-lg font-semibold mb-4">Posts</h4>
+      <h4 className="heading-4 mb-4">Posts</h4>
       
       <ul className="space-y-2">
         {BLOGPOST_MAP.map((post) => (
@@ -49,7 +42,7 @@ export default function London2012Sidebar({ mode = 'small', showHeader = true }:
             ) : (
               <Link 
                 href={post.url}
-                className="text-brand-dark hover:text-brand-darker transition-colors"
+                className="text-brand-dark hover:text-brand-darker dark:text-dark-accent dark:hover:text-dark-accent-bright transition-colors"
               >
                 {post.title}
               </Link>

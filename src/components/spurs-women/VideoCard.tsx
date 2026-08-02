@@ -46,7 +46,7 @@ export default function VideoCard({ video, showDate = true }: VideoCardProps) {
         </div>
         <div className="p-4">
           <div className="flex items-start justify-between mb-3" style={{minHeight: '3rem'}}>
-            <h3 className="font-semibold spurs-text line-clamp-2 text-sm flex-1 leading-5">
+            <h3 className="font-semibold spurs-text line-clamp-2 flex-1">
               {video.title}
             </h3>
             <svg className="w-4 h-4 text-gray-400 ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

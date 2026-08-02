@@ -34,16 +34,16 @@ export default function PodcastCard({ episode }: PodcastCardProps) {
           />
         )}
         <div className="flex-1">
-          <h3 className="font-semibold text-lg spurs-text mb-1">
+          <h3 className="font-semibold spurs-text">
             {episode.episodeNumber}
           </h3>
-          <h4 className="text-md font-medium spurs-text mb-2">
+          <h4 className="text-xl font-medium spurs-text mb-2">
             {episode.title}
           </h4>
         </div>
       </div>
       
-      <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+      <p className="spurs-text text-sm mb-4 line-clamp-3">
         {episode.description}
       </p>
       

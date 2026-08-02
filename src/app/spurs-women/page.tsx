@@ -37,13 +37,13 @@ export default async function HomePage() {
   };
 
   return (
-    <main className="p-8">
-      <h1 className="spurs-text text-3xl font-bold mb-8 text-center">Tottenham Hotspur Women</h1>
+    <main className="p-8 pb-footer-clearance">
+      <h1 className="spurs-text font-bold mb-8 text-center">Tottenham Hotspur Women</h1>
 
       <div className="lg:grid lg:grid-cols-2 lg:gap-8 space-y-8 lg:space-y-0">
         {/* Upcoming Matches Section */}
         <section>
-            <h2 className="text-2xl font-semibold mb-4">{getMatchesHeaderText(upcoming, true)}</h2>
+            <h2 className="font-semibold mb-4">{getMatchesHeaderText(upcoming, true)}</h2>
             <div className="space-y-4">
               {upcoming.length > 0 ? (
                 upcoming.map((match: Match) => (
@@ -57,7 +57,7 @@ export default async function HomePage() {
 
         {/* Previous Matches Section */}
         <section>
-          <h2 className="text-2xl font-semibold mb-4">{getMatchesHeaderText(previous, false)}</h2>
+          <h2 className="font-semibold mb-4">{getMatchesHeaderText(previous, false)}</h2>
           <div className="space-y-4">
             {previous.length > 0 ? (
               previous.map((match: Match) => (
@@ -83,7 +83,7 @@ export default async function HomePage() {
       <div className="mt-12 space-y-12">
         {/* Spurs Women News Section */}
         <section>
-          <h2 className="text-2xl font-semibold mb-6 text-center">Latest Spurs Women News</h2>
+          <h2 className="font-semibold mb-6 text-center">Latest Spurs Women News</h2>
           <div className="mt-6 mb-8 text-center">
             <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
               Curated feed from selected sources bringing you the latest Spurs Women news and updates
@@ -104,7 +104,7 @@ export default async function HomePage() {
 
         {/* Spurs Women Podcasts Section */}
         <section>
-          <h2 className="text-2xl font-semibold mb-6 text-center">Latest Podcast Episodes</h2>
+          <h2 className="font-semibold mb-6 text-center">Latest Podcast Episodes</h2>
           <div className="mt-6 mb-8 text-center">
             <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
               Featuring N17 Women (dedicated Spurs Women podcast) and Hometown Glory (Spurs culture). These are independent podcast and are not affiliated with this website nor Tottenham Hotspur.
@@ -125,7 +125,7 @@ export default async function HomePage() {
 
         {/* Spurs Women Videos Section */}
         <section>
-          <h2 className="text-2xl font-semibold mb-6 text-center">Latest Videos</h2>
+          <h2 className="font-semibold mb-6 text-center">Latest Videos</h2>
           <div className="mt-6 mb-8 text-center">
             <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
               Official videos from the Spurs Women YouTube channel

@@ -23,10 +23,13 @@ export default function LightboxGallery({
   const currentPhoto = photos[currentIndex];
 
   // Reset loading state when changing photos (adjusting state during render,
-  // per https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes)
-  const [loadingForIndex, setLoadingForIndex] = useState(currentIndex);
-  if (currentIndex !== loadingForIndex) {
-    setLoadingForIndex(currentIndex);
+  // per https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes).
+  // Keyed on photo id rather than index so a photos-array change that leaves
+  // currentIndex numerically the same (e.g. the list gets reordered/filtered
+  // while the lightbox is open) still triggers a reload of the new photo.
+  const [loadingForPhotoId, setLoadingForPhotoId] = useState(currentPhoto?.id);
+  if (currentPhoto && currentPhoto.id !== loadingForPhotoId) {
+    setLoadingForPhotoId(currentPhoto.id);
     setIsLoading(true);
   }
 
@@ -91,7 +94,11 @@ export default function LightboxGallery({
       {/* Loading indicator */}
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center z-10">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+          <div
+            className="h-12 w-12 rounded-full bg-white/40 animate-pulse motion-reduce:animate-none"
+            role="status"
+            aria-label="Loading image"
+          />
         </div>
       )}
 
@@ -139,6 +146,7 @@ export default function LightboxGallery({
             navigatePrevious();
           }}
           disabled={photos.length <= 1}
+          aria-label="Previous photo"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -152,6 +160,7 @@ export default function LightboxGallery({
             navigateNext();
           }}
           disabled={photos.length <= 1}
+          aria-label="Next photo"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

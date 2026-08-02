@@ -612,9 +612,9 @@ For implementation detail on specific systems, see:
 - **Spurs Women caching**: `reference/spurs-women/cache/README.md`
 - **Spurs Women admin system**: `reference/spurs-women/admin/ADMIN_SYSTEM_DOCUMENTATION.md`
 - **Open backlog / TODOs**: `reference/spurs-women/DEVELOPMENT_TODO.md`
-- **Public API reference**: `reference/api/API_DOCUMENTATION.md` (see also `reference/api/openapi-spec.yaml`)
+- **Public API reference**: `reference/spurs-women/api/API_DOCUMENTATION.md` (see also `reference/spurs-women/api/openapi-spec.yaml`)
 
-Known open tech debt at time of writing: Button migration is incomplete (13
+Known open tech debt at time of writing: Button migration is incomplete (10
 files still render raw `<button>` elements outside the shared component - see
 BUTTON_MIGRATION.md for the current list), and cache hit-rate monitoring/
 metrics collection has not been implemented (see DEVELOPMENT_TODO.md).

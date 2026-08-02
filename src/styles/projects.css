@@ -223,7 +223,6 @@
 @media (max-width: 768px) {
   .projects-container {
     padding: 1rem;
-    padding-bottom: 120px;
   }
   
   .projects-grid {
@@ -274,7 +273,6 @@
 @media (max-width: 480px) {
   .projects-container {
     padding: 0.75rem;
-    padding-bottom: 120px;
   }
   
   .projects-grid {

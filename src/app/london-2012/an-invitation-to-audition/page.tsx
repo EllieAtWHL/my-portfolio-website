@@ -30,7 +30,7 @@ export default function AnInvitationToAuditionPage() {
         dateTime="2011-09-15"
       >
         <article>
-          <h1 className="text-3xl font-bold mb-6">An Invitation to Audition</h1>
+          <h1 className="heading-1">An Invitation to Audition</h1>
 
               <div className="space-y-6 text-lg">
                 <p>

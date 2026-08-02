@@ -25,9 +25,9 @@ export default function Home() {
     <MainSitePage>
       <div className="content-with-footer">
         <div className="scrollable">
-          <h1 className="slideLeft">Trailblazer.</h1>
-          <h1 className="slideRight">Mentor.</h1>
-          <h1 className="slideDown">Champion.</h1>
+          <h1 className="heading-1 slideLeft">Trailblazer.</h1>
+          <h1 className="heading-1 slideRight">Mentor.</h1>
+          <h1 className="heading-1 slideDown">Champion.</h1>
           <div className="contactMe fadeIn">
             <Button variant="primary" asChild onClick={handleContactClick}>
               <Link href="/contact-me">

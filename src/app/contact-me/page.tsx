@@ -87,7 +87,7 @@ export default function ContactMe() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-green-600 to-green-400 bg-clip-text text-transparent">
+                <h1 className="heading-1">
                   Thank You!
                 </h1>
                 <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
@@ -107,7 +107,7 @@ export default function ContactMe() {
         <div className="scrollable">
           <div className="max-w-2xl mx-auto">
             <div className="text-center">
-              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-green-600 to-green-400 bg-clip-text text-transparent">
+              <h1 className="heading-1">
                 Get In Touch
               </h1>
               <p className="text-lg form-label">
@@ -156,7 +156,7 @@ export default function ContactMe() {
                         name="first_name" 
                         size={20} 
                         type="text"
-                        className="w-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-200 form-input-tall"
+                        className="w-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 form-input-tall"
                         required
                       />
                     </div>
@@ -171,7 +171,7 @@ export default function ContactMe() {
                         name="last_name" 
                         size={20} 
                         type="text"
-                        className="w-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-200 form-input-tall"
+                        className="w-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 form-input-tall"
                         required
                       />
                     </div>
@@ -187,7 +187,7 @@ export default function ContactMe() {
                       name="email" 
                       size={20} 
                       type="email"
-                      className="w-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-200 form-input-tall"
+                      className="w-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 form-input-tall"
                       required
                     />
                   </div>
