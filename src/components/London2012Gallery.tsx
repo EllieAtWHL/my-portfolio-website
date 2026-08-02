@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 
 interface SlideData {
@@ -107,6 +107,34 @@ const slides: SlideData[] = [
 
 export default function London2012Gallery() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  // Available box the photo can occupy, measured directly rather than left
+  // to CSS: a `fill` Image contributes no intrinsic size of its own, so an
+  // aspect-ratio box with only a `fill` child as its content has nothing to
+  // size itself from in this flex layout and collapses to 0x0 (confirmed by
+  // testing the CSS-only version before landing on this). Measuring here
+  // instead lets each slide compute the largest box that fits both the
+  // container's width and the 50vh height cap while keeping its own aspect
+  // ratio - the same result the old h-full approach was trying (and failing)
+  // to get via a fixed height plus a max-w-full clamp, which produced a box
+  // whose on-screen aspect ratio didn't match the photo's whenever width
+  // was the binding constraint (letterboxing that visibly detached the
+  // caption from the photo on a narrow viewport with a wide-landscape photo).
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const updateSize = () => {
+      setContainerSize({ width: el.offsetWidth, height: el.offsetHeight });
+    };
+
+    updateSize();
+    const observer = new ResizeObserver(updateSize);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -123,41 +151,48 @@ export default function London2012Gallery() {
   return (
     <div className="london-2012-gallery">
       <h2 className="heading-2">Image Gallery</h2>
-      
+
       <div className="relative slideshow-container">
-        <div className="relative h-[50vh] w-full">
-          {slides.map((slide, index) => (
-            <div
-              key={index}
-              className={`absolute inset-0 flex items-center justify-center transition-opacity duration-500 ${
-                index === currentSlide ? 'opacity-100' : 'opacity-0'
-              }`}
-            >
-              {/* inline-block (rather than the old fixed-height/aspect-ratio
-                  box) shrink-wraps to the <img>'s actual rendered size - the
-                  caption's absolute bottom-0 then always sits flush against
-                  the image's real bottom edge. The previous approach (h-full
-                  + aspect-ratio, sized via `fill`) locked the box's height to
-                  the full 50vh regardless of how much max-w-full clamped its
-                  width, so a wide-landscape photo on a narrow viewport got
-                  letterboxed well short of that height - visibly detaching
-                  the caption from the photo underneath it. */}
-              <div className="relative inline-block max-w-full overflow-hidden rounded-lg">
-                <Image
-                  src={slide.src}
-                  alt={slide.alt}
-                  width={slide.width}
-                  height={slide.height}
-                  className="block max-h-[50vh] max-w-full w-auto h-auto object-contain"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
-                />
-                <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-4">
-                  <div className="text-sm mb-1">{index + 1} / {slides.length}</div>
-                  <div className="text-base">{slide.caption}</div>
+        <div ref={containerRef} className="relative h-[50vh] w-full">
+          {slides.map((slide, index) => {
+            const photoRatio = slide.width / slide.height;
+            const availableRatio = containerSize.width / containerSize.height || photoRatio;
+            const isMeasured = containerSize.width > 0 && containerSize.height > 0;
+            const [boxWidth, boxHeight] = availableRatio > photoRatio
+              ? [containerSize.height * photoRatio, containerSize.height]
+              : [containerSize.width, containerSize.width / photoRatio];
+
+            return (
+              <div
+                key={index}
+                className={`absolute inset-0 flex items-center justify-center transition-opacity duration-500 ${
+                  index === currentSlide ? 'opacity-100' : 'opacity-0'
+                }`}
+              >
+                <div
+                  className="relative overflow-hidden rounded-lg w-full h-full"
+                  // Before the ResizeObserver's first callback, containerSize
+                  // is still {0, 0} - fall back to filling the (already-sized
+                  // via CSS) parent for that one frame rather than collapsing
+                  // to 0x0, which would trigger next/image's "fill with a
+                  // height of 0" warning and a visible flash.
+                  style={isMeasured ? { width: boxWidth, height: boxHeight } : undefined}
+                >
+                  <Image
+                    src={slide.src}
+                    alt={slide.alt}
+                    fill
+                    className="object-contain"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-4">
+                    <div className="text-sm mb-1">{index + 1} / {slides.length}</div>
+                    <div className="text-base">{slide.caption}</div>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Navigation arrows */}
