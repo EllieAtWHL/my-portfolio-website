@@ -36,6 +36,14 @@ async function fetchTeamByIdFromDB(teamId: string): Promise<Team | null> {
 }
 
 async function fetchMatchesForTeamFromDB(teamId: string): Promise<Match[]> {
+  // Teams use integer IDs; validate before interpolating into the .or() filter string,
+  // since PostgREST's .or() syntax (unlike .eq()) has no parameterized-value form.
+  const numericTeamId = Number(teamId);
+  if (!Number.isInteger(numericTeamId)) {
+    console.error('Invalid teamId passed to fetchMatchesForTeamFromDB:', teamId);
+    return [];
+  }
+
   const { data, error } = await supabase
     .from('matches_with_stadium')
     .select(`
@@ -44,7 +52,7 @@ async function fetchMatchesForTeamFromDB(teamId: string): Promise<Match[]> {
       away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
       competitions:competition_id(name, icon_svg)
     `)
-    .or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`)
+    .or(`home_team_id.eq.${numericTeamId},away_team_id.eq.${numericTeamId}`)
     .order('date', { ascending: false });
 
   if (error) {
