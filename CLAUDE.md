@@ -20,6 +20,7 @@ When reviewing or fixing something in this repo, proactively flag **and fix** re
 npm run dev                    # Start dev server (localhost:3000)
 npm run build                  # Production build
 npm run lint                   # ESLint
+npm run lint:css               # Stylelint - custom rule guarding globals.css's cascade-layer wrapping (see CI section)
 npm run typecheck              # tsc --noEmit
 npm test                       # Jest, run once
 npm run test:watch             # Jest watch mode
@@ -35,7 +36,9 @@ Other scripts (see `package.json`): `migrate-storage[:dry-run]`, `generate-exter
 
 ## CI
 
-`.github/workflows/ci.yml` runs lint, typecheck, Jest+coverage, and a production build as separate jobs on PRs/pushes to `main`/`develop`. `.github/workflows/playwright.yml` runs the E2E suite. `.github/workflows/validate-manifest.yml` regenerates/validates the photo manifest. None of these gate the actual Vercel deploy (git-push-to-deploy from `main`).
+`.github/workflows/ci.yml` runs lint, CSS lint, typecheck, Jest+coverage, and a production build as separate jobs on PRs/pushes to `main`/`develop`. `.github/workflows/playwright.yml` runs the E2E suite. `.github/workflows/validate-manifest.yml` regenerates/validates the photo manifest. None of these gate the actual Vercel deploy (git-push-to-deploy from `main`).
+
+CSS lint (`npm run lint:css`) runs a single custom Stylelint rule (`stylelint-rules/no-unlayered-globals.mjs`), scoped to `globals.css` only, that fails if any style rule in that file isn't nested inside an `@layer` block. It's deliberately narrow: `globals.css` is the file that does its own `@layer` wrapping (plus wrapping the page-specific CSS files it imports via `layer(base)`), so it's the one place a rule can silently regress back to unlayered. The per-page CSS files under `src/styles/` (about-me.css, spurs-theme.css, etc.) are correctly *un*-layered internally by design — they only become layered via the `@import "..." layer(base)` that pulls them in (see `src/styles/spurs-theme-layer.css` for why Spurs Women's theme needs a one-line wrapper file to do this) — so the rule isn't applied to them.
 
 ## Architecture
 
