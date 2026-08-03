@@ -71,8 +71,9 @@ components never fetch data directly. Caching is applied here (see
 | `seasons.ts` | `getSeasons`, `getSeasonsWithMatchCounts`, `getSeasonById`, `getSeasonReview` |
 | `news.ts` | `getSpursWomenNews`, `getSpursWomenVideos`, `getPodcasts`, `getHomePageContent` |
 | `stadiums.ts` | `getStadiumBySlug`, `getAllStadiums`, `getStadiumsWithMatchCounts`, `getStadiumNames`, `getMatchesAtStadium`, `getCurrentStadiumName` |
-| `players.ts` | `getPlayers`, `getPlayerById`, `getPlayerStats`, `getPlayersByMatch`, `getTeamLineupsByMatch`, `getPlayerHistory` |
-| `teams.ts` | `getTeams`, `getTeamsWithMatchCounts`, `getTeamById` |
+| `players.ts` | `getPlayersByMatch`, `getTeamLineupsByMatch`, `getPlayerById`, `getActivePlayers` |
+| `teams.ts` | `getAllTeams`, `getTeamsWithMatchCounts`, `getTeamById`, `getMatchesForTeam`, `getPlayersForTeam` |
+| `media.ts` | `getMediaByMatch`, `getPhotosByMatch`, `getArticlesByMatch`, `getSocialMediaByMatch`, `getVideosByMatch` |
 
 ## Database Schema
 
@@ -102,7 +103,7 @@ See `admin/ADMIN_SYSTEM_DOCUMENTATION.md` for the full field-level breakdown use
 
 - Tailwind CSS with a Spurs-specific design system: primary navy (`#132257`), white, gray accents
 - Utility classes: `.spurs-text`, `.spurs-wrapper`, `.spurs-accent`
-- **No light/dark mode toggle**: unlike the rest of the site, this section always renders the same fixed navy theme. `.spurs-wrapper` (in `spurs-theme.css`) sets its background and text color unconditionally - it is not gated behind a `.dark`/`.light` class, and the main site's theme toggle (`ThemeProvider.tsx`) has no effect here. When adding styles in this section, don't assume a `dark:` Tailwind variant or `.dark` selector is needed for correctness the way it would be elsewhere on the site.
+- **No dedicated light/dark mode design for this section, but the toggle isn't fully inert here**: the section is designed around a single fixed navy theme - `.spurs-wrapper` (in `spurs-theme.css`) sets its background and text color unconditionally, not gated behind a `.dark`/`.light` class. However, `ThemeProvider` (in `src/app/layout.tsx`) wraps the *entire* app, including `/spurs-women`, and several Spurs Women components/pages do ship stray `dark:` Tailwind variants (e.g. `src/app/spurs-women/page.tsx`, `PlayerTable.tsx`, `NewsCard.tsx`) - per the cascade-layers rules in `CSS_ARCHITECTURE.md`, a Tailwind `dark:` utility on a specific element wins over `.spurs-wrapper`'s unconditional color regardless of specificity, so those elements *do* visibly respond to the site's theme toggle. This is inconsistent, not an intentional per-element design - don't add new `dark:` variants in this section, and treat any existing ones as leftover rather than a pattern to follow.
 - Team colors are data-driven (`primary_color`/`secondary_color` columns) - see `TeamPill` and `getTeamColor` in `match-stats.md`
 - See `reference/CSS_ARCHITECTURE.md` for the site-wide CSS conventions this section follows
 

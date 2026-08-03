@@ -56,11 +56,11 @@ The overall experience should remain familiar.
 
 ## Spurs Women
 
-The Spurs Women section currently presents a single theme.
+The Spurs Women section is designed around a single fixed navy theme, not a light/dark toggle.
 
 This simplifies visual consistency while allowing greater focus on football content and data presentation.
 
-Although theme switching is not currently supported, all other aspects of the EllieAtWHL design language remain applicable.
+In practice this isn't fully watertight: `ThemeProvider` wraps the whole app, including `/spurs-women`, and a handful of components (e.g. `src/app/spurs-women/page.tsx`, `PlayerTable.tsx`, `NewsCard.tsx`) ship stray `dark:` Tailwind classes that do respond to the site-wide toggle on those specific elements - see `reference/spurs-women/README.md`'s "Styling and Theming" section. Treat this as unintentional leftover, not a pattern to build on; the section's design intent is still a single theme, and all other aspects of the EllieAtWHL design language remain applicable.
 
 Future theme support should only be introduced if it can achieve parity with the quality of the main site's implementation.
 

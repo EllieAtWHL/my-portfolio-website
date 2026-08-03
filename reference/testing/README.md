@@ -112,6 +112,8 @@ describe('ComponentName', () => {
 
 ## Current Test Coverage
 
+**Test Count**: 356 tests across 46 test suites (last verified via `npm run test:coverage`)
+
 - **Button Component** (`src/components/Button.tsx`)
   - Renders with default props
   - Applies variant, size, and width classes correctly
@@ -238,18 +240,19 @@ jest.mock('@/lib/fullstory', () => ({
 
 ## Coverage
 
-Current coverage (as of last `npm run test:coverage` run): **76.49% statements, 60.09% branches, 74.63% functions, 76.26% lines**
+Current coverage (as of last `npm run test:coverage` run): **75.25% statements, 62.01% branches, 70.86% functions, 75.08% lines**
 
 Coverage reports are generated in the `coverage/` directory when running `npm run test:coverage`.
 
 **Breakdown**:
 - app: 90% statements, 100% branches, 66.66% functions, 90% lines (page.tsx)
 - app/spurs-women/admin: 72.09% statements, 52.4% branches, 53.33% functions, 71.87% lines (page.tsx)
+- app/spurs-women/teams/[teamId]: 92% statements, 63.63% branches, 71.42% functions, 92% lines (TeamClient.tsx)
 - components: 100% statements, 96.72% branches, 100% functions, 100% lines (Button 100/100/100/100, Card 100/92.3/100/100, Header 100/83.33/100/100, Modal 100/100/100/100)
 - components/admin: 77.04% statements, 84.29% branches, 70.83% functions, 76.66% lines (ColorPicker, FormField, FormWrapper, MatchForm, Pagination, PlayerForm, RelatedList, StadiumForm, TabNav, TeamForm)
 - components/admin/modals: 55% statements, 71.05% branches, 45.45% functions, 52.63% lines (FormModal is 100%; MediaModal, PlayerHistoryModal, PlayerStatsModal, StadiumNameModal are only partially covered)
 - components/admin/tables: 100% statements, 73.68% branches, 100% functions, 100% lines (DataTable, MatchesTable, PlayersTable, StadiumsTable, TeamsTable)
-- components/spurs-women: 93.02% statements, 66% branches, 80% functions, 95.23% lines (MatchNavigation, TeamPill)
+- components/spurs-women: 71.1% statements, 70.48% branches, 56.47% functions, 71.32% lines (LightboxGallery, MatchNavigation, MediaGallery, PlayerRow, PlayerTable, SpursTabButton, TeamLineup, TeamPill - LightboxGallery, MediaGallery and PlayerTable are only partially covered)
 - hooks: 100% coverage (useSearchPagination.ts)
 - hooks/admin: 74.03% statements, 33.21% branches, 90% functions, 73.9% lines (useMatchesAdmin, usePlayerStatsModal, usePlayersAdmin, useStadiumsAdmin, useTeamsAdmin)
 - lib: 96.66% statements, 84.21% branches, 100% functions, 100% lines
@@ -267,11 +270,10 @@ Coverage reports are generated in the `coverage/` directory when running `npm ru
 - API routes: Not currently tested (see API Testing Status above)
 - E2E: Not covered by this Jest/coverage report - see the Playwright suite under `tests/` (12 spec files, run via `npx playwright test` and in CI via `.github/workflows/playwright.yml`)
 
-**Test Count**: 322 tests across 40 test suites
 **Build Status**: ✅ Production ready - builds successfully
 **Lint Status**: ✅ Only minor optimization warnings (no blocking errors)
 
-**Note**: Overall coverage (76.49%/60.09%/74.63%/76.26%) is lower than an earlier-recorded 78.68%/69.39%/77.77%/78.18% snapshot, mainly because the admin page decomposition (see `reference/spurs-women/admin/ADMIN_SYSTEM_DOCUMENTATION.md`) added a large volume of new hooks/components/modals - several of which (e.g. `PlayerForm.tsx`, `StadiumForm.tsx`, `MediaModal.tsx`, `PlayerStatsModal.tsx`, `useStadiumsAdmin.ts`) are only partially tested - pulling down the overall averages even though total test count roughly doubled (172 → 322 tests, 14 → 40 suites).
+**Note**: Overall coverage (75.25%/62.01%/70.86%/75.08%) has drifted since an earlier-recorded 76.49%/60.09%/74.63%/76.26% snapshot, mainly because `components/spurs-women` grew to include several lower-coverage components (`LightboxGallery.tsx`, `MediaGallery.tsx`, `PlayerRow.tsx`, `PlayerTable.tsx`) alongside a new `app/spurs-women/teams/[teamId]/TeamClient.tsx` - pulling down the overall averages even though total test count grew (322 → 356 tests, 40 → 46 suites).
 
 ## Recent Testing Progress
 

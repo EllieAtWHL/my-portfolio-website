@@ -76,11 +76,21 @@ The admin system manages the following entities:
   - `is_home_match` (boolean)
   - `spurs_score` (number, nullable)
   - `opponent_score` (number, nullable)
+  - `spurs_score_aet` (number, nullable)
+  - `opponent_score_aet` (number, nullable)
+  - `spurs_score_pens` (number, nullable)
+  - `opponent_score_pens` (number, nullable)
   - `stadium_id` (string, UUID)
+  - `stadium_display_name` (string, nullable)
   - `attended` (boolean)
-  - `notes` (string)
+  - `attendance` (number, nullable)
+  - `notes` (string, nullable)
   - `home_team_id` (number)
   - `away_team_id` (number)
+  - `home_possession` / `away_possession` (number, nullable)
+  - `home_total_shots` / `away_total_shots` (number, nullable)
+  - `home_shots_on_target` / `away_shots_on_target` (number, nullable)
+  - `home_corners` / `away_corners` (number, nullable)
 
   Blank score/stat fields must be saved as `null`, not `0` (a blank field and a genuine 0 mean different things — e.g. `matches.ts` uses `spurs_score is null` to detect upcoming/unscored fixtures). This is enforced by `buildMatchPayload` in `src/lib/admin-match-payload.ts`, which the admin match form's submit handler uses to build its API payload — reuse it rather than constructing the payload inline.
 
@@ -117,7 +127,10 @@ The admin system manages the following entities:
   - `height_cm` (number, nullable)
   - `weight_kg` (number, nullable)
   - `profile_image_url` (string, nullable)
+  - `squad_number` (number, nullable)
   - `is_active` (boolean)
+  - `created_at` (string, timestamp)
+  - `updated_at` (string, timestamp)
 
 ### Player Stats
 - **Table**: `player_stats`
@@ -161,7 +174,6 @@ The admin system manages the following entities:
   - `joined_on` (string, nullable)
   - `left_on` (string, nullable)
   - `squad_number` (number, nullable)
-  - `position` (string, nullable)
 
 ### Stadium
 - **Table**: `stadia` (note: plural table name)
@@ -190,9 +202,11 @@ The admin system manages the following entities:
 
 ## API Routes
 
+All entity routes below also implement `PUT` (update by `id`) and `DELETE` (delete by `id`), both requiring authentication and admin authorization, except Stadium Names (no `PUT`) and Seasons/Competitions (read-only, see bottom).
+
 ### Matches API
 **Endpoint**: `/api/admin/matches`
-**Methods**: GET, POST
+**Methods**: GET, POST, PUT, DELETE
 
 **POST** - Create a new match
 - Requires authentication
@@ -205,9 +219,12 @@ The admin system manages the following entities:
 - Requires admin authorization
 - Returns matches ordered by date (descending)
 
+**PUT** / **DELETE** - Update / delete a match by `id`
+- Requires authentication and admin authorization
+
 ### Media API
 **Endpoint**: `/api/admin/media`
-**Methods**: GET, POST
+**Methods**: GET, POST, PUT, DELETE
 
 **POST** - Create a new media entry
 - Requires authentication
@@ -219,9 +236,12 @@ The admin system manages the following entities:
 - Requires admin authorization
 - Returns media ordered by `created_at` (descending)
 
+**PUT** / **DELETE** - Update / delete a media entry by `id`
+- Requires authentication and admin authorization
+
 ### Teams API
 **Endpoint**: `/api/admin/teams`
-**Methods**: GET, POST
+**Methods**: GET, POST, PUT, DELETE
 
 **POST** - Create a new team
 - Requires authentication
@@ -232,9 +252,12 @@ The admin system manages the following entities:
 - No authentication required (used for dropdowns)
 - Returns teams ordered by name
 
+**PUT** / **DELETE** - Update / delete a team by `id`
+- Requires authentication and admin authorization
+
 ### Players API
 **Endpoint**: `/api/admin/players`
-**Methods**: GET, POST
+**Methods**: GET, POST, PUT, DELETE
 
 **POST** - Create a new player
 - Requires authentication
@@ -245,9 +268,12 @@ The admin system manages the following entities:
 - No authentication required (used for dropdowns)
 - Returns players ordered by last name
 
+**PUT** / **DELETE** - Update / delete a player by `id`
+- Requires authentication and admin authorization
+
 ### Player Stats API
 **Endpoint**: `/api/admin/player-stats`
-**Methods**: GET, POST
+**Methods**: GET, POST, PUT, DELETE
 
 **POST** - Create or update player stats
 - Requires authentication
@@ -259,9 +285,12 @@ The admin system manages the following entities:
 - No authentication required
 - Returns stats ordered by `created_at` (descending)
 
+**PUT** / **DELETE** - Update / delete a player stats record by `id`
+- Requires authentication and admin authorization
+
 ### Player History API
 **Endpoint**: `/api/admin/player-history`
-**Methods**: GET, POST
+**Methods**: GET, POST, PUT, DELETE
 
 **POST** - Create a new player history entry
 - Requires authentication
@@ -272,9 +301,12 @@ The admin system manages the following entities:
 - No authentication required
 - Returns history ordered by `created_at` (descending)
 
+**PUT** / **DELETE** - Update / delete a player history entry by `id`
+- Requires authentication and admin authorization
+
 ### Stadiums API
 **Endpoint**: `/api/admin/stadia`
-**Methods**: GET, POST
+**Methods**: GET, POST, PUT, DELETE
 
 **POST** - Create a new stadium
 - Requires authentication
@@ -285,14 +317,35 @@ The admin system manages the following entities:
 - No authentication required (used for dropdowns)
 - Returns stadiums ordered by name
 
+**PUT** / **DELETE** - Update / delete a stadium by `id`
+- Requires authentication and admin authorization
+
 ### Stadium Names API
 **Endpoint**: `/api/admin/stadium-names`
-**Methods**: POST
+**Methods**: GET, POST, DELETE (no PUT)
 
 **POST** - Create a new stadium name entry
 - Requires authentication
 - Requires admin authorization
 - Returns created stadium name data
+
+**GET** - Fetch all stadium names
+- Requires authentication and admin authorization
+
+**DELETE** - Delete a stadium name entry by `id`
+- Requires authentication and admin authorization
+
+### Seasons API
+**Endpoint**: `/api/admin/seasons`
+**Methods**: GET only
+
+**GET** - Fetch all seasons (used for dropdowns)
+
+### Competitions API
+**Endpoint**: `/api/admin/competitions`
+**Methods**: GET only
+
+**GET** - Fetch all competitions (used for dropdowns)
 
 ## Admin UI Features
 
@@ -349,8 +402,8 @@ Generic function for making API calls to admin endpoints.
 ```typescript
 async function callAdminApi(
   endpoint: string,
-  method: 'POST' | 'GET' = 'POST',
-  payload?: any
+  method: 'POST' | 'GET' | 'PUT' | 'DELETE' = 'POST',
+  payload?: unknown
 ): Promise<ApiResponse>
 ```
 

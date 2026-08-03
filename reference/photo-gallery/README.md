@@ -179,3 +179,12 @@ dependency for images, and images were never copied into
 external repository and are served via CDN (`public/spurs-women/photo-gallery/`
 is only ever created empty, on demand, as a local dev stub by `npm run
 init-external-local`).
+
+**Leftover script**: `npm run migrate-storage` / `migrate-storage:dry-run`
+(`scripts/migrate-storage-source.js`) is the one-time script that performed
+this migration - it backfills the `storage_source` field on existing `media`
+rows based on URL pattern. It's now inert (nothing left to migrate) but still
+present in `package.json`. Note it reads `SUPABASE_URL`/`SUPABASE_ANON_KEY`,
+not the `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY` names used
+elsewhere in this codebase (e.g. `src/lib/supabase/`) - if it's ever run
+again, set both legacy variable names explicitly.
