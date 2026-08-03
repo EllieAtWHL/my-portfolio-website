@@ -143,9 +143,10 @@ From the PlayerStats interface:
 - `clearances`: Clearances made (number or null)
 - `fouls_committed`: Fouls committed (number or null)
 - `fouls_won`: Fouls won (number or null)
-- `offsides': Offsides (number or null)
+- `offsides`: Offsides (number or null)
 - `player_rating`: Player rating (number or null, 0-10 scale)
 - `player_of_the_match`: Whether player was player of the match (boolean)
+- `created_at`: Creation timestamp
 
 ## Custom Render Functions
 

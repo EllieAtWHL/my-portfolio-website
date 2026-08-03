@@ -375,7 +375,7 @@ This prevents the shell from interpreting the square brackets as pattern matchin
 
 Decision (superseded):
   - This section originally decided against automated testing at MVP, relying on TypeScript + manual testing.
-  - That decision no longer holds: Jest + React Testing Library are now installed and automated testing is mandatory for new components/utilities (see "Testing Strategy" above and `reference/testing/README.md` - 322 tests across 40 suites as of the last coverage run).
+  - That decision no longer holds: Jest + React Testing Library are now installed and automated testing is mandatory for new components/utilities (see "Testing Strategy" above and `reference/testing/README.md` - 356 tests across 46 suites as of the last coverage run).
 
 Current state:
   - E2E testing with Playwright is now implemented: 12 spec files under `tests/` (personal-site pages plus `tests/spurs-women/*`), run via `npx playwright test` and in CI via `.github/workflows/playwright.yml` across chromium/firefox/webkit.
