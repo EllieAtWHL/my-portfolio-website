@@ -1,36 +1,29 @@
 # Testing Guide
 
-This project uses Jest and React Testing Library for testing.
+This project uses Jest and React Testing Library for unit/component tests, StrykerJS for mutation testing, and Playwright for E2E (see `tests/`).
 
 ## 🚨 **MANDATORY TESTING REQUIREMENTS**
 
 **All new components and utilities MUST include tests before deployment:**
 
 1. **Unit Tests** - For utility functions and pure logic
-2. **Component Tests** - For React components using React Testing Library  
+2. **Component Tests** - For React components using React Testing Library
 3. **Edge Case Testing** - Error states, missing props, invalid inputs
 4. **Accessibility Testing** - ARIA labels, semantic structure
 5. **TypeScript Coverage** - Proper typing for all new code
 
 **Quality Gates:**
 - Tests must pass: `npm run test` ✅
-- Build must succeed: `npm run build` ✅  
+- Build must succeed: `npm run build` ✅
 - Coverage should not decrease: `npm run test:coverage`
 - No blocking lint errors: `npm run lint`
-
-## Setup
-
-The following testing dependencies are installed:
-- `jest` - Test runner
-- `@testing-library/react` - React testing utilities
-- `@testing-library/jest-dom` - Custom DOM matchers
-- `@types/jest` - TypeScript types for Jest
 
 ## Available Scripts
 
 - `npm run test` - Run all tests once
 - `npm run test:watch` - Run tests in watch mode
-- `npm run test:coverage` - Run tests with coverage report
+- `npm run test:coverage` - Run tests with coverage report (enforces `coverageThreshold` in `jest.config.js`)
+- `npm run test:mutation` - Run StrykerJS mutation testing (see below; manual/local only, not wired into CI)
 
 ## Test Structure
 
@@ -50,134 +43,35 @@ src/
             └── date.test.ts
 ```
 
-## Testing Standards Checklist
+Shared test infrastructure (test doubles, not test cases) lives outside any `__tests__` dir, e.g. `src/test-utils/supabase-query-mock.ts` - a chainable mock for Supabase's `.from(...).select(...).eq(...)` query builder, used across `src/lib/data/__tests__/*`.
 
-**Before deploying new code, verify:**
+## Why coverage numbers cover the whole app, not just tested files
 
-### ✅ **Component Tests**
-- [ ] Component renders with default props
-- [ ] All props and variants work correctly
-- [ ] Error states are handled gracefully
-- [ ] Loading states work as expected
-- [ ] Click interactions are tested
-- [ ] Accessibility attributes are present
+`jest.config.js` sets `collectCoverageFrom: ['src/**/*.{ts,tsx}', ...]` explicitly. Without it, Jest's coverage report only includes files some test actually `import`s - a page or component with zero tests simply doesn't appear in the report at all, so "80% coverage" can quietly mean "80% of the 25% of the app anyone bothered to test." With `collectCoverageFrom` set, every source file shows up (as 0% if untested), so `npm run test:coverage`'s numbers reflect the real state of the whole app. `collectCoverageFrom` excludes `src/app/api/**` (API routes - see below) and `src/middleware.ts` (thin delegate to `src/lib/supabase/middleware.ts#updateSession`, which is unit tested directly).
 
-### ✅ **Utility Tests**  
-- [ ] Function works with valid inputs
-- [ ] Edge cases are handled (null, undefined, empty)
-- [ ] Error conditions are tested
-- [ ] Return types are correct
-- [ ] Performance is acceptable
+## Mutation testing (StrykerJS)
 
-### ✅ **Quality Checks**
-- [ ] Tests are descriptive and maintainable
-- [ ] No console errors in tests
-- [ ] Proper assertions are used
-- [ ] Tests are isolated (no dependencies on order)
-- [ ] Coverage is maintained or improved
+Coverage percentage only proves a line *ran* during some test - not that the test would notice if the line's logic were wrong. A test like `expect(typeof getStadiumBySlug).toBe('function')` or `await expect(someCall()).resolves.not.toThrow()` executes the function and counts as "covered," but passes no matter what the function actually returns. Mutation testing catches this: Stryker makes a small deliberate change to the source (flip `>` to `>=`, delete a `- 1`, swap `&&`/`||`, change a returned value) and reruns the tests - if every test still passes, that mutant "survived," meaning nothing in the suite would actually catch that bug.
 
-### ✅ **Integration Checks**
-- [ ] Component works in real page context
-- [ ] No TypeScript errors
-- [ ] No lint errors (blocking)
-- [ ] Build succeeds
-- [ ] Manual testing confirms functionality
+**Run it:** `npm run test:mutation` (wraps `stryker run`, config in `stryker.conf.mjs`). Not wired into CI - StrykerJS re-runs the relevant tests once per mutant, which is too slow for a solo-maintained project's CI budget. Run it locally after writing tests for a logic-heavy file, or periodically to spot-check the suite.
 
-**Example Test Structure:**
-```typescript
-describe('ComponentName', () => {
-  describe('Rendering', () => {
-    it('renders with default props', () => {
-      // Test basic rendering
-    });
-    
-    it('applies variant classes correctly', () => {
-      // Test different variants
-    });
-  });
-  
-  describe('Interactions', () => {
-    it('handles click events', () => {
-      // Test user interactions
-    });
-  });
-  
-  describe('Edge Cases', () => {
-    it('handles missing props gracefully', () => {
-      // Test error states
-    });
-  });
-});
-```
+**Scope:** deliberately limited to `src/lib/data/**`, `src/lib/*.ts`, `src/lib/supabase/middleware.ts`, and `src/hooks/**` (see `mutate` in `stryker.conf.mjs`) - not the whole `src/` tree. Mutating presentational JSX components produces mostly low-signal or equivalent mutants (e.g. flipping a CSS class string) and would make runs impractically slow for little benefit. Add a glob to `stryker.conf.mjs` when a new file's logic is worth mutation-testing.
 
-## Current Test Coverage
+**What counts as a real gap vs. an equivalent mutant:** not every surviving mutant is a missing test. Some source expressions have two forms that are provably identical for every input (e.g. `value !== null && value !== undefined ? value : null` vs. `value !== undefined ? value : null` - both return `null` whether `value` is `null` or `undefined`). Stryker will report these as "survived" because it can't prove equivalence, but no test can kill them either, since the mutant produces byte-identical output. Recognize the difference before writing a test to chase a survivor - if you can't construct *any* input where the original and mutated code would return different values, it's equivalent, not a gap.
 
-- **Button Component** (`src/components/Button.tsx`)
-  - Renders with default props
-  - Applies variant, size, and width classes correctly
-  - Handles loading and disabled states
-  - Renders icons in correct positions
-  - Handles click events
-  - Supports `asChild` prop for custom elements
-  - Forwards refs correctly
+**Writing tests that would survive this bar:**
+- Assert exact return values (`expect(payload.spurs_score).toBe(0)`), not just "resolves" / "is a function" / "doesn't throw."
+- Cover every branch: success and error paths, empty/null/undefined inputs, boundary values (0, negative, exactly-at-limit).
+- For anything with an off-by-one risk (loop bounds, `.slice()`/`.limit()` counts, date comparisons), assert the exact boundary, not just a value comfortably inside it.
+- See `src/lib/__tests__/admin-match-payload.test.ts`, `src/lib/supabase/__tests__/middleware.test.ts`, and `src/hooks/__tests__/useRegicideGame.test.ts` as reference examples - all mutation-tested during the 2026-08 hardening pass (see below) and currently killing all non-equivalent mutants in their files.
 
-- **Card Component** (`src/components/Card.tsx`)
-  - Renders with default props and all variants
-  - Applies correct padding classes (including accent variant special handling)
-  - Handles hover effects and click interactions
-  - Combines multiple props correctly
-  - Renders complex children content
+## Priority: logic first, presentation lighter
 
-- **Modal Component** (`src/components/Modal.tsx`)
-  - Opens/closes based on isOpen prop
-  - Renders all content types (image, description, date, additional images/info)
-  - Handles click events (close button, overlay, content click prevention)
-  - Manages body scroll and keyboard events (Escape key)
-  - Uses React Portal for proper rendering
+Business-logic-heavy code (the Supabase data-access layer in `src/lib/data/`, hooks with real state machines like `useRegicideGame`, security-relevant code like the admin-route auth guard in `src/lib/supabase/middleware.ts`, parsing/formatting utilities) gets deep, mutation-tested unit tests. Purely presentational components and pages (static content pages, icon wrappers, layout shells) are lower-value mutation-testing targets - a wrong CSS class rarely has a "correct" assertion worth defending at the unit level - and are covered more cheaply via the Playwright E2E suite plus lighter render/smoke tests where warranted. As of 2026-08 this split is: the logic layer (`src/lib`, `src/lib/data`, `src/hooks`) sits at 90-100% coverage with mutation-tested assertions; most presentational components/pages are still untested at the unit level and are the target of a planned follow-up pass (see `git log` / recent PRs for current status - this file describes the target methodology, not a point-in-time task list).
 
-- **Header Component** (`src/components/Header.tsx`)
-  - Renders logo and all navigation items
-  - Toggles mobile menu on button click and keyboard
-  - Closes menu when navigation links are clicked
-  - Has proper ARIA labels and semantic structure
-  - Applies theme classes correctly
+## API Route Testing
 
-- **Utility Functions** (`src/lib/utils.ts`)
-  - Class name merging with cn() function
-  - Conditional class handling
-  - Tailwind conflict resolution
-  - Complex input scenarios (arrays, objects, mixed types)
-
-- **Date Utilities** (`src/lib/utils/date.ts`)
-  - Consistent date formatting across server/client
-  - Month name formatting
-  - Edge cases (leap years, invalid dates)
-  - UTC-based formatting to prevent hydration errors
-
-- **Home Page** (`src/app/page.tsx`)
-  - Renders main headings with correct animation classes
-  - Renders contact button with proper link
-  - Tracks page views on mount
-  - Proper component structure
-
-## API Testing Status
-
-**Note**: API route testing is currently challenging due to Next.js App Router's server-side nature. The API routes (`/api/cache/revalidate`, `/api/spurs-women-news`, `/api/podcasts`) require special setup for testing that involves:
-
-- Web API polyfills (Request, Response)
-- Server environment simulation
-- Complex mocking strategies
-
-**Current Approach**: API routes are tested manually through the running application. Future implementation may include:
-- Integration testing with actual HTTP requests
-- E2E testing with Playwright or Cypress
-- Custom test utilities for Next.js API routes
-
-## Current Testing Status
-
-✅ **Working**: Component tests, utility function tests, page tests  
-⚠️ **In Progress**: API route tests (need specialized setup)  
-📋 **Planned**: Integration tests, E2E tests
+API routes (`src/app/api/**`) are **not** covered by Jest - Next.js App Router's server-side Request/Response handling is impractical to mock reliably under Jest. They're excluded from `collectCoverageFrom` for this reason and exercised instead by the Playwright E2E suite (`tests/`) and manual testing.
 
 ## Writing Tests
 
@@ -228,6 +122,19 @@ jest.mock('@/lib/fullstory', () => ({
 }))
 ```
 
+For the Supabase query-builder chain used throughout `src/lib/data/*`, use the shared test double instead of hand-rolling one:
+
+```ts
+import { mockSupabaseFrom } from '@/test-utils/supabase-query-mock';
+
+const mockFrom = mockSupabaseFrom({
+  stadia: { data: { id: '1', name: 'Brisbane Road' }, error: null },
+});
+jest.mock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+```
+
+Note: `createCachedFunction` (in `src/lib/data/cache-utils.ts`) checks `typeof window === 'undefined'` to decide whether to go through `unstable_cache`. Under Jest's `jest-environment-jsdom`, `window` is always defined, so every cached `get*` function takes the "bypass" branch and calls the underlying fetcher directly - no need to mock `next/cache` to test these functions.
+
 ## Best Practices
 
 1. **Test behavior, not implementation** - Focus on what the user sees and interacts with
@@ -235,60 +142,14 @@ jest.mock('@/lib/fullstory', () => ({
 3. **Mock external dependencies** - Isolate your tests from APIs, routing, etc.
 4. **Test edge cases** - Invalid inputs, loading states, error conditions
 5. **Keep tests simple** - Each test should verify one specific behavior
+6. **Assert real outcomes** - see the Mutation Testing section above; a test that can't fail isn't testing anything
 
 ## Coverage
 
-Current coverage (as of last `npm run test:coverage` run): **76.49% statements, 60.09% branches, 74.63% functions, 76.26% lines**
+Run `npm run test:coverage` for the current numbers - `coverageThreshold` in `jest.config.js` documents the last-measured baseline inline and is kept a few points below it so a real regression fails the check without being fragile to normal fluctuation.
 
-Coverage reports are generated in the `coverage/` directory when running `npm run test:coverage`.
+**Why the threshold numbers dropped in 2026-08, and why that's not a regression:** before then, `jest.config.js` had no `collectCoverageFrom`, so coverage was only measured over the ~25% of the codebase some test happened to `import` - the other ~150 files (mostly pages/components) were invisible to the report rather than counted as 0%, which is how the old thresholds reached 75/60/70/75. Adding `collectCoverageFrom` made the same test suite's *honest* whole-app number ~31%. Thresholds were reset to a few points below that honest baseline and have been rising since as real tests were added (31% → 54.5% → 58.5% statements, tracking the `lib`/`lib/data`/`hooks` and then `hooks/admin` mutation-testing passes). The numeric threshold is lower than it used to be; actual coverage is unchanged or higher.
 
-**Breakdown**:
-- app: 90% statements, 100% branches, 66.66% functions, 90% lines (page.tsx)
-- app/spurs-women/admin: 72.09% statements, 52.4% branches, 53.33% functions, 71.87% lines (page.tsx)
-- components: 100% statements, 96.72% branches, 100% functions, 100% lines (Button 100/100/100/100, Card 100/92.3/100/100, Header 100/83.33/100/100, Modal 100/100/100/100)
-- components/admin: 77.04% statements, 84.29% branches, 70.83% functions, 76.66% lines (ColorPicker, FormField, FormWrapper, MatchForm, Pagination, PlayerForm, RelatedList, StadiumForm, TabNav, TeamForm)
-- components/admin/modals: 55% statements, 71.05% branches, 45.45% functions, 52.63% lines (FormModal is 100%; MediaModal, PlayerHistoryModal, PlayerStatsModal, StadiumNameModal are only partially covered)
-- components/admin/tables: 100% statements, 73.68% branches, 100% functions, 100% lines (DataTable, MatchesTable, PlayersTable, StadiumsTable, TeamsTable)
-- components/spurs-women: 93.02% statements, 66% branches, 80% functions, 95.23% lines (MatchNavigation, TeamPill)
-- hooks: 100% coverage (useSearchPagination.ts)
-- hooks/admin: 74.03% statements, 33.21% branches, 90% functions, 73.9% lines (useMatchesAdmin, usePlayerStatsModal, usePlayersAdmin, useStadiumsAdmin, useTeamsAdmin)
-- lib: 96.66% statements, 84.21% branches, 100% functions, 100% lines
-  - admin-api.ts: 90% statements, 100% branches, 100% functions, 100% lines
-  - admin-match-payload.ts: 100% statements, 75% branches, 100% functions, 100% lines
-  - admin-stadium-names.ts: 95.65% statements, 86.36% branches, 100% functions, 100% lines
-  - api-client.ts: 100% statements, 88.88% branches, 100% functions, 100% lines
-  - utils.ts: 100% coverage
-- lib/data: 58.73% statements, 46.91% branches, 57.69% functions, 56.77% lines
-  - cache-utils.ts: 92.3% statements, 87.5% branches, 100% functions, 91.66% lines
-  - generic-fetchers.ts: 3.03% statements, 0% branches, 0% functions, 3.03% lines (still effectively untested)
-  - stadiums.ts: 68.51% statements, 66.66% branches, 44.44% functions, 67.34% lines
-- lib/utils: 100% coverage (date.ts, team-colors.ts)
-- utils: 90.9% statements, 54.54% branches, 100% functions, 88.88% lines (supabase.ts)
-- API routes: Not currently tested (see API Testing Status above)
-- E2E: Not covered by this Jest/coverage report - see the Playwright suite under `tests/` (12 spec files, run via `npx playwright test` and in CI via `.github/workflows/playwright.yml`)
+**Goal: 80% statements/branches/functions/lines, whole-app.** Raise `coverageThreshold` in `jest.config.js` incrementally as real tests land - never lower it to unblock a failing PR. Priority order for closing the remaining gap (see the "Priority: logic first" section above): remaining `src/lib/data` files with sub-80% mutation scores, then a render/smoke-test pass over presentational components/pages, which currently sit at or near 0%.
 
-**Test Count**: 322 tests across 40 test suites
-**Build Status**: ✅ Production ready - builds successfully
-**Lint Status**: ✅ Only minor optimization warnings (no blocking errors)
-
-**Note**: Overall coverage (76.49%/60.09%/74.63%/76.26%) is lower than an earlier-recorded 78.68%/69.39%/77.77%/78.18% snapshot, mainly because the admin page decomposition (see `reference/spurs-women/admin/ADMIN_SYSTEM_DOCUMENTATION.md`) added a large volume of new hooks/components/modals - several of which (e.g. `PlayerForm.tsx`, `StadiumForm.tsx`, `MediaModal.tsx`, `PlayerStatsModal.tsx`, `useStadiumsAdmin.ts`) are only partially tested - pulling down the overall averages even though total test count roughly doubled (172 → 322 tests, 14 → 40 suites).
-
-## Recent Testing Progress
-
-**Successfully Added:**
-- **Utility Function Tests** - 15 tests for the `cn()` function covering class merging, conditional logic, and Tailwind conflict resolution
-- **Comprehensive Component Coverage** - Button, Card, Modal, Header components fully tested
-- **Edge Case Handling** - Tests for invalid inputs, missing props, error conditions
-- **Accessibility Testing** - ARIA labels, semantic structure, keyboard interactions
-
-**Component Refactoring Completed:**
-- **Video Component Consolidation** - Eliminated duplication by using `VideoCard` on both main Spurs Women page and match pages
-- **Removed Redundant Components** - Deleted `VideoGallery` and unified video display logic
-- **YouTube API Integration** - Added proper metadata fetching using YouTube oEmbed API
-- **YouTube Publish Dates** - Now uses actual YouTube upload dates instead of database dates
-- **Consistent UI** - Videos now look identical across all Spurs Women pages with proper titles, channels, and dates
-
-**Spurs Women Components Status:**
-- **VideoCard** - Now used consistently across all pages (main page + match pages)
-- **NewsCard, PodcastCard** - Still need refactoring for better testability
-- **Complex Components** - May need structural improvements for automated testing
+E2E coverage (Playwright, `tests/`) is separate and not reflected in the Jest coverage report - run via `npx playwright test`, also in CI via `.github/workflows/playwright.yml`.
