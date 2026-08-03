@@ -25,25 +25,32 @@ pages and components should never fetch data directly.
 
 | Data | TTL |
 |------|-----|
-| Static content (teams, seasons, competitions) | 24 hours |
+| Static content (teams, seasons, competitions), stadium data | 24 hours |
 | Current season matches & statistics | 30 minutes |
+| Past-season matches | 7 days |
+| Live match data | 5 minutes |
 | RSS feeds (news, podcasts) | 24 hours |
 | YouTube videos | 1 hour |
+| Media (photos, articles, social posts) | 6 hours |
 | Player data | 1 hour |
 | Player statistics | 30 minutes |
 
+These correspond to the `CACHE_TTL` constants in `cache-utils.ts` (`STATIC_CONTENT`, `CURRENT_SEASON_MATCHES`, `PAST_SEASONS`, `LIVE_MATCH_DATA`, `RSS_FEEDS`, `YOUTUBE_VIDEOS`, `MEDIA`, `STADIUM_DATA`, `TEAM_DATA`, `PLAYER_DATA`, `PLAYER_STATS`).
+
 ## Cache Keys
 
-Keys are explicit and deterministic, following `<entity>:<season>:<competition>:<variant>`:
+Keys are built from a `keyParts: string[]` array joined with `:` (see `createCachedFunction` in `cache-utils.ts`). In practice, most domains use short, static prefixes rather than embedding the actual entity value:
 
 ```
-matches:2024-25:wsl:all
-matches:2024-25:fa-cup:recent
-article:slug:spurs-v-arsenal-away
-season-summary:2024-25
-stadium:by-slug:tottenham-hotspur-stadium
-stadium-names:by-stadium-id:123
+matches:upcoming
+matches:previous
+matches:season
+match:id
+stadium:by-slug
+stadium-names:by-stadium-id
 ```
+
+A separate `CACHE_KEYS` helper (`cache-utils.ts`) *can* build dynamic, value-bearing keys like `matches:2024-25:wsl:all` or `stadium:by-slug:tottenham-hotspur-stadium`, but today it's only actually used by `news.ts` (for `news`, `videos`, `podcasts` keys) - `matches.ts` and `stadiums.ts` use their own fixed `keyParts` arrays instead, so the logged/visible cache key for those domains doesn't currently include the season, competition, or slug value.
 
 ## Invalidation
 
@@ -52,12 +59,19 @@ Prefer tag-based revalidation (`revalidateTag`) over blanket purges. Use the
 
 ```typescript
 import { invalidateMatchCache, invalidateNewsCache } from '@/lib/data';
-import { invalidateStadiumCache } from '@/lib/data/stadiums';
 
 invalidateMatchCache(seasonId, competitionId); // match updated
 invalidateNewsCache();                          // news updated
-invalidateStadiumCache(stadiumId);              // stadium info updated
 ```
+
+**Known bug**: `invalidateStadiumCache`/`invalidateAllStadiumCaches`
+(`src/lib/data/stadiums.ts`) build a local `cacheKeys` array but never call
+`revalidateTag`/`revalidateCacheTags` with it - they are currently no-ops that
+have no effect on the cache. Stadium/stadium-name edits in the admin UI do not
+actually invalidate the cache today. Don't rely on these functions until
+they're fixed to call `revalidateCacheTags([CACHE_TAGS.STADIUMS])` (or
+equivalent) - use the manual revalidation API below as a workaround in the
+meantime.
 
 For emergencies or bulk updates, use the API endpoints instead of a server
 restart:

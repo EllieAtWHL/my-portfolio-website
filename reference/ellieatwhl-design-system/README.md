@@ -289,7 +289,7 @@ Users choosing dark mode should experience the same sense of clarity, readabilit
 
 Dark mode should never feel like a secondary implementation.
 
-Conversely, the Spurs Women section currently presents a single visual theme. While it does not support theme switching, it should continue to reflect the same design principles, maintaining consistency in spacing, typography, hierarchy and component behaviour with the rest of EllieAtWHL.
+Conversely, the Spurs Women section is designed around a single visual theme rather than a light/dark toggle (see `VISUAL_LANGUAGE.md`'s "Spurs Women" section for the caveat that a few components have unintentional `dark:` classes that still respond to the site-wide toggle). It should continue to reflect the same design principles, maintaining consistency in spacing, typography, hierarchy and component behaviour with the rest of EllieAtWHL.
 
 ---
 
