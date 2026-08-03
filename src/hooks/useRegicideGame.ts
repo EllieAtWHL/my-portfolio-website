@@ -139,9 +139,17 @@ export function useRegicideGame() {
       const newDiscardPile = [...prev.discardPile, card];
       
       // Calculate damage (simplified Regicide rules)
+      // KNOWN ISSUE: with these numbers the "royal defeated" branch below is
+      // unreachable - max card power is 13 (K) and the weakest royal is 11
+      // (J), so max single-hit damage is 13-11=2, but defeat requires
+      // damage >= royalPower (>=11). The game currently can't be won through
+      // the public API. This game isn't linked from the UI and needs a
+      // rework of its rules (e.g. real Regicide's cumulative-damage-per-turn
+      // model) before that's worth fixing - flagged here rather than patched
+      // as part of the test-coverage pass that found it.
       const damage = Math.max(0, card.power - prev.currentRoyal!.power);
       const newHealth = prev.health - Math.max(1, prev.currentRoyal!.power - card.power);
-      
+
       // Check if royal is defeated
       if (damage >= prev.currentRoyal!.power) {
         // Royal defeated, draw next royal or win game
