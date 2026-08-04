@@ -260,7 +260,7 @@ async function fetchMatchByIdFromDB(matchId: string): Promise<Match | null> {
 }
 
 async function fetchAdjacentMatchesFromDB(matchId: string, currentMatchDate: string): Promise<{ previous: MatchNavSummary | null; next: MatchNavSummary | null }> {
-  const [{ data: previousData }, { data: nextData }] = await Promise.all([
+  const [{ data: previousData, error: previousError }, { data: nextData, error: nextError }] = await Promise.all([
     buildMatchNavQuery()
       .lt('date', currentMatchDate)
       .order('date', { ascending: false })
@@ -272,6 +272,16 @@ async function fetchAdjacentMatchesFromDB(matchId: string, currentMatchDate: str
       .limit(1)
       .single(),
   ]);
+
+  // A "no rows" error here is expected for the first/last match in a season
+  // (there's genuinely no earlier/later match) - only log, don't throw, so
+  // navigation still degrades gracefully to a missing prev/next link.
+  if (previousError) {
+    console.error('Error fetching previous adjacent match:', previousError);
+  }
+  if (nextError) {
+    console.error('Error fetching next adjacent match:', nextError);
+  }
 
   return {
     previous: previousData as MatchNavSummary | null,

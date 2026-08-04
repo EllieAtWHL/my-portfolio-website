@@ -136,19 +136,6 @@ export const getPlayersByMatch = createCachedFunction(
 );
 
 async function fetchTeamLineupsByMatchFromDB(matchId: string): Promise<TeamLineup[]> {
-  // Check player_history table directly - get ALL records
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { data: allPlayerHistory, error: historyError } = await supabase
-    .from('player_history')
-    .select('*');
-
-  // Try with just squad_number field
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { data: squadNumbers, error: squadError } = await supabase
-    .from('player_history')
-    .select('player_id, squad_number');
-
-  // Also try the join query again
   const { data, error } = await supabase
     .from('player_stats')
     .select(`

@@ -131,12 +131,21 @@ export function useMatchesAdmin({ matches, setMatches, teams, stadiums, stadiumN
 
     // Try to match the stadium by comparing stadium_id with stadium_display_name
     const matchedStadium = stadiums.find(s => {
+      if (s.id === match.stadium_id) {
+        return true;
+      }
+      // A blank display name must not fall through to the fuzzy-name checks
+      // below: every string .includes('') is true, so without this guard a
+      // blank name would "match" the first stadium in the list regardless of
+      // its actual id, silently reassigning the match's stadium on save.
+      if (!match.stadium_display_name) {
+        return false;
+      }
       const currentName = resolveStadiumName(s.id, match.date);
-      const displayNameLower = match.stadium_display_name?.toLowerCase() || '';
+      const displayNameLower = match.stadium_display_name.toLowerCase();
       const currentNameLower = currentName.toLowerCase();
 
       return (
-        s.id === match.stadium_id ||
         currentName === match.stadium_display_name ||
         currentNameLower === displayNameLower ||
         displayNameLower.includes(currentNameLower) ||

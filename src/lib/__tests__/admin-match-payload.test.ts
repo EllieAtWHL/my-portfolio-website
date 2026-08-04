@@ -94,4 +94,34 @@ describe('buildMatchPayload', () => {
     expect(payload.date).toBe('2026-08-09');
     expect(payload.stadium_id).toBe('stadium-1');
   });
+
+  it('defaults a missing stadium_id to an empty string, not undefined', () => {
+    const payload = buildMatchPayload({ ...baseForm, stadium_id: undefined }, spursTeam);
+    expect(payload.stadium_id).toBe('');
+  });
+
+  it('preserves attended as exactly true when explicitly set', () => {
+    const payload = buildMatchPayload({ ...baseForm, attended: true }, spursTeam);
+    expect(payload.attended).toBe(true);
+  });
+
+  it('preserves attended as exactly false when explicitly set (not coerced to true)', () => {
+    const payload = buildMatchPayload({ ...baseForm, attended: false }, spursTeam);
+    expect(payload.attended).toBe(false);
+  });
+
+  it('defaults a missing attended to false', () => {
+    const payload = buildMatchPayload({ ...baseForm, attended: undefined }, spursTeam);
+    expect(payload.attended).toBe(false);
+  });
+
+  it('preserves non-empty notes text unchanged', () => {
+    const payload = buildMatchPayload({ ...baseForm, notes: 'Great atmosphere' }, spursTeam);
+    expect(payload.notes).toBe('Great atmosphere');
+  });
+
+  it('defaults blank/missing notes to an empty string, not null or undefined', () => {
+    expect(buildMatchPayload({ ...baseForm, notes: '' }, spursTeam).notes).toBe('');
+    expect(buildMatchPayload({ ...baseForm, notes: undefined }, spursTeam).notes).toBe('');
+  });
 });

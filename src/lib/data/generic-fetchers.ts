@@ -18,7 +18,7 @@ export async function fetchAllFromDB<T>(
     throw error;
   }
 
-  return data as T[];
+  return (data as T[]) || [];
 }
 
 /**

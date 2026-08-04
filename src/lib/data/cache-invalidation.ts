@@ -1,17 +1,8 @@
 import { revalidateCacheTags } from './cache-server';
 import { CACHE_TAGS } from './cache-utils';
 
-export function invalidateMatchCache(seasonId?: string, competitionId?: string) {
+export function invalidateMatchCache() {
   const tagsToInvalidate = [CACHE_TAGS.MATCHES];
-  
-  if (seasonId) {
-    console.log(`Invalidating match cache for season ${seasonId}`);
-  }
-  
-  if (competitionId) {
-    console.log(`Invalidating match cache for competition ${competitionId}`);
-  }
-  
   revalidateCacheTags(tagsToInvalidate);
   console.log('Invalidated match cache tags:', tagsToInvalidate);
 }
