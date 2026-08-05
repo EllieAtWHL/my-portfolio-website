@@ -3,19 +3,33 @@ name: CI
 on:
   pull_request:
     branches: [ main ]
-    paths-ignore:
-      - '**/*.md'
-      - '**/*.MD'
-      - 'reference/**'
   push:
     branches: [ main, develop ]
-    paths-ignore:
-      - '**/*.md'
-      - '**/*.MD'
-      - 'reference/**'
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Detect non-doc changes
+      uses: dorny/paths-filter@v3
+      id: filter
+      with:
+        filters: |
+          code:
+            - '**'
+            - '!**/*.md'
+            - '!**/*.MD'
+            - '!reference/**'
+
   lint:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -38,6 +52,8 @@ jobs:
       run: npm run lint:css
 
   typecheck:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -57,6 +73,8 @@ jobs:
       run: npm run typecheck
 
   test:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -88,6 +106,8 @@ jobs:
         retention-days: 30
 
   build:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
 
     steps:
