@@ -139,8 +139,8 @@ time curl -s https://your-domain.com/api/spurs-women-news > /dev/null
 
 ## Known Gaps
 
-Not yet implemented (see `reference/spurs-women/DEVELOPMENT_TODO.md` for the
-full backlog): cache hit-rate metrics/monitoring dashboard, consolidated cache
+Not yet implemented (tracked under the Technical Debt & Performance epic in
+Jira): cache hit-rate metrics/monitoring dashboard, consolidated cache
 API-key auth logic (currently duplicated across routes), cache size/memory
 visibility, more granular TTLs than the generic "static content" bucket where
 it would help, automated tests for cache behavior and invalidation.

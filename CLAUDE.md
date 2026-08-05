@@ -12,7 +12,93 @@ Because the Spurs Women section is an unofficial fan site: avoid using official 
 
 ## Working conventions
 
-When reviewing or fixing something in this repo, proactively flag **and fix** related issues you notice along the way (hardcoded colors instead of CSS variables, dead code, inline-style workarounds for cascade bugs, etc.) rather than only addressing what was explicitly asked about. Don't just note a problem and move on to something else without acting on it.
+When reviewing or fixing something in this repo, proactively identify closely related issues you notice along the way (hardcoded colors instead of CSS variables, dead code, inline-style workarounds for cascade bugs, etc.).
+
+If a related issue is small and naturally fits within the current piece of work, fix it as part of the same change.
+
+If fixing it would significantly increase the scope, create (or recommend creating) a separate Jira issue with enough detail for future implementation, rather than leaving it undocumented.
+
+Avoid unrelated refactors that make reviewing or understanding the original change more difficult.
+
+## Development workflow
+
+### Jira is the source of truth
+
+Unless explicitly told otherwise, all development work should originate from a Jira issue in the **`WEB`** project (https://eleanormatthewman.atlassian.net/jira/software/projects/WEB) - the single Jira project for this repo, covering both the core site and Spurs Women. There is no separate Spurs Women Jira project; the two sections are distinguished by `core-site` / `spurs-women` labels on epics (an epic gets both labels where the work spans the whole site).
+
+When working on an existing Jira issue:
+
+- Use the Jira issue description and acceptance criteria as the primary source of requirements.
+- Do not invent or assume Jira issue keys.
+- If no Jira issue key has been provided, ask for it before suggesting branch names, commits or pull requests.
+- When creating a new Jira issue (e.g. for a related bug/refactor found mid-task), attach it to the most fitting existing epic with the correct `core-site`/`spurs-women` label(s) rather than leaving it unparented - check the current epic list in Jira rather than assuming one exists.
+
+### Branch naming
+
+Branches should follow this convention:
+
+feature/WEB-123-short-description
+bugfix/WEB-123-short-description
+hotfix/WEB-123-short-description
+refactor/WEB-123-short-description
+docs/WEB-123-short-description
+chore/WEB-123-short-description
+
+Where `WEB-123` is the Jira issue key.
+
+### Commits
+
+Every commit should reference the Jira issue key.
+
+Preferred format:
+
+```
+feat(WEB-123): Add player profile page
+```
+
+Commit messages should be concise and describe a single logical change.
+
+### Pull requests
+
+Pull request titles should include the Jira issue key.
+
+Example:
+
+```
+WEB-123 Add player profile page
+```
+
+When asked to prepare a pull request, always provide:
+
+- an appropriate PR title
+- a concise summary
+- testing performed
+- any follow-up work
+- any screenshots if relevant
+
+### Working on Jira issues
+
+When implementing a Jira issue:
+
+1. Understand the requirements before making changes.
+2. Suggest an appropriate branch name if one does not already exist.
+3. Transition the Jira issue to the appropriate status (for example, "In Progress") before beginning work, if possible.
+4. Keep commits focused and logically grouped.
+5. Ensure commit messages reference the Jira issue.
+6. Suggest an appropriate PR title and description when work is complete.
+7. Transition the Jira issue to the appropriate next status (for example, "In Review" or "Done", depending on the team's workflow) once the work reaches that stage.
+
+Where Jira access is available, Claude should perform these updates directly. Where it is not, Claude should clearly state what actions should be taken manually.
+
+### Scope
+
+Only implement the work requested by the Jira issue unless:
+
+- a closely related bug is discovered
+- a small refactor significantly improves the implementation
+- a clear defect should obviously be fixed alongside the requested work
+
+Avoid introducing unrelated changes simply because they are noticed.
 
 ## Commands
 
@@ -36,7 +122,7 @@ Other scripts (see `package.json`): `migrate-storage[:dry-run]`, `generate-exter
 
 ## CI
 
-`.github/workflows/ci.yml` runs lint (ESLint + CSS lint as two steps in the same job), typecheck, Jest+coverage, and a production build as separate jobs on PRs/pushes to `main`/`develop`. `.github/workflows/playwright.yml` runs the E2E suite. `.github/workflows/validate-manifest.yml` regenerates/validates the photo manifest. None of these gate the actual Vercel deploy (git-push-to-deploy from `main`).
+`.github/workflows/ci.yml` runs lint (ESLint + CSS lint as two steps in the same job), typecheck, Jest+coverage, and a production build as separate jobs on PRs/pushes to `main`/`develop`. `.github/workflows/playwright.yml` runs the E2E suite. Both skip entirely (via `paths-ignore`) when every changed file is a `.md`/`.MD` file or under `reference/**` - doc-only changes don't need a full lint/typecheck/test/build/E2E run. `.github/workflows/validate-manifest.yml` regenerates/validates the photo manifest, and only triggers on changes to the manifest script/data files themselves (see its own `paths:` filter). None of these gate the actual Vercel deploy (git-push-to-deploy from `main`).
 
 CSS lint (`npm run lint:css`) runs a single custom Stylelint rule (`stylelint-rules/no-unlayered-globals.mjs`), scoped to `globals.css` only, that fails if any style rule in that file isn't nested inside an `@layer` block. It's a separate npm script (and CI step) from `npm run lint` rather than folded into ESLint because Stylelint and ESLint are different tools with different configs. It's deliberately narrow: `globals.css` is the file that does its own `@layer` wrapping (plus wrapping the page-specific CSS files it imports via `layer(base)`), so it's the one place a rule can silently regress back to unlayered. The per-page CSS files under `src/styles/` (about-me.css, spurs-theme.css, etc.) are correctly *un*-layered internally by design — they only become layered via the `@import "..." layer(base)` that pulls them in (see `src/styles/spurs-theme-layer.css` for why Spurs Women's theme needs a one-line wrapper file to do this) — so the rule isn't applied to them.
 
@@ -78,3 +164,13 @@ Jest + React Testing Library for unit/component tests (`__tests__/` directories 
 
 ### Path alias
 `@/*` maps to `src/*` (see `tsconfig.json`).
+
+## Collaboration
+
+When making recommendations:
+
+- Explain the reasoning behind significant architectural decisions.
+- Prefer improving existing patterns over introducing new ones.
+- Follow the established conventions in this repository unless there is a compelling reason not to.
+- If multiple reasonable approaches exist, recommend one and briefly explain why.
+- When documentation needs updating because of code changes, update it as part of the same piece of work rather than leaving it for later.
