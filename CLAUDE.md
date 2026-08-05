@@ -68,6 +68,8 @@ Example:
 WEB-123 Add player profile page
 ```
 
+Pull request descriptions must also include a direct, clickable link to the Jira issue (`https://eleanormatthewman.atlassian.net/browse/WEB-123`), not just the key referenced in the title - link every issue mentioned in the description, including follow-up tickets.
+
 When asked to prepare a pull request, always provide:
 
 - an appropriate PR title
