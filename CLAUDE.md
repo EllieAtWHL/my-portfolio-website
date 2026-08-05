@@ -68,7 +68,7 @@ Example:
 WEB-123 Add player profile page
 ```
 
-Pull request descriptions must also include a direct, clickable link to the Jira issue (`https://eleanormatthewman.atlassian.net/browse/WEB-123`), not just the key referenced in the title - link every issue mentioned in the description, including follow-up tickets. `.github/pull_request_template.md` scaffolds this automatically (Jira link line, Summary/Test plan/Follow-up work sections) - fill it in rather than writing a PR description from scratch.
+Pull request descriptions must also include a direct, clickable link to the Jira issue (`https://eleanormatthewman.atlassian.net/browse/WEB-123`), not just the key referenced in the title - link every issue mentioned in the description, including follow-up tickets. `.github/pull_request_template.md` scaffolds this automatically (Jira link line, Summary/Test plan/Follow-up work sections) for PRs created via the GitHub web UI. That auto-population does **not** happen when creating a PR via `gh pr create --body "..."` (or `--body-file` with different content) - when creating a PR this way, base the description on the template's structure rather than writing one from scratch, so every PR gets the same shape regardless of how it was created.
 
 When asked to prepare a pull request, always provide:
 
