@@ -42,7 +42,6 @@ jobs:
 
   playwright:
     needs: changes
-    if: needs.changes.outputs.code == 'true'
     name: playwright (${{ matrix.browser }})
     timeout-minutes: 60
     runs-on: ubuntu-latest
@@ -52,14 +51,19 @@ jobs:
         browser: [chromium, firefox, webkit]
     steps:
     - uses: actions/checkout@v4
+      if: needs.changes.outputs.code == 'true'
     - uses: actions/setup-node@v4
+      if: needs.changes.outputs.code == 'true'
       with:
         node-version: lts/*
     - name: Install dependencies
+      if: needs.changes.outputs.code == 'true'
       run: npm ci
     - name: Install Playwright Browser (${{ matrix.browser }})
+      if: needs.changes.outputs.code == 'true'
       run: npx playwright install --with-deps ${{ matrix.browser }}
     - name: Run Playwright tests
+      if: needs.changes.outputs.code == 'true'
       env:
         NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
         NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
@@ -67,7 +71,7 @@ jobs:
         ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
       run: npx playwright test --project=${{ matrix.browser }}
     - uses: actions/upload-artifact@v4
-      if: ${{ !cancelled() }}
+      if: ${{ !cancelled() && needs.changes.outputs.code == 'true' }}
       with:
         name: playwright-report-${{ matrix.browser }}
         path: playwright-report/
