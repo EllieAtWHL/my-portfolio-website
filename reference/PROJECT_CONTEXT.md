@@ -62,13 +62,6 @@ These considerations may influence design, styling, and content decisions and sh
   - ✅ Component composition patterns in place
   - ✅ ESLint configuration for code quality
 
-**Major Migration Work Remaining:**
-  - **Personal Site:** Regicide game needs complete rebuild (currently non-functional)
-  - **Personal Site:** Lightning rollout demo pages need migration
-  - **Spurs Women:** Large amount of content and features still need migration
-  - **Component Consistency:** Button migration and other component standardization
-  - **Performance:** Optimization and bundle analysis needed
-
 ## Target Architecture
 
 ### Core Technology Stack
@@ -197,16 +190,6 @@ Guiding principles:
   - ✅ Shared component system foundation (Button component with variants)
   - ✅ Design token system and CSS variables established
 
-**Current Phase:**
-  - **Personal Site:** Complete Regicide game rebuild (currently non-functional)
-  - **Personal Site:** Lightning rollout demo pages migration
-  - **Spurs Women:** Major content and feature migration
-  - **Component Consistency:** Button migration and component standardization
-
-**Future Phases:**
-  - Performance optimization and bundle analysis
-  - Documentation and deployment setup
-
 ## Testing Strategy
 
   - Comprehensive automated testing is now standard practice.
@@ -227,6 +210,7 @@ Guiding principles:
 3. **Edge Case Testing** - Error states, missing props, invalid inputs
 4. **Accessibility Testing** - ARIA labels, semantic structure
 5. **TypeScript Coverage** - Proper typing for all new code
+6. **Mutation Testing** - Applied to new/changed tests to ensure they are robust and meaningful
 
 **Test File Organization:**
 - Place tests in `__tests__` directories alongside source code
@@ -375,7 +359,7 @@ This prevents the shell from interpreting the square brackets as pattern matchin
 
 Decision (superseded):
   - This section originally decided against automated testing at MVP, relying on TypeScript + manual testing.
-  - That decision no longer holds: Jest + React Testing Library are now installed and automated testing is mandatory for new components/utilities (see "Testing Strategy" above and `reference/testing/README.md` - 356 tests across 46 suites as of the last coverage run).
+  - That decision no longer holds: Jest + React Testing Library are now installed and automated testing is mandatory for new components/utilities (see "Testing Strategy" above and `reference/testing/README.md`).
 
 Current state:
   - E2E testing with Playwright is now implemented: 12 spec files under `tests/` (personal-site pages plus `tests/spurs-women/*`), run via `npx playwright test` and in CI via `.github/workflows/playwright.yml` across chromium/firefox/webkit.
@@ -450,15 +434,6 @@ Rationale:
   - ✅ Supabase integration added for future data needs
   - ✅ RSS parser integrated for content feeds
   - ✅ Component architecture established with TypeScript
-
-**Still Open:**
-  - Whether additional tooling such as Storybook is worth introducing
-  - Whether the Spurs Women section should eventually be split into its own deployable unit
-  - Whether analytics or content management will be added later
-  - Performance monitoring and optimization strategy
-  - **Layout Architecture**: Consider introducing BlogTemplate pattern for structured content sections (e.g., London 2012 blog expansion) while maintaining MainSitePage for varied portfolio pages
-
-**Resolved (cont'd):**
   - ✅ E2E testing automation approach settled on Playwright (see "Automated Testing" above)
 
 ## Explicit Non-Goals (for Now)
@@ -611,12 +586,13 @@ For implementation detail on specific systems, see:
 - **Spurs Women site overview**: `reference/spurs-women/README.md`
 - **Spurs Women caching**: `reference/spurs-women/cache/README.md`
 - **Spurs Women admin system**: `reference/spurs-women/admin/ADMIN_SYSTEM_DOCUMENTATION.md`
-- **Open backlog / TODOs**: `reference/spurs-women/DEVELOPMENT_TODO.md`
 - **Public API reference**: `reference/spurs-women/api/API_DOCUMENTATION.md` (see also `reference/spurs-women/api/openapi-spec.yaml`)
+
+The backlog/TODO list lives in Jira, not in this repo - see the "Jira is the source of truth" section in CLAUDE.md. The `WEB` project covers both the core site (`core-site` label) and Spurs Women (`spurs-women` label), with epics labeled both where work spans the whole site.
 
 Known open tech debt at time of writing: Button migration is incomplete (10
 files still render raw `<button>` elements outside the shared component - see
 BUTTON_MIGRATION.md for the current list), and cache hit-rate monitoring/
-metrics collection has not been implemented (see DEVELOPMENT_TODO.md).
+metrics collection has not been implemented (see the Technical Debt & Performance epic in Jira).
 
 This document should be used by both humans and AI as the source of truth for architectural intent. If code and documentation disagree, the documentation should be updated deliberately rather than ignored.

@@ -12,8 +12,9 @@ specific to the Spurs Women section.
 - **Caching**: `cache/README.md`
 - **Match statistics component**: `match-stats.md`
 - **Season statistics calculations**: `SEASON_STATISTICS_CALCULATIONS.md`
-- **Open backlog / TODOs**: `DEVELOPMENT_TODO.md`
 - **Public API reference**: `api/API_DOCUMENTATION.md` (see also `api/openapi-spec.yaml`)
+
+The backlog/TODO list lives in Jira (`WEB` project, `spurs-women` label), not in this repo - see "Jira is the source of truth" in the root `CLAUDE.md`.
 
 ## Project Structure
 
