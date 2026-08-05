@@ -2,18 +2,29 @@ name: Playwright Tests
 on:
   push:
     branches: [ main, master ]
-    paths-ignore:
-      - '**/*.md'
-      - '**/*.MD'
-      - 'reference/**'
   pull_request:
     branches: [ main, master ]
-    paths-ignore:
-      - '**/*.md'
-      - '**/*.MD'
-      - 'reference/**'
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Detect non-doc changes
+      uses: dorny/paths-filter@v3
+      id: filter
+      with:
+        filters: |
+          code:
+            - '**'
+            - '!**/*.md'
+            - '!**/*.MD'
+            - '!reference/**'
+
   playwright:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     name: playwright (${{ matrix.browser }})
     timeout-minutes: 60
     runs-on: ubuntu-latest
