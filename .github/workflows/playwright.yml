@@ -2,8 +2,16 @@ name: Playwright Tests
 on:
   push:
     branches: [ main, master ]
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.MD'
+      - 'reference/**'
   pull_request:
     branches: [ main, master ]
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.MD'
+      - 'reference/**'
 jobs:
   playwright:
     name: playwright (${{ matrix.browser }})
