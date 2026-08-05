@@ -52,14 +52,26 @@ Net: the two components serve different-enough call shapes that forcing them thr
 ### Authorization
 - Admin access restricted to a single email address
 - Configured via `ADMIN_EMAIL` environment variable
-- API routes verify user email matches admin email before allowing operations
+- Enforced centrally for every `/api/admin/*` request in `src/lib/supabase/middleware.ts#updateSession` - not per-route-handler. Individual route handlers under `src/app/api/admin/*/route.ts` don't check auth themselves; they can assume the request already passed the check below and just call the shared `supabaseAdmin` client from `@/lib/admin-api`. This was previously duplicated in every route handler (~30+ copies of the same block), which is exactly how two routes shipped without it before WEB-70 - centralizing it means a new admin route can't ship unprotected by omission.
 
 ```typescript
+if (!user) {
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+}
+
 const adminEmail = process.env.ADMIN_EMAIL;
 if (!adminEmail || user.email !== adminEmail) {
   return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 }
 ```
+
+### CSRF protection
+
+Also enforced in `updateSession` for the same `/api/admin/*` requests: non-GET/HEAD requests are rejected unless their `Origin` header matches the app's own origin. These routes authenticate via cookies, which browsers attach automatically even to cross-site requests, so this Origin check is what actually blocks cross-site form/fetch forgery - the `ADMIN_EMAIL` check alone doesn't, since a forged request would carry the legitimate admin's cookies.
+
+### Rate limiting
+
+`/api/admin/*` requests are also capped (120 requests/minute per IP, see `src/lib/rate-limit.ts`) purely to stop a runaway script or buggy client-side loop from hammering the database - generous enough not to affect normal single-admin usage. It's an in-memory, per-instance, best-effort limiter (no Redis/KV in this app's infra), so it resets on cold start rather than being globally consistent.
 
 ## Data Entities
 
