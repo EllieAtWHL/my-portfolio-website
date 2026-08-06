@@ -93,6 +93,7 @@ export function ColorPicker({ value, onChange, label }: ColorPickerProps) {
                             className="w-10 h-10 rounded border border-gray-600 hover:scale-110 transition-transform flex items-center justify-center"
                             style={{ backgroundColor: getTeamColor(colorValue) }}
                             title={colorValue}
+                            aria-label={`${name.charAt(0).toUpperCase()}${name.slice(1)} ${shade}`}
                           >
                             <span className="text-xs text-gray-900/50">{shade}</span>
                           </button>
