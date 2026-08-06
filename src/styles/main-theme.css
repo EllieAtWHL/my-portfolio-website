@@ -384,9 +384,14 @@
 
 .page-subtitle {
   font-size: clamp(1.2rem, 3vw, 1.5rem);
-  color: var(--brand-primary-light);
+  /* brand-primary-dark (not -light) at opacity 0.9 - the -light variant at
+     the previous opacity 0.8 computed to ~3.2:1 against the page
+     background, failing WCAG AA's 4.5:1 floor for normal text. This pairing
+     computes to ~5.5-5.8:1 depending on where in the header gradient it
+     sits. */
+  color: var(--brand-primary-dark);
   font-weight: 500;
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 /* Alternative page title (solid color) */
