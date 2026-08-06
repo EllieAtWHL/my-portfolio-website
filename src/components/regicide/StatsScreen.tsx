@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useId } from 'react';
 import { Card as UniversalCard } from '@/components/Card';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 interface StatsScreenProps {
   onClose: () => void;
@@ -51,17 +52,29 @@ export function StatsScreen({ onClose }: StatsScreenProps) {
       lastPlayed: 'Never',
       totalPlayTime: 0
     };
-    
+
     localStorage.setItem('regicide-stats', JSON.stringify(defaultStats));
     setStats(defaultStats);
   };
 
+  const titleId = useId();
+  // StatsScreen is only ever mounted while shown (RegicideGame swaps it in
+  // via a `gameState === 'stats'` conditional), so there's no isOpen prop.
+  const containerRef = useFocusTrap<HTMLDivElement>(true, onClose);
+
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div
+      ref={containerRef}
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+      tabIndex={-1}
+    >
       <UniversalCard className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-3xl font-bold">Game Statistics</h2>
+          <h2 id={titleId} className="text-3xl font-bold">Game Statistics</h2>
           <button
             onClick={onClose}
             className="p-2 bg-gray-100 dark:bg-gray-700 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200"
