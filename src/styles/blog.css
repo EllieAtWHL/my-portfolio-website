@@ -31,15 +31,15 @@
 }
 
 .blog-posts-grid {
-  display: grid !important;
-  grid-template-columns: 1fr !important;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 2rem;
   margin-top: 2rem;
 }
 
 @media (min-width: 768px) {
   .blog-posts-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -150,54 +150,62 @@
 @media (max-width: 768px) {
   .blog-article {
     padding: 1rem;
-    max-width: 100% !important;
+    max-width: 100%;
   }
 
   /* Force all nested elements in blog articles to be mobile responsive */
   .blog-article * {
-    max-width: 100% !important;
+    max-width: 100%;
   }
 
   .blog-article [class*="card"],
   .blog-article [class*="Card"],
   .blog-article .accent-card,
   .blog-article .topic-block {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 100% !important;
-    box-sizing: border-box !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
+    width: 100%;
+    max-width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+    margin-left: 0;
+    margin-right: 0;
   }
 }
 
 @media (max-width: 480px) {
   .blog-article {
     padding: 0.75rem;
-    max-width: 100% !important;
+    max-width: 100%;
   }
 
   /* Force all nested elements in blog articles to be mobile responsive on small screens */
   .blog-article * {
-    max-width: 100% !important;
+    max-width: 100%;
   }
 
   .blog-article [class*="card"],
   .blog-article [class*="Card"],
   .blog-article .accent-card,
   .blog-article .topic-block {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 100% !important;
-    box-sizing: border-box !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    padding: 0.75rem !important;
+    width: 100%;
+    max-width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+    margin-left: 0;
+    margin-right: 0;
+    padding: 0.75rem;
   }
 }
 
 .blog-content {
   line-height: 1.7;
+}
+
+/* Long unbroken code samples (e.g. Visualforce tags) otherwise overflow
+   the article column on narrow viewports - pre defaults to nowrap. */
+.blog-article pre {
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .blog-main-title {
