@@ -460,13 +460,15 @@ export default function ExperienceContent() {
         <div className="page-subtitle">14+ Years of Technological Excellence</div>
       </div>
       
-      <div className="tab-navigation">
+      <div className="tab-navigation" role="tablist">
         {tabs.map((tab) => (
           <button
             key={tab.id}
+            id={`tab-${tab.id}`}
             className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
             onClick={() => handleTabChange(tab.id)}
             aria-selected={activeTab === tab.id}
+            aria-controls="experience-tabpanel"
             role="tab"
           >
             {tab.label}
@@ -474,7 +476,7 @@ export default function ExperienceContent() {
         ))}
       </div>
 
-      <div className="tab-content" role="tabpanel">
+      <div id="experience-tabpanel" className="tab-content" role="tabpanel" aria-labelledby={`tab-${activeTab}`}>
         {renderTabContent()}
       </div>
     </div>

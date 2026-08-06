@@ -237,15 +237,17 @@ export function MatchForm({
               borderColor: showStatsSection ? 'var(--spurs-dark-accent)' : 'transparent',
               borderWidth: showStatsSection ? '2px' : '0',
             }}
+            aria-expanded={showStatsSection}
+            aria-controls="match-stats-section"
           >
             <span className="font-medium text-white">Match Stats</span>
             <span className="text-gray-400 transform transition-transform">
               {showStatsSection ? '▼' : '▶'}
             </span>
           </button>
-          
+
           {showStatsSection && (
-            <div className="p-4 space-y-4 bg-gray-800/50">
+            <div id="match-stats-section" className="p-4 space-y-4 bg-gray-800/50">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Possession */}
                 <FormField label="Home Possession (%)" htmlFor="home-possession">
@@ -335,15 +337,17 @@ export function MatchForm({
               borderColor: showExtraTimeSection ? 'var(--spurs-dark-accent)' : 'transparent',
               borderWidth: showExtraTimeSection ? '2px' : '0',
             }}
+            aria-expanded={showExtraTimeSection}
+            aria-controls="extra-time-section"
           >
             <span className="font-medium text-white">Extra Time</span>
             <span className="text-gray-400 transform transition-transform">
               {showExtraTimeSection ? '▼' : '▶'}
             </span>
           </button>
-          
+
           {showExtraTimeSection && (
-            <div className="p-4 space-y-4 bg-gray-800/50">
+            <div id="extra-time-section" className="p-4 space-y-4 bg-gray-800/50">
               <div className="grid grid-cols-2 gap-4">
                 <FormField label="Spurs Score (AET)" htmlFor="spurs-score-aet">
                   <NumberInput

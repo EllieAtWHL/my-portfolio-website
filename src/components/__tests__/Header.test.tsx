@@ -108,15 +108,40 @@ describe('Header Component', () => {
     expect(nav).toHaveClass('active')
   })
 
-  it('does not toggle menu for other keys', () => {
+  it('toggles menu when Space key is pressed on toggle button', () => {
     render(<Header />)
-    
+
     const toggleButton = screen.getByLabelText('Toggle menu')
     const nav = screen.getByRole('navigation')
-    
-    // Press other key
-    fireEvent.keyDown(toggleButton, { key: 'Space' })
+
+    // Press the actual space character (e.key === ' '), not the unrelated
+    // "Space" string some other keyboard events use for e.code
+    fireEvent.keyDown(toggleButton, { key: ' ' })
+    expect(nav).toHaveClass('active')
+  })
+
+  it('does not toggle menu for other keys', () => {
+    render(<Header />)
+
+    const toggleButton = screen.getByLabelText('Toggle menu')
+    const nav = screen.getByRole('navigation')
+
+    // Press an unrelated key
+    fireEvent.keyDown(toggleButton, { key: 'Tab' })
     expect(nav).not.toHaveClass('active')
+  })
+
+  it('exposes aria-expanded reflecting menu state, and aria-controls pointing at the nav', () => {
+    render(<Header />)
+
+    const toggleButton = screen.getByLabelText('Toggle menu')
+    const nav = screen.getByRole('navigation')
+
+    expect(toggleButton).toHaveAttribute('aria-expanded', 'false')
+    expect(toggleButton).toHaveAttribute('aria-controls', nav.id)
+
+    fireEvent.click(toggleButton)
+    expect(toggleButton).toHaveAttribute('aria-expanded', 'true')
   })
 
   it('closes menu when navigation link is clicked', () => {

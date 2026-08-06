@@ -133,11 +133,13 @@ describe('MatchForm', () => {
     const setShowStatsSection = jest.fn();
     const { rerender } = render(<MatchForm {...baseProps} setShowStatsSection={setShowStatsSection} />);
 
+    expect(screen.getByText('Match Stats').closest('button')).toHaveAttribute('aria-expanded', 'false');
     fireEvent.click(screen.getByText('Match Stats'));
     expect(setShowStatsSection).toHaveBeenCalledWith(true);
 
     const setMatchForm = jest.fn();
     rerender(<MatchForm {...baseProps} showStatsSection setMatchForm={setMatchForm} />);
+    expect(screen.getByText('Match Stats').closest('button')).toHaveAttribute('aria-expanded', 'true');
     // NumberInput only parses as a float when step="any"; this field uses
     // step="0.1", so it still parses with parseInt.
     fireEvent.change(screen.getByLabelText(/Home Possession/i), { target: { value: '55' } });
@@ -148,11 +150,13 @@ describe('MatchForm', () => {
     const setShowExtraTimeSection = jest.fn();
     const { rerender } = render(<MatchForm {...baseProps} setShowExtraTimeSection={setShowExtraTimeSection} />);
 
+    expect(screen.getByText('Extra Time').closest('button')).toHaveAttribute('aria-expanded', 'false');
     fireEvent.click(screen.getByText('Extra Time'));
     expect(setShowExtraTimeSection).toHaveBeenCalledWith(true);
 
     const setMatchForm = jest.fn();
     rerender(<MatchForm {...baseProps} showExtraTimeSection setMatchForm={setMatchForm} />);
+    expect(screen.getByText('Extra Time').closest('button')).toHaveAttribute('aria-expanded', 'true');
     fireEvent.change(screen.getByLabelText(/Spurs Score \(Penalties\)/i), { target: { value: '4' } });
     expect(setMatchForm).toHaveBeenCalledWith({ ...baseForm, spurs_score_pens: 4 });
   });
