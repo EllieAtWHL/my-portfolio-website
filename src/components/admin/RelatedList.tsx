@@ -54,9 +54,16 @@ export function RelatedList<T extends Record<string, unknown> | { id?: string }>
                 <tr
                   key={(record.id as string) || index}
                   className={`border-b border-gray-600 ${
-                    onRecordClick ? 'cursor-pointer hover:bg-gray-700/50' : ''
+                    onRecordClick ? 'admin-row-focusable cursor-pointer hover:bg-gray-700/50' : ''
                   } transition-colors`}
                   onClick={() => onRecordClick?.(record)}
+                  tabIndex={onRecordClick ? 0 : undefined}
+                  onKeyDown={onRecordClick ? (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      onRecordClick(record);
+                    }
+                  } : undefined}
                 >
                   {columns.map((column) => (
                     <td key={column.id ?? String(column.key)} className="p-2 text-gray-300">

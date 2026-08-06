@@ -145,6 +145,15 @@
   outline-color: var(--dark-accent);
 }
 
+.card-focusable:focus-visible {
+  outline: 2px solid var(--brand-primary-dark);
+  outline-offset: 2px;
+}
+
+.dark .card-focusable:focus-visible {
+  outline-color: var(--dark-accent);
+}
+
 .button.primary {
   background: linear-gradient(135deg, var(--brand-primary-dark) 0%, var(--brand-primary-light) 100%);
   color: var(--bg-light-1);
