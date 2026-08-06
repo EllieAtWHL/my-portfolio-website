@@ -29,7 +29,11 @@ const CSP_DIRECTIVES = [
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'self'",
-  "upgrade-insecure-requests",
+  // Dev/CI serve plain http://localhost - upgrading that would just break every
+  // request (WebKit in particular does not reliably exempt localhost from this,
+  // unlike Chromium/Firefox, which silently swallowed navigation in Playwright's
+  // WebKit CI job). Meaningless on a non-HTTPS origin anyway, so prod-only.
+  ...(isDev ? [] : ["upgrade-insecure-requests"]),
 ];
 
 const securityHeaders = [
