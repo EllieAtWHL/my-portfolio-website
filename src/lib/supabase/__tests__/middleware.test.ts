@@ -26,10 +26,17 @@ class FakeNextURL extends URL {
   }
 }
 
-function makeRequest(pathname: string): NextRequest {
+function makeRequest(
+  pathname: string,
+  options: { method?: string; origin?: string | null } = {}
+): NextRequest {
+  const { method = 'GET', origin } = options;
+  const headerEntries: [string, string][] = origin != null ? [['origin', origin]] : [];
   return {
     nextUrl: new FakeNextURL(`http://localhost${pathname}`),
     cookies: { getAll: () => [] },
+    method,
+    headers: new Headers(headerEntries),
   } as unknown as NextRequest;
 }
 
@@ -166,5 +173,103 @@ describe('updateSession', () => {
     const response = await updateSession(request);
 
     expect(response.headers.get('location')).toBeNull();
+  });
+
+  describe('/api/admin/* routes', () => {
+    // Body content on these NextResponse.json(...) responses isn't asserted:
+    // whatwg-fetch's Response polyfill (used for jsdom in this Jest env) has no
+    // `.body` stream getter, which NextResponse.json's `new NextResponse(response.body, response)`
+    // relies on - so the body is silently empty here even though it's populated
+    // at runtime. Status codes (set via `init`, not the body stream) are unaffected
+    // and are what's actually verified below. See jest.setup.js's Response.json polyfill comment.
+    it('returns 401 (not a redirect) for an unauthenticated request', async () => {
+      mockUser(null);
+      const request = makeRequest('/api/admin/matches');
+
+      const response = await updateSession(request);
+
+      expect(response.status).toBe(401);
+      expect(response.headers.get('location')).toBeNull();
+    });
+
+    it('returns 403 for an authenticated user who is not ADMIN_EMAIL', async () => {
+      process.env.ADMIN_EMAIL = 'admin@example.com';
+      mockUser({ email: 'someone-else@example.com' });
+      const request = makeRequest('/api/admin/matches');
+
+      const response = await updateSession(request);
+
+      expect(response.status).toBe(403);
+      expect(response.headers.get('location')).toBeNull();
+    });
+
+    it('treats a missing ADMIN_EMAIL env var as forbidden for any authenticated user', async () => {
+      delete process.env.ADMIN_EMAIL;
+      mockUser({ email: 'admin@example.com' });
+      const request = makeRequest('/api/admin/matches');
+
+      const response = await updateSession(request);
+
+      expect(response.status).toBe(403);
+    });
+
+    it('lets a GET from the correct admin through with no Origin header required', async () => {
+      process.env.ADMIN_EMAIL = 'admin@example.com';
+      mockUser({ email: 'admin@example.com' });
+      const request = makeRequest('/api/admin/matches', { method: 'GET' });
+
+      const response = await updateSession(request);
+
+      expect(response.headers.get('x-middleware-next')).toBe('1');
+    });
+
+    it('lets a same-origin POST from the correct admin through', async () => {
+      process.env.ADMIN_EMAIL = 'admin@example.com';
+      mockUser({ email: 'admin@example.com' });
+      const request = makeRequest('/api/admin/matches', {
+        method: 'POST',
+        origin: 'http://localhost',
+      });
+
+      const response = await updateSession(request);
+
+      expect(response.headers.get('x-middleware-next')).toBe('1');
+    });
+
+    it('rejects a POST with no Origin header as a CSRF guard, even from the correct admin', async () => {
+      process.env.ADMIN_EMAIL = 'admin@example.com';
+      mockUser({ email: 'admin@example.com' });
+      const request = makeRequest('/api/admin/matches', { method: 'POST' });
+
+      const response = await updateSession(request);
+
+      expect(response.status).toBe(403);
+    });
+
+    it('rejects a POST whose Origin does not match the request origin (cross-site forgery attempt)', async () => {
+      process.env.ADMIN_EMAIL = 'admin@example.com';
+      mockUser({ email: 'admin@example.com' });
+      const request = makeRequest('/api/admin/matches', {
+        method: 'POST',
+        origin: 'https://evil.example.com',
+      });
+
+      const response = await updateSession(request);
+
+      expect(response.status).toBe(403);
+    });
+
+    it.each(['PUT', 'DELETE', 'PATCH'])(
+      'applies the same Origin check to %s as it does to POST',
+      async (method) => {
+        process.env.ADMIN_EMAIL = 'admin@example.com';
+        mockUser({ email: 'admin@example.com' });
+        const request = makeRequest('/api/admin/matches', { method });
+
+        const response = await updateSession(request);
+
+        expect(response.status).toBe(403);
+      }
+    );
   });
 });

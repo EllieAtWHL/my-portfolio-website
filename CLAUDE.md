@@ -142,7 +142,7 @@ All Supabase/RSS/YouTube fetching goes through `src/lib/data/` (re-exported via 
 Database is Supabase/Postgres; core tables are `matches`, `teams`, `seasons`, `competitions`, `stadia`, `stadium_names`, `players`, `player_history`, `player_stats`, `media` — full field-level schema in `reference/spurs-women/admin/ADMIN_SYSTEM_DOCUMENTATION.md`.
 
 ### Admin system (`/spurs-women/admin`)
-Supabase Auth, authorization restricted to a single email (`ADMIN_EMAIL` env var), checked server-side in every `src/app/api/admin/*/route.ts` handler (which use the Supabase **service role** client to bypass RLS — never expose that client to non-admin-checked code paths).
+Supabase Auth, authorization restricted to a single email (`ADMIN_EMAIL` env var). Auth, the CSRF Origin check, and rate limiting for every `/api/admin/*` route are enforced centrally in `src/lib/supabase/middleware.ts#updateSession` (not per-route-handler — that duplication is what let two routes ship without auth checks pre-WEB-70), so a new admin route inherits protection automatically; route handlers themselves just use the shared `supabaseAdmin` client from `@/lib/admin-api` (the Supabase **service role** client, which bypasses RLS — never expose it to a code path outside `/api/admin/*`).
 
 The admin page was decomposed from one ~3,100-line file into:
 - `src/types/spurs-women-admin.ts` — shared entity types
@@ -153,6 +153,13 @@ The admin page was decomposed from one ~3,100-line file into:
 - `src/components/admin/RelatedList.tsx` — deliberately *not* merged onto `DataTable` despite similar-looking table rendering; it needs an optional `render` with an unsafe-cast fallback that `DataTable` intentionally doesn't support. Don't "simplify" these into one component — see the architecture doc for the full reasoning.
 
 Match score/stat fields must be saved as `null` when blank, never `0` — a blank and a genuine zero are semantically different (`matches.ts` filters on `spurs_score is null` to detect unscored fixtures). Always build match payloads via `buildMatchPayload` in `src/lib/admin-match-payload.ts` rather than constructing them inline.
+
+### Security
+
+- **Headers & CSP** — set site-wide in `next.config.ts`'s `headers()` (CSP, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, and HSTS in production only). The CSP directives are hand-scoped to the third-party hosts this app actually loads (YouTube/Spotify/OpenStreetMap embeds, Supabase, FullStory, Vercel Analytics) rather than left permissive — when adding a new external script/embed/API call from the browser, it needs a matching CSP entry or it'll be silently blocked; verify with a dev-server pass and check the browser console for CSP violations before shipping.
+- **CSRF & rate limiting on `/api/admin/*`** — see the Admin system section above; both are centralized in `src/lib/supabase/middleware.ts`, not per-route.
+- **Rate limiting on external proxy routes** — `/api/spurs-women-news`, `/api/spurs-women-videos`, and `/api/podcasts` proxy to YouTube/RSS/Acast and are rate-limited (`src/lib/rate-limit.ts`, in-memory/best-effort, no Redis/KV infra here) and, more importantly, cached via the existing `src/lib/data/news.ts` wrappers (`getSpursWomenNews`/`getSpursWomenVideos`/`getPodcasts`, built on `createCachedFunction` — see `src/lib/data/cache-utils.ts`) rather than hitting the upstream feed on every request. Don't reintroduce a raw uncached fetch to these feeds in a route handler; go through the data layer.
+- **Input validation on admin write payloads** is a known gap, tracked separately in WEB-83 (not yet implemented) rather than fixed as part of the WEB-70 security audit that added the above — admin POST/PUT bodies are passed to Supabase largely unvalidated.
 
 ### Styling
 Modular CSS under `src/styles/` (not one monolithic `globals.css`) — `variables.css` (CSS custom properties), `main-theme.css` (global/shared: buttons, navbar, footer, page headers — only for styles used on 3+ pages), and one file per page/section (`about-me.css`, `experience.css`, `projects.css`, `blog.css`, `spurs-theme.css`, `not-found.css`). `spurs-theme.css` is imported by `src/app/spurs-women/layout.tsx` directly, not by `globals.css`, so it only loads for that route tree. Full conventions, anti-patterns, and dark-mode/responsive patterns are in `reference/CSS_ARCHITECTURE.md` — read it before adding styles.
