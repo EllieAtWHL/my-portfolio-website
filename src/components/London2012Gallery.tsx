@@ -168,6 +168,7 @@ export default function London2012Gallery() {
                 className={`absolute inset-0 flex items-center justify-center transition-opacity duration-500 ${
                   index === currentSlide ? 'opacity-100' : 'opacity-0'
                 }`}
+                aria-hidden={index !== currentSlide}
               >
                 <div
                   className="relative overflow-hidden rounded-lg w-full h-full"

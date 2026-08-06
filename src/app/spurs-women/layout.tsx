@@ -4,6 +4,7 @@ import "../../styles/spurs-theme-layer.css";
 import SpursHeader from "../../components/spurs-women/SpursHeader";
 import SpursFooter from "../../components/spurs-women/SpursFooter";
 import { SpursWrapper } from "../../components/SpursWrapper";
+import { SkipLink } from "../../components/SkipLink";
 
 export const metadata: Metadata = {
   title: "Tottenham Hotspur Women",
@@ -22,6 +23,7 @@ export default function SpursWomenLayout({
 }>) {
   return (  
     <>
+      <SkipLink />
       <SpursHeader />
       <SpursWrapper>
         {children}
