@@ -365,13 +365,18 @@ export default function AdminPage() {
           )}
         </div>
 
-        {/* Message Display - fixed above modals (z-50) so it's visible even while one is open */}
+        {/* Message Display - fixed above modals (z-50) so it's visible even while one is open.
+            role="status"/"alert" carry implicit aria-live polite/assertive, so screen reader
+            users get this announced even though it auto-dismisses after 3s with no focus change. */}
         {message && (
-          <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[60] p-4 rounded shadow-lg ${
-            message.type === 'success'
-              ? 'bg-green-600 text-white'
-              : 'bg-red-600 text-white'
-          }`}>
+          <div
+            role={message.type === 'success' ? 'status' : 'alert'}
+            className={`fixed top-4 left-1/2 -translate-x-1/2 z-[60] p-4 rounded shadow-lg ${
+              message.type === 'success'
+                ? 'bg-green-600 text-white'
+                : 'bg-red-600 text-white'
+            }`}
+          >
             {message.text}
           </div>
         )}

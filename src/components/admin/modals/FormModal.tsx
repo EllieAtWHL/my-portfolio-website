@@ -17,7 +17,7 @@ export function FormModal({ title, error, onCancel, onDelete, onSubmit, submitLa
       <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
         <h3 className="text-xl font-bold text-white mb-4">{title}</h3>
         {error && (
-          <div className="mb-4 p-3 rounded bg-red-600 text-white text-sm">
+          <div role="alert" className="mb-4 p-3 rounded bg-red-600 text-white text-sm">
             {error}
           </div>
         )}

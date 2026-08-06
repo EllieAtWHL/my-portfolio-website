@@ -52,6 +52,16 @@ describe('FormModal', () => {
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
   });
 
+  it('announces the error banner as a live region', () => {
+    render(
+      <FormModal title="Add Thing" error="Something went wrong" onCancel={() => {}} onSubmit={() => {}} submitLabel="Create">
+        <div />
+      </FormModal>
+    );
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Something went wrong');
+  });
+
   it('calls onCancel and onSubmit', () => {
     const onCancel = jest.fn();
     const onSubmit = jest.fn();
