@@ -22,9 +22,9 @@
 }
 
 .profile {
-  width: 200px !important;
-  height: 200px !important;
-  border-radius: 50% !important;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
   object-fit: cover;
   border: 4px solid var(--brand-primary-dark);
   box-shadow: 0 8px 32px var(--brand-opacity-20);
@@ -213,9 +213,10 @@
 }
 
 .dark .profile-badge {
-  background: linear-gradient(135deg, var(--dark-accent) 0%, var(--dark-accent-bright) 100%);
-  color: var(--dark-text-darker);
-  border-color: var(--dark-text-darker);
+  background: var(--dark-bg-2);
+  color: var(--dark-text);
+  border-color: var(--dark-accent);
+  box-shadow: 0 4px 16px var(--shadow-dark-medium);
 }
 
 .dark .highlight {
@@ -251,32 +252,18 @@
   color: var(--dark-text);
 }
 
-.dark .about-section-card {
+.dark .accent-card {
   background: var(--dark-bg-opacity-50);
   border-left-color: var(--dark-accent);
   box-shadow: 0 2px 16px var(--shadow-dark-medium);
 }
 
-.dark .about-section-card h3 {
+.dark .accent-card h3 {
   color: var(--dark-accent);
 }
 
-.dark .about-section-card p {
-  color: var(--dark-text);
-}
-
-.dark .accent-card {
-  background: var(--dark-bg-opacity-50) !important;
-  border-left-color: var(--dark-accent) !important;
-  box-shadow: 0 2px 16px var(--shadow-dark-medium) !important;
-}
-
-.dark .accent-card h3 {
-  color: var(--dark-accent) !important;
-}
-
 .dark .accent-card p {
-  color: var(--dark-text) !important;
+  color: var(--dark-text);
 }
 
 .dark .highlight-link {
@@ -322,8 +309,8 @@
   }
 
   .profile {
-    width: 150px !important;
-    height: 150px !important;
+    width: 150px;
+    height: 150px;
   }
 
   .highlight {

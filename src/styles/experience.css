@@ -440,26 +440,26 @@
 }
 
 .dark .tab-navigation .tab-button {
-  background: var(--dark-bg-2) !important;
-  color: var(--dark-gray-medium) !important;
-  border-color: transparent !important;
-  box-shadow: 0 1px 4px var(--shadow-dark) !important;
+  background: var(--dark-bg-2);
+  color: var(--dark-gray-medium);
+  border-color: transparent;
+  box-shadow: 0 1px 4px var(--shadow-dark);
 }
 
 .dark .tab-navigation .tab-button:hover {
-  background: var(--dark-bg-1) !important;
-  color: var(--dark-gray-medium) !important;
-  border-color: transparent !important;
-  transform: translateY(-1px) !important;
-  box-shadow: 0 2px 8px var(--shadow-dark-medium) !important;
+  background: var(--dark-bg-1);
+  color: var(--dark-gray-medium);
+  border-color: transparent;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px var(--shadow-dark-medium);
 }
 
 .dark .tab-navigation .tab-button.active {
-  background: var(--dark-bg-1) !important;
-  color: var(--dark-accent) !important;
-  border-color: var(--accent-opacity-30) !important;
-  transform: translateY(-1px) !important;
-  box-shadow: 0 2px 12px var(--accent-opacity-15) !important;
+  background: var(--dark-bg-1);
+  color: var(--dark-accent);
+  border-color: var(--accent-opacity-30);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 12px var(--accent-opacity-15);
 }
 
 .dark .experience-card {
