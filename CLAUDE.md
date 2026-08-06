@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a personal, non-commercial Next.js site that consolidates Ellie's personal portfolio with an **unofficial** Spurs Women (Tottenham Hotspur Women's football) fan site into one app. It's built to professional standards but deliberately scoped for solo maintainability over enterprise process — see `reference/PROJECT_CONTEXT.md` for the full rationale and the list of explicit non-goals (no i18n, no CMS, no gated deploy pipeline, etc.).
 
-**Read `reference/PROJECT_CONTEXT.md` first** for architecture and technical decisions — it and `reference/README.md` (the doc index) are the source of truth for this repo. If code and docs disagree, update the docs deliberately rather than leaving the mismatch. Docs describe current, living behavior; completed migration plans and one-off bug write-ups are deleted once superseded, not archived.
+**Read `reference/PROJECT_CONTEXT.md` first** for architecture and technical decisions — it and `reference/README.md` (the doc index) are the source of truth for this repo. If code and docs disagree, update the docs deliberately rather than leaving the mismatch. Docs describe current, living behavior; completed migration plans and one-off bug write-ups are archived to Confluence, then deleted from the repo once superseded, rather than kept around indefinitely — see "Confluence documentation" below.
 
 Because the Spurs Women section is an unofficial fan site: avoid using official club logos/crests/branding as primary design elements, prefer original or licensed imagery, and don't create visuals that could read as official merchandise or marketing material.
 
@@ -19,6 +19,16 @@ If a related issue is small and naturally fits within the current piece of work,
 If fixing it would significantly increase the scope, create (or recommend creating) a separate Jira issue with enough detail for future implementation, rather than leaving it undocumented.
 
 Avoid unrelated refactors that make reviewing or understanding the original change more difficult.
+
+### Confluence documentation
+
+Living, technical documentation (architecture, conventions, how a system works today) stays in `reference/` in the repo — that's what Claude Code and Ellie read while coding, and it needs to be a fast local read, not a network fetch. Don't move `reference/` docs to Confluence wholesale.
+
+The [`EW` Confluence space](https://eleanormatthewman.atlassian.net/wiki/spaces/EW/overview) is for content that isn't needed day-to-day in the repo, or is also useful outside one:
+
+- **Reference** (`Reference: Core Site` / `Reference: Spurs Women`, mirroring the repo's two sections) — mirrored *copies* of `reference/` docs that are useful outside a coding session (sharing, browsing without cloning the repo). The repo copy stays and remains the source of truth; the Confluence page is a dual-homed duplicate, not a replacement. Currently mirrored: `spurs-women/README.md`, `spurs-women/admin/ADMIN_SYSTEM_DOCUMENTATION.md`, `spurs-women/cache/README.md`, `spurs-women/api/API_DOCUMENTATION.md` + `openapi-spec.yaml`. When editing one of these repo docs, update the matching Confluence page in the same piece of work and bump its "Last synced: commit `<sha>` (`<date>`)" note - otherwise the two copies silently drift. Only add a new doc to this mirrored set deliberately (it's an ongoing maintenance commitment, not a default); most `reference/` docs should stay repo-only.
+- **Archive** (`Archive > Core Site` / `Archive > Spurs Women`, same mirroring) — historical write-ups. When a `reference/*.md` doc is fully superseded (a completed migration plan or a one-off bug write-up with no open items), copy its content to the matching Archive page in Confluence *before* deleting it, then delete the file and its `reference/README.md` entry, in the same commit. Don't archive a doc that still has open next steps (e.g. a migration plan with unfinished tracks) - it stays in the repo as living documentation until it's actually done.
+- Non-technical/process documentation that doesn't belong in the repo, as it comes up.
 
 ## Development workflow
 
