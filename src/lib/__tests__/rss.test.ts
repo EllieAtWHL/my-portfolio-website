@@ -298,6 +298,32 @@ describe('fetchSpursWomenNews', () => {
     expect(result[0].source).toBe('BBC Sport');
   });
 
+  it('retries a source up to 3 times on transient failure before giving up on it', async () => {
+    jest.useFakeTimers();
+    try {
+      mockParseURL.mockImplementation(async (url: string) => {
+        if (url.includes('spurswomen')) {
+          throw new Error('feed down');
+        }
+        return emptyFeed();
+      });
+
+      const promise = fetchSpursWomenNews();
+
+      // Let each source's first attempt (and the failing source's two
+      // retries) settle - no real waiting, since retryWithBackoff's only
+      // real timer is its own backoff delay between attempts.
+      await jest.advanceTimersByTimeAsync(300);
+      await jest.advanceTimersByTimeAsync(600);
+      await promise;
+
+      const spurswomenCalls = mockParseURL.mock.calls.filter(([url]) => url.includes('spurswomen'));
+      expect(spurswomenCalls).toHaveLength(3);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('sorts included articles newest first by isoDate and caps the result at 20', async () => {
     mockParseURL.mockImplementation(async (url: string) => {
       if (url.includes('spurswomen')) {
