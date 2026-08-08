@@ -1,4 +1,3 @@
-import Footer from '@/components/Footer';
 import MainSitePage from '@/components/MainSitePage';
 import { Card } from '@/components/Card';
 
@@ -62,7 +61,6 @@ export default function Regicide() {
         <RegicideGame />
         */}
       </div>
-      <Footer />
     </MainSitePage>
   );
 }

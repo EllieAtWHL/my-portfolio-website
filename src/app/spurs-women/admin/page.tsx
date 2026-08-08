@@ -345,7 +345,7 @@ export default function AdminPage() {
   }, [activeTab, fetchRecentRecords]);
 
   return (
-    <div className="p-4 pb-20">
+    <main id="main-content" className="p-4 pb-20">
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-8">
           <h1 className="spurs-text font-bold">Spurs Women Admin</h1>
@@ -423,15 +423,16 @@ export default function AdminPage() {
               <TabNav
                 className="mb-4 flex space-x-2"
                 tabs={[
-                  { key: 'details', label: 'Details' },
-                  { key: 'related', label: 'Related Records' },
+                  { key: 'details', label: 'Details', panelId: 'match-details-panel' },
+                  { key: 'related', label: 'Related Records', panelId: 'match-related-panel' },
                 ]}
                 activeKey={matchEditTab}
                 onChange={setMatchEditTab}
               />
             )}
-            
+
             {matchEditTab === 'details' && (isEditMode || showMatchForm) && (
+              <div id="match-details-panel" role="tabpanel" aria-labelledby="tab-details">
               <MatchForm
                 matchForm={matchForm}
                 setMatchForm={setMatchForm}
@@ -455,10 +456,11 @@ export default function AdminPage() {
                 }}
                 onCancel={handleCancelEdit}
               />
+              </div>
             )}
-            
+
             {matchEditTab === 'related' && isEditMode && (
-              <div className="space-y-4">
+              <div id="match-related-panel" role="tabpanel" aria-labelledby="tab-related" className="space-y-4">
                 {/* Media related lists grouped by type */}
                 {Object.entries(getMediaByType()).map(([mediaType, mediaRecords]) => (
                   <RelatedList
@@ -540,8 +542,8 @@ export default function AdminPage() {
               <TabNav
                 className="mb-4 flex space-x-2"
                 tabs={[
-                  { key: 'details', label: 'Details' },
-                  { key: 'related', label: 'Related Records' },
+                  { key: 'details', label: 'Details', panelId: 'player-details-panel' },
+                  { key: 'related', label: 'Related Records', panelId: 'player-related-panel' },
                 ]}
                 activeKey={playerEditTab}
                 onChange={setPlayerEditTab}
@@ -549,6 +551,7 @@ export default function AdminPage() {
             )}
 
             {playerEditTab === 'details' && (isPlayerEditMode || showPlayerForm) && (
+              <div id="player-details-panel" role="tabpanel" aria-labelledby="tab-details">
               <PlayerForm
                 playerForm={playerForm}
                 setPlayerForm={setPlayerForm}
@@ -563,10 +566,11 @@ export default function AdminPage() {
                 }}
                 onCancel={handleCancelEditPlayer}
               />
+              </div>
             )}
 
             {playerEditTab === 'related' && isPlayerEditMode && (
-              <div className="space-y-4">
+              <div id="player-related-panel" role="tabpanel" aria-labelledby="tab-related" className="space-y-4">
                 {/* Player Stats related list */}
                 <RelatedList
                   title="Player Stats"
@@ -638,8 +642,8 @@ export default function AdminPage() {
               <TabNav
                 className="mb-4 flex space-x-2"
                 tabs={[
-                  { key: 'details', label: 'Details' },
-                  { key: 'related', label: 'Related Records' },
+                  { key: 'details', label: 'Details', panelId: 'stadium-details-panel' },
+                  { key: 'related', label: 'Related Records', panelId: 'stadium-related-panel' },
                 ]}
                 activeKey={stadiumEditTab}
                 onChange={setStadiumEditTab}
@@ -647,6 +651,7 @@ export default function AdminPage() {
             )}
 
             {stadiumEditTab === 'details' && (isStadiumEditMode || showStadiumForm) && (
+              <div id="stadium-details-panel" role="tabpanel" aria-labelledby="tab-details">
               <StadiumForm
                 teams={teams}
                 stadiumForm={stadiumForm}
@@ -662,10 +667,11 @@ export default function AdminPage() {
                 }}
                 onCancel={handleCancelEditStadium}
               />
+              </div>
             )}
 
             {stadiumEditTab === 'related' && isStadiumEditMode && (
-              <div className="space-y-4">
+              <div id="stadium-related-panel" role="tabpanel" aria-labelledby="tab-related" className="space-y-4">
                 {/* Stadium Names related list */}
                 <RelatedList
                   title="Stadium Names"
@@ -871,6 +877,6 @@ export default function AdminPage() {
           onSubmit={handleStadiumNameSubmit}
         />
       )}
-    </div>
+    </main>
   );
 }

@@ -180,7 +180,11 @@
 
 .coming-soon sup {
   font-size: 0.8em;
-  color: var(--neutral-light-gray);
+  /* No color of its own: the previous --neutral-light-gray (#999) computed
+     to ~2.85:1 against the card background, well under the 4.5:1 AA floor.
+     Inheriting .coming-soon's color (which already has correct light/dark
+     values) fixes both modes at once instead of needing a .dark override
+     here too - font-size alone still differentiates it as a superscript. */
 }
 
 /* Dark mode for projects */
@@ -216,7 +220,12 @@
 }
 
 .dark .coming-soon {
-  color: var(--neutral-gray);
+  /* Found while fixing the light-mode .coming-soon sup contrast above:
+     this was left as the light-mode dark-gray color, computing to ~1.4:1
+     (barely legible) against the dark accent-card background - should be
+     the light dark-mode text color instead, matching every other
+     .dark override in this file. */
+  color: var(--dark-text);
 }
 
 /* Responsive for Projects */

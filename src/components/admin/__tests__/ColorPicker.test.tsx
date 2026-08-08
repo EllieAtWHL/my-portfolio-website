@@ -25,7 +25,9 @@ describe('ColorPicker', () => {
     fireEvent.click(screen.getByText('None'));
     expect(screen.getByText('Select a Color')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByTitle('blue-500'));
+    const swatch = screen.getByTitle('blue-500');
+    expect(swatch).toHaveAttribute('aria-label', 'Blue 500');
+    fireEvent.click(swatch);
 
     expect(onChange).toHaveBeenCalledWith('blue-500');
     expect(screen.queryByText('Select a Color')).not.toBeInTheDocument();

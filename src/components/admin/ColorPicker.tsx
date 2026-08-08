@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { getTeamColor } from '@/lib/utils/team-colors';
 import { Button } from '@/components/Button';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 interface ColorPickerProps {
   value: string | null;
@@ -35,6 +36,8 @@ const TAILWIND_COLORS = [
 
 export function ColorPicker({ value, onChange, label }: ColorPickerProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const titleId = useId();
+  const containerRef = useFocusTrap<HTMLDivElement>(isOpen, () => setIsOpen(false));
 
   return (
     <div className="relative">
@@ -63,9 +66,16 @@ export function ColorPicker({ value, onChange, label }: ColorPickerProps) {
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-gray-800 border border-gray-600 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+          <div
+            ref={containerRef}
+            className="bg-gray-800 border border-gray-600 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+            tabIndex={-1}
+          >
             <div className="flex justify-between items-center p-4 border-b border-gray-600">
-              <span className="text-lg font-medium spurs-text">Select a Color</span>
+              <span id={titleId} className="text-lg font-medium spurs-text">Select a Color</span>
               <Button
                 variant="spurs"
                 size="sm"
@@ -93,6 +103,7 @@ export function ColorPicker({ value, onChange, label }: ColorPickerProps) {
                             className="w-10 h-10 rounded border border-gray-600 hover:scale-110 transition-transform flex items-center justify-center"
                             style={{ backgroundColor: getTeamColor(colorValue) }}
                             title={colorValue}
+                            aria-label={`${name.charAt(0).toUpperCase()}${name.slice(1)} ${shade}`}
                           >
                             <span className="text-xs text-gray-900/50">{shade}</span>
                           </button>

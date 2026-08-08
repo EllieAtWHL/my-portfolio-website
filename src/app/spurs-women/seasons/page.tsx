@@ -19,7 +19,7 @@ export default async function SeasonsPage() {
   const seasonStats = await getAllSeasonStats();
 
   return (
-    <main className="p-8 pb-footer-clearance">
+    <main id="main-content" className="p-8 pb-footer-clearance">
       <h1 className="spurs-text font-bold mb-6 text-center">Seasons</h1>
       
       {/* Season Stats Chart - Desktop only */}

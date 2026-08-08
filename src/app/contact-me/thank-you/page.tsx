@@ -1,6 +1,5 @@
 'use client';
 
-import Footer from '@/components/Footer';
 import MainSitePage from '@/components/MainSitePage';
 import Link from 'next/link';
 import { Button } from '@/components/Button';
@@ -88,7 +87,6 @@ export default function ThankYou() {
           </div>
         </div>
       </div>
-      <Footer />
     </MainSitePage>
   );
 }

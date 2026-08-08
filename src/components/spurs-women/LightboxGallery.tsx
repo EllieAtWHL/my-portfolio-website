@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useId } from 'react';
 import { PhotoMedia } from '../../types/media';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 type LightboxGalleryProps = {
   photos: PhotoMedia[];
@@ -41,6 +42,11 @@ export default function LightboxGallery({
     setCurrentIndex((prev: number) => (prev + 1) % photos.length);
   }, [photos.length]);
 
+  const titleId = useId();
+  // Escape-to-close and Tab-trapping are handled by useFocusTrap below; this
+  // effect only needs to own the gallery-specific Arrow key navigation.
+  const containerRef = useFocusTrap<HTMLDivElement>(isOpen, onClose);
+
   // Handle keyboard navigation
   useEffect(() => {
     if (!isOpen) return;
@@ -53,15 +59,12 @@ export default function LightboxGallery({
         case 'ArrowRight':
           navigateNext();
           break;
-        case 'Escape':
-          onClose();
-          break;
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, currentIndex, navigatePrevious, navigateNext, onClose]);
+  }, [isOpen, currentIndex, navigatePrevious, navigateNext]);
 
   // Auto-hide controls
   useEffect(() => {
@@ -87,10 +90,19 @@ export default function LightboxGallery({
   if (!isOpen || !currentPhoto) return null;
 
   return (
-    <div 
+    <div
+      ref={containerRef}
       className="fixed inset-0 bg-black bg-opacity-95 z-50 flex items-center justify-center"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+      tabIndex={-1}
     >
+      <h2 id={titleId} className="sr-only">
+        {currentPhoto.caption ? `Photo: ${currentPhoto.caption}` : `Photo ${currentIndex + 1} of ${photos.length}`}
+      </h2>
+
       {/* Loading indicator */}
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center z-10">
@@ -125,8 +137,11 @@ export default function LightboxGallery({
         />
       </div>
 
-      {/* Controls overlay */}
-      <div className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${
+      {/* Controls overlay. focus-within:opacity-100 keeps a keyboard user's
+          currently-focused control visible even after the mouse-inactivity
+          auto-hide above has faded it out - otherwise Tab lands on an
+          invisible button. */}
+      <div className={`absolute inset-0 pointer-events-none transition-opacity duration-300 focus-within:opacity-100 focus-within:pointer-events-auto ${
         showControls ? 'opacity-100' : 'opacity-0'
       }`}>
         {/* Top bar */}
@@ -185,6 +200,7 @@ export default function LightboxGallery({
                 onClose();
               }}
               title="Close (ESC)"
+              aria-label="Close"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
