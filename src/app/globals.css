@@ -164,11 +164,26 @@
 /* Hide content until theme is applied to prevent flash */
 html[data-theme-loading] {
   visibility: hidden;
+  /* Safety net: theme-script.js (beforeInteractive) is what normally removes
+     this attribute. When Next.js falls back to its internal error shell for
+     a severe SSR error (see WEB-96), that shell doesn't execute
+     beforeInteractive scripts, so the attribute is never removed and the
+     page - including the error.tsx fallback UI rendered underneath - stays
+     invisible forever. Force a reveal shortly after load so a real error
+     page is never silently blank; theme-script.js normally wins this race
+     by a wide margin, so this has no visible effect on a working page load. */
+  animation: force-reveal 0s 2s forwards;
 }
 
 /* Show content when theme is applied */
 html:not([data-theme-loading]) {
   visibility: visible;
+}
+
+@keyframes force-reveal {
+  to {
+    visibility: visible;
+  }
 }
 
 /* Prevent flash of incorrect theme */
