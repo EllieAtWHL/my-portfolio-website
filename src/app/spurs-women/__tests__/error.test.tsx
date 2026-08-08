@@ -1,5 +1,10 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import SpursWomenError from '../error';
+import { trackError } from '@/lib/fullstory';
+
+jest.mock('@/lib/fullstory', () => ({
+  trackError: jest.fn(),
+}));
 
 describe('SpursWomenError', () => {
   const error = Object.assign(new Error('boom'), { digest: 'abc123' });
@@ -10,6 +15,7 @@ describe('SpursWomenError', () => {
 
   afterEach(() => {
     jest.restoreAllMocks();
+    jest.mocked(trackError).mockClear();
   });
 
   it('renders a friendly message rather than the raw error', () => {
@@ -41,5 +47,11 @@ describe('SpursWomenError', () => {
     render(<SpursWomenError error={error} reset={jest.fn()} />);
 
     expect(console.error).toHaveBeenCalledWith('Spurs Women section error:', error);
+  });
+
+  it('reports the error to FullStory', () => {
+    render(<SpursWomenError error={error} reset={jest.fn()} />);
+
+    expect(trackError).toHaveBeenCalledWith(error, 'spurs-women/error-boundary');
   });
 });

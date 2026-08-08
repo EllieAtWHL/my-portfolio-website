@@ -79,6 +79,7 @@ const isProduction = window.location.hostname !== 'localhost';
 - **Page views**: Home (`/`), Contact (`/contact-me`), Thank You (`/contact-me/thank-you`)
 - **Form interactions**: Contact form start → success → thank-you page visit
 - **Button clicks**: Contact Me button on the home page hero
+- **Errors**: `trackError()` is called from `src/app/spurs-women/error.tsx`'s error boundary (WEB-97). This is the only error-tracking call site - `trackError()` (like the rest of this file) only works from client-rendered code (`window.FS`), so it's not called from API route handlers or `src/lib/data/cache-utils.ts`'s `CacheError` path, both of which run server-side and would make it a silent no-op. Server-side errors remain `console.error`-only; a real server-side error-tracking integration is separate, larger scope than this helper.
 - **Session-level data**: No user identification (appropriate for a portfolio site where users don't log in)
 
 ### Usage examples

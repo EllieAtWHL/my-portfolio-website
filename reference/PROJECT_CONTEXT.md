@@ -249,7 +249,7 @@ Decision (revised 2026-08, WEB-63/WEB-44):
 
 Approach:
   - Add `error.tsx` per route group with real data dependencies (especially under `/spurs-women`, where fetches to Supabase/YouTube/RSS can fail) rather than only "where needed" ad hoc - the original wording undersold how many routes already fetch external data.
-  - Activate the existing-but-unused `trackError()` helper in `src/lib/fullstory.ts` as the centralised error-logging sink (route handlers' catch blocks, error boundaries) instead of leaving errors in `console.error` only. This doesn't require new infrastructure or CSP changes - FullStory's hosts are already allowlisted.
+  - Activate the existing-but-unused `trackError()` helper in `src/lib/fullstory.ts` from client-rendered code (error boundaries) instead of leaving errors in `console.error` only. FullStory here is a browser-only session-recording snippet (`window.FS`, no server SDK/API key) - `trackError()` is a guaranteed no-op anywhere it's called server-side (API route handlers, `cache-utils.ts`), so it's deliberately *not* called from those, to avoid shipping dead code that looks like it's tracking errors while doing nothing. Server-side errors remain `console.error`-only for now; a real server-side error-tracking integration would be separate, larger scope than reactivating this helper. This doesn't require new infrastructure or CSP changes - FullStory's hosts are already allowlisted.
   - Replace silent-failure patterns in client data fetchers (`src/lib/data/client.ts` and consumers like `VideoGrid`, `MediaGallery`) that currently catch, log, and return `[]` with a visible, reusable error state - a genuine fetch failure should look different from "no data exists."
   - Add retry-with-backoff to outbound fetches most likely to hit transient failures: the external proxy routes (`spurs-women-news`, `spurs-women-videos`, `podcasts`) and their underlying `src/lib/data/*.ts` fetchers.
   - Offline functionality is scoped narrowly: a service worker/manifest sufficient for basic offline awareness (e.g. a cached fallback page, `navigator.onLine`-driven messaging), not full PWA installability/asset precaching - this is a personal site, not an app users expect to work offline-first.
@@ -257,8 +257,8 @@ Approach:
 
 Current state:
   - `src/app/not-found.tsx` exists and is in use. `src/app/spurs-women/error.tsx` (WEB-96) is the first `error.tsx` boundary in the codebase - it sits above every `/spurs-women` route (matches, players, teams, stadiums, seasons, admin, etc.), so a single file catches thrown errors anywhere in that subtree via Next.js's nested-boundary behaviour. No `error.tsx` exists at the root or under core-site routes yet, since none of them have a data dependency that would throw.
-  - `trackError()` is defined in `src/lib/fullstory.ts` but not yet called anywhere, including from the new boundary above - that wiring is WEB-97.
-  - No centralized logging, retry logic, or offline support exists yet - see the child issues under WEB-44 for the itemised, in-progress build-out.
+  - `trackError()` (WEB-97) is now called from `src/app/spurs-women/error.tsx`, the one place it can actually reach FullStory (client-rendered). It's deliberately not called from API routes or `cache-utils.ts`'s `CacheError` path, since both run server-side where `trackError()` no-ops - server-side errors are still `console.error`-only.
+  - No retry logic or offline support exists yet - see the child issues under WEB-44 for the itemised, in-progress build-out.
 
 Why this fits the project:
   - Next.js primitives remain the foundation; this adds the logging/UX/resilience layer on top rather than replacing them.
