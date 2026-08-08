@@ -242,24 +242,28 @@ Guiding principles:
 ## Technical Decisions
 ### Error Handling & Error Boundaries
 
-Decision:
-  - Use Next.js route-level error.tsx and not-found.tsx files.
-  - No global custom error boundary abstraction at this stage.
+Decision (revised 2026-08, WEB-63/WEB-44):
+  - Use Next.js route-level `error.tsx` and `not-found.tsx` files as the primary boundary mechanism - still no bespoke React error-boundary abstraction layered on top of Next's own.
   - Errors should fail loudly in development and degrade gracefully in production.
+  - Centralised error logging, user-facing error messaging, retry handling for flaky external fetches, and basic offline awareness are now in scope (previously deferred) - tracked as a set of separately-sized issues under epic WEB-44 rather than one large ticket, so each can be reviewed and shipped independently.
 
 Approach:
-  - Let server errors surface naturally via Next.js error handling.
-  - Use error.tsx per route group (especially under /spurs-women) where needed.
-  - Avoid try/catch in components unless handling a known failure case.
-  - Prefer clear error states over silent fallbacks.
+  - Add `error.tsx` per route group with real data dependencies (especially under `/spurs-women`, where fetches to Supabase/YouTube/RSS can fail) rather than only "where needed" ad hoc - the original wording undersold how many routes already fetch external data.
+  - Activate the existing-but-unused `trackError()` helper in `src/lib/fullstory.ts` as the centralised error-logging sink (route handlers' catch blocks, error boundaries) instead of leaving errors in `console.error` only. This doesn't require new infrastructure or CSP changes - FullStory's hosts are already allowlisted.
+  - Replace silent-failure patterns in client data fetchers (`src/lib/data/client.ts` and consumers like `VideoGrid`, `MediaGallery`) that currently catch, log, and return `[]` with a visible, reusable error state - a genuine fetch failure should look different from "no data exists."
+  - Add retry-with-backoff to outbound fetches most likely to hit transient failures: the external proxy routes (`spurs-women-news`, `spurs-women-videos`, `podcasts`) and their underlying `src/lib/data/*.ts` fetchers.
+  - Offline functionality is scoped narrowly: a service worker/manifest sufficient for basic offline awareness (e.g. a cached fallback page, `navigator.onLine`-driven messaging), not full PWA installability/asset precaching - this is a personal site, not an app users expect to work offline-first.
+  - Avoid try/catch in components unless handling a known failure case; prefer clear error states over silent fallbacks.
 
 Current state:
-  - `src/app/not-found.tsx` exists and is in use. No `error.tsx` files exist yet anywhere under `src/app` - the "where needed" case hasn't come up so far, not that the decision changed.
+  - `src/app/not-found.tsx` exists and is in use. `src/app/spurs-women/error.tsx` (WEB-96) is the first `error.tsx` boundary in the codebase - it sits above every `/spurs-women` route (matches, players, teams, stadiums, seasons, admin, etc.), so a single file catches thrown errors anywhere in that subtree via Next.js's nested-boundary behaviour. No `error.tsx` exists at the root or under core-site routes yet, since none of them have a data dependency that would throw.
+  - `trackError()` is defined in `src/lib/fullstory.ts` but not yet called anywhere, including from the new boundary above - that wiring is WEB-97.
+  - No centralized logging, retry logic, or offline support exists yet - see the child issues under WEB-44 for the itemised, in-progress build-out.
 
 Why this fits the project:
-  - Next.js already provides strong primitives.
-  - Keeps complexity low.
-  - Appropriate for a personal site without SLAs.
+  - Next.js primitives remain the foundation; this adds the logging/UX/resilience layer on top rather than replacing them.
+  - Splitting into smaller issues keeps each change reviewable despite the combined scope being larger than the original "keep complexity low" stance assumed.
+  - Still deliberately excludes a custom error-boundary abstraction and full offline-first/installable PWA behaviour - out of proportion for a personal site without SLAs.
 
 ### Internationalisation / Localisation (i18n)
 
