@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/Card';
+import { ErrorState } from '@/components/ErrorState';
 import MatchCard from '@/components/spurs-women/MatchCard';
 import MatchFilterControls from '@/components/spurs-women/MatchFilterControls';
 import PlayerTable from '@/components/spurs-women/PlayerTable';
@@ -21,25 +22,41 @@ export default function TeamClient({ team, teamId }: TeamClientProps) {
   const [filteredMatches, setFilteredMatches] = useState<Match[]>([]);
   const [players, setPlayers] = useState<TeamPlayers>({ current: [], former: [] });
   const [activeTab, setActiveTab] = useState<'current' | 'former'>('current');
+  const [hasError, setHasError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   const handleFilteredMatchesChange = useCallback((newFilteredMatches: Match[]) => {
     setFilteredMatches(newFilteredMatches);
   }, []);
 
+  // Fetch logic stays local to the effect (rather than a shared useCallback
+  // also called from the retry button) - keeps react-hooks/set-state-in-effect
+  // happy, since it flags a memoized fetch function reachable from both an
+  // effect and an external handler even though these setState calls only
+  // ever run after the awaited request settles. Retrying bumps retryCount
+  // to re-trigger this same effect.
   useEffect(() => {
     const fetchData = async () => {
-      const [matches, players] = await Promise.all([
-        getMatchesForTeam(teamId),
-        getPlayersForTeam(teamId)
-      ]);
+      try {
+        const [matches, players] = await Promise.all([
+          getMatchesForTeam(teamId),
+          getPlayersForTeam(teamId)
+        ]);
 
-      setMatches(matches || []);
-      setFilteredMatches(matches || []);
-      setPlayers(players || { current: [], former: [] });
+        setMatches(matches || []);
+        setFilteredMatches(matches || []);
+        setPlayers(players || { current: [], former: [] });
+        setHasError(false);
+      } catch (error) {
+        console.error('Error loading team data:', error);
+        setHasError(true);
+      }
     };
 
     fetchData();
-  }, [teamId]);
+  }, [teamId, retryCount]);
+
+  const retryFetchData = () => setRetryCount((count) => count + 1);
 
   return (
     <main id="main-content" className="p-4 pb-footer-clearance">
@@ -84,29 +101,40 @@ export default function TeamClient({ team, teamId }: TeamClientProps) {
         <div className="grid gap-8">
           <div className="lg:col-span-2">
             <h2 className="spurs-text font-bold mb-4">Matches involving {team.name}</h2>
-            
-            <MatchFilterControls 
-              matches={matches}
-              onFilteredMatchesChange={handleFilteredMatchesChange}
-              showCompetitionFilter={true}
-              showVenueFilter={true}
-              showAttendedFilter={true}
-              showResultFilter={true}
-              showMonthFilter={false}
-            />
-            
-            {filteredMatches.length > 0 ? (
-              <div className="grid gap-4 md:grid-cols-2">
-                {filteredMatches.map((match) => (
-                  <MatchCard key={match.id} match={match} />
-                ))}
-              </div>
+
+            {hasError ? (
+              <ErrorState
+                message="Couldn't load matches for this team. Please try again."
+                onRetry={retryFetchData}
+                cardVariant="spursAccent"
+                buttonVariant="spurs"
+              />
             ) : (
-              <Card variant="spursAccent" padding="md" hover={false}>
-                <p className="spurs-text">
-                  No matches found for this team.
-                </p>
-              </Card>
+              <>
+                <MatchFilterControls
+                  matches={matches}
+                  onFilteredMatchesChange={handleFilteredMatchesChange}
+                  showCompetitionFilter={true}
+                  showVenueFilter={true}
+                  showAttendedFilter={true}
+                  showResultFilter={true}
+                  showMonthFilter={false}
+                />
+
+                {filteredMatches.length > 0 ? (
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {filteredMatches.map((match) => (
+                      <MatchCard key={match.id} match={match} />
+                    ))}
+                  </div>
+                ) : (
+                  <Card variant="spursAccent" padding="md" hover={false}>
+                    <p className="spurs-text">
+                      No matches found for this team.
+                    </p>
+                  </Card>
+                )}
+              </>
             )}
           </div>
         </div>

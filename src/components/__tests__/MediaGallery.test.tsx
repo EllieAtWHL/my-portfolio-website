@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import MediaGallery from '../spurs-women/MediaGallery';
 import type { PhotoMedia } from '@/lib/data/media';
 import { fetchPhotoManifest } from '@/lib/photo-manifest';
@@ -34,6 +34,7 @@ const photo = (overrides: Partial<PhotoMedia>): PhotoMedia => ({
 describe('MediaGallery', () => {
   beforeEach(() => {
     mockLoadPhotosFromGitHub.mockReturnValue([]);
+    mockFetchPhotoManifest.mockClear();
   });
 
   it('shows a skeleton grid, not a spinner, while photo data is loading', () => {
@@ -66,5 +67,38 @@ describe('MediaGallery', () => {
     const { container } = render(<MediaGallery photos={[]} />);
 
     expect(container).toBeEmptyDOMElement();
+  });
+
+  it('shows a distinguishable error state instead of "no photos" when the manifest fetch fails', async () => {
+    mockFetchPhotoManifest.mockRejectedValue(new Error('manifest unavailable'));
+
+    render(<MediaGallery photos={[photo({ id: 1, type: 'photo album', url: 'album-1' })]} />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        "Couldn't load photos for this match. Please try again."
+      );
+    });
+
+    expect(screen.queryByText('No photos available for this match.')).not.toBeInTheDocument();
+  });
+
+  it('retries loading photo data when the error state\'s retry button is clicked', async () => {
+    mockFetchPhotoManifest
+      .mockRejectedValueOnce(new Error('manifest unavailable'))
+      .mockResolvedValue({});
+
+    render(<MediaGallery photos={[photo({ id: 1, type: 'photo album', url: 'album-1' })]} />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /try again/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('No photos available for this match.')).toBeInTheDocument();
+    });
+    expect(mockFetchPhotoManifest).toHaveBeenCalledTimes(2);
   });
 });

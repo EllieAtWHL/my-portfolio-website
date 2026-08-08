@@ -6,6 +6,7 @@ import { fetchPhotoManifest } from '@/lib/photo-manifest';
 import { loadPhotosFromGitHub } from '@/lib/external-photo-loader';
 import LightboxGallery from './LightboxGallery';
 import { Button } from '@/components/Button';
+import { ErrorState } from '@/components/ErrorState';
 
 type MediaGalleryProps = {
   photos: PhotoMedia[];
@@ -21,20 +22,26 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
   const [initialIndex, setInitialIndex] = useState(0);
   const [albumPhotos, setAlbumPhotos] = useState<Record<string, string[]>>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // Fetch photo manifest and load album photos on component mount
+  // Fetch logic stays local to the effect (rather than a shared useCallback
+  // also called from the retry button) - keeps react-hooks/set-state-in-effect
+  // happy, since it flags a memoized fetch function reachable from both an
+  // effect and an external handler even though these setState calls only
+  // ever run after the awaited request settles. Retrying bumps retryCount
+  // to re-trigger this same effect.
   useEffect(() => {
     async function loadPhotoData() {
+      setIsLoading(true);
       try {
-        setIsLoading(true);
-
         // Load manifest for GitHub-based photos
         const manifest = await fetchPhotoManifest();
-        
+
         // Load photos for all albums using GitHub
         const photoAlbums = photos.filter(photo => photo.type === 'photo album');
         const albumData: Record<string, string[]> = {};
-        
+
         for (const album of photoAlbums) {
           if (album.url) {
             const albumPhotos = loadPhotosFromGitHub(album, manifest);
@@ -43,18 +50,22 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
             }
           }
         }
-        
+
         setAlbumPhotos(albumData);
-        
+        setHasError(false);
+
       } catch (error) {
         console.error('Error loading photo data:', error);
+        setHasError(true);
       } finally {
         setIsLoading(false);
       }
     }
 
     loadPhotoData();
-  }, [photos]);
+  }, [photos, retryCount]);
+
+  const retryLoadPhotoData = () => setRetryCount((count) => count + 1);
 
   // Determine grid layout based on fullWidth prop
   const gridClass = fullWidth
@@ -194,6 +205,13 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
               </div>
             )}
           </div>
+        ) : hasError ? (
+          <ErrorState
+            message="Couldn't load photos for this match. Please try again."
+            onRetry={retryLoadPhotoData}
+            cardVariant="spursAccent"
+            buttonVariant="spurs"
+          />
         ) : (
           <p className="text-gray-500 italic">No photos available for this match.</p>
         )}
