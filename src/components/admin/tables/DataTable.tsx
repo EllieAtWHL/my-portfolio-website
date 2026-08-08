@@ -36,8 +36,15 @@ export function DataTable<T>({ columns, records, getRowKey, onRowClick, emptyMes
             records.map((record) => (
               <tr
                 key={getRowKey(record)}
-                className="border-b border-gray-600 cursor-pointer hover:bg-gray-700/50 transition-colors"
+                className="admin-row-focusable border-b border-gray-600 cursor-pointer hover:bg-gray-700/50 transition-colors"
                 onClick={() => onRowClick(record)}
+                tabIndex={0}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    onRowClick(record);
+                  }
+                }}
               >
                 {columns.map((column) => (
                   <td key={column.key} className="p-2 spurs-text">{column.render(record)}</td>

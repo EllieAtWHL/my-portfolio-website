@@ -86,7 +86,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
   };
 
   return (
-    <main className="p-4 pb-footer-clearance">
+    <main id="main-content" className="p-4 pb-footer-clearance">
       <div className="max-w-6xl mx-auto">
         <MatchNavigation 
           previousMatch={previousMatch} 

@@ -41,8 +41,9 @@ export function Card({
   };
   
   const hoverClasses = (hover && clickable) ? 'hover:shadow-xl hover:-translate-y-1 hover-enabled' : 'no-hover';
-  const interactiveClasses = (clickable || onClick) ? 'cursor-pointer' : '';
-  
+  const isInteractive = Boolean(clickable || onClick);
+  const interactiveClasses = isInteractive ? 'cursor-pointer card-focusable' : '';
+
   const classes = [
     baseClasses,
     variantClasses[variant],
@@ -51,11 +52,22 @@ export function Card({
     interactiveClasses,
     className
   ].filter(Boolean).join(' ');
-  
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!onClick) return;
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onClick();
+    }
+  };
+
   return (
-    <div 
+    <div
       className={`rounded-xl ${classes}`}
       onClick={onClick}
+      role={isInteractive ? 'button' : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+      onKeyDown={isInteractive ? handleKeyDown : undefined}
     >
       {children}
     </div>

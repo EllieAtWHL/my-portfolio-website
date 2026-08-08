@@ -40,7 +40,7 @@ export default function StadiumClient({ stadium, stadiumSlug }: StadiumClientPro
   }, [stadiumSlug, stadium.id]);
 
   return (
-    <main className="p-4 pb-footer-clearance">
+    <main id="main-content" className="p-4 pb-footer-clearance">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8 text-center">
           <h1 className="spurs-text font-bold mb-2">{stadium.name}</h1>

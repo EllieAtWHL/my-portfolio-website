@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useId } from 'react';
 import { createPortal } from 'react-dom';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 interface ModalProps {
   isOpen: boolean;
@@ -15,43 +16,46 @@ interface ModalProps {
 }
 
 export default function Modal({ isOpen, onClose, title, image, additionalImages, description, date, additionalInfo }: ModalProps) {
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
+  const titleId = useId();
+  const containerRef = useFocusTrap<HTMLDivElement>(isOpen, onClose);
 
+  useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-      document.addEventListener('keydown', handleEscape);
     }
 
     return () => {
       document.body.style.overflow = 'unset';
-      document.removeEventListener('keydown', handleEscape);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
   const modalContent = (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={containerRef}
+        className="modal-content"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+      >
         <button className="modal-close" onClick={onClose} aria-label="Close modal">
           &times;
         </button>
-        
+
         {image && (
-          <img 
-            src={image} 
+          <img
+            src={image}
             alt={title}
             style={{ maxWidth: '100%', height: 'auto', maxHeight: '80vh' }}
           />
         )}
-        
-        <h2 className="heading-2">{title}</h2>
-        
+
+        <h2 id={titleId} className="heading-2">{title}</h2>
+
         {description && <p>{description}</p>}
         
         {date && <p><strong>Date:</strong> {date}</p>}

@@ -477,6 +477,10 @@ export default function ExperienceContent() {
       </div>
 
       <div id="experience-tabpanel" className="tab-content" role="tabpanel" aria-labelledby={`tab-${activeTab}`}>
+        {/* sr-only: keeps the heading hierarchy unbroken (h1 -> h2 -> h3
+            company-name -> h4 role-title) without a visible duplicate of
+            the already-visible tab label. */}
+        <h2 className="sr-only">{tabs.find((tab) => tab.id === activeTab)?.label}</h2>
         {renderTabContent()}
       </div>
     </div>

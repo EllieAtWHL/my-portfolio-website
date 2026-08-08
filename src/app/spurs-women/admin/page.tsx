@@ -345,7 +345,7 @@ export default function AdminPage() {
   }, [activeTab, fetchRecentRecords]);
 
   return (
-    <div className="p-4 pb-20">
+    <main id="main-content" className="p-4 pb-20">
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-8">
           <h1 className="spurs-text font-bold">Spurs Women Admin</h1>
@@ -872,6 +872,6 @@ export default function AdminPage() {
           onSubmit={handleStadiumNameSubmit}
         />
       )}
-    </div>
+    </main>
   );
 }
