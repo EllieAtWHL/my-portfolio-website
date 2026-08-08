@@ -2,6 +2,7 @@ import { fetchSpursWomenNews, fetchSpursWomenVideos } from '@/lib/rss';
 import { createCachedFunction, CACHE_TTL, CACHE_TAGS, CACHE_KEYS } from './cache-utils';
 import { NewsArticle, YouTubeVideo } from '@/lib/rss';
 import { getHomePageMatches } from './matches';
+import { retryWithBackoff } from '@/lib/retry';
 
 // Podcast fetching logic extracted from API route
 import { PodcastEpisode } from '@/types/podcast';
@@ -28,16 +29,24 @@ const PODCAST_FEEDS: PodcastFeed[] = [
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchRSSFeed(url: string, feedUrl: string): Promise<any> {
   try {
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; PodcastAggregator/1.0)',
-      },
+    // Retried with backoff - a transient network failure or 5xx shouldn't
+    // immediately fall back to static podcast data. Parsing failures below
+    // (malformed feed content) aren't retried, since a retry would just see
+    // the same malformed response.
+    const response = await retryWithBackoff(async () => {
+      const res = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; PodcastAggregator/1.0)',
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
+      return res;
     });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
+
     const text = await response.text();
     
     // Find the first <item> tag

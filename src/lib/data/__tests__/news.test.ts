@@ -109,18 +109,31 @@ describe('news data layer', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (global as any).fetch = jest.fn(() => Promise.resolve(makeRssResponse(false, '', 500)));
 
-      const { getPodcasts } = await import('@/lib/data/news');
-      const episodes = await getPodcasts();
+      jest.useFakeTimers();
+      try {
+        const { getPodcasts } = await import('@/lib/data/news');
+        const promise = getPodcasts();
 
-      const n17 = episodes.find((e) => e.podcastName === 'N17 Women')!;
-      expect(n17.title).toBe('Current Episode');
-      expect(n17.url).toBe('https://shows.acast.com/n17women');
-      expect(n17.description).toContain('fan-produced podcast');
+        // Each of the 2 feeds retries up to 3 times (2 real backoff delays:
+        // 300ms then 600ms) before falling back - advance past both, per feed.
+        for (let i = 0; i < 2; i++) {
+          await jest.advanceTimersByTimeAsync(300);
+          await jest.advanceTimersByTimeAsync(600);
+        }
+        const episodes = await promise;
 
-      const hg = episodes.find((e) => e.podcastName === 'Hometown Glory')!;
-      expect(hg.title).toBe('Current Episode');
-      expect(hg.url).toBe('https://open.spotify.com/show/7meFK8F2RWHACIHjoRqso9');
-      expect(hg.description).toContain('Tottenham men\'s and women\'s teams');
+        const n17 = episodes.find((e) => e.podcastName === 'N17 Women')!;
+        expect(n17.title).toBe('Current Episode');
+        expect(n17.url).toBe('https://shows.acast.com/n17women');
+        expect(n17.description).toContain('fan-produced podcast');
+
+        const hg = episodes.find((e) => e.podcastName === 'Hometown Glory')!;
+        expect(hg.title).toBe('Current Episode');
+        expect(hg.url).toBe('https://open.spotify.com/show/7meFK8F2RWHACIHjoRqso9');
+        expect(hg.description).toContain('Tottenham men\'s and women\'s teams');
+      } finally {
+        jest.useRealTimers();
+      }
     });
 
     it('falls back to a static episode when the feed has no <item> tag at all', async () => {
@@ -138,11 +151,45 @@ describe('news data layer', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (global as any).fetch = jest.fn(() => Promise.reject(new Error('network down')));
 
-      const { getPodcasts } = await import('@/lib/data/news');
-      const episodes = await getPodcasts();
+      jest.useFakeTimers();
+      try {
+        const { getPodcasts } = await import('@/lib/data/news');
+        const promise = getPodcasts();
 
-      expect(episodes).toHaveLength(2);
-      episodes.forEach((e) => expect(e.title).toBe('Current Episode'));
+        for (let i = 0; i < 2; i++) {
+          await jest.advanceTimersByTimeAsync(300);
+          await jest.advanceTimersByTimeAsync(600);
+        }
+        const episodes = await promise;
+
+        expect(episodes).toHaveLength(2);
+        episodes.forEach((e) => expect(e.title).toBe('Current Episode'));
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
+    it('retries a failing feed request up to 3 times before falling back to static data', async () => {
+      const fetchMock = jest.fn(() => Promise.reject(new Error('network down')));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (global as any).fetch = fetchMock;
+
+      jest.useFakeTimers();
+      try {
+        const { getPodcasts } = await import('@/lib/data/news');
+        const promise = getPodcasts();
+
+        for (let i = 0; i < 2; i++) {
+          await jest.advanceTimersByTimeAsync(300);
+          await jest.advanceTimersByTimeAsync(600);
+        }
+        await promise;
+
+        // 2 feeds configured, 3 attempts each on a fetch that always rejects.
+        expect(fetchMock).toHaveBeenCalledTimes(6);
+      } finally {
+        jest.useRealTimers();
+      }
     });
 
     it('reports "Unknown Duration" and "Unknown Date" when those tags are missing', async () => {

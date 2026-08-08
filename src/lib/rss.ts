@@ -1,4 +1,5 @@
 import Parser from 'rss-parser';
+import { retryWithBackoff } from './retry';
 
 const parser = new Parser({
   timeout: 10000, // 10 second timeout for each RSS request
@@ -46,15 +47,17 @@ export async function fetchSpursWomenNews(): Promise<NewsArticle[]> {
   // Fetch all RSS feeds in parallel instead of sequentially
   const feedPromises = spursSources.map(async (sourceUrl) => {
     try {
-      // Add timeout to prevent hanging
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('RSS fetch timeout')), 8000)
-      );
-      
-      const feedPromise = parser.parseURL(sourceUrl);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const feed = await Promise.race([feedPromise, timeoutPromise]) as any;
-      
+      // Add timeout to prevent hanging, retried with backoff on transient
+      // failures (a fresh 8s timeout window per attempt) before this source
+      // is given up on for this fetch.
+      const feed = await retryWithBackoff(() => {
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('RSS fetch timeout')), 8000)
+        );
+        return Promise.race([parser.parseURL(sourceUrl), timeoutPromise]);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      }) as any;
+
       // Check if the feed is valid RSS
       if (!feed.items || feed.items.length === 0) {
         console.error(`Invalid or empty RSS feed from ${sourceUrl}`);
@@ -189,8 +192,8 @@ export async function fetchSpursWomenVideos(): Promise<YouTubeVideo[]> {
   // Fetch videos from the working channel
   const videoPromises = channelUrls.map(async (channelUrl) => {
     try {
-      const feed = await parser.parseURL(channelUrl);
-      
+      const feed = await retryWithBackoff(() => parser.parseURL(channelUrl));
+
       if (!feed.items || feed.items.length === 0) {
         return null;
       }
