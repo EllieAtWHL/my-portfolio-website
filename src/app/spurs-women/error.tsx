@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
+import { trackError } from '@/lib/fullstory';
 
 export default function SpursWomenError({
   error,
@@ -14,6 +15,7 @@ export default function SpursWomenError({
 }) {
   useEffect(() => {
     console.error('Spurs Women section error:', error);
+    trackError(error, 'spurs-women/error-boundary');
   }, [error]);
 
   return (
