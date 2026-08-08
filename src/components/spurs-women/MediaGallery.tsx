@@ -147,10 +147,19 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
         {allPhotos.length > 0 ? (
           <div className={gridClass}>
             {allPhotos.slice(0, 12).map((photo, index) => ( // Only show first 12 photos initially
-              <div 
-                key={photo.id} 
-                className="cursor-pointer group rounded-lg overflow-hidden bg-gray-800 relative"
+              <div
+                key={photo.id}
+                className="cursor-pointer group rounded-lg overflow-hidden bg-gray-800 relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900"
                 onClick={() => openLightbox(index)}
+                role="button"
+                tabIndex={0}
+                aria-label={photo.caption ? `View photo: ${photo.caption}` : 'View photo'}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    openLightbox(index);
+                  }
+                }}
                 style={{ paddingBottom: PHOTO_ASPECT_RATIO_PADDING }}
               >
                 <img

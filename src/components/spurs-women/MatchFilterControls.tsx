@@ -246,17 +246,32 @@ export default function MatchFilterControls({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
             {showCompetitionFilter && (
               <div className="lg:col-span-2 xl:col-span-1">
-                <label className="block spurs-text text-xs font-medium mb-1">
+                {/* Not a <label>: pairs with a role="button" div below, not a native form control - associated via aria-labelledby instead */}
+                <span id="competition-filter-label" className="block spurs-text text-xs font-medium mb-1">
                   Competition
-                </label>
+                </span>
                 <div className="relative">
-                  <div 
+                  <div
                     ref={triggerRef}
                     className="w-full px-2 py-1.5 text-sm bg-gray-800 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:bg-gray-700 transition-colors duration-200 cursor-pointer"
+                    role="button"
+                    tabIndex={0}
+                    aria-haspopup="listbox"
+                    aria-expanded={isDropdownOpen}
+                    aria-labelledby="competition-filter-label"
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
                       setIsDropdownOpen(!isDropdownOpen);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsDropdownOpen(!isDropdownOpen);
+                      } else if (e.key === 'Escape' && isDropdownOpen) {
+                        setIsDropdownOpen(false);
+                      }
                     }}
                   >
                     <div className="flex justify-between items-center">
@@ -326,10 +341,11 @@ export default function MatchFilterControls({
 
             {showVenueFilter && (
               <div className="xl:col-span-1">
-                <label className="block spurs-text text-xs font-medium mb-1">
+                <label htmlFor="venue-filter" className="block spurs-text text-xs font-medium mb-1">
                   Home/Away
                 </label>
                 <SpursSelect
+                  id="venue-filter"
                   value={venueFilter}
                   onChange={(e) => setVenueFilter(e.target.value)}
                 >
@@ -343,10 +359,11 @@ export default function MatchFilterControls({
 
             {showAttendedFilter && (
               <div className="xl:col-span-1">
-                <label className="block spurs-text text-xs font-medium mb-1">
+                <label htmlFor="attended-filter" className="block spurs-text text-xs font-medium mb-1">
                   Attended
                 </label>
                 <SpursSelect
+                  id="attended-filter"
                   value={attendedFilter}
                   onChange={(e) => setAttendedFilter(e.target.value)}
                 >
@@ -359,10 +376,11 @@ export default function MatchFilterControls({
 
             {showResultFilter && (
               <div className="xl:col-span-1">
-                <label className="block spurs-text text-xs font-medium mb-1">
+                <label htmlFor="result-filter" className="block spurs-text text-xs font-medium mb-1">
                   Result
                 </label>
                 <SpursSelect
+                  id="result-filter"
                   value={resultFilter}
                   onChange={(e) => setResultFilter(e.target.value)}
                 >
@@ -376,15 +394,17 @@ export default function MatchFilterControls({
 
             {showMonthFilter && (
               <div className="lg:col-span-2 xl:col-span-2">
-                <label className="block spurs-text text-xs font-medium mb-1">
+                {/* Not a <label>: heads a group of two inputs (From/To below), not a single control */}
+                <span className="block spurs-text text-xs font-medium mb-1">
                   Date Range
-                </label>
+                </span>
                 <div className="flex gap-2">
                   <div className="flex-1">
-                    <label className="block spurs-text text-xs font-medium mb-1 opacity-75">
+                    <label htmlFor="date-from-filter" className="block spurs-text text-xs font-medium mb-1 opacity-75">
                       From
                     </label>
                     <input
+                      id="date-from-filter"
                       type="date"
                       value={dateFromFilter}
                       onChange={(e) => setDateFromFilter(e.target.value)}
@@ -396,10 +416,11 @@ export default function MatchFilterControls({
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="block spurs-text text-xs font-medium mb-1 opacity-75">
+                    <label htmlFor="date-to-filter" className="block spurs-text text-xs font-medium mb-1 opacity-75">
                       To
                     </label>
                     <input
+                      id="date-to-filter"
                       type="date"
                       value={dateToFilter}
                       onChange={(e) => setDateToFilter(e.target.value)}

@@ -24,13 +24,25 @@ export function Card({ suit, rank, power, onClick, isSelected = false, className
     }
   };
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!onClick) return;
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onClick();
+    }
+  };
+
   return (
     <div
       onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? handleKeyDown : undefined}
       className={`
         relative w-20 h-28 bg-white rounded-lg shadow-lg border-2 border-gray-300
         flex flex-col items-center justify-center cursor-pointer
         transform transition-all duration-200
+        card-focusable
         ${isSelected ? 'border-blue-500 shadow-blue-500/50 scale-105 -translate-y-2' : 'hover:scale-105 hover:-translate-y-1'}
         ${className}
       `}

@@ -20,8 +20,9 @@ export function MediaModal({ editingMediaId, form, onChange, onCancel, onDelete,
       submitLabel={editingMediaId ? 'Update' : 'Create'}
     >
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">Type</label>
+        <label htmlFor="media-type" className="block text-sm font-medium text-gray-300 mb-1">Type</label>
         <select
+          id="media-type"
           value={form.type}
           onChange={(e) => onChange({ ...form, type: e.target.value as Media['type'] })}
           className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
@@ -34,8 +35,9 @@ export function MediaModal({ editingMediaId, form, onChange, onCancel, onDelete,
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">Title</label>
+        <label htmlFor="media-title" className="block text-sm font-medium text-gray-300 mb-1">Title</label>
         <input
+          id="media-title"
           type="text"
           value={form.title || ''}
           onChange={(e) => onChange({ ...form, title: e.target.value })}
@@ -43,8 +45,9 @@ export function MediaModal({ editingMediaId, form, onChange, onCancel, onDelete,
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">URL</label>
+        <label htmlFor="media-url" className="block text-sm font-medium text-gray-300 mb-1">URL</label>
         <input
+          id="media-url"
           type="text"
           value={form.url || ''}
           onChange={(e) => onChange({ ...form, url: e.target.value })}
@@ -52,8 +55,9 @@ export function MediaModal({ editingMediaId, form, onChange, onCancel, onDelete,
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">Caption</label>
+        <label htmlFor="media-caption" className="block text-sm font-medium text-gray-300 mb-1">Caption</label>
         <textarea
+          id="media-caption"
           value={form.caption || ''}
           onChange={(e) => onChange({ ...form, caption: e.target.value })}
           className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
@@ -61,8 +65,9 @@ export function MediaModal({ editingMediaId, form, onChange, onCancel, onDelete,
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">Sort Order</label>
+        <label htmlFor="media-sort-order" className="block text-sm font-medium text-gray-300 mb-1">Sort Order</label>
         <input
+          id="media-sort-order"
           type="number"
           value={form.sort_order}
           onChange={(e) => onChange({ ...form, sort_order: parseInt(e.target.value) || 0 })}

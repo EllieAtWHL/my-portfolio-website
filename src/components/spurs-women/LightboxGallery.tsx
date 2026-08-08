@@ -90,6 +90,7 @@ export default function LightboxGallery({
   if (!isOpen || !currentPhoto) return null;
 
   return (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- click-outside-to-close; Escape (handled by useFocusTrap) is the keyboard equivalent, not a key event on this div
     <div
       ref={containerRef}
       className="fixed inset-0 bg-black bg-opacity-95 z-50 flex items-center justify-center"
@@ -115,7 +116,8 @@ export default function LightboxGallery({
       )}
 
       {/* Main image container */}
-      <div 
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- only stops the backdrop's onClose click from bubbling, not a real interactive handler */}
+      <div
         className="relative w-full h-full overflow-hidden flex items-center justify-center"
         onClick={(e) => e.stopPropagation()}
       >

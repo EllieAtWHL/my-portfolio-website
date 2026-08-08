@@ -128,9 +128,21 @@ export default function ProjectsContent() {
             padding="sm"
             className="project-card"
           >
-            <div className="card-header" onClick={() => toggleCard(category.id)}>
-              <img 
-                src={category.image} 
+            <div
+              className="card-header"
+              onClick={() => toggleCard(category.id)}
+              role="button"
+              tabIndex={0}
+              aria-expanded={expandedCards.includes(category.id)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  toggleCard(category.id);
+                }
+              }}
+            >
+              <img
+                src={category.image}
                 alt={category.title}
                 className="category-image"
               />
