@@ -80,7 +80,7 @@ export function PlayArea({ gameData, onShowStats, playCard, drawCard }: PlayArea
                   />
                 ) : (
                   <div className="w-20 h-28 bg-gray-100 dark:bg-gray-600 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-500 flex items-center justify-center">
-                    <span className="text-gray-400 dark:text-gray-500 text-sm">No Royal</span>
+                    <span className="text-gray-600 dark:text-gray-300 text-sm">No Royal</span>
                   </div>
                 )}
               </UniversalCard>
@@ -101,7 +101,7 @@ export function PlayArea({ gameData, onShowStats, playCard, drawCard }: PlayArea
                   />
                 ) : (
                   <div className="w-20 h-28 bg-gray-100 dark:bg-gray-600 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-500 flex items-center justify-center">
-                    <span className="text-gray-400 dark:text-gray-500 text-sm">Select Card</span>
+                    <span className="text-gray-600 dark:text-gray-300 text-sm">Select Card</span>
                   </div>
                 )}
               </UniversalCard>

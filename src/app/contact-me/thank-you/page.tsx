@@ -36,7 +36,7 @@ export default function ThankYou() {
               <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
                 Your message has been successfully submitted.
               </p>
-              <p className="text-lg text-gray-500 dark:text-gray-400 mb-12">
+              <p className="text-lg text-gray-600 dark:text-gray-400 mb-12">
                 I&apos;ll get back to you as soon as possible. Looking forward to connecting with you!
               </p>
             </div>
