@@ -28,15 +28,7 @@ test.describe('Accessibility smoke checks', () => {
     // is timing-sensitive enough that it only showed up on webkit in testing.
     await page.waitForLoadState('networkidle');
 
-    const results = await new AxeBuilder({ page })
-      .withTags(WCAG_TAGS)
-      // color-contrast excluded here only: 27 known, tracked failures across
-      // NewsCard/VideoCard text (dark:-gated Tailwind classes on a card whose
-      // background is always dark, not toggle-dependent) and dynamically
-      // generated team badge colors. See WEB-95 - remove this exclusion once
-      // that's fixed rather than adding to it.
-      .disableRules(['color-contrast'])
-      .analyze();
+    const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
 
     expect(results.violations).toEqual([]);
   });

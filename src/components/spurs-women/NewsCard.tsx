@@ -53,10 +53,12 @@ export default function NewsCard({ article }: NewsCardProps) {
           </span>
         )}
       </div>
-      <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+      {/* No dark: variant needed - NewsCard only renders inside .spurs-accent-card,
+          which is always dark regardless of the site-wide light/dark toggle. */}
+      <p className="text-sm text-gray-400 mb-3">
         {formatDateForCard(article.isoDate)}
       </p>
-      <p className="text-gray-700 dark:text-gray-300 line-clamp-3">
+      <p className="text-gray-300 line-clamp-3">
         {article.contentSnippet}
       </p>
       <Link 
