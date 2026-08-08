@@ -32,8 +32,9 @@ export function PlayerHistoryModal({
       submitLabel={editingPlayerHistoryId ? 'Update' : 'Create'}
     >
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">Team</label>
+        <label htmlFor="player-history-team" className="block text-sm font-medium text-gray-300 mb-1">Team</label>
         <select
+          id="player-history-team"
           value={form.team_id}
           onChange={(e) => onChange({ ...form, team_id: parseInt(e.target.value) })}
           className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
@@ -47,8 +48,9 @@ export function PlayerHistoryModal({
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">Joined On</label>
+        <label htmlFor="player-history-joined-on" className="block text-sm font-medium text-gray-300 mb-1">Joined On</label>
         <input
+          id="player-history-joined-on"
           type="date"
           value={form.joined_on || ''}
           onChange={(e) => onChange({ ...form, joined_on: e.target.value })}
@@ -57,8 +59,9 @@ export function PlayerHistoryModal({
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">Left On</label>
+        <label htmlFor="player-history-left-on" className="block text-sm font-medium text-gray-300 mb-1">Left On</label>
         <input
+          id="player-history-left-on"
           type="date"
           value={form.left_on || ''}
           onChange={(e) => onChange({ ...form, left_on: e.target.value })}
@@ -66,8 +69,9 @@ export function PlayerHistoryModal({
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">Squad Number</label>
+        <label htmlFor="player-history-squad-number" className="block text-sm font-medium text-gray-300 mb-1">Squad Number</label>
         <input
+          id="player-history-squad-number"
           type="number"
           value={form.squad_number || ''}
           onChange={(e) => onChange({ ...form, squad_number: e.target.value ? parseInt(e.target.value) : null })}

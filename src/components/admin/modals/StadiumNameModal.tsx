@@ -30,8 +30,9 @@ export function StadiumNameModal({
       submitLabel={editingStadiumNameId ? 'Update' : 'Create'}
     >
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">Name</label>
+        <label htmlFor="stadium-name" className="block text-sm font-medium text-gray-300 mb-1">Name</label>
         <input
+          id="stadium-name"
           type="text"
           value={form.name}
           onChange={(e) => onChange({ ...form, name: e.target.value })}
@@ -39,8 +40,9 @@ export function StadiumNameModal({
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">Valid From</label>
+        <label htmlFor="stadium-valid-from" className="block text-sm font-medium text-gray-300 mb-1">Valid From</label>
         <input
+          id="stadium-valid-from"
           type="date"
           value={form.valid_from || ''}
           onChange={(e) => onChange({ ...form, valid_from: e.target.value })}
@@ -49,8 +51,9 @@ export function StadiumNameModal({
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">Valid To</label>
+        <label htmlFor="stadium-valid-to" className="block text-sm font-medium text-gray-300 mb-1">Valid To</label>
         <input
+          id="stadium-valid-to"
           type="date"
           value={form.valid_to || ''}
           onChange={(e) => onChange({ ...form, valid_to: e.target.value || null })}

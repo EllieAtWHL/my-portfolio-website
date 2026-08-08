@@ -95,9 +95,9 @@ describe('Modal Component', () => {
     const images = screen.getAllByRole('img')
     expect(images).toHaveLength(2) // Only additional images (no main image provided)
     
-    expect(images[0]).toHaveAttribute('alt', 'Test Modal - Additional image 1')
+    expect(images[0]).toHaveAttribute('alt', 'Test Modal (1)')
     expect(images[0]).toHaveAttribute('src', 'https://example.com/image1.jpg')
-    expect(images[1]).toHaveAttribute('alt', 'Test Modal - Additional image 2')
+    expect(images[1]).toHaveAttribute('alt', 'Test Modal (2)')
     expect(images[1]).toHaveAttribute('src', 'https://example.com/image2.jpg')
   })
 

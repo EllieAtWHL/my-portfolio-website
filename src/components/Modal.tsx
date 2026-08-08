@@ -32,7 +32,9 @@ export default function Modal({ isOpen, onClose, title, image, additionalImages,
   if (!isOpen) return null;
 
   const modalContent = (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- click-outside-to-close backdrop; Escape (handled by useFocusTrap on the dialog below) is the keyboard equivalent, not a key event on this div
     <div className="modal-overlay" onClick={onClose}>
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- only stops the backdrop's onClose click from bubbling, not a real interactive handler */}
       <div
         ref={containerRef}
         className="modal-content"
@@ -68,7 +70,7 @@ export default function Modal({ isOpen, onClose, title, image, additionalImages,
                 <img 
                   key={index}
                   src={img} 
-                  alt={`${title} - Additional image ${index + 1}`}
+                  alt={`${title} (${index + 1})`}
                   style={{ maxWidth: '100%', height: 'auto', maxHeight: '40vh' }}
                 />
               ))}

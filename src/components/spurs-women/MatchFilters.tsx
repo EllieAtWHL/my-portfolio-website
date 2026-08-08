@@ -25,10 +25,11 @@ function MatchFiltersInner() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h2 className="spurs-text text-lg font-semibold">Match Filters</h2>
         <div className="flex items-center gap-4">
-          <label className="spurs-text text-sm font-medium">
+          <label htmlFor="match-filter" className="spurs-text text-sm font-medium">
             Filter:
           </label>
           <SpursSelect
+            id="match-filter"
             value={currentFilter}
             onChange={(e) => handleFilterChange(e.target.value as 'all' | 'upcoming' | 'previous')}
           >
@@ -49,10 +50,10 @@ export default function MatchFilters() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h2 className="spurs-text text-lg font-semibold">Match Filters</h2>
           <div className="flex items-center gap-4">
-            <label className="spurs-text text-sm font-medium">
+            <label htmlFor="match-filter-loading" className="spurs-text text-sm font-medium">
               Filter:
             </label>
-            <SpursSelect value="all" disabled>
+            <SpursSelect id="match-filter-loading" value="all" disabled>
               <option value="all">All Matches</option>
               <option value="upcoming">Upcoming Only</option>
               <option value="previous">Previous Only</option>

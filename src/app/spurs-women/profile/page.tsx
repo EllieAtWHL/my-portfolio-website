@@ -58,14 +58,15 @@ export default function ProfilePage() {
           {user && (
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-300">Email</label>
+                {/* Not a <label>: this pairs with a plain read-only display div below, not a form control */}
+                <div className="block text-sm font-medium mb-2 text-gray-300">Email</div>
                 <div className="p-3 bg-gray-700 rounded text-white">
                   {user.email}
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-300">Role</label>
+                <div className="block text-sm font-medium mb-2 text-gray-300">Role</div>
                 <div className="p-3 bg-gray-700 rounded text-white">
                   {isAdmin ? 'Admin' : 'User'}
                 </div>

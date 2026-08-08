@@ -102,6 +102,7 @@ export default function FantasyFootballContent() {
           </p>
           
           <div className="p-4 video-container">
+            {/* eslint-disable-next-line jsx-a11y/media-has-caption -- no caption track exists for this screen-recording demo; a real transcript needs authoring separately rather than faking compliance with an empty/wrong track */}
             <video controls className="video-iframe w-full rounded-lg">
               <source src="/ghl/videos/GHLDraft_watermarked.mkv" type="video/webm" />
               Your browser does not support the video tag.
@@ -143,6 +144,7 @@ export default function FantasyFootballContent() {
           </Card>
           
           <div className="p-4 video-container">
+            {/* eslint-disable-next-line jsx-a11y/media-has-caption -- see the caption note on the other demo video above */}
             <video controls className="video-iframe w-full rounded-lg">
               <source src="/ghl/videos/GHLController_watermarked.mkv" type="video/webm" />
               Your browser does not support the video tag.

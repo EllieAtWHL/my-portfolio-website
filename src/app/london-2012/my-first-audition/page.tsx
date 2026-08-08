@@ -90,6 +90,7 @@ export default function MyFirstAuditionPage() {
                 {/* Spotify embed */}
                 <div className="rounded-lg overflow-hidden">
                   <iframe
+                    title="Spotify player: Love On Top by Beyoncé"
                     style={{ '--border-radius': '12px', borderRadius: 'var(--border-radius)' } as React.CSSProperties}
                     src="https://open.spotify.com/embed/track/1z6WtY7X4HQJvzxC4UgkSf?utm_source=generator&theme=0"
                     width="100%"
