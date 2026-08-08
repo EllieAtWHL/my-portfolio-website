@@ -219,14 +219,14 @@ describe('AdminPage', () => {
     render(<AdminPage />);
 
     await waitFor(() => expect(screen.getByText('Matches')).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: 'Teams' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Players' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Stadiums' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Teams' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Players' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Stadiums' })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Teams' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Teams' }));
     expect(await screen.findByText('+ New Team')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Matches' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Matches' }));
     expect(await screen.findByText('+ New Match')).toBeInTheDocument();
   });
 
@@ -234,7 +234,7 @@ describe('AdminPage', () => {
     render(<AdminPage />);
     await waitFor(() => expect(screen.getByText('Matches')).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'Teams' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Teams' }));
     const teamRow = await screen.findByText('Tottenham Hotspur');
     fireEvent.click(teamRow);
 
@@ -247,7 +247,7 @@ describe('AdminPage', () => {
     render(<AdminPage />);
     await waitFor(() => expect(screen.getByText('Matches')).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'Teams' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Teams' }));
     fireEvent.click(await screen.findByText('+ New Team'));
     await screen.findByText('Add New Team');
 
@@ -271,7 +271,7 @@ describe('AdminPage', () => {
     render(<AdminPage />);
     await waitFor(() => expect(screen.getByText('Matches')).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'Teams' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Teams' }));
     fireEvent.click(await screen.findByText('Tottenham Hotspur'));
     fireEvent.click(await screen.findByText('Delete'));
 
@@ -315,7 +315,7 @@ describe('AdminPage', () => {
     render(<AdminPage />);
     await waitFor(() => expect(screen.getByText('Matches')).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'Players' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Players' }));
     fireEvent.click(await screen.findByText('Alice Smith'));
     fireEvent.click(await screen.findByText('Related Records'));
 

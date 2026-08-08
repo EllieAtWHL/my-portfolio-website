@@ -460,13 +460,15 @@ export default function ExperienceContent() {
         <div className="page-subtitle">14+ Years of Technological Excellence</div>
       </div>
       
-      <div className="tab-navigation">
+      <div className="tab-navigation" role="tablist">
         {tabs.map((tab) => (
           <button
             key={tab.id}
+            id={`tab-${tab.id}`}
             className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
             onClick={() => handleTabChange(tab.id)}
             aria-selected={activeTab === tab.id}
+            aria-controls="experience-tabpanel"
             role="tab"
           >
             {tab.label}
@@ -474,7 +476,7 @@ export default function ExperienceContent() {
         ))}
       </div>
 
-      <div className="tab-content" role="tabpanel">
+      <div id="experience-tabpanel" className="tab-content" role="tabpanel" aria-labelledby={`tab-${activeTab}`}>
         {/* sr-only: keeps the heading hierarchy unbroken (h1 -> h2 -> h3
             company-name -> h4 role-title) without a visible duplicate of
             the already-visible tab label. */}

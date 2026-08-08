@@ -38,20 +38,27 @@ export default function Header() {
         </Link>
       </div>
       
-      <div 
+      <div
         className="toggle-button"
         onClick={toggleMenu}
         role="button"
         tabIndex={0}
-        onKeyDown={(e) => e.key === 'Enter' && toggleMenu()}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleMenu();
+          }
+        }}
         aria-label="Toggle menu"
+        aria-expanded={isMenuOpen}
+        aria-controls="spurs-navbar-links"
       >
         <span className="bar"></span>
         <span className="bar"></span>
         <span className="bar"></span>
       </div>
 
-      <nav className={`navbar-links spurs-links ${isMenuOpen ? 'active' : ''}`}>
+      <nav id="spurs-navbar-links" className={`navbar-links spurs-links ${isMenuOpen ? 'active' : ''}`}>
         <ul>
           {navItems.map((item) => (
             <li key={item.href}>
