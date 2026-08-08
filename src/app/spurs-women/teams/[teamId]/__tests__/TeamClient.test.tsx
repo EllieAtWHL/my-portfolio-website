@@ -119,4 +119,35 @@ describe('TeamClient', () => {
     expect(screen.queryByText('Players')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Current/ })).not.toBeInTheDocument()
   })
+
+  it('shows a distinguishable error state instead of "no matches" when the fetch fails', async () => {
+    mockGetMatchesForTeam.mockRejectedValue(new Error('network down'))
+
+    render(<TeamClient team={team} teamId="1" />)
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        "Couldn't load matches for this team. Please try again."
+      )
+    })
+
+    expect(screen.queryByText('No matches found for this team.')).not.toBeInTheDocument()
+  })
+
+  it('retries the fetch when the error state\'s retry button is clicked', async () => {
+    mockGetMatchesForTeam.mockRejectedValueOnce(new Error('network down')).mockResolvedValue([])
+
+    render(<TeamClient team={team} teamId="1" />)
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /try again/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText('No matches found for this team.')).toBeInTheDocument()
+    })
+    expect(mockGetMatchesForTeam).toHaveBeenCalledTimes(2)
+  })
 })

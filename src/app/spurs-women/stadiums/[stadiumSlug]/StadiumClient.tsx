@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/Card';
+import { ErrorState } from '@/components/ErrorState';
 import MatchCard from '@/components/spurs-women/MatchCard';
 import InteractiveMap from '@/components/spurs-women/InteractiveMap';
 import MatchFilterControls from '@/components/spurs-women/MatchFilterControls';
@@ -18,26 +19,41 @@ export default function StadiumClient({ stadium, stadiumSlug }: StadiumClientPro
   const [matches, setMatches] = useState<Match[]>([]);
   const [filteredMatches, setFilteredMatches] = useState<Match[]>([]);
   const [stadiumNames, setStadiumNames] = useState<StadiumName[]>([]);
+  const [hasError, setHasError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   const handleFilteredMatchesChange = useCallback((newFilteredMatches: Match[]) => {
     setFilteredMatches(newFilteredMatches);
   }, []);
 
+  // Fetch logic stays local to the effect (rather than a shared useCallback
+  // also called from the retry button) - keeps react-hooks/set-state-in-effect
+  // happy, since it flags a memoized fetch function reachable from both an
+  // effect and an external handler even though these setState calls only
+  // ever run after the awaited request settles. Retrying bumps retryCount
+  // to re-trigger this same effect.
   useEffect(() => {
     const fetchData = async () => {
-      const [matches] = await Promise.all([
-        getMatchesAtStadium(stadiumSlug)
-      ]);
+      try {
+        const [matches, names] = await Promise.all([
+          getMatchesAtStadium(stadiumSlug),
+          getStadiumNames(stadium.id)
+        ]);
 
-      setMatches(matches || []);
-      setFilteredMatches(matches || []);
-      
-      const names = await getStadiumNames(stadium.id);
-      setStadiumNames(names);
+        setMatches(matches || []);
+        setFilteredMatches(matches || []);
+        setStadiumNames(names);
+        setHasError(false);
+      } catch (error) {
+        console.error('Error loading stadium data:', error);
+        setHasError(true);
+      }
     };
 
     fetchData();
-  }, [stadiumSlug, stadium.id]);
+  }, [stadiumSlug, stadium.id, retryCount]);
+
+  const retryFetchData = () => setRetryCount((count) => count + 1);
 
   return (
     <main id="main-content" className="p-4 pb-footer-clearance">
@@ -118,29 +134,40 @@ export default function StadiumClient({ stadium, stadiumSlug }: StadiumClientPro
 
           <div className="lg:col-span-2">
             <h2 className="spurs-text font-bold mb-4">Matches at {stadium.name}</h2>
-            
-            <MatchFilterControls 
-              matches={matches}
-              onFilteredMatchesChange={handleFilteredMatchesChange}
-              showCompetitionFilter={true}
-              showVenueFilter={true}
-              showAttendedFilter={true}
-              showResultFilter={true}
-              showMonthFilter={false}
-            />
-            
-            {filteredMatches.length > 0 ? (
-              <div className="grid gap-4 md:grid-cols-2">
-                {filteredMatches.map((match) => (
-                  <MatchCard key={match.id} match={match} />
-                ))}
-              </div>
+
+            {hasError ? (
+              <ErrorState
+                message="Couldn't load matches for this stadium. Please try again."
+                onRetry={retryFetchData}
+                cardVariant="spursAccent"
+                buttonVariant="spurs"
+              />
             ) : (
-              <Card variant="spursAccent" padding="md" hover={false}>
-                <p className="spurs-text">
-                  No matches found at this stadium.
-                </p>
-              </Card>
+              <>
+                <MatchFilterControls
+                  matches={matches}
+                  onFilteredMatchesChange={handleFilteredMatchesChange}
+                  showCompetitionFilter={true}
+                  showVenueFilter={true}
+                  showAttendedFilter={true}
+                  showResultFilter={true}
+                  showMonthFilter={false}
+                />
+
+                {filteredMatches.length > 0 ? (
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {filteredMatches.map((match) => (
+                      <MatchCard key={match.id} match={match} />
+                    ))}
+                  </div>
+                ) : (
+                  <Card variant="spursAccent" padding="md" hover={false}>
+                    <p className="spurs-text">
+                      No matches found at this stadium.
+                    </p>
+                  </Card>
+                )}
+              </>
             )}
           </div>
         </div>
