@@ -29,7 +29,7 @@ export default function SpursWomenError({
               Try Again
             </Button>
             <Link href="/spurs-women">
-              <Button variant="secondary">Back to Home</Button>
+              <Button variant="spurs">Back to Home</Button>
             </Link>
           </div>
         </Card>
