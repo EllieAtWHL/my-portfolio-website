@@ -4,6 +4,8 @@ import "./globals.css";
 import ThemeProvider from "../components/ThemeProvider";
 import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
+import { OfflineBanner } from "../components/OfflineBanner";
+import { ServiceWorkerRegistration } from "../components/ServiceWorkerRegistration";
 
 const nokora = Nokora({
   subsets: ["khmer", "latin"],
@@ -42,8 +44,10 @@ export default function RootLayout({
       </head>
       <body suppressHydrationWarning>
         <ThemeProvider>
+          <OfflineBanner />
           {children}
         </ThemeProvider>
+        <ServiceWorkerRegistration />
         <Analytics />
       </body>
     </html>
