@@ -264,7 +264,7 @@ describe('AdminPage', () => {
         })
       );
     });
-    expect(await screen.findByText('Team created successfully')).toBeInTheDocument();
+    expect(await screen.findByRole('status')).toHaveTextContent('Team created successfully');
   });
 
   it('deletes an existing team after confirming', async () => {

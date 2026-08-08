@@ -31,7 +31,7 @@ export function FormModal({ title, error, onCancel, onDelete, onSubmit, submitLa
       >
         <h3 id={titleId} className="text-xl font-bold text-white mb-4">{title}</h3>
         {error && (
-          <div className="mb-4 p-3 rounded bg-red-600 text-white text-sm" role="alert">
+          <div role="alert" className="mb-4 p-3 rounded bg-red-600 text-white text-sm">
             {error}
           </div>
         )}
