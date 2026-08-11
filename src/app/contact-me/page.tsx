@@ -5,17 +5,27 @@ import { Card } from '@/components/Card';
 import { useEffect, useState } from 'react';
 import MainSitePage from '@/components/MainSitePage';
 import { trackFormInteraction, trackPageView } from '@/lib/fullstory';
+import { useCookieConsent } from '@/components/CookieConsentProvider';
 
 export default function ContactMe() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const { consent } = useCookieConsent();
 
   useEffect(() => {
-    // Track page view
     trackPageView('/contact-me', 'Contact Me');
-    
+  }, []);
+
+  useEffect(() => {
     // Only load reCAPTCHA for non-localhost environments
     if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+      return;
+    }
+
+    // reCAPTCHA sets a Google cookie, so it stays off until the visitor
+    // accepts cookies (WEB-102) - see the fallback message rendered below
+    // where the widget would otherwise appear.
+    if (consent !== 'accepted') {
       return;
     }
 
@@ -52,7 +62,7 @@ export default function ContactMe() {
         document.head.removeChild(timestampScript);
       }
     };
-  }, []);
+  }, [consent]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -205,13 +215,20 @@ export default function ContactMe() {
                     />
                   </div>
 
-                  {typeof window === 'undefined' || window.location.hostname !== 'localhost' && (
-                    <div className="flex justify-center p-8">
-                      <div 
-                        className="g-recaptcha" 
-                        data-sitekey="6LfUBQEfAAAAAOwXkILtp2Amwf_U6Ouoza-xsGZT"
-                      />
-                    </div>
+                  {typeof window !== 'undefined' && window.location.hostname !== 'localhost' && (
+                    consent === 'accepted' ? (
+                      <div className="flex justify-center p-8">
+                        <div
+                          className="g-recaptcha"
+                          data-sitekey="6LfUBQEfAAAAAOwXkILtp2Amwf_U6Ouoza-xsGZT"
+                        />
+                      </div>
+                    ) : (
+                      <p className="text-sm text-center form-label p-4">
+                        Please accept cookies (see the banner, or &quot;Cookie preferences&quot; in the
+                        footer) to enable spam protection for this form.
+                      </p>
+                    )
                   )}
 
                   <div className="pt-4">

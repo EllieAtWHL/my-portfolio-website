@@ -1,9 +1,12 @@
 'use client';
 
 import BlueskyLogo from './BlueskyLogo';
+import { useCookieConsent } from '../CookieConsentProvider';
+import { Button } from '../Button';
 
 
 export default function Footer() {
+  const { openPreferences } = useCookieConsent();
 
   return (
     <footer className={`spurs footer`}>
@@ -19,6 +22,11 @@ export default function Footer() {
             <BlueskyLogo size={16} className="inline-block" />
             Bluesky
           </a>
+        </p>
+        <p>
+          <Button variant="ghost" size="xs" onClick={openPreferences}>
+            Cookie preferences
+          </Button>
         </p>
       </div>
 

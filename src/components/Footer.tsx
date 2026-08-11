@@ -1,9 +1,12 @@
 'use client';
 
 import { useTheme } from './ThemeProvider';
+import { useCookieConsent } from './CookieConsentProvider';
+import { Button } from './Button';
 
 export default function Footer() {
   const { isDarkMode, toggleDarkMode } = useTheme();
+  const { openPreferences } = useCookieConsent();
 
   return (
     <footer className={`footer ${isDarkMode ? 'dark' : ''}`}>
@@ -18,6 +21,11 @@ export default function Footer() {
           >
             Linktree
           </a>
+        </p>
+        <p>
+          <Button variant="ghost" size="xs" onClick={openPreferences}>
+            Cookie preferences
+          </Button>
         </p>
       </div>
 
