@@ -49,8 +49,9 @@ export function CookieConsentBanner() {
             // that .button.primary doesn't, so the two would render at
             // different widths here (unlike the spurs variant, where both
             // buttons already share one CSS class) - pin both to the same
-            // width explicitly.
-            className="!w-28"
+            // width AND min-width explicitly, since CSS min-width always
+            // wins over a smaller width even with !important on width alone.
+            className="!w-28 !min-w-28"
             onClick={reject}
           >
             Reject
