@@ -3,6 +3,7 @@
 import BlueskyLogo from './BlueskyLogo';
 import { useCookieConsent } from '../CookieConsentProvider';
 import { Button } from '../Button';
+import CookieIcon from '../CookieIcon';
 
 
 export default function Footer() {
@@ -23,11 +24,19 @@ export default function Footer() {
             Bluesky
           </a>
         </p>
-        <p>
-          <Button variant="ghost" size="xs" onClick={openPreferences}>
-            Cookie preferences
-          </Button>
-        </p>
+      </div>
+
+      <div className="floatRight">
+        <Button
+          variant="spurs"
+          size="xs"
+          onClick={openPreferences}
+          aria-label="Cookie preferences"
+          title="Cookie preferences"
+          className="p-1.5"
+        >
+          <CookieIcon size={18} />
+        </Button>
       </div>
 
     </footer>

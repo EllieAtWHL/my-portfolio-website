@@ -25,7 +25,7 @@ export function CookieConsentBanner() {
       // z-[200] matches OfflineBanner/SkipLink's convention for the same reason).
       className={`fixed bottom-0 inset-x-0 z-[200] px-4 py-4 shadow-lg border-t ${
         isSpursSection
-          ? 'spurs-wrapper !pt-4 border-white/10'
+          ? 'spurs-wrapper pt-4 border-white/10'
           : // dark:bg-gray-900/border-gray-700 are generic Tailwind grays with a
             // blue cast that clash with the main site's actual dark theme
             // (a green gradient, per .dark body in globals.css) - these
@@ -49,9 +49,10 @@ export function CookieConsentBanner() {
             // that .button.primary doesn't, so the two would render at
             // different widths here (unlike the spurs variant, where both
             // buttons already share one CSS class) - pin both to the same
-            // width AND min-width explicitly, since CSS min-width always
-            // wins over a smaller width even with !important on width alone.
-            className="!w-28 !min-w-28"
+            // width AND min-width explicitly (main-theme.css is imported
+            // layer(base) in globals.css, so plain Tailwind utilities here
+            // already win without needing !important).
+            className="w-28 min-w-28"
             onClick={reject}
           >
             Reject
@@ -59,7 +60,7 @@ export function CookieConsentBanner() {
           <Button
             variant={isSpursSection ? 'spurs' : 'primary'}
             size="sm"
-            className="!w-28"
+            className="w-28 min-w-28"
             onClick={accept}
           >
             Accept
