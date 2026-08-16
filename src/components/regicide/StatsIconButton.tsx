@@ -16,7 +16,7 @@ export function StatsIconButton({ onClick, className = '' }: StatsIconButtonProp
       type="button"
       onClick={onClick}
       aria-label="View Statistics"
-      className={`p-1.5 rounded-full border border-brand-dark text-brand-dark dark:border-dark-accent dark:text-dark-accent opacity-50 dark:opacity-30 hover:opacity-100 focus-visible:opacity-100 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark dark:focus-visible:ring-dark-accent focus-visible:ring-offset-2 ${className}`}
+      className={`p-1.5 rounded-full border border-brand-dark text-brand-dark opacity-50 hover:opacity-100 focus-visible:opacity-100 dark:bg-dark-bg-1 dark:border-dark-gray-medium/40 dark:text-dark-gray-medium dark:opacity-100 dark:hover:border-dark-accent dark:hover:text-dark-accent dark:focus-visible:border-dark-accent dark:focus-visible:text-dark-accent transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark dark:focus-visible:ring-dark-accent focus-visible:ring-offset-2 ${className}`}
     >
       <svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" fill="currentColor" aria-hidden="true">
         <title>See my stats</title>

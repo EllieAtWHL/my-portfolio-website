@@ -22,13 +22,9 @@ export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
         </div>
       </div>
 
-      {/* Stats Button */}
-      <div className="flex justify-end mb-6">
-        <StatsIconButton onClick={onShowStats} />
-      </div>
-
-      {/* Play Button */}
-      <div className="text-center mb-12">
+      {/* Play Button, with the Stats trigger sharing the same row */}
+      <div className="grid grid-cols-3 items-center mb-12">
+        <div aria-hidden="true" />
         <Button
           variant="primary"
           size="lg"
@@ -41,6 +37,9 @@ export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
             <span className="text-xl">⚔️</span>
           </span>
         </Button>
+        <div className="flex justify-end">
+          <StatsIconButton onClick={onShowStats} />
+        </div>
       </div>
 
       {/* Links Section */}
