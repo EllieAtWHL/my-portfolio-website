@@ -79,6 +79,7 @@ describe('useRegicideGame', () => {
         suit: 'diamonds',
         rank: 'J',
         attack: 10,
+        maxAttack: 10,
         health: 20,
         maxHealth: 20,
       });
@@ -332,6 +333,16 @@ describe('useRegicideGame', () => {
       expect(gameData.discardPile.map(cardLabel).sort()).toEqual(oldHand.map(cardLabel).sort());
       expect(gameData.tavernDeck).toHaveLength(tavernBefore - 8);
     });
+
+    // No dedicated regression test for the tavern-exhaustion fix below
+    // (checkHandExhausted is now called after useJester, matching every
+    // other hand-mutating action) - constructing that exact state through
+    // natural play isn't practical to assert on: with the standard 52-card
+    // deck and 2 jesters, jestersRemaining reliably hits 0 (the
+    // already-tested loss path) tens of cards before the 32-card tavern
+    // deck itself runs dry, verified empirically while writing this test.
+    // The fix is still correct/harmless defensive coverage for the case
+    // where it would matter.
   });
 
   describe('undo', () => {
@@ -389,7 +400,7 @@ describe('useRegicideGame', () => {
       const { gameData } = result.current;
       // Three more Jacks remain queued (only diamonds-J was fought), so the next
       // royal drawn is clubs-J - the defeated diamonds-J itself is what matters here.
-      expect(gameData.royalCard).toEqual({ suit: 'clubs', rank: 'J', attack: 10, health: 20, maxHealth: 20 });
+      expect(gameData.royalCard).toEqual({ suit: 'clubs', rank: 'J', attack: 10, maxAttack: 10, health: 20, maxHealth: 20 });
       expect(gameData.royalDeck).toHaveLength(10);
       expect(gameData.discardPile.some((c) => c.rank === 'J' && c.suit === 'diamonds')).toBe(false);
       expect(gameData.tavernDeck.some((c) => c.rank === 'J' && c.suit === 'diamonds')).toBe(true);
@@ -405,7 +416,6 @@ describe('useRegicideGame', () => {
         gamesWon: 0,
         gamesLost: 0,
         lastPlayed: 'Never',
-        totalPlayTime: 0,
       });
     });
 
@@ -426,7 +436,6 @@ describe('useRegicideGame', () => {
         gamesWon: 1,
         gamesLost: 0,
         lastPlayed: '2026-01-01T00:00:00.000Z',
-        totalPlayTime: 0,
       };
 
       act(() => result.current.saveStats(stats));
@@ -439,7 +448,7 @@ describe('useRegicideGame', () => {
     it('winGame increments gamesWon on top of existing stats', () => {
       localStorage.setItem(
         'regicide-stats',
-        JSON.stringify({ gamesStarted: 3, gamesWon: 1, gamesLost: 1, lastPlayed: 'Never', totalPlayTime: 0 })
+        JSON.stringify({ gamesStarted: 3, gamesWon: 1, gamesLost: 1, lastPlayed: 'Never' })
       );
       const { result } = renderHook(() => useRegicideGame());
 
@@ -451,7 +460,7 @@ describe('useRegicideGame', () => {
     it('loseGame increments gamesLost on top of existing stats', () => {
       localStorage.setItem(
         'regicide-stats',
-        JSON.stringify({ gamesStarted: 3, gamesWon: 1, gamesLost: 1, lastPlayed: 'Never', totalPlayTime: 0 })
+        JSON.stringify({ gamesStarted: 3, gamesWon: 1, gamesLost: 1, lastPlayed: 'Never' })
       );
       const { result } = renderHook(() => useRegicideGame());
 

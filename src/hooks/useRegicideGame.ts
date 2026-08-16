@@ -12,6 +12,7 @@ export interface PlayingCard {
 
 export interface RoyalCard extends PlayingCard {
   attack: number;
+  maxAttack: number;
   health: number;
   maxHealth: number;
 }
@@ -45,7 +46,6 @@ interface GameStats {
   gamesWon: number;
   gamesLost: number;
   lastPlayed: string;
-  totalPlayTime: number;
 }
 
 const SUITS: Suit[] = ['hearts', 'diamonds', 'clubs', 'spades'];
@@ -81,7 +81,6 @@ const DEFAULT_STATS: GameStats = {
   gamesWon: 0,
   gamesLost: 0,
   lastPlayed: 'Never',
-  totalPlayTime: 0,
 };
 
 const EMPTY_GAME_DATA: GameData = {
@@ -111,7 +110,7 @@ export function cardValue(rank: Rank): number {
 
 function toRoyal(card: PlayingCard): RoyalCard {
   const stats = ROYAL_STATS[card.rank as 'J' | 'Q' | 'K'];
-  return { ...card, attack: stats.attack, health: stats.health, maxHealth: stats.health };
+  return { ...card, attack: stats.attack, maxAttack: stats.attack, health: stats.health, maxHealth: stats.health };
 }
 
 function stripToPlainCard(card: PlayingCard): PlayingCard {
@@ -464,16 +463,26 @@ export function useRegicideGame() {
     const playerHand = prev.tavernDeck.slice(0, HAND_LIMIT);
     const tavernDeck = prev.tavernDeck.slice(HAND_LIMIT);
 
-    setHistory((h) => [prev, ...h]);
-    setGameData({
+    // If the tavern deck is also empty, this can deal an empty hand - with
+    // no cards and (once jestersRemaining hits 0 below) no jesters left
+    // either, that's a loss, not a silent soft-lock.
+    let next: GameData = {
       ...prev,
       playerHand,
       tavernDeck,
       discardPile,
       jestersRemaining: prev.jestersRemaining - 1,
       message: null,
-    });
-  }, [gameData]);
+    };
+    next = checkHandExhausted(next);
+
+    if (next.gameOver && !prev.gameOver) {
+      loseGame();
+    }
+
+    setHistory((h) => [prev, ...h]);
+    setGameData(next);
+  }, [gameData, loseGame]);
 
   const undo = useCallback(() => {
     if (history.length === 0) return;
