@@ -83,34 +83,34 @@ export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
 
       {/* Game Roadmap */}
       <div className="max-w-4xl mx-auto mb-12">
+        <h3 className="text-xl font-semibold mb-6 flex items-center gap-3">
+          <span className="text-xl">🗺️</span>
+          Game Roadmap
+        </h3>
         <UniversalCard variant="highlight">
-          <h3 className="text-xl font-semibold mb-4 flex items-center gap-3">
-            <span className="text-xl">🗺️</span>
-            Game Roadmap
-          </h3>
           <ul className="space-y-2 text-gray-700 dark:text-gray-300">
-            <li className="flex items-start gap-2">
-              <span className="text-green-600 dark:text-green-400 mt-1">▸</span>
+            <li className="flex items-baseline gap-2">
+              <span className="text-green-600 dark:text-green-400">▸</span>
               <span>Make more mobile-friendly</span>
             </li>
-            <li className="flex items-start gap-2">
-              <span className="text-green-600 dark:text-green-400 mt-1">▸</span>
+            <li className="flex items-baseline gap-2">
+              <span className="text-green-600 dark:text-green-400">▸</span>
               <span>Improve accessibility</span>
             </li>
-            <li className="flex items-start gap-2">
-              <span className="text-green-600 dark:text-green-400 mt-1">▸</span>
+            <li className="flex items-baseline gap-2">
+              <span className="text-green-600 dark:text-green-400">▸</span>
               <span>Include a way of teaching new players how to play</span>
             </li>
-            <li className="flex items-start gap-2">
-              <span className="text-green-600 dark:text-green-400 mt-1">▸</span>
+            <li className="flex items-baseline gap-2">
+              <span className="text-green-600 dark:text-green-400">▸</span>
               <span>Option to restart (with same starting cards)</span>
             </li>
-            <li className="flex items-start gap-2">
-              <span className="text-green-600 dark:text-green-400 mt-1">▸</span>
+            <li className="flex items-baseline gap-2">
+              <span className="text-green-600 dark:text-green-400">▸</span>
               <span>Resign option</span>
             </li>
-            <li className="flex items-start gap-2">
-              <span className="text-green-600 dark:text-green-400 mt-1">▸</span>
+            <li className="flex items-baseline gap-2">
+              <span className="text-green-600 dark:text-green-400">▸</span>
               <span>Multi-player support</span>
             </li>
           </ul>
@@ -128,12 +128,12 @@ export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
             <h4 className="font-semibold mb-2">23rd July 2022 - Release v0.3</h4>
             <h5 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Release notes</h5>
             <ul className="space-y-1 text-gray-600 dark:text-gray-400">
-              <li className="flex items-start gap-2">
-                <span className="text-green-600 dark:text-green-400 mt-1 text-sm">▸</span>
+              <li className="flex items-baseline gap-2">
+                <span className="text-green-600 dark:text-green-400 text-sm">▸</span>
                 <span>Stats now available</span>
               </li>
-              <li className="flex items-start gap-2">
-                <span className="text-green-600 dark:text-green-400 mt-1 text-sm">▸</span>
+              <li className="flex items-baseline gap-2">
+                <span className="text-green-600 dark:text-green-400 text-sm">▸</span>
                 <span>Improved styling</span>
               </li>
             </ul>
@@ -143,12 +143,12 @@ export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
             <h4 className="font-semibold mb-2">7th May 2022 - Release v0.2</h4>
             <h5 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Release notes</h5>
             <ul className="space-y-1 text-gray-600 dark:text-gray-400">
-              <li className="flex items-start gap-2">
-                <span className="text-green-600 dark:text-green-400 mt-1 text-sm">▸</span>
+              <li className="flex items-baseline gap-2">
+                <span className="text-green-600 dark:text-green-400 text-sm">▸</span>
                 <span>Added ability to undo card selection (still in beta)</span>
               </li>
-              <li className="flex items-start gap-2">
-                <span className="text-green-600 dark:text-green-400 mt-1 text-sm">▸</span>
+              <li className="flex items-baseline gap-2">
+                <span className="text-green-600 dark:text-green-400 text-sm">▸</span>
                 <span>Improved styling</span>
               </li>
             </ul>
@@ -158,8 +158,8 @@ export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
             <h4 className="font-semibold mb-2">30th April 2022 - Release v0.1</h4>
             <h5 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Release Notes</h5>
             <ul className="space-y-1 text-gray-600 dark:text-gray-400">
-              <li className="flex items-start gap-2">
-                <span className="text-green-600 dark:text-green-400 mt-1 text-sm">▸</span>
+              <li className="flex items-baseline gap-2">
+                <span className="text-green-600 dark:text-green-400 text-sm">▸</span>
                 <span>Initial build of game</span>
               </li>
             </ul>
