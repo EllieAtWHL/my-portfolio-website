@@ -3,13 +3,13 @@
 interface CardProps {
   suit: 'hearts' | 'diamonds' | 'clubs' | 'spades';
   rank: string;
-  power: number;
+  value?: number;
   onClick?: () => void;
   isSelected?: boolean;
   className?: string;
 }
 
-export function Card({ suit, rank, power, onClick, isSelected = false, className = '' }: CardProps) {
+export function Card({ suit, rank, value, onClick, isSelected = false, className = '' }: CardProps) {
   const getSuitColor = (suit: string) => {
     return suit === 'hearts' || suit === 'diamonds' ? 'text-red-500' : 'text-gray-900';
   };
@@ -69,10 +69,12 @@ export function Card({ suit, rank, power, onClick, isSelected = false, className
         {getSuitSymbol(suit)}
       </div>
 
-      {/* Power Indicator */}
-      <div className="absolute top-1 right-1 bg-gray-100 rounded-full w-6 h-6 flex items-center justify-center">
-        <span className="text-xs font-bold text-gray-700">{power}</span>
-      </div>
+      {/* Value Indicator */}
+      {value !== undefined && (
+        <div className="absolute top-1 right-1 bg-gray-100 rounded-full w-6 h-6 flex items-center justify-center">
+          <span className="text-xs font-bold text-gray-700">{value}</span>
+        </div>
+      )}
 
       {/* Selected Indicator */}
       {isSelected && (
