@@ -47,9 +47,10 @@ export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
       <div className="max-w-4xl mx-auto mb-12">
         <h3 className="text-2xl font-semibold mb-6 text-center">Learn More & Get Your Copy</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <UniversalCard 
+          <UniversalCard
             variant="highlight"
             hover={true}
+            clickable={true}
             onClick={() => window.open('https://www.badgersfrommars.com/buy-regicide/', '_blank')}
           >
             <div className="flex items-center gap-4">
@@ -62,9 +63,10 @@ export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
             </div>
           </UniversalCard>
           
-          <UniversalCard 
+          <UniversalCard
             variant="highlight"
             hover={true}
+            clickable={true}
             onClick={() => window.open('https://www.badgersfrommars.com/regicide/', '_blank')}
           >
             <div className="flex items-center gap-4">
