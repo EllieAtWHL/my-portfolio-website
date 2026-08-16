@@ -11,6 +11,15 @@ interface GameStartProps {
 
 const RELEASES = [
   {
+    version: 'v0.4',
+    date: '16th August 2026',
+    notes: [
+      'Rebuilt on React/Next.js as part of the main portfolio site',
+      'Redesigned the play area to fit an entire game on screen without scrolling',
+      'Fixed a rare edge case where using your last jester once the tavern deck is empty could leave the game stuck without recognising a loss',
+    ],
+  },
+  {
     version: 'v0.3',
     date: '23rd July 2022',
     notes: ['Stats now available', 'Improved styling'],
@@ -35,9 +44,22 @@ export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
         <h1 className="text-5xl md:text-7xl font-bold mb-4 tracking-tight">
           REGICIDE
         </h1>
-        <div className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 font-light">
+        <div className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-4 font-light">
           A Challenging Strategic Card Game
         </div>
+        <p className="max-w-2xl mx-auto text-gray-600 dark:text-gray-400">
+          Regicide is a challenging card game based on a standard 52 card
+          deck. Kickstarted by{' '}
+          <a
+            href="https://www.badgersfrommars.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-green-600 dark:text-green-400 hover:underline"
+          >
+            Badgers From Mars
+          </a>{' '}
+          in May 2020.
+        </p>
       </div>
 
       {/* Play Button, with the Stats trigger sharing the same row */}
@@ -72,7 +94,9 @@ export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
             onClick={() => window.open('https://www.badgersfrommars.com/buy-regicide/', '_blank')}
           >
             <div className="flex items-center gap-4">
-              <span className="text-3xl">🛒</span>
+              <svg className="w-8 h-8 flex-shrink-0 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
               <div className="flex-1">
                 <div className="font-semibold text-gray-800 dark:text-gray-200 text-lg">Buy Physical Copy</div>
                 <div className="text-gray-600 dark:text-gray-400">Support creators</div>
@@ -88,7 +112,9 @@ export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
             onClick={() => window.open('https://www.badgersfrommars.com/regicide/', '_blank')}
           >
             <div className="flex items-center gap-4">
-              <span className="text-3xl">📖</span>
+              <svg className="w-8 h-8 flex-shrink-0 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+              </svg>
               <div className="flex-1">
                 <div className="font-semibold text-gray-800 dark:text-gray-200 text-lg">Learn to Play</div>
                 <div className="text-gray-600 dark:text-gray-400">Official rules & guide</div>
@@ -97,12 +123,17 @@ export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
             </div>
           </UniversalCard>
         </div>
+        <p className="mt-6 text-gray-600 dark:text-gray-400">
+          I hope you learn to love it as much as I do!
+        </p>
       </div>
 
       {/* Game Roadmap */}
       <div className="max-w-4xl mx-auto mb-12">
         <h3 className="text-xl font-semibold mb-6 flex items-center gap-3">
-          <span className="text-xl">🗺️</span>
+          <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+          </svg>
           Game Roadmap
         </h3>
         <UniversalCard variant="highlight">
@@ -138,7 +169,9 @@ export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
       {/* Version History */}
       <div className="max-w-4xl mx-auto">
         <h3 className="text-xl font-semibold mb-6 flex items-center gap-3">
-          <span className="text-xl">📋</span>
+          <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+          </svg>
           Version History
         </h3>
         <UniversalCard variant="highlight" padding="sm" className="text-left">
