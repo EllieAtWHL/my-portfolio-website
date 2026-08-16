@@ -45,8 +45,11 @@ export default function RootLayout({
         <ThemeProvider>
           <CookieConsentProvider>
             <OfflineBanner />
-            {children}
+            {/* Rendered before {children} (fixed positioning keeps it visually
+                bottom-of-viewport regardless of DOM order) so keyboard users
+                reach Accept/Reject early instead of after the entire page. */}
             <CookieConsentBanner />
+            {children}
             <FullStoryLoader />
             <ConsentGatedAnalytics />
           </CookieConsentProvider>
