@@ -9,6 +9,24 @@ interface GameStartProps {
   onShowStats: () => void;
 }
 
+const RELEASES = [
+  {
+    version: 'v0.3',
+    date: '23rd July 2022',
+    notes: ['Stats now available', 'Improved styling'],
+  },
+  {
+    version: 'v0.2',
+    date: '7th May 2022',
+    notes: ['Added ability to undo card selection (still in beta)', 'Improved styling'],
+  },
+  {
+    version: 'v0.1',
+    date: '30th April 2022',
+    notes: ['Initial build of game'],
+  },
+];
+
 export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
   return (
     <div className="text-center py-8">
@@ -123,48 +141,36 @@ export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
           <span className="text-xl">📋</span>
           Version History
         </h3>
-        <div className="space-y-4">
-          <UniversalCard variant="highlight">
-            <h4 className="font-semibold mb-2">23rd July 2022 - Release v0.3</h4>
-            <h5 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Release notes</h5>
-            <ul className="space-y-1 text-gray-600 dark:text-gray-400">
-              <li className="flex items-baseline gap-2">
-                <span className="text-green-600 dark:text-green-400 text-sm">▸</span>
-                <span>Stats now available</span>
-              </li>
-              <li className="flex items-baseline gap-2">
-                <span className="text-green-600 dark:text-green-400 text-sm">▸</span>
-                <span>Improved styling</span>
-              </li>
-            </ul>
-          </UniversalCard>
-          
-          <UniversalCard variant="highlight">
-            <h4 className="font-semibold mb-2">7th May 2022 - Release v0.2</h4>
-            <h5 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Release notes</h5>
-            <ul className="space-y-1 text-gray-600 dark:text-gray-400">
-              <li className="flex items-baseline gap-2">
-                <span className="text-green-600 dark:text-green-400 text-sm">▸</span>
-                <span>Added ability to undo card selection (still in beta)</span>
-              </li>
-              <li className="flex items-baseline gap-2">
-                <span className="text-green-600 dark:text-green-400 text-sm">▸</span>
-                <span>Improved styling</span>
-              </li>
-            </ul>
-          </UniversalCard>
-          
-          <UniversalCard variant="highlight">
-            <h4 className="font-semibold mb-2">30th April 2022 - Release v0.1</h4>
-            <h5 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Release Notes</h5>
-            <ul className="space-y-1 text-gray-600 dark:text-gray-400">
-              <li className="flex items-baseline gap-2">
-                <span className="text-green-600 dark:text-green-400 text-sm">▸</span>
-                <span>Initial build of game</span>
-              </li>
-            </ul>
-          </UniversalCard>
-        </div>
+        <UniversalCard variant="highlight" padding="sm" className="text-left">
+          {RELEASES.map((release, index) => (
+            <details
+              key={release.version}
+              open={index === 0}
+              className={`group ${index > 0 ? 'border-t border-gray-200 dark:border-dark-accent/20' : ''}`}
+            >
+              <summary className="flex items-center justify-between gap-3 cursor-pointer list-none py-2 font-semibold [&::-webkit-details-marker]:hidden">
+                <span>{release.date} - Release {release.version}</span>
+                <svg
+                  className="w-4 h-4 flex-shrink-0 text-gray-500 dark:text-gray-400 transition-transform duration-200 group-open:rotate-180"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <ul className="space-y-1 text-gray-600 dark:text-gray-400 pb-3">
+                {release.notes.map((note) => (
+                  <li key={note} className="flex items-baseline gap-2">
+                    <span className="text-green-600 dark:text-green-400 text-sm">▸</span>
+                    <span>{note}</span>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ))}
+        </UniversalCard>
       </div>
     </div>
   );
