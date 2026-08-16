@@ -29,13 +29,14 @@ export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
           variant="primary"
           size="lg"
           onClick={onStartGame}
-          className="text-xl px-8 py-4"
+          icon={
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          }
+          className="justify-self-center inline-flex items-center text-lg tracking-wide px-10 py-4"
         >
-          <span className="flex items-center gap-3">
-            <span className="text-xl">👑</span>
-            PLAY GAME
-            <span className="text-xl">⚔️</span>
-          </span>
+          Play Game
         </Button>
         <div className="flex justify-end">
           <StatsIconButton onClick={onShowStats} />
