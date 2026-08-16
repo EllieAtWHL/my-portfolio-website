@@ -33,7 +33,7 @@ describe('CookieConsentProvider', () => {
   });
 
   it('does not open the banner when a choice was already stored', async () => {
-    localStorage.setItem('cookie-consent', 'accepted');
+    localStorage.setItem('cookie-consent', JSON.stringify({ status: 'accepted', version: 1 }));
 
     render(
       <CookieConsentProvider>
@@ -59,7 +59,10 @@ describe('CookieConsentProvider', () => {
 
     expect(screen.getByTestId('consent')).toHaveTextContent('accepted');
     expect(screen.getByTestId('banner-open')).toHaveTextContent('false');
-    expect(localStorage.getItem('cookie-consent')).toBe('accepted');
+    expect(JSON.parse(localStorage.getItem('cookie-consent')!)).toEqual({
+      status: 'accepted',
+      version: 1,
+    });
   });
 
   it('reject() persists the choice, closes the banner, and shuts FullStory down', async () => {
@@ -75,13 +78,16 @@ describe('CookieConsentProvider', () => {
     });
 
     expect(screen.getByTestId('consent')).toHaveTextContent('rejected');
-    expect(localStorage.getItem('cookie-consent')).toBe('rejected');
+    expect(JSON.parse(localStorage.getItem('cookie-consent')!)).toEqual({
+      status: 'rejected',
+      version: 1,
+    });
     expect(window.FS?.consent).toHaveBeenCalledWith(false);
     expect(window.FS?.shutdown).toHaveBeenCalled();
   });
 
   it('openPreferences() reopens the banner after a choice was already made', async () => {
-    localStorage.setItem('cookie-consent', 'accepted');
+    localStorage.setItem('cookie-consent', JSON.stringify({ status: 'accepted', version: 1 }));
 
     render(
       <CookieConsentProvider>
@@ -96,6 +102,23 @@ describe('CookieConsentProvider', () => {
     });
 
     expect(screen.getByTestId('banner-open')).toHaveTextContent('true');
+  });
+
+  it.each([
+    ['a stale version number', JSON.stringify({ status: 'accepted', version: 0 })],
+    ['the pre-versioning bare string format', 'accepted'],
+    ['malformed JSON', '{not json'],
+  ])('treats %s as no stored consent and reopens the banner', async (_label, stored) => {
+    localStorage.setItem('cookie-consent', stored);
+
+    render(
+      <CookieConsentProvider>
+        <TestConsumer />
+      </CookieConsentProvider>
+    );
+
+    expect(await screen.findByTestId('banner-open')).toHaveTextContent('true');
+    expect(screen.getByTestId('consent')).toHaveTextContent('null');
   });
 
   it('throws when useCookieConsent is used outside the provider', () => {

@@ -5,6 +5,16 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 export type ConsentStatus = 'accepted' | 'rejected';
 
 const STORAGE_KEY = 'cookie-consent';
+// Bump this when what "accept" covers changes (e.g. a new tracker is added) -
+// stored consent from an older version is treated as no consent at all, so
+// visitors who already chose under the old meaning are re-prompted rather
+// than silently carrying a choice that no longer reflects what they agreed to.
+const CONSENT_VERSION = 1;
+
+interface StoredConsent {
+  status: ConsentStatus;
+  version: number;
+}
 
 interface CookieConsentContextType {
   consent: ConsentStatus | null;
@@ -26,16 +36,25 @@ export function useCookieConsent() {
 
 function getStoredConsent(): ConsentStatus | null {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored === 'accepted' || stored === 'rejected' ? stored : null;
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw) as Partial<StoredConsent>;
+    if (parsed.version !== CONSENT_VERSION) return null;
+
+    return parsed.status === 'accepted' || parsed.status === 'rejected' ? parsed.status : null;
   } catch {
+    // Covers both real storage errors and pre-versioning values (a bare
+    // "accepted"/"rejected" string isn't valid JSON) - either way, treat it
+    // as no stored consent.
     return null;
   }
 }
 
 function setStoredConsent(status: ConsentStatus) {
   try {
-    localStorage.setItem(STORAGE_KEY, status);
+    const value: StoredConsent = { status, version: CONSENT_VERSION };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
   } catch {
     // Ignore localStorage errors (e.g. private browsing)
   }
