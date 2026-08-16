@@ -2,6 +2,7 @@
 
 import { Card as UniversalCard } from '@/components/Card';
 import { Button } from '@/components/Button';
+import { StatsIconButton } from './StatsIconButton';
 
 interface GameStartProps {
   onStartGame: () => void;
@@ -23,13 +24,7 @@ export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
 
       {/* Stats Button */}
       <div className="flex justify-end mb-6">
-        <Button
-          variant="secondary"
-          onClick={onShowStats}
-          aria-label="View Statistics"
-        >
-          📊 Statistics
-        </Button>
+        <StatsIconButton onClick={onShowStats} />
       </div>
 
       {/* Play Button */}

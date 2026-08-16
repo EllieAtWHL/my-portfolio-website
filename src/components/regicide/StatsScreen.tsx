@@ -3,6 +3,7 @@
 import { useState, useEffect, useId } from 'react';
 import { Card as UniversalCard } from '@/components/Card';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { formatDateWithMonthName } from '@/lib/utils/date';
 
 interface StatsScreenProps {
   onClose: () => void;
@@ -71,13 +72,13 @@ export function StatsScreen({ onClose }: StatsScreenProps) {
       aria-labelledby={titleId}
       tabIndex={-1}
     >
-      <UniversalCard className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <UniversalCard className="max-w-2xl w-full max-h-[90vh] overflow-y-auto dark:!bg-dark-bg-1">
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-dark-accent/20">
           <h2 id={titleId} className="text-3xl font-bold">Game Statistics</h2>
           <button
             onClick={onClose}
-            className="p-2 bg-gray-100 dark:bg-gray-700 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200"
+            className="p-2 bg-gray-100 dark:bg-dark-bg-2 text-gray-700 dark:text-dark-text rounded-xl hover:bg-gray-200 dark:hover:bg-dark-bg-1 transition-colors duration-200"
             aria-label="Close statistics"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,12 +91,12 @@ export function StatsScreen({ onClose }: StatsScreenProps) {
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             {/* Games Played */}
-            <UniversalCard padding="sm">
+            <UniversalCard padding="sm" className="dark:!bg-dark-bg-2">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-gray-600 dark:text-gray-300 text-sm">Games Started</span>
                 <span className="text-2xl font-bold">{stats.gamesStarted}</span>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+              <div className="w-full bg-gray-200 dark:bg-dark-bg-1 rounded-full h-2">
                 <div 
                   className="bg-green-600 dark:bg-green-400 h-2 rounded-full transition-all duration-500"
                   style={{ width: `${Math.min(stats.gamesStarted * 10, 100)}%` }}
@@ -104,12 +105,12 @@ export function StatsScreen({ onClose }: StatsScreenProps) {
             </UniversalCard>
 
             {/* Games Won */}
-            <UniversalCard padding="sm">
+            <UniversalCard padding="sm" className="dark:!bg-dark-bg-2">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-gray-600 dark:text-gray-300 text-sm">Games Won</span>
                 <span className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.gamesWon}</span>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+              <div className="w-full bg-gray-200 dark:bg-dark-bg-1 rounded-full h-2">
                 <div 
                   className="bg-green-600 dark:bg-green-400 h-2 rounded-full transition-all duration-500"
                   style={{ '--progress-width': `${stats.gamesStarted > 0 ? (stats.gamesWon / stats.gamesStarted) * 100 : 0}%`, width: 'var(--progress-width)' } as React.CSSProperties}
@@ -118,12 +119,12 @@ export function StatsScreen({ onClose }: StatsScreenProps) {
             </UniversalCard>
 
             {/* Games Lost */}
-            <UniversalCard padding="sm">
+            <UniversalCard padding="sm" className="dark:!bg-dark-bg-2">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-gray-600 dark:text-gray-300 text-sm">Games Lost</span>
                 <span className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.gamesLost}</span>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+              <div className="w-full bg-gray-200 dark:bg-dark-bg-1 rounded-full h-2">
                 <div 
                   className="bg-red-600 dark:bg-red-400 h-2 rounded-full transition-all duration-500"
                   style={{ width: `${stats.gamesStarted > 0 ? (stats.gamesLost / stats.gamesStarted) * 100 : 0}%` }}
@@ -132,12 +133,12 @@ export function StatsScreen({ onClose }: StatsScreenProps) {
             </UniversalCard>
 
             {/* Win Rate */}
-            <UniversalCard padding="sm">
+            <UniversalCard padding="sm" className="dark:!bg-dark-bg-2">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-gray-600 dark:text-gray-300 text-sm">Win Rate</span>
                 <span className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.winRate}%</span>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+              <div className="w-full bg-gray-200 dark:bg-dark-bg-1 rounded-full h-2">
                 <div 
                   className="bg-yellow-600 dark:bg-yellow-400 h-2 rounded-full transition-all duration-500"
                   style={{ '--progress-width': `${stats.winRate}%`, width: 'var(--progress-width)' } as React.CSSProperties}
@@ -147,11 +148,13 @@ export function StatsScreen({ onClose }: StatsScreenProps) {
           </div>
 
           {/* Additional Info */}
-          <UniversalCard padding="sm" className="mb-6">
+          <UniversalCard padding="sm" className="mb-6 dark:!bg-dark-bg-2">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <span className="text-gray-600 dark:text-gray-300 text-sm block">Last Played</span>
-                <span className="font-semibold">{stats.lastPlayed}</span>
+                <span className="font-semibold">
+                  {stats.lastPlayed === 'Never' ? 'Never' : formatDateWithMonthName(stats.lastPlayed)}
+                </span>
               </div>
               <div>
                 <span className="text-gray-600 dark:text-gray-300 text-sm block">Total Play Time</span>

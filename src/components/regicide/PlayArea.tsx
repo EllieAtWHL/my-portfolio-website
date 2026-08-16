@@ -6,6 +6,7 @@ import { Card as GameCard } from './Card';
 import { Deck } from './Deck';
 import { GameControls } from './GameControls';
 import { PowerDisplay } from './PowerDisplay';
+import { StatsIconButton } from './StatsIconButton';
 import {
   cardValue,
   SUIT_POWER_LABEL,
@@ -69,9 +70,7 @@ export function PlayArea({
           <p className="text-gray-600 dark:text-gray-300">Defeat the Royals!</p>
         </div>
 
-        <Button variant="secondary" onClick={onShowStats} aria-label="View Statistics">
-          📊 Stats
-        </Button>
+        <StatsIconButton onClick={onShowStats} />
       </div>
 
       <div className="max-w-7xl mx-auto">
@@ -130,12 +129,12 @@ export function PlayArea({
         </div>
 
         {/* Battle Area */}
-        <UniversalCard className="mb-12">
+        <UniversalCard className="mb-12 dark:!bg-dark-bg-1">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Current Royal Card */}
             <div className="text-center">
               <h4 className="text-lg font-semibold mb-4">Current Royal</h4>
-              <UniversalCard padding="sm">
+              <UniversalCard padding="sm" className="dark:!bg-dark-bg-2">
                 {royalCard ? (
                   <div className="flex flex-col items-center gap-3">
                     <GameCard suit={royalCard.suit} rank={royalCard.rank} />
@@ -146,7 +145,7 @@ export function PlayArea({
                           {royalCard.health} / {royalCard.maxHealth}
                         </span>
                       </div>
-                      <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                      <div className="w-full bg-gray-200 dark:bg-dark-bg-1 rounded-full h-2">
                         <div
                           className="bg-red-600 dark:bg-red-400 h-2 rounded-full transition-all duration-500"
                           style={{ width: `${Math.max(0, (royalCard.health / royalCard.maxHealth) * 100)}%` }}
@@ -158,7 +157,7 @@ export function PlayArea({
                     </p>
                   </div>
                 ) : (
-                  <div className="w-20 h-28 bg-gray-100 dark:bg-gray-600 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-500 flex items-center justify-center">
+                  <div className="w-20 h-28 bg-gray-100 dark:bg-dark-bg-1 rounded-xl border-2 border-dashed border-gray-300 dark:border-dark-accent/30 flex items-center justify-center">
                     <span className="text-gray-600 dark:text-gray-300 text-sm">No Royal</span>
                   </div>
                 )}
@@ -168,7 +167,7 @@ export function PlayArea({
             {/* Cards played this fight */}
             <div className="text-center">
               <h4 className="text-lg font-semibold mb-4">Cards in Play</h4>
-              <UniversalCard padding="sm">
+              <UniversalCard padding="sm" className="dark:!bg-dark-bg-2">
                 {activeAreaCards.length > 0 ? (
                   <div className="flex flex-wrap justify-center gap-2">
                     {activeAreaCards.map((card, index) => (
@@ -182,7 +181,7 @@ export function PlayArea({
                     ))}
                   </div>
                 ) : (
-                  <div className="w-20 h-28 mx-auto bg-gray-100 dark:bg-gray-600 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-500 flex items-center justify-center">
+                  <div className="w-20 h-28 mx-auto bg-gray-100 dark:bg-dark-bg-1 rounded-xl border-2 border-dashed border-gray-300 dark:border-dark-accent/30 flex items-center justify-center">
                     <span className="text-gray-600 dark:text-gray-300 text-sm">Select Card</span>
                   </div>
                 )}
@@ -192,7 +191,7 @@ export function PlayArea({
             {/* Tavern Deck */}
             <div className="text-center">
               <h4 className="text-lg font-semibold mb-4">Tavern</h4>
-              <UniversalCard padding="sm">
+              <UniversalCard padding="sm" className="dark:!bg-dark-bg-2">
                 <Deck
                   type="tavern"
                   count={tavernDeck.length}
