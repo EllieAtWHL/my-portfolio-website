@@ -15,7 +15,6 @@ interface GameStats {
   gamesLost: number;
   winRate: number;
   lastPlayed: string;
-  totalPlayTime: number;
 }
 
 export function StatsScreen({ onClose }: StatsScreenProps) {
@@ -24,8 +23,7 @@ export function StatsScreen({ onClose }: StatsScreenProps) {
     gamesWon: 0,
     gamesLost: 0,
     winRate: 0,
-    lastPlayed: 'Never',
-    totalPlayTime: 0
+    lastPlayed: 'Never'
   });
 
   useEffect(() => {
@@ -50,8 +48,7 @@ export function StatsScreen({ onClose }: StatsScreenProps) {
       gamesWon: 0,
       gamesLost: 0,
       winRate: 0,
-      lastPlayed: 'Never',
-      totalPlayTime: 0
+      lastPlayed: 'Never'
     };
 
     localStorage.setItem('regicide-stats', JSON.stringify(defaultStats));
@@ -149,17 +146,11 @@ export function StatsScreen({ onClose }: StatsScreenProps) {
 
           {/* Additional Info */}
           <UniversalCard padding="sm" className="mb-6 dark:!bg-dark-bg-2">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <span className="text-gray-600 dark:text-gray-300 text-sm block">Last Played</span>
-                <span className="font-semibold">
-                  {stats.lastPlayed === 'Never' ? 'Never' : formatDateWithMonthName(stats.lastPlayed)}
-                </span>
-              </div>
-              <div>
-                <span className="text-gray-600 dark:text-gray-300 text-sm block">Total Play Time</span>
-                <span className="font-semibold">{Math.round(stats.totalPlayTime / 60)} minutes</span>
-              </div>
+            <div>
+              <span className="text-gray-600 dark:text-gray-300 text-sm block">Last Played</span>
+              <span className="font-semibold">
+                {stats.lastPlayed === 'Never' ? 'Never' : formatDateWithMonthName(stats.lastPlayed)}
+              </span>
             </div>
           </UniversalCard>
 
