@@ -6,23 +6,37 @@ This site uses FullStory for user session recording and analytics.
 - **Dashboard**: https://app.fullstory.com
 - **Help Center**: https://help.fullstory.com
 
+**Consent-gated (WEB-102)**: the script below only loads once a visitor
+accepts the site's cookie consent banner - see
+[`../COOKIE_CONSENT.md`](../COOKIE_CONSENT.md) for the consent layer that
+gates this (and Vercel Analytics, and the contact form's reCAPTCHA). This doc
+covers the FullStory integration itself; that one covers when it's allowed
+to run.
+
 ## Architecture
 
 - **`/public/fullstory-init.js`** - Initialization script (org ID hardcoded here)
-- **`/src/app/layout.tsx`** - Root layout, loads the script via Next.js `Script` component
+- **`/src/components/FullStoryLoader.tsx`** - Loads the script via Next.js `Script`, gated on consent (see `COOKIE_CONSENT.md`)
 - **`/src/lib/fullstory.ts`** - Tracking utilities and helper functions
 - **`/src/hooks/useFullStory.ts`** - React hook for FullStory integration
 
-The script is loaded from an external file (not `dangerouslySetInnerHTML`) using
-the `beforeInteractive` strategy, so it loads before the page becomes
-interactive:
+The script is loaded from an external file (not `dangerouslySetInnerHTML`),
+via `FullStoryLoader.tsx` rather than directly in the root layout, so it can
+be conditionally rendered based on consent:
 
 ```tsx
-// src/app/layout.tsx
+// src/components/FullStoryLoader.tsx
 import Script from 'next/script';
 
-<Script src="/fullstory-init.js" strategy="beforeInteractive" />
+if (consent !== 'accepted') return null;
+return <Script src="/fullstory-init.js" strategy="afterInteractive" />;
 ```
+
+Before WEB-102, this was an unconditional `beforeInteractive` `<Script>` in
+`src/app/layout.tsx`. It's now `afterInteractive` and only ever rendered
+post-consent, so it necessarily loads later than before - an intentional
+trade-off, not a regression, since the whole point is that it must not run
+until the visitor has actively agreed to it.
 
 ```javascript
 // public/fullstory-init.js

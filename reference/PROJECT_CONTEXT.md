@@ -420,16 +420,24 @@ Practices:
 
 ### Analytics & User Tracking
 
-Decision:
+Current state (this superseded the original MVP-era "minimal or no
+analytics" plan below it - kept for the rationale, not as a description of
+what's actually running):
+  - **FullStory** (session recording) and **Vercel Analytics** are both in
+    use - see `reference/fullstory/README.md`.
+  - **Google reCAPTCHA** on the contact form additionally sets a third-party
+    cookie.
+  - All three are gated behind an explicit cookie consent banner (WEB-102) -
+    none of them load until a visitor accepts. See
+    `reference/COOKIE_CONSENT.md` for the full consent architecture.
+
+Original MVP decision (superseded by the above):
   - Minimal or no analytics initially.
   - If added, privacy-conscious and lightweight.
+  - No behavioural tracking, no third-party ad/tracking pixels.
 
-Possible approach:
-  - Vercel Analytics or a simple, privacy-friendly solution.
-  - No behavioural tracking.
-  - No third-party ad or tracking pixels.
-
-Rationale:
+Rationale (still holds - now honored via consent-gating rather than by not
+tracking at all):
   - Fan site
   - Personal project
   - Respect user privacy

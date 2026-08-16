@@ -1,9 +1,13 @@
 'use client';
 
 import { useTheme } from './ThemeProvider';
+import { useCookieConsent } from './CookieConsentProvider';
+import { Button } from './Button';
+import CookieIcon from './CookieIcon';
 
 export default function Footer() {
   const { isDarkMode, toggleDarkMode } = useTheme();
+  const { openPreferences } = useCookieConsent();
 
   return (
     <footer className={`footer ${isDarkMode ? 'dark' : ''}`}>
@@ -41,6 +45,23 @@ export default function Footer() {
           <svg className="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
           </svg>
+
+          <Button
+            variant="ghost"
+            size="xs"
+            onClick={openPreferences}
+            aria-label="Cookie preferences"
+            title="Cookie preferences"
+            // Ghost's default text-gray-*/hover:bg-gray-* assume a plain
+            // light/dark page background - the footer's background is
+            // always a colored gradient (light and dark mode alike, see
+            // .footer/.dark .footer in main-theme.css), so it needs the
+            // same --bg-light-1 the sibling sun/moon icons use instead
+            // (var(--bg-light-1): globals.css .sun-icon, .moon-icon).
+            className="p-1.5 text-[var(--bg-light-1)] hover:text-[var(--bg-light-1)] dark:text-[var(--bg-light-1)] dark:hover:text-[var(--bg-light-1)] hover:bg-white/10 dark:hover:bg-white/10"
+          >
+            <CookieIcon size={18} />
+          </Button>
         </div>
       </div>
     </footer>

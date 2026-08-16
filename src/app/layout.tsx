@@ -2,10 +2,13 @@ import type { Metadata } from "next";
 import { Nokora } from "next/font/google";
 import "./globals.css";
 import ThemeProvider from "../components/ThemeProvider";
-import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
 import { OfflineBanner } from "../components/OfflineBanner";
 import { ServiceWorkerRegistration } from "../components/ServiceWorkerRegistration";
+import CookieConsentProvider from "../components/CookieConsentProvider";
+import { CookieConsentBanner } from "../components/CookieConsentBanner";
+import { FullStoryLoader } from "../components/FullStoryLoader";
+import { ConsentGatedAnalytics } from "../components/ConsentGatedAnalytics";
 
 const nokora = Nokora({
   subsets: ["khmer", "latin"],
@@ -35,20 +38,23 @@ export default function RootLayout({
       className={nokora.variable}
     >
       <head>
-        <Script
-          src="/fullstory-init.js"
-          strategy="beforeInteractive"
-        />
         <Script src="/theme-script.js" strategy="beforeInteractive" />
         <meta name="theme-color" content="#2d5a2d" />
       </head>
       <body suppressHydrationWarning>
         <ThemeProvider>
-          <OfflineBanner />
-          {children}
+          <CookieConsentProvider>
+            <OfflineBanner />
+            {/* Rendered before {children} (fixed positioning keeps it visually
+                bottom-of-viewport regardless of DOM order) so keyboard users
+                reach Accept/Reject early instead of after the entire page. */}
+            <CookieConsentBanner />
+            {children}
+            <FullStoryLoader />
+            <ConsentGatedAnalytics />
+          </CookieConsentProvider>
         </ThemeProvider>
         <ServiceWorkerRegistration />
-        <Analytics />
       </body>
     </html>
   );
