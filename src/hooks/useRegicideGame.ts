@@ -122,6 +122,18 @@ export function cardValue(rank: Rank): number {
   return parseInt(rank, 10);
 }
 
+// The actual damage a set of chosen cards would deal against a given royal -
+// clubs double the total, but only when the royal isn't itself a clubs
+// royal (a clubs card matching the royal's own suit doesn't trigger its
+// power, same as every other suit). Shared so the attack phase's live
+// "Attack Power" preview can show exactly what attack() below is about to
+// compute, rather than a second copy of this rule that could drift from it.
+export function calculateAttackDamage(chosenCards: PlayingCard[], royalSuit: Suit): number {
+  const attackTotal = chosenCards.reduce((sum, card) => sum + cardValue(card.rank), 0);
+  const hasActiveClubs = chosenCards.some((card) => card.suit === 'clubs' && card.suit !== royalSuit);
+  return hasActiveClubs ? attackTotal * 2 : attackTotal;
+}
+
 function toRoyal(card: PlayingCard): RoyalCard {
   const stats = ROYAL_STATS[card.rank as 'J' | 'Q' | 'K'];
   return { ...card, attack: stats.attack, maxAttack: stats.attack, health: stats.health, maxHealth: stats.health };
@@ -373,7 +385,7 @@ export function useRegicideGame() {
       }
     }
 
-    const damage = activeSuits.has('clubs') ? attackTotal * 2 : attackTotal;
+    const damage = calculateAttackDamage(chosenCards, royal.suit);
     const newHealth = royal.health - damage;
     messages.push(`Attacking ${royal.rank} of ${royal.suit} for ${damage} damage`);
 

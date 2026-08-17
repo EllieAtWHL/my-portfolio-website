@@ -9,7 +9,7 @@ import { GameOverModal } from './GameOverModal';
 import { StatsIconButton } from './StatsIconButton';
 import { ToastContainer } from './ToastContainer';
 import { useToasts } from '@/hooks/useToasts';
-import { compareHandCards, SUIT_POWER_LABEL, type GameData, type GameMessage } from '@/hooks/useRegicideGame';
+import { calculateAttackDamage, compareHandCards, SUIT_POWER_LABEL, type GameData, type GameMessage } from '@/hooks/useRegicideGame';
 
 interface PlayAreaProps {
   gameData?: GameData;
@@ -77,6 +77,10 @@ export function PlayArea({
   } = gameData;
 
   const activeAreaCards = [...activeDeck, ...chosenCards];
+  // Live preview of what clicking Attack right now would deal - the same
+  // calculateAttackDamage() that attack() itself calls, so this can't drift
+  // from the real damage calc.
+  const currentAttackPower = royalCard ? calculateAttackDamage(chosenCards, royalCard.suit) : 0;
   const handOrder = sortHand
     ? playerHand.map((_, index) => index).sort((a, b) => compareHandCards(playerHand[a], playerHand[b]))
     : playerHand.map((_, index) => index);
@@ -201,7 +205,9 @@ export function PlayArea({
           >
             {phase === 'defend' && !gameOver
               ? `Discard cards worth at least ${defenceRemaining} to defend!`
-              : 'Cards in Play'}
+              : chosenCards.length > 0
+                ? `Cards in Play · Attack Power: ${currentAttackPower}`
+                : 'Cards in Play'}
           </h4>
           {activeAreaCards.length > 0 ? (
             <div className="flex flex-wrap justify-center gap-2">
