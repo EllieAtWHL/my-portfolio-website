@@ -28,13 +28,15 @@ const LATTICE_STYLE: React.CSSProperties = {
 export function Deck({ type, count, className = '' }: DeckProps) {
   return (
     <div className={`relative ${className}`}>
-      {/* Card Stack */}
-      <div className="relative">
+      {/* Card Stack - scaled up slightly (not hover-gated, since decks aren't
+          clickable) so the offset shadow layers behind the main card read
+          clearly as "a stack of many cards" at rest. */}
+      <div className="relative transform scale-105">
         {/* Shadow cards for depth effect */}
-        {[1, 2, 3].map((offset) => (
+        {[1, 2].map((offset) => (
           <div
             key={offset}
-            className="absolute w-28 h-40 rounded-lg shadow-lg border-2 border-[var(--accent-brand)] transform transition-transform duration-200"
+            className="absolute w-28 h-40 rounded-lg border-2 border-[var(--accent-brand)] transform transition-transform duration-200"
             style={{
               ...LATTICE_STYLE,
               top: `${offset * 2}px`,
@@ -48,7 +50,7 @@ export function Deck({ type, count, className = '' }: DeckProps) {
         <div
           role="img"
           aria-label={`${DECK_LABEL[type]}, ${count} cards remaining`}
-          className="relative w-28 h-40 rounded-lg shadow-xl border-2 border-[var(--accent-brand)] flex items-center justify-center transform transition-all duration-200 hover:scale-105 cursor-pointer overflow-hidden"
+          className="relative w-28 h-40 rounded-lg border-2 border-[var(--accent-brand)] flex items-center justify-center cursor-default overflow-hidden"
           style={LATTICE_STYLE}
         >
           {/* Inner frame - the double-border look of a traditional card back */}
@@ -60,9 +62,6 @@ export function Deck({ type, count, className = '' }: DeckProps) {
           </div>
         </div>
       </div>
-
-      {/* Hover effect */}
-      <div className="absolute inset-0 bg-white/10 rounded-lg opacity-0 hover:opacity-100 transition-opacity duration-200 pointer-events-none" />
     </div>
   );
 }

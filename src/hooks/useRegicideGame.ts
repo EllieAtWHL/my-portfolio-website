@@ -70,6 +70,20 @@ export const SUIT_POWER_LABEL: Record<Suit, string> = {
   diamonds: 'Draw cards',
 };
 
+// Display-only ordering for the optional "sort hand" view - matches the
+// original vanilla-JS implementation's Deck.sort() (myPortfolioWebsite/regicide/deck.js),
+// not the SUITS order above (which only affects how the full deck is built,
+// so its order is irrelevant post-shuffle).
+const HAND_SORT_SUIT_ORDER: Record<Suit, number> = { spades: 0, hearts: 1, clubs: 2, diamonds: 3 };
+const HAND_SORT_RANK_ORDER: Record<Rank, number> = Object.fromEntries(RANKS.map((rank, index) => [rank, index])) as Record<Rank, number>;
+
+export function compareHandCards(a: PlayingCard, b: PlayingCard): number {
+  return (
+    HAND_SORT_SUIT_ORDER[a.suit] - HAND_SORT_SUIT_ORDER[b.suit] ||
+    HAND_SORT_RANK_ORDER[a.rank] - HAND_SORT_RANK_ORDER[b.rank]
+  );
+}
+
 const ROYAL_STATS: Record<'J' | 'Q' | 'K', { attack: number; health: number }> = {
   J: { attack: 10, health: 20 },
   Q: { attack: 15, health: 30 },

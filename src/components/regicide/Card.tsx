@@ -136,10 +136,11 @@ export function Card({ suit, rank, onClick, isSelected = false, className = '', 
       onKeyDown={onClick ? handleKeyDown : undefined}
       className={`
         relative w-28 h-40 bg-white rounded-lg shadow-lg border-2 border-gray-300
-        flex flex-col items-center justify-center cursor-pointer
+        flex flex-col items-center justify-center
         transform transition-all duration-200
         card-focusable
-        ${isSelected ? 'border-blue-500 shadow-blue-500/50 scale-105 -translate-y-2' : 'hover:scale-105 hover:-translate-y-1'}
+        ${onClick ? 'cursor-pointer' : 'cursor-default'}
+        ${isSelected ? 'border-emerald-500 ring-2 ring-emerald-500/50' : ''}
         ${className}
       `}
     >
@@ -194,11 +195,6 @@ export function Card({ suit, rank, onClick, isSelected = false, className = '', 
         <div className="absolute top-1.5 right-1.5 bg-gray-100 rounded-full w-7 h-7 flex items-center justify-center">
           <span className="text-sm font-bold text-gray-700">{royalValue}</span>
         </div>
-      )}
-
-      {/* Selected Indicator */}
-      {isSelected && (
-        <div className="absolute -top-2 -right-2 w-5 h-5 bg-blue-500 rounded-full border-2 border-white" />
       )}
     </div>
   );

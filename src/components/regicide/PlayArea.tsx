@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Card as UniversalCard } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { Card as GameCard } from './Card';
@@ -9,7 +9,7 @@ import { GameControls } from './GameControls';
 import { StatsIconButton } from './StatsIconButton';
 import { ToastContainer } from './ToastContainer';
 import { useToasts } from '@/hooks/useToasts';
-import { SUIT_POWER_LABEL, type GameData, type GameMessage } from '@/hooks/useRegicideGame';
+import { compareHandCards, SUIT_POWER_LABEL, type GameData, type GameMessage } from '@/hooks/useRegicideGame';
 
 interface PlayAreaProps {
   gameData?: GameData;
@@ -34,6 +34,12 @@ export function PlayArea({
 }: PlayAreaProps) {
   const { toasts, push, dismiss } = useToasts();
   const lastMessageRef = useRef<GameMessage | null>(null);
+  // Display-only preference: the original vanilla implementation always
+  // auto-sorted the hand, but that hid the order cards were drawn in - this
+  // makes it an opt-in toggle instead. Sorting reorders the rendered cards
+  // only; each still calls selectHandCard with its real position in
+  // gameData.playerHand, so the underlying game state is untouched.
+  const [sortHand, setSortHand] = useState(false);
 
   useEffect(() => {
     const message = gameData?.message;
@@ -71,6 +77,9 @@ export function PlayArea({
   } = gameData;
 
   const activeAreaCards = [...activeDeck, ...chosenCards];
+  const handOrder = sortHand
+    ? playerHand.map((_, index) => index).sort((a, b) => compareHandCards(playerHand[a], playerHand[b]))
+    : playerHand.map((_, index) => index);
 
   return (
     <div className="w-full pt-0 pb-1.5">
@@ -113,15 +122,6 @@ export function PlayArea({
           </UniversalCard>
         )}
 
-        {phase === 'defend' && !gameOver && (
-          <div
-            role="status"
-            className="mb-6 rounded-lg px-4 py-3 text-center font-medium bg-yellow-50 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-l-4 border-yellow-400"
-          >
-            The royal is attacking! Discard cards worth at least {defenceRemaining} to defend.
-          </div>
-        )}
-
         {/* Royals (deck + current royal) | Tavern (draw pile + discard pile) -
             two combined groups, matching the original's single draw-container
             row where the deck sits next to the current royal, and the discard
@@ -130,18 +130,14 @@ export function PlayArea({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Royals: deck pile + current royal */}
             <div className="text-center">
-              <UniversalCard padding="sm" className="dark:!bg-dark-bg-2">
+              <UniversalCard padding="sm" className="h-full dark:!bg-dark-bg-2">
                 <h4 className="text-sm font-semibold mb-1 -mt-3 text-gray-600 dark:text-gray-300">Royals</h4>
                 <p className="text-xs text-gray-600 dark:text-gray-300 mb-1">
                   {royalCard ? `Immune to: ${SUIT_POWER_LABEL[royalCard.suit]}` : ' '}
                 </p>
                 <div className="flex items-start justify-center gap-4">
-                  <div className="flex flex-col items-center gap-1">
-                    <Deck
-                      type="royal"
-                      count={royalDeck.length}
-                      className="transform hover:scale-105 transition-transform duration-200"
-                    />
+                  <div className="flex flex-col items-center gap-3">
+                    <Deck type="royal" count={royalDeck.length} />
                     {royalCard && (
                       <div className="w-28">
                         <div className="flex justify-between text-xs text-gray-600 dark:text-gray-300 mb-0.5">
@@ -161,7 +157,7 @@ export function PlayArea({
                   </div>
 
                   {royalCard ? (
-                    <div className="flex flex-col items-center gap-1">
+                    <div className="flex flex-col items-center gap-3">
                       <GameCard suit={royalCard.suit} rank={royalCard.rank} />
                       <div className="w-28">
                         <div className="flex justify-between text-xs text-gray-600 dark:text-gray-300 mb-0.5">
@@ -189,22 +185,18 @@ export function PlayArea({
 
             {/* Tavern: draw pile + discard pile */}
             <div className="text-center">
-              <UniversalCard padding="sm" className="dark:!bg-dark-bg-2">
+              <UniversalCard padding="sm" className="h-full dark:!bg-dark-bg-2">
                 <h4 className="text-sm font-semibold mb-1 -mt-3 text-gray-600 dark:text-gray-300">Tavern</h4>
                 <p className="text-xs mb-1" aria-hidden="true">
                   {' '}
                 </p>
                 <div className="flex items-start justify-center gap-4">
-                  <div className="flex flex-col items-center gap-1">
-                    <Deck
-                      type="tavern"
-                      count={tavernDeck.length}
-                      className="transform hover:scale-105 transition-transform duration-200"
-                    />
+                  <div className="flex flex-col items-center gap-3">
+                    <Deck type="tavern" count={tavernDeck.length} />
                     <span className="text-xs text-gray-600 dark:text-gray-300">Draw pile</span>
                   </div>
 
-                  <div className="flex flex-col items-center gap-1">
+                  <div className="flex flex-col items-center gap-3">
                     {discardPile[0] ? (
                       <GameCard suit={discardPile[0].suit} rank={discardPile[0].rank} />
                     ) : (
@@ -223,7 +215,18 @@ export function PlayArea({
         {/* Cards played this fight - its own slim row below the royal row,
             not a heavy padded column alongside it. */}
         <div className="mb-3 text-center">
-          <h4 className="text-sm font-semibold mb-1 text-gray-600 dark:text-gray-300">Cards in Play</h4>
+          <h4
+            role={phase === 'defend' && !gameOver ? 'status' : undefined}
+            className={`text-sm font-semibold mb-1 ${
+              phase === 'defend' && !gameOver
+                ? 'text-[var(--warning-text)] dark:text-[var(--warning-dark-text)]'
+                : 'text-gray-600 dark:text-gray-300'
+            }`}
+          >
+            {phase === 'defend' && !gameOver
+              ? `Discard cards worth at least ${defenceRemaining} to defend!`
+              : 'Cards in Play'}
+          </h4>
           {activeAreaCards.length > 0 ? (
             <div className="flex flex-wrap justify-center gap-2">
               {activeAreaCards.map((card, index) => (
@@ -232,6 +235,7 @@ export function PlayArea({
                   suit={card.suit}
                   rank={card.rank}
                   isSelected={index >= activeDeck.length}
+                  className={index < activeDeck.length ? 'opacity-60' : ''}
                 />
               ))}
             </div>
@@ -257,20 +261,43 @@ export function PlayArea({
 
         {/* Player's Hand */}
         <div className="mb-0 mt-3">
-          <h3 className="text-sm font-semibold mb-1 text-center text-gray-600 dark:text-gray-300">Your Hand</h3>
-
-          <div className="flex justify-center gap-2 flex-wrap">
-            {playerHand.map((card, index) => (
-              <GameCard
-                key={`${card.suit}-${card.rank}-${index}`}
-                suit={card.suit}
-                rank={card.rank}
-                showValue
-                onClick={() => selectHandCard(index)}
-                className="transform hover:scale-105 hover:-translate-y-2 transition-all duration-200"
-              />
-            ))}
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <h3 className="text-sm font-semibold text-center text-gray-600 dark:text-gray-300">Your Hand</h3>
+            <button
+              type="button"
+              onClick={() => setSortHand((prev) => !prev)}
+              aria-pressed={sortHand}
+              className={`text-xs leading-none font-semibold px-2.5 py-1 rounded-full border transition-colors cursor-pointer ${
+                sortHand
+                  ? 'bg-[var(--brand-primary-dark)] border-[var(--brand-primary-dark)] text-[var(--bg-light-1)] dark:bg-[var(--dark-accent)] dark:border-[var(--dark-accent)] dark:text-[var(--dark-text-darker)]'
+                  : 'bg-transparent border-[var(--brand-primary-dark)]/40 text-[var(--brand-primary-darker)] dark:border-[var(--dark-accent)]/40 dark:text-[var(--dark-text)] hover:border-[var(--brand-primary-dark)] dark:hover:border-[var(--dark-accent)]'
+              }`}
+            >
+              Sort by suit
+            </button>
           </div>
+
+          {playerHand.length > 0 ? (
+            <div className="flex justify-center gap-2 flex-wrap">
+              {handOrder.map((handIndex) => {
+                const card = playerHand[handIndex];
+                return (
+                  <GameCard
+                    key={`${card.suit}-${card.rank}-${handIndex}`}
+                    suit={card.suit}
+                    rank={card.rank}
+                    showValue
+                    onClick={() => selectHandCard(handIndex)}
+                    className="transform hover:scale-105 hover:-translate-y-2 transition-all duration-200"
+                  />
+                );
+              })}
+            </div>
+          ) : (
+            <div className="w-28 h-40 mx-auto bg-gray-100 dark:bg-dark-bg-1 rounded-xl border-2 border-dashed border-gray-300 dark:border-dark-accent/30 flex items-center justify-center">
+              <span className="text-gray-600 dark:text-gray-300 text-sm text-center">No Cards in Hand</span>
+            </div>
+          )}
         </div>
       </div>
     </div>
