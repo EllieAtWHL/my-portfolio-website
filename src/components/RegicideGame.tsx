@@ -8,7 +8,17 @@ import { useRegicideGame } from '@/hooks/useRegicideGame';
 
 export default function RegicideGame() {
   const [gameState, setGameState] = useState<'start' | 'playing' | 'stats'>('start');
-  const { initializeGame, gameData, isLoading, startGame, playCard, drawCard } = useRegicideGame();
+  const {
+    initializeGame,
+    gameData,
+    isLoading,
+    startGame,
+    selectHandCard,
+    attack,
+    useJester,
+    undo,
+    canUndo,
+  } = useRegicideGame();
 
   useEffect(() => {
     // Initialize game when component mounts
@@ -41,16 +51,20 @@ export default function RegicideGame() {
       {gameState === 'start' && (
         <GameStart onStartGame={handleStartGame} onShowStats={handleShowStats} />
       )}
-      
+
       {gameState === 'playing' && (
-        <PlayArea 
-          gameData={gameData} 
-          onShowStats={handleShowStats} 
-          playCard={gameData?.gameOver ? undefined : playCard}
-          drawCard={gameData?.gameOver ? undefined : drawCard}
+        <PlayArea
+          gameData={gameData}
+          onShowStats={handleShowStats}
+          selectHandCard={selectHandCard}
+          attack={attack}
+          useJester={useJester}
+          undo={undo}
+          canUndo={canUndo}
+          onRestart={handleStartGame}
         />
       )}
-      
+
       {gameState === 'stats' && (
         <StatsScreen onClose={handleCloseStats} />
       )}

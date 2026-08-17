@@ -20,6 +20,7 @@ AI agents working in this codebase.
 | [`COOKIE_CONSENT.md`](./COOKIE_CONSENT.md) | Cookie consent banner - what it gates (FullStory, Vercel Analytics, reCAPTCHA), storage/versioning, per-section theming |
 | [`fullstory/README.md`](./fullstory/README.md) | FullStory analytics integration |
 | [`photo-gallery/README.md`](./photo-gallery/README.md) | GitHub-hosted photo gallery system |
+| [`regicide/README.md`](./regicide/README.md) | Regicide card game: engine, component map, card face/toast systems, known gaps |
 
 ## Spurs Women Section
 

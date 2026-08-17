@@ -1,5 +1,5 @@
 import MainSitePage from '@/components/MainSitePage';
-import { Card } from '@/components/Card';
+import RegicideGame from '@/components/RegicideGame';
 
 export const metadata = {
   title: 'Regicide',
@@ -31,35 +31,8 @@ export default function Regicide() {
     <MainSitePage>
       <div className="content-with-footer">
         <div className="scrollable">
-          {/* Maintenance Notice - Temporarily replacing the game while under maintenance */}
-          <div className="min-h-[60vh] flex items-center justify-center p-8">
-            <Card variant="accent" padding="lg" className="max-w-2xl text-center">
-              <div className="mb-6">
-                <div className="text-6xl mb-4">🃏</div>
-                <h1 className="heading-1">Regicide Game</h1>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="bg-yellow-50 dark:bg-yellow-900/30 border-l-4 border-yellow-400 dark:border-yellow-600 p-4 rounded">
-                  <p className="text-lg font-semibold text-yellow-800 dark:text-yellow-300 mb-2">
-                    ⚠️ Under Maintenance
-                  </p>
-                  <p className="text-gray-700 dark:text-gray-300">
-                    The Regicide game is currently down for maintenance while we work on improvements and bug fixes.
-                  </p>
-                </div>
-                
-                <p className="text-gray-600 dark:text-gray-400">
-                  We hope to get the game back up and running soon! Thank you for your patience and understanding.
-                </p>
-              </div>
-            </Card>
-          </div>
+          <RegicideGame />
         </div>
-        
-        {/* Original game component - commented out during maintenance
-        <RegicideGame />
-        */}
       </div>
     </MainSitePage>
   );

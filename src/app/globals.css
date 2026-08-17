@@ -256,6 +256,16 @@ html {
    all viewport sizes. */
 .content-with-footer .scrollable {
   padding-bottom: 1rem;
+  /* Base .scrollable's min-height assumes 160px of top+bottom chrome, but
+     .content-with-footer alone already reserves 176px (80px header
+     clearance + the 96px footer clearance above) - the 16px mismatch forced
+     every short-content page nested in .content-with-footer to be at least
+     16px taller than the viewport, so it could always be scrolled even when
+     everything was already visible. Correcting the constant here (rather
+     than shrinking the footer clearance itself, which is a deliberate
+     safety margin for tall pages) removes that forced scroll without
+     touching how much clearance content gets above the fixed footer. */
+  min-height: calc(100vh - 176px);
 }
 
 } /* end @layer base */

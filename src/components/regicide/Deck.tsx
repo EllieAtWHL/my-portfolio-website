@@ -6,85 +6,62 @@ interface DeckProps {
   className?: string;
 }
 
+const DECK_LABEL: Record<DeckProps['type'], string> = {
+  royal: 'Royal deck',
+  tavern: 'Tavern draw pile',
+  player: 'Player deck',
+};
+
+// A single traditional diamond-lattice card back, shared by every deck type -
+// Regicide is played with one physical 52-card deck split into royals and
+// tavern, so the backs should look identical rather than colour-coded per
+// pile. Uses the site's own green brand palette rather than a generic
+// red/blue Bicycle-style back.
+const LATTICE_STYLE: React.CSSProperties = {
+  backgroundColor: 'var(--brand-primary-dark)',
+  backgroundImage: `
+    repeating-linear-gradient(45deg, transparent, transparent 7px, rgba(134, 239, 172, 0.35) 7px, rgba(134, 239, 172, 0.35) 8px),
+    repeating-linear-gradient(-45deg, transparent, transparent 7px, rgba(134, 239, 172, 0.35) 7px, rgba(134, 239, 172, 0.35) 8px)
+  `,
+};
+
 export function Deck({ type, count, className = '' }: DeckProps) {
-  const getDeckColor = (type: string) => {
-    switch (type) {
-      case 'royal': return 'from-purple-600 to-purple-800';
-      case 'tavern': return 'from-amber-600 to-amber-800';
-      case 'player': return 'from-blue-600 to-blue-800';
-      default: return 'from-gray-600 to-gray-800';
-    }
-  };
-
-  const getDeckIcon = (type: string) => {
-    switch (type) {
-      case 'royal': return '👑';
-      case 'tavern': return '🍺';
-      case 'player': return '🎴';
-      default: return '📦';
-    }
-  };
-
   return (
     <div className={`relative ${className}`}>
-      {/* Card Stack */}
-      <div className="relative">
+      {/* Card Stack - scaled up slightly (not hover-gated, since decks aren't
+          clickable) so the offset shadow layers behind the main card read
+          clearly as "a stack of many cards" at rest. */}
+      <div className="relative transform scale-105">
         {/* Shadow cards for depth effect */}
-        {[1, 2, 3].map((offset) => (
+        {[1, 2].map((offset) => (
           <div
             key={offset}
-            className={`
-              absolute w-20 h-28 bg-gradient-to-br ${getDeckColor(type)}
-              rounded-lg shadow-lg border border-white/20
-              transform transition-transform duration-200
-            `}
+            className="absolute w-28 h-40 rounded-lg border-2 border-[var(--accent-brand)] transform transition-transform duration-200"
             style={{
-              '--offset-top': `${offset * 2}px`,
-              '--offset-left': `${offset * 2}px`,
-              '--z-index': 3 - offset,
-              top: 'var(--offset-top)',
-              left: 'var(--offset-left)',
-              zIndex: 'var(--z-index)'
-            } as React.CSSProperties}
+              ...LATTICE_STYLE,
+              top: `${offset * 2}px`,
+              left: `${offset * 2}px`,
+              zIndex: -offset,
+            }}
           />
         ))}
-        
+
         {/* Main deck card */}
         <div
-          className={`
-            relative w-20 h-28 bg-gradient-to-br ${getDeckColor(type)}
-            rounded-lg shadow-xl border-2 border-white/30
-            flex flex-col items-center justify-center
-            transform transition-all duration-200 hover:scale-105
-            cursor-pointer
-          `}
+          role="img"
+          aria-label={`${DECK_LABEL[type]}, ${count} cards remaining`}
+          className="relative w-28 h-40 rounded-lg border-2 border-[var(--accent-brand)] flex items-center justify-center cursor-default overflow-hidden"
+          style={LATTICE_STYLE}
         >
-          {/* Deck Pattern */}
-          <div className="absolute inset-0 opacity-20">
-            <div 
-              className="w-full h-full bg-repeat" 
-              style={{
-                '--pattern-image': `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.2'%3E%3Cpath d='M0 0h20v20H0z'/%3E%3C/g%3E%3C/svg%3E")`,
-                backgroundImage: 'var(--pattern-image)',
-                backgroundSize: '20px 20px'
-              } as React.CSSProperties}
-            />
-          </div>
-
-          {/* Deck Icon */}
-          <div className="text-3xl mb-1">
-            {getDeckIcon(type)}
-          </div>
+          {/* Inner frame - the double-border look of a traditional card back */}
+          <div className="absolute inset-1.5 rounded border border-[var(--accent-brand)]/60 pointer-events-none" />
 
           {/* Card Count */}
-          <div className="bg-white/20 backdrop-blur-sm rounded-full px-2 py-1">
-            <span className="text-white text-xs font-bold">{count}</span>
+          <div className="relative bg-[var(--brand-primary-darker)]/80 backdrop-blur-sm rounded-full px-2.5 py-1 border border-[var(--accent-brand)]/40">
+            <span className="text-[var(--accent-brand)] text-sm font-bold">{count}</span>
           </div>
         </div>
       </div>
-
-      {/* Hover effect */}
-      <div className="absolute inset-0 bg-white/10 rounded-lg opacity-0 hover:opacity-100 transition-opacity duration-200 pointer-events-none" />
     </div>
   );
 }

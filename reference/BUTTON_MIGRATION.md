@@ -142,7 +142,7 @@ Your new Button component consolidates all button patterns into a single, reusab
 
 ### ⚠️ Migration Incomplete
 
-Migration is **not** complete. As of the last audit, 10 production files still render raw `<button>` elements instead of the shared `Button` component (in addition to `Button.tsx` itself and `spurs-women/SpursTabButton.tsx` — a shared Spurs Women tab-button component, same exemption as `Button.tsx`: it legitimately renders a native `<button>` internally so its own two consumers don't have to):
+Migration is **not** complete. As of the last audit, 10 production files still render raw `<button>` elements instead of the shared `Button` component (in addition to `Button.tsx` itself, `spurs-women/SpursTabButton.tsx` — a shared Spurs Women tab-button component, same exemption as `Button.tsx`: it legitimately renders a native `<button>` internally so its own two consumers don't have to — and `regicide/StatsIconButton.tsx`, same exemption again: it deliberately does *not* look like a `Button` at all, restoring the original site's low-opacity icon-only stats trigger rather than a filled/labelled button):
 
 - `src/components/admin/TabNav.tsx` (generic tab switcher, used for the admin page's matches/teams/players/stadiums tabs and edit sub-tabs — since the admin page decomposition, `src/app/spurs-women/admin/page.tsx` itself no longer renders any raw `<button>` directly)
 - `src/components/Modal.tsx` (close button)
