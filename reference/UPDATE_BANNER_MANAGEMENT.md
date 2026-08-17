@@ -49,24 +49,26 @@ interface BannerProps {
 ## Updating the Banner Text
 
 ### Method 1: Edit in Layout/Component (Recommended)
-Edit the props directly in the files:
-- **Spurs Women**: `/src/app/spurs-women/layout.tsx`
-- **London 2012**: `/src/components/London2012Sidebar.tsx`
+Edit the props directly in the file:
+- **London 2012**: `/src/components/London2012Sidebar.tsx` (only current usage)
 
 ### Method 2: Create New Banner Instance
 Add a new `<UpdateBanner />` instance in any layout or component with custom props.
 
 ## Removing the Banner (When Sections Are Complete)
 
-### Spurs Women Banner Removal
+### Spurs Women Banner Removal - already done
 
-**Step 1: Remove from Spurs Women Layout**
-File: `/src/app/spurs-women/layout.tsx`
+The Spurs Women warning banner has already been removed from
+`/src/app/spurs-women/layout.tsx`; that layout no longer imports or renders
+`UpdateBanner` at all (see "Current Implementations" above). This section is
+kept only as a record of what the removal looked like, in case a similar
+banner is ever added back to that layout:
+
 ```tsx
-// Remove this line:
+// Previously removed:
 import UpdateBanner from "../../components/UpdateBanner";
 
-// Remove this component:
 <UpdateBanner 
   message="is currently being updated with more data and content. Some information may be incomplete while we work to make it comprehensive."
   highlightedText="Spurs Women section"
@@ -145,8 +147,8 @@ File: `/src/components/UpdateBanner.tsx`
 - **Text**: `text-gray-700 dark:text-gray-200`
 
 ### Positioning
-- **Spurs Women**: `mt-20` (positions below fixed Spurs navbar - 80px)
 - **London 2012**: Top of sidebar component (no additional positioning needed)
+- **Spurs Women**: N/A - no longer rendered there (see "Current Implementations" above); when it was, it used `mt-20` to sit below the fixed Spurs navbar (80px)
 - **Padding**: `py-3` (vertical padding)
 - **Container**: `max-w-7xl mx-auto px-4 sm:px-6 lg:px-8`
 
@@ -167,14 +169,14 @@ File: `/src/components/UpdateBanner.tsx`
 ## Deployment Notes
 
 ### When Going Live
-1. The banner is already integrated and working on Spurs Women pages only
+1. The banner is already integrated and working on the London 2012 sidebar only (see "Current Implementations" above)
 2. No additional configuration needed
-3. Will appear automatically on all Spurs Women subpages
-4. Will NOT appear on other portfolio sections
+3. Will appear automatically on all London 2012 subpages
+4. Will NOT appear on other portfolio sections or on Spurs Women pages
 
 ### When Removing
 1. Test thoroughly after removal
-2. Check that no layout gaps remain in Spurs Women pages
+2. Check that no layout gaps remain in the London 2012 sidebar
 3. Verify responsive behavior still works
 4. Ensure other portfolio sections remain unaffected
 

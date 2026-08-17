@@ -155,7 +155,7 @@ FS.restart();
 | Script not loading | Check `/public/fullstory-init.js` exists; check browser console for errors |
 | No sessions recorded | Verify org ID: `o-1J8NQN-na1`; check network tab for FullStory requests; confirm domain isn't blocked by an ad blocker |
 | TypeScript errors | Ensure the global `Window.FS` declaration above is in scope |
-| Performance concerns | Consider `afterInteractive` or `lazyOnload` strategy instead of `beforeInteractive` |
+| Performance concerns | Already on `afterInteractive`; consider `lazyOnload` for further deferral if needed |
 
 Debug in the browser console:
 
@@ -169,9 +169,11 @@ window.FS?.event('Debug Test', { timestamp: Date.now() });
 
 | Strategy | Use case | Impact |
 |----------|----------|--------|
-| `beforeInteractive` (current) | Critical analytics | Loads before hydration |
-| `afterInteractive` | Non-critical analytics | Loads after page ready |
+| `beforeInteractive` | Critical analytics | Loads before hydration |
+| `afterInteractive` (current) | Non-critical analytics | Loads after page ready |
 | `lazyOnload` | Optional analytics | Loads on user interaction |
+
+`afterInteractive` since WEB-102 (see "Architecture" above) - before that it was an unconditional `beforeInteractive`.
 
 ## Testing
 

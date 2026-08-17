@@ -57,7 +57,7 @@ Key components under `src/components/spurs-women/`:
 - **Layout**: `SpursHeader`, `SpursFooter`
 - **Matches**: `MatchCard`, `MatchStats` (see `match-stats.md`), `MatchFilterControls`, `SeasonStats` (see `SEASON_STATISTICS_CALCULATIONS.md`)
 - **Media**: `NewsCard`, `VideoCard`, `PodcastCard`, `LightboxGallery`, `SeasonReviewCard`, `MediaGallery` (see `reference/photo-gallery/README.md`)
-- **Players**: `PlayerCard`, `TeamLineup`
+- **Players**: `PlayerTable` (with `PlayerRow`), `TeamLineup` (`PlayerCard` also exists under `src/components/spurs-women/` but is currently dead code - unimported anywhere, see `reference/TAILWIND_MIGRATION_PLAN.md`)
 - **Utility**: `TeamPill` (team-colored name pill), `InteractiveMap` (stadium location)
 
 ## Data Layer
