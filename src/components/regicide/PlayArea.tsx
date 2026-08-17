@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Card as UniversalCard } from '@/components/Card';
-import { Button } from '@/components/Button';
 import { Card as GameCard } from './Card';
 import { Deck } from './Deck';
 import { GameControls } from './GameControls';
+import { GameOverModal } from './GameOverModal';
 import { StatsIconButton } from './StatsIconButton';
 import { ToastContainer } from './ToastContainer';
 import { useToasts } from '@/hooks/useToasts';
@@ -96,31 +96,7 @@ export function PlayArea({
       </div>
 
       <div className="max-w-7xl mx-auto">
-        {gameOver && (
-          <UniversalCard variant="accent" className="mb-8 text-center">
-            <h3 className="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
-              {victory ? (
-                <svg className="w-7 h-7 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l4 4 5-8 5 8 4-4-2 11H5L3 8z" />
-                </svg>
-              ) : (
-                <svg className="w-7 h-7 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <circle cx="12" cy="12" r="9" strokeWidth={2} />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 9l-6 6m0-6l6 6" />
-                </svg>
-              )}
-              {victory ? 'You won the game!' : 'Sorry, you lost'}
-            </h3>
-            <div className="flex justify-center gap-4 mt-4">
-              <Button variant="primary" onClick={onRestart}>
-                Play Again
-              </Button>
-              <Button variant="secondary" onClick={onShowStats}>
-                View Stats
-              </Button>
-            </div>
-          </UniversalCard>
-        )}
+        {gameOver && <GameOverModal victory={victory} onRestart={onRestart} onShowStats={onShowStats} />}
 
         {/* Royals (deck + current royal) | Tavern (draw pile + discard pile) -
             two combined groups, matching the original's single draw-container
