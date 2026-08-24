@@ -134,7 +134,9 @@ CDN_BASE_URL=https://cdn.jsdelivr.net        # optional, this is the default (se
 ```
 
 Other CDN providers: `unpkg` (https://unpkg.com), `statically`
-(https://cdn.statically.io).
+(https://cdn.statically.io), or `github` (bypasses the CDN entirely and emits
+raw `raw.githubusercontent.com` URLs - also the fallback for any unrecognized
+`CDN_PROVIDER` value).
 
 ## Pre-Deployment Checklist
 
