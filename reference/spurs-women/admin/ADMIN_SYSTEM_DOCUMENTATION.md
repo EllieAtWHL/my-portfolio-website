@@ -81,7 +81,7 @@ The admin system manages the following entities:
 - **Table**: `matches`
 - **Fields**:
   - `id` (string, UUID)
-  - `season_id` (string, UUID)
+  - `season_id` (number)
   - `competition_id` (string, UUID)
   - `date` (string, date)
   - `kickoff_time` (string, time)
@@ -214,6 +214,8 @@ The admin system manages the following entities:
 
 ## API Routes
 
+The centralized middleware described above protects every `/api/admin/*` route for every method, including `GET` - there are no unauthenticated admin endpoints. (An earlier version of this doc described several `GET` routes, e.g. teams/players/stadiums, as not requiring authentication because they're used to populate dropdowns; that stopped being true once auth was centralized in `updateSession` - it now runs before any route handler, regardless of method.)
+
 All entity routes below also implement `PUT` (update by `id`) and `DELETE` (delete by `id`), both requiring authentication and admin authorization, except Stadium Names (no `PUT`) and Seasons/Competitions (read-only, see bottom).
 
 ### Matches API
@@ -261,7 +263,7 @@ All entity routes below also implement `PUT` (update by `id`) and `DELETE` (dele
 - Returns created team data
 
 **GET** - Fetch all teams
-- No authentication required (used for dropdowns)
+- Requires authentication and admin authorization (used for dropdowns in the admin UI, but still gated like every other `/api/admin/*` route)
 - Returns teams ordered by name
 
 **PUT** / **DELETE** - Update / delete a team by `id`
@@ -277,7 +279,7 @@ All entity routes below also implement `PUT` (update by `id`) and `DELETE` (dele
 - Returns created player data
 
 **GET** - Fetch all players
-- No authentication required (used for dropdowns)
+- Requires authentication and admin authorization (used for dropdowns in the admin UI, but still gated like every other `/api/admin/*` route)
 - Returns players ordered by last name
 
 **PUT** / **DELETE** - Update / delete a player by `id`
@@ -294,7 +296,7 @@ All entity routes below also implement `PUT` (update by `id`) and `DELETE` (dele
 - Returns created/updated stats data
 
 **GET** - Fetch all player stats
-- No authentication required
+- Requires authentication and admin authorization
 - Returns stats ordered by `created_at` (descending)
 
 **PUT** / **DELETE** - Update / delete a player stats record by `id`
@@ -310,7 +312,7 @@ All entity routes below also implement `PUT` (update by `id`) and `DELETE` (dele
 - Returns created history data
 
 **GET** - Fetch all player history
-- No authentication required
+- Requires authentication and admin authorization
 - Returns history ordered by `created_at` (descending)
 
 **PUT** / **DELETE** - Update / delete a player history entry by `id`
@@ -326,7 +328,7 @@ All entity routes below also implement `PUT` (update by `id`) and `DELETE` (dele
 - Returns created stadium data
 
 **GET** - Fetch all stadiums
-- No authentication required (used for dropdowns)
+- Requires authentication and admin authorization (used for dropdowns in the admin UI, but still gated like every other `/api/admin/*` route)
 - Returns stadiums ordered by name
 
 **PUT** / **DELETE** - Update / delete a stadium by `id`
@@ -352,12 +354,14 @@ All entity routes below also implement `PUT` (update by `id`) and `DELETE` (dele
 **Methods**: GET only
 
 **GET** - Fetch all seasons (used for dropdowns)
+- Requires authentication and admin authorization
 
 ### Competitions API
 **Endpoint**: `/api/admin/competitions`
 **Methods**: GET only
 
 **GET** - Fetch all competitions (used for dropdowns)
+- Requires authentication and admin authorization
 
 ## Admin UI Features
 
@@ -465,9 +469,9 @@ Required environment variables:
 
 ## Database Schema Notes
 
-1. **Stadium Table Name**: The stadium table is named `stadia` (plural) in the database, but the code also tries `stadiums` and `stadium` as fallbacks.
+1. **Stadium Table Name**: The stadium table is named `stadia` (plural) in the database. The code queries `stadia` consistently (`src/lib/data/stadiums.ts`, `src/lib/data/query-builders.ts`, `src/app/api/admin/stadia/route.ts`) - there's no fallback to `stadiums`/`stadium` table names.
 
-2. **ID Types**: Most entities use UUID strings for IDs, but teams use integer IDs (players use UUID strings, like most other entities).
+2. **ID Types**: Most entities use UUID strings for IDs, but teams and seasons use integer IDs (players use UUID strings, like most other entities).
 
 3. **Player Stats Upsert**: Player stats use `upsert` with conflict resolution on `player_id, match_id` to allow updating existing stats.
 

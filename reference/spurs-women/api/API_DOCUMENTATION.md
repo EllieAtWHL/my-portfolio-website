@@ -19,7 +19,7 @@ The site also exposes `/api/cache/revalidate` and `/api/cache/revalidate-all`, w
 ### 1. Spurs Women News
 **GET** `/spurs-women-news`
 
-Fetches the latest Tottenham Hotspur Women news by aggregating and filtering multiple RSS feeds live on each request.
+Fetches the latest Tottenham Hotspur Women news by aggregating and filtering multiple RSS feeds. Cached server-side; see Details below.
 
 #### Response
 ```json
@@ -41,7 +41,8 @@ Fetches the latest Tottenham Hotspur Women news by aggregating and filtering mul
 ```
 
 #### Details
-- **Caching**: None — every request fetches all source feeds live
+- **Caching**: 24 hours, server-side, tag-based revalidation (`getSpursWomenNews` in `src/lib/data/news.ts`, tag `news`) — a cache miss fetches and filters all source feeds live
+- **Rate limiting**: 30 requests/minute per IP (`src/lib/rate-limit.ts`); returns `429` with a `Retry-After` header when exceeded
 - **Sources**: Spurs Women Blog, Veinte Futbol, Spurs Across the Pond, BBC Sport, WSL Full-Time, She Kicks, The Guardian, Cartilage Free Captain, Girls on the Ball
 - **Filtering**: Content is filtered to Spurs Women related articles based on source, category, and keyword matching
 - **`categories`**: Only present for feeds that publish RSS categories; otherwise an empty array
@@ -73,7 +74,8 @@ Fetches the latest Tottenham Hotspur Women videos from the official YouTube chan
 ```
 
 #### Details
-- **Caching**: None — fetched live from the channel's RSS feed on each request
+- **Caching**: 1 hour, server-side, tag-based revalidation (`getSpursWomenVideos` in `src/lib/data/news.ts`, tag `videos`) — a cache miss fetches from the channel's RSS feed live
+- **Rate limiting**: 30 requests/minute per IP (`src/lib/rate-limit.ts`); returns `429` with a `Retry-After` header when exceeded
 - **Source**: Official Tottenham Hotspur Women YouTube channel
 - **Limit**: Returns up to 6 most recent videos
 
@@ -102,7 +104,8 @@ Fetches the latest episode from each Spurs Women related podcast.
 ```
 
 #### Details
-- **Caching**: None — fetched live on each request
+- **Caching**: 24 hours, server-side, tag-based revalidation (`getPodcasts` in `src/lib/data/news.ts`, tag `podcasts`) — a cache miss fetches each feed live
+- **Rate limiting**: 30 requests/minute per IP (`src/lib/rate-limit.ts`); returns `429` with a `Retry-After` header when exceeded
 - **Podcasts**: N17 Women, Hometown Glory
 - **Episodes**: Latest episode from each podcast (not a combined, paginated feed)
 - **`episodeNumber`**: Despite the name, this currently just holds the podcast's name (e.g. `"N17 Women"`), the same value as `podcastName` — not a numbered episode identifier
@@ -203,14 +206,14 @@ Fetches all seasons with match counts.
 {
   "seasons": [
     {
-      "id": 12,
-      "name": "2025-26",
-      "match_count": 18
+      "id": 1,
+      "name": "2018-19",
+      "match_count": 20
     },
     {
-      "id": 11,
-      "name": "2024-25",
-      "match_count": 25
+      "id": 2,
+      "name": "2019-20",
+      "match_count": 22
     }
   ],
   "count": 5
@@ -220,7 +223,7 @@ Fetches all seasons with match counts.
 #### Details
 - **Cache**: 24 hours (server-side, tag-based revalidation)
 - **Data**: All seasons with a count of matches recorded for each
-- **Sorting**: Most recent season first
+- **Sorting**: Oldest season first, ascending by `start_date` (`getSeasonsWithMatchCounts` in `src/lib/data/seasons.ts` orders ascending — this is not reversed anywhere before the response is returned)
 - **Note**: There is no "is this the active season" flag in the response — infer the current season by the most recent `id`/start date
 
 ---
@@ -243,17 +246,17 @@ Endpoints that return a collection (`matches`, `seasons`, `videos`) also include
 
 ## Rate Limiting
 
-Currently no rate limiting is implemented. Please use the APIs responsibly.
+The RSS/YouTube/podcast aggregation endpoints (news, videos, podcasts) are rate-limited to 30 requests/minute per IP (`src/lib/rate-limit.ts`, in-memory/best-effort, no Redis/KV infra) — exceeding the limit returns `429` with a `Retry-After` header. The database-backed endpoints (matches, seasons) are not rate-limited.
 
 ## Caching
 
-Only the database-backed endpoints (matches, seasons) are cached server-side. The RSS/YouTube/podcast aggregation endpoints (news, videos, podcasts) are **not cached** and fetch their upstream sources on every request:
+All endpoints are cached server-side, going through the data access layer wrappers in `src/lib/data/` rather than fetching upstream sources directly on every request:
 
 | Endpoint | Cached? | Duration |
 |---|---|---|
-| News | No | — |
-| Videos | No | — |
-| Podcasts | No | — |
+| News | Yes | 24 hours |
+| Videos | Yes | 1 hour |
+| Podcasts | Yes | 24 hours |
 | Upcoming/Previous Matches | Yes | 30 minutes |
 | Seasons | Yes | 24 hours |
 

@@ -60,9 +60,11 @@ Prefer tag-based revalidation (`revalidateTag`) over blanket purges. Use the
 ```typescript
 import { invalidateMatchCache, invalidateNewsCache } from '@/lib/data';
 
-invalidateMatchCache(seasonId, competitionId); // match updated
-invalidateNewsCache();                          // news updated
+invalidateMatchCache(); // match updated - revalidates the MATCHES tag
+invalidateNewsCache();  // news updated - revalidates the NEWS tag
 ```
+
+Both take no arguments - `cache-invalidation.ts` invalidates by fixed tag per entity type (`invalidateMatchCache`, `invalidateSeasonCache`, `invalidateMediaCache`, `invalidateNewsCache`, `invalidateVideoCache`), not by a specific season/competition/entity value.
 
 **Known bug**: `invalidateStadiumCache`/`invalidateAllStadiumCaches`
 (`src/lib/data/stadiums.ts`) build a local `cacheKeys` array but never call
@@ -143,4 +145,12 @@ Not yet implemented (tracked under the Technical Debt & Performance epic in
 Jira): cache hit-rate metrics/monitoring dashboard, consolidated cache
 API-key auth logic (currently duplicated across routes), cache size/memory
 visibility, more granular TTLs than the generic "static content" bucket where
-it would help, automated tests for cache behavior and invalidation.
+it would help.
+
+Automated tests do exist for `cache-utils.ts` and `cache-invalidation.ts`
+(`src/lib/data/__tests__/cache-utils.test.ts`,
+`src/lib/data/__tests__/cache-invalidation.test.ts`) and for the stadium
+functions (`stadiums-import.test.ts`, `stadiums.test.ts`), but the stadium
+tests only assert `invalidateStadiumCache`/`invalidateAllStadiumCaches`
+resolve without throwing - they don't assert that `revalidateTag` was called,
+so they don't catch the no-op bug described above.

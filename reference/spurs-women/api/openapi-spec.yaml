@@ -12,13 +12,16 @@ info:
     The site also exposes `/cache/revalidate` and `/cache/revalidate-all`, which require a Bearer API key and are not part of this public API.
 
     ## Rate Limiting
-    Currently no rate limiting is implemented. Please use the APIs responsibly.
+    The news, videos, and podcasts endpoints are rate-limited to 30 requests/minute per IP
+    (in-memory/best-effort, no Redis/KV infra) - exceeding the limit returns 429 with a
+    Retry-After header. The matches and seasons endpoints are not rate-limited.
 
     ## Caching
-    Only the database-backed endpoints are cached server-side:
-    - News: not cached (fetched live)
-    - Videos: not cached (fetched live)
-    - Podcasts: not cached (fetched live)
+    All endpoints are cached server-side, via the data access layer wrappers in
+    `src/lib/data/` rather than fetching upstream sources directly on every request:
+    - News: 24 hours
+    - Videos: 1 hour
+    - Podcasts: 24 hours
     - Upcoming/Previous Matches: 30 minutes
     - Seasons: 24 hours
   version: 1.0.0
@@ -40,7 +43,7 @@ paths:
         - News
       summary: Get Spurs Women news
       description: |
-        Fetches the latest Tottenham Hotspur Women news by aggregating and filtering multiple RSS sources live on each request.
+        Fetches the latest Tottenham Hotspur Women news by aggregating and filtering multiple RSS sources. Cached server-side for 24 hours (tag-based revalidation); a cache miss fetches and filters all source feeds live. Rate-limited to 30 requests/minute per IP.
 
         Sources include:
         - Spurs Women Blog
@@ -89,7 +92,7 @@ paths:
         - Videos
       summary: Get Spurs Women videos
       description: |
-        Fetches the latest Tottenham Hotspur Women videos from the official YouTube channel, live on each request.
+        Fetches the latest Tottenham Hotspur Women videos from the official YouTube channel. Cached server-side for 1 hour (tag-based revalidation); a cache miss fetches from the channel's RSS feed live. Rate-limited to 30 requests/minute per IP.
 
         Returns up to 6 most recent videos with thumbnails and metadata.
       operationId: getSpursWomenVideos
@@ -126,7 +129,7 @@ paths:
         - Podcasts
       summary: Get Spurs Women podcasts
       description: |
-        Fetches the latest episode from each Spurs Women related podcast, live on each request.
+        Fetches the latest episode from each Spurs Women related podcast. Cached server-side for 24 hours (tag-based revalidation); a cache miss fetches each feed live. Rate-limited to 30 requests/minute per IP.
 
         Currently includes:
         - N17 Women (fan-produced podcast)
@@ -228,7 +231,7 @@ paths:
       description: |
         Fetches all seasons with match counts.
 
-        Returns every season with a count of matches recorded for it, sorted most recent first. There is no "active season" flag in the response.
+        Returns every season with a count of matches recorded for it, sorted oldest first (ascending by start_date). There is no "active season" flag in the response.
       operationId: getSeasons
       responses:
         '200':
@@ -242,12 +245,12 @@ paths:
                   summary: Example seasons response
                   value:
                     seasons:
-                      - id: 12
-                        name: "2025-26"
-                        match_count: 18
-                      - id: 11
-                        name: "2024-25"
-                        match_count: 25
+                      - id: 1
+                        name: "2018-19"
+                        match_count: 20
+                      - id: 2
+                        name: "2019-20"
+                        match_count: 22
                     count: 5
         '500':
           description: Server error
