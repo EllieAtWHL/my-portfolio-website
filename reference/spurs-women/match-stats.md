@@ -157,15 +157,15 @@ secondary_color VARCHAR(50)   -- Tailwind color class (e.g., 'white')
 ### Color Handling
 - Team primary colors used for bar backgrounds
 - Team secondary colors used for pill text
-- Special handling for light colors (white, 50-200 variants) with appropriate text contrast
+- No automatic contrast adjustment based on lightness - the only special case is `getTeamColor('white')`, which is mapped to a light gray (`#f3f4f6`) rather than pure white for visibility against light backgrounds
 
 ## CSS Considerations
 
 ### Text Fill Color Override
-The TeamPill component includes `WebkitTextFillColor` to override CSS issues with `.spurs-text h1` elements that apply `transparent` text fill for gradient effects.
+The TeamPill component includes `WebkitTextFillColor` to override CSS issues with `.spurs-wrapper h1.spurs-text` (in `src/styles/spurs-theme.css`), which applies `-webkit-text-fill-color: transparent` as part of a gradient text-clip effect.
 
 ### Bar Styling
-All bars use rounded-full styling with smooth transitions for hover states.
+All bars use rounded-full styling with `transition-colors` for smooth color transitions (not hover-triggered - the bars have no `:hover` styling of their own).
 
 ## Integration Points
 
@@ -185,7 +185,7 @@ The TeamPill component is used in:
 ### Common Issues
 
 #### Text Not Visible in Pills
-**Cause:** CSS `.spurs-text h1` applies `WebkitTextFillColor: transparent`
+**Cause:** CSS `.spurs-wrapper h1.spurs-text` applies `-webkit-text-fill-color: transparent`
 **Solution:** TeamPill component includes explicit `WebkitTextFillColor` override
 
 #### Wrong Colors Displayed

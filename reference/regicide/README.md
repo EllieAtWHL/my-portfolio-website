@@ -38,6 +38,7 @@ tracks adding one.
 | `regicide/Card.tsx` | A single playing card face - traditional pip layout for 2-10, dedicated face art for J/Q/K, big suit icon for A (see "Card faces" below) |
 | `regicide/Deck.tsx` | A card-back pile (royal deck / tavern draw pile), shows a count badge |
 | `regicide/GameControls.tsx` | Attack / Use Jester / Undo buttons |
+| `regicide/GameOverModal.tsx` | The win/lose overlay shown when `gameData.gameOver` is true - a portal-rendered dialog (not a card in the page flow, to avoid reintroducing forced scroll) offering Play Again / View Stats, dismissible via its close button, backdrop click, or Escape |
 | `regicide/StatsIconButton.tsx` | The small stats-icon trigger (deliberately not the shared `Button` component - restores the original site's low-opacity icon-only look) |
 | `regicide/StatsScreen.tsx` | Modal showing games started/won/lost, win rate, last played |
 | `regicide/Toast.tsx` / `regicide/ToastContainer.tsx` | The stacking, auto-dismissing notification system (see "Toasts" below) |

@@ -155,7 +155,7 @@ design, so applying the same rule to them would be a false positive.
 - **Contains:**
   - Tailwind imports
   - The `@theme` block: CSS custom properties exposed to Tailwind as utility tokens (`--color-brand-dark`, `--spacing-footer-clearance`, etc.), sourced from `variables.css` so there's one place each value is actually defined
-  - CSS file imports (variables, main-theme, page-specific files), each wrapped `layer(base)` - see "Cascade Layers" below
+  - CSS file imports: `variables.css` is imported plain (no `layer()`) since it only declares `:root` custom properties, not style rules that could lose a cascade fight; `main-theme.css` and the page-specific files are each imported wrapped `layer(base)` - see "Cascade Layers" below
   - The shared `.heading-1`–`.heading-4` classes (replacing bare `h1`–`h4` element selectors)
   - Theme loading prevention styles
   - Global dark mode overrides (`.dark body`, `.dark a`)
