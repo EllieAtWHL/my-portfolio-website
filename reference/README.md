@@ -32,6 +32,7 @@ AI agents working in this codebase.
 | [`spurs-women/match-stats.md`](./spurs-women/match-stats.md) | `MatchStats`/`TeamPill` components and team-color utility |
 | [`spurs-women/SEASON_STATISTICS_CALCULATIONS.md`](./spurs-women/SEASON_STATISTICS_CALCULATIONS.md) | How `SeasonStats` figures are calculated |
 | [`spurs-women/api/API_DOCUMENTATION.md`](./spurs-women/api/API_DOCUMENTATION.md) | Public API endpoints (see also `openapi-spec.yaml` in the same folder; both mirrored to Confluence) |
+| [`spurs-women/player-stats-research-job.md`](./spurs-women/player-stats-research-job.md) | Weekly scheduled routine that surveys and researches missing `player_stats` coverage (WEB-114) |
 
 ## Conventions
 
