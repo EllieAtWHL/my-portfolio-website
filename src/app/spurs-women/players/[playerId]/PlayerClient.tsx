@@ -67,10 +67,16 @@ export default function PlayerClient({ player }: PlayerClientProps) {
               />
             ) : (
               <div
-                className="w-56 h-56 mx-auto rounded-full flex items-center justify-center font-bold text-6xl"
+                className="w-56 h-56 mx-auto rounded-full flex flex-col items-center justify-center font-bold"
                 style={{ backgroundColor: 'var(--spurs-dark-accent)', color: 'var(--spurs-dark-bg-1)' }}
               >
-                {player.last_name.charAt(0).toUpperCase()}
+                <span className="text-5xl leading-none">
+                  {player.first_name && player.first_name.charAt(0).toUpperCase()}
+                  {player.last_name.charAt(0).toUpperCase()}
+                </span>
+                {player.squad_number && (
+                  <span className="text-xl mt-2">#{player.squad_number}</span>
+                )}
               </div>
             )}
           </Card>

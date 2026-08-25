@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import PlayerClient from '../PlayerClient';
 import type { Player } from '@/lib/data/players';
 
@@ -26,11 +26,26 @@ describe('PlayerClient', () => {
     expect(image).toHaveAttribute('src', 'https://cdn.example.com/photo.webp');
   });
 
-  it('shows an initials-avatar placeholder instead of hiding the card when there is no photo', () => {
+  it('shows a two-line initials placeholder with squad number instead of hiding the card when there is no photo', () => {
     render(<PlayerClient player={{ ...basePlayer, profile_image_url: null }} />);
 
-    expect(screen.getByText('Profile Image')).toBeInTheDocument();
-    expect(screen.queryByRole('img')).not.toBeInTheDocument();
-    expect(screen.getByText('E')).toBeInTheDocument();
+    const profileCard = within(screen.getByText('Profile Image').parentElement!);
+    expect(profileCard.queryByRole('img')).not.toBeInTheDocument();
+    expect(profileCard.getByText('BE')).toBeInTheDocument();
+    expect(profileCard.getByText('#9')).toBeInTheDocument();
+  });
+
+  it('falls back to a last-name-only initial when first_name is missing', () => {
+    render(<PlayerClient player={{ ...basePlayer, profile_image_url: null, first_name: null }} />);
+
+    const profileCard = within(screen.getByText('Profile Image').parentElement!);
+    expect(profileCard.getByText('E')).toBeInTheDocument();
+  });
+
+  it('omits the squad number line when the player has none', () => {
+    render(<PlayerClient player={{ ...basePlayer, profile_image_url: null, squad_number: null }} />);
+
+    const profileCard = within(screen.getByText('Profile Image').parentElement!);
+    expect(profileCard.queryByText(/^#/)).not.toBeInTheDocument();
   });
 });
