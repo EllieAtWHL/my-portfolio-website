@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { Card } from '@/components/Card';
 import { ErrorState } from '@/components/ErrorState';
 import MatchCard from '@/components/spurs-women/MatchCard';
@@ -83,7 +84,10 @@ export default function StadiumClient({ stadium, stadiumSlug }: StadiumClientPro
                 
                 {stadium.home_team && (
                   <div>
-                    <strong>Home club:</strong> {stadium.home_team.name}
+                    <strong>Home club:</strong>{' '}
+                    <Link href={`/spurs-women/teams/${stadium.home_team.id}`} className="spurs-text hover:underline">
+                      {stadium.home_team.name}
+                    </Link>
                   </div>
                 )}
                 

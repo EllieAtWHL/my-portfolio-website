@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { Card } from '@/components/Card';
 import { ErrorState } from '@/components/ErrorState';
 import MatchCard from '@/components/spurs-women/MatchCard';
@@ -10,14 +11,39 @@ import SpursTabButton from '@/components/spurs-women/SpursTabButton';
 import { getMatchesForTeam, getPlayersForTeam, TeamPlayers } from '@/lib/data/teams';
 import { Match } from '@/lib/data/matches';
 import TeamPill from '@/components/spurs-women/TeamPill';
-import { Team } from '@/lib/data/stadiums';
+import { Team, Stadium } from '@/lib/data/stadiums';
 
 interface TeamClientProps {
   team: Team;
   teamId: string;
+  stadiums?: Stadium[];
 }
 
-export default function TeamClient({ team, teamId }: TeamClientProps) {
+// Ranks a team's home stadiums by how many of the team's matches were played there
+// (rather than the stadium's all-time match count, which would include other teams' visits).
+function sortStadiumsByMatchCount(stadiums: Stadium[], matches: Match[]) {
+  const matchCountByStadiumId = new Map<string, number>();
+  matches.forEach((match) => {
+    matchCountByStadiumId.set(match.stadium_id, (matchCountByStadiumId.get(match.stadium_id) ?? 0) + 1);
+  });
+
+  return stadiums
+    .map((stadium) => ({ stadium, matchCount: matchCountByStadiumId.get(stadium.id) ?? 0 }))
+    .sort((a, b) => b.matchCount - a.matchCount);
+}
+
+function computeMatchRecord(matches: Match[]) {
+  const scored = matches.filter(
+    (match) => match.spurs_score != null && match.opponent_score != null
+  );
+  const wins = scored.filter((match) => match.spurs_score! > match.opponent_score!).length;
+  const draws = scored.filter((match) => match.spurs_score! === match.opponent_score!).length;
+  const losses = scored.filter((match) => match.spurs_score! < match.opponent_score!).length;
+
+  return { played: scored.length, wins, draws, losses };
+}
+
+export default function TeamClient({ team, teamId, stadiums = [] }: TeamClientProps) {
   const [matches, setMatches] = useState<Match[]>([]);
   const [filteredMatches, setFilteredMatches] = useState<Match[]>([]);
   const [players, setPlayers] = useState<TeamPlayers>({ current: [], former: [] });
@@ -62,6 +88,9 @@ export default function TeamClient({ team, teamId }: TeamClientProps) {
 
   const retryFetchData = () => setRetryCount((count) => count + 1);
 
+  const record = computeMatchRecord(matches);
+  const rankedStadiums = sortStadiumsByMatchCount(stadiums, matches);
+
   return (
     <main id="main-content" className="p-4 pb-footer-clearance">
       <div className="max-w-6xl mx-auto">
@@ -73,6 +102,36 @@ export default function TeamClient({ team, teamId }: TeamClientProps) {
             className="inline-flex items-center justify-center px-4 py-2 rounded-full text-lg font-medium transition-colors"
           />
         </div>
+
+        {/* Home Stadium(s) */}
+        {stadiums.length > 0 && (
+          <div className="mb-8">
+            <h2 className="spurs-text font-bold mb-4">{stadiums.length > 1 ? 'Home Stadiums' : 'Home Stadium'}</h2>
+            <Card variant="spursAccent" padding="md" hover={false}>
+              <ul className="space-y-3">
+                {rankedStadiums.map(({ stadium, matchCount }) => (
+                  <li key={stadium.id}>
+                    <Link href={`/spurs-women/stadiums/${stadium.slug}`} className="spurs-text font-medium hover:underline">
+                      {stadium.name}
+                    </Link>
+                    <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-x-3 mt-1">
+                      {stadium.city && stadium.country && (
+                        <span className="spurs-text text-sm opacity-75">
+                          {stadium.city}, {stadium.country}
+                        </span>
+                      )}
+                      {!isLoading && (
+                        <span className="spurs-text text-sm opacity-75 whitespace-nowrap">
+                          {matchCount} match{matchCount === 1 ? '' : 'es'} involving {team.name}
+                        </span>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          </div>
+        )}
 
         {/* Players Section */}
         {isLoading ? (
@@ -139,6 +198,15 @@ export default function TeamClient({ team, teamId }: TeamClientProps) {
               </div>
             ) : (
               <>
+                {record.played > 0 && (
+                  <Card variant="spursAccent" padding="md" hover={false} className="mb-4">
+                    <p className="spurs-text">
+                      <strong>{team.is_tottenham ? 'Overall record:' : 'Head-to-head vs Tottenham:'}</strong>{' '}
+                      <span>{record.wins}W {record.draws}D {record.losses}L</span>
+                    </p>
+                  </Card>
+                )}
+
                 <MatchFilterControls
                   matches={matches}
                   onFilteredMatchesChange={handleFilteredMatchesChange}

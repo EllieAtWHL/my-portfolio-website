@@ -85,4 +85,17 @@ describe('StadiumClient', () => {
     });
     expect(mockGetMatchesAtStadium).toHaveBeenCalledTimes(2);
   });
+
+  it('links the home club to its team page', () => {
+    const stadiumWithHomeTeam: Stadium = {
+      ...stadium,
+      home_team_id: 2,
+      home_team: { id: 2, name: 'Leyton Orient', short_name: 'Orient', primary_color: null, secondary_color: null, is_tottenham: false },
+    };
+
+    render(<StadiumClient stadium={stadiumWithHomeTeam} stadiumSlug="brisbane-road" />);
+
+    const link = screen.getByRole('link', { name: 'Leyton Orient' });
+    expect(link).toHaveAttribute('href', '/spurs-women/teams/2');
+  });
 });

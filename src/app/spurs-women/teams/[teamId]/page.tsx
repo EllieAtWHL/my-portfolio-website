@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTeamById } from '@/lib/data/teams';
+import { getStadiumsForTeam } from '@/lib/data/stadiums';
 import TeamClient from './TeamClient';
 import { generatePageMetadata } from '@/lib/metadata';
 
@@ -29,11 +30,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function TeamPage({ params }: PageProps) {
   const { teamId } = await params;
-  const team = await getTeamById(teamId);
+  const [team, stadiums] = await Promise.all([
+    getTeamById(teamId),
+    getStadiumsForTeam(teamId),
+  ]);
 
   if (!team) {
     notFound();
   }
 
-  return <TeamClient team={team} teamId={teamId} />;
+  return <TeamClient team={team} teamId={teamId} stadiums={stadiums} />;
 }
