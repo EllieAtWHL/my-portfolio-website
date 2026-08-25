@@ -126,13 +126,24 @@ commits to a throwaway `auto/update-manifest-<sha>` branch, opens a PR via
 `gh pr create`, and enables auto-merge (`gh pr merge --auto --merge
 --delete-branch`, a regular merge commit matching this repo's convention) -
 the PR merges itself once all 7 required checks pass, no manual step needed.
-The trigger's `paths:` filter excludes `player-photos/**` (WEB-29): those
-images are referenced via a direct CDN URL pasted into a player's
-`profile_image_url`, not the manifest, so there's nothing for this Action to
-regenerate, and `generate-external-manifest.js` treats every top-level folder
-as its own gallery, so including that folder would add a bogus
-`"player-photos"` entry to the manifest. Manual regeneration (steps 1-4
-above) is still the right approach for local development/testing.
+`player-photos/` (WEB-29) is excluded from this pipeline at two independent
+layers, since those photos are referenced via a direct CDN URL pasted into a
+player's `profile_image_url`, not the manifest:
+
+- The trigger's `paths:` filter excludes `player-photos/**`, so a push that
+  *only* touches that folder never starts the Action at all.
+- `generate-external-manifest.js` skips `player-photos` explicitly (see
+  `NON_GALLERY_FOLDERS`) when it walks the repo's top-level folders. This
+  matters independently of the trigger filter above: `generate-external-manifest`
+  regenerates the *entire* manifest from the repo's current state on every
+  run, so a run triggered by an unrelated match-photo push (or a manual
+  `workflow_dispatch`) would otherwise still walk `player-photos/` and add it
+  as a bogus gallery entry - the script treats every top-level folder with
+  images directly inside it as its own gallery, with no knowledge of what
+  triggered the run.
+
+Manual regeneration (steps 1-4 above) is still the right approach for local
+development/testing.
 
 ### 5. Test locally, then deploy
 
