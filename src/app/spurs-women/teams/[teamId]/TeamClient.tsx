@@ -110,22 +110,22 @@ export default function TeamClient({ team, teamId, stadiums = [] }: TeamClientPr
             <Card variant="spursAccent" padding="md" hover={false}>
               <ul className="space-y-3">
                 {rankedStadiums.map(({ stadium, matchCount }) => (
-                  <li key={stadium.id}>
-                    <Link href={`/spurs-women/stadiums/${stadium.slug}`} className="spurs-text font-medium hover:underline">
-                      {stadium.name}
-                    </Link>
-                    <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-x-3 mt-1">
+                  <li key={stadium.id} className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-x-3 gap-y-1">
+                    <span className="flex flex-wrap items-baseline gap-x-2">
+                      <Link href={`/spurs-women/stadiums/${stadium.slug}`} className="spurs-text font-medium hover:underline">
+                        {stadium.name}
+                      </Link>
                       {stadium.city && stadium.country && (
                         <span className="spurs-text text-sm opacity-75">
-                          {stadium.city}, {stadium.country}
+                          &middot; {stadium.city}, {stadium.country}
                         </span>
                       )}
-                      {!isLoading && (
-                        <span className="spurs-text text-sm opacity-75 whitespace-nowrap">
-                          {matchCount} match{matchCount === 1 ? '' : 'es'} involving {team.name}
-                        </span>
-                      )}
-                    </div>
+                    </span>
+                    {!isLoading && (
+                      <span className="spurs-text text-sm opacity-75 whitespace-nowrap">
+                        {matchCount} match{matchCount === 1 ? '' : 'es'} involving {team.name}
+                      </span>
+                    )}
                   </li>
                 ))}
               </ul>

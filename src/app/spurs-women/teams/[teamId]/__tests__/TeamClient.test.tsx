@@ -235,7 +235,7 @@ describe('TeamClient', () => {
     expect(screen.getByText('Home Stadium')).toBeInTheDocument()
     const link = screen.getByRole('link', { name: 'Brisbane Road' })
     expect(link).toHaveAttribute('href', '/spurs-women/stadiums/brisbane-road')
-    expect(screen.getByText('London, England')).toBeInTheDocument()
+    expect(screen.getByText('· London, England')).toBeInTheDocument()
 
     await waitFor(() => {
       expect(screen.getByText('2 matches involving Tottenham Hotspur')).toBeInTheDocument()
