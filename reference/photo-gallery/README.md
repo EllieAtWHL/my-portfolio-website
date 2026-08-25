@@ -114,6 +114,26 @@ a separate job in `.github/workflows/ci.yml`). It triggers on push to
 main/develop and PRs to main, but only when the change touches the manifest
 script, validator, or manifest file itself (path-filtered, not every push/PR).
 
+**In practice this step happens automatically** for match photos: pushing
+image files to `spurs-women-photo-gallery`'s `main` branch triggers that
+repo's own `.github/workflows/update-manifest.yml`, which checks out this
+repo, runs `generate-external-manifest` + `validate-manifest`, and lands the
+regenerated manifest here. Because this repo's `main` is protected with
+required status checks (and `enforce_admins`), the Action can't push directly
+to `main` - a commit that doesn't exist on the remote yet can never have
+already-passed checks, so a plain `git push` is rejected outright. Instead it
+commits to a throwaway `auto/update-manifest-<sha>` branch, opens a PR via
+`gh pr create`, and enables auto-merge (`gh pr merge --auto --merge
+--delete-branch`, a regular merge commit matching this repo's convention) -
+the PR merges itself once all 7 required checks pass, no manual step needed.
+The trigger's `paths:` filter excludes `player-photos/**` (WEB-29): those
+images are referenced via a direct CDN URL pasted into a player's
+`profile_image_url`, not the manifest, so there's nothing for this Action to
+regenerate, and `generate-external-manifest.js` treats every top-level folder
+as its own gallery, so including that folder would add a bogus
+`"player-photos"` entry to the manifest. Manual regeneration (steps 1-4
+above) is still the right approach for local development/testing.
+
 ### 5. Test locally, then deploy
 
 ```bash
