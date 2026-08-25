@@ -22,11 +22,33 @@ export default function PlayerClient({ player }: PlayerClientProps) {
           )}
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Player Details */}
-          <Card variant="spursAccent" padding="md" hover={false}>
-            <h2 className="spurs-text font-bold mb-4">Player Details</h2>
-            <div className="space-y-3 spurs-text">
+        <Card variant="spursAccent" padding="md" hover={false}>
+          <h2 className="spurs-text font-bold mb-4">Player Details</h2>
+          <div className="flex flex-col sm:flex-row gap-6">
+            <div className="flex-shrink-0 mx-auto sm:mx-0" data-testid="player-photo">
+              {player.profile_image_url ? (
+                <img
+                  src={player.profile_image_url}
+                  alt={`${player.first_name} ${player.last_name}`}
+                  className="w-56 h-56 object-cover rounded-full"
+                />
+              ) : (
+                <div
+                  className="w-56 h-56 rounded-full flex flex-col items-center justify-center font-bold"
+                  style={{ backgroundColor: 'var(--spurs-dark-accent)', color: 'var(--spurs-dark-bg-1)' }}
+                >
+                  <span className="text-5xl leading-none">
+                    {player.first_name && player.first_name.charAt(0).toUpperCase()}
+                    {player.last_name.charAt(0).toUpperCase()}
+                  </span>
+                  {player.squad_number && (
+                    <span className="text-xl mt-2">#{player.squad_number}</span>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="flex-1 space-y-3 spurs-text">
               {player.nationality && (
                 <div>
                   <span className="font-semibold">Nationality:</span> {player.nationality}
@@ -63,33 +85,8 @@ export default function PlayerClient({ player }: PlayerClientProps) {
                 )}
               </div>
             </div>
-          </Card>
-
-          {/* Profile Image */}
-          <Card variant="spursAccent" padding="md" hover={false}>
-            <h2 className="spurs-text font-bold mb-4">Profile Image</h2>
-            {player.profile_image_url ? (
-              <img
-                src={player.profile_image_url}
-                alt={`${player.first_name} ${player.last_name}`}
-                className="w-56 h-56 object-cover mx-auto rounded-full"
-              />
-            ) : (
-              <div
-                className="w-56 h-56 mx-auto rounded-full flex flex-col items-center justify-center font-bold"
-                style={{ backgroundColor: 'var(--spurs-dark-accent)', color: 'var(--spurs-dark-bg-1)' }}
-              >
-                <span className="text-5xl leading-none">
-                  {player.first_name && player.first_name.charAt(0).toUpperCase()}
-                  {player.last_name.charAt(0).toUpperCase()}
-                </span>
-                {player.squad_number && (
-                  <span className="text-xl mt-2">#{player.squad_number}</span>
-                )}
-              </div>
-            )}
-          </Card>
-        </div>
+          </div>
+        </Card>
 
         {player.history && player.history.length > 0 && (
           <Card variant="spursAccent" padding="md" hover={false} className="mt-6">
