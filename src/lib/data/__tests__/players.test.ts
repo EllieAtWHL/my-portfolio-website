@@ -237,7 +237,110 @@ describe('players data layer', () => {
       const { getPlayerById } = await import('@/lib/data/players');
       const result = await getPlayerById('player-42');
 
-      expect(result).toEqual(player);
+      expect(result).toEqual({ ...player, current_club: null, history: [] });
+    });
+
+    it('resolves squad_number from active Tottenham history rather than the players table', async () => {
+      // squad_number doesn't live on the players table - it's per team_id stint
+      // in player_history, since it can change (e.g. a renumbering).
+      jest.resetModules();
+      const player = makePlayer({
+        id: 'player-42',
+        player_history: [
+          { team_id: 5, squad_number: 99, left_on: null }, // different team, ignored
+          { team_id: 1, squad_number: 32, left_on: '2020-01-01' }, // past Tottenham stint, ignored
+          { team_id: 1, squad_number: 7, left_on: null }, // current Tottenham stint
+        ],
+      });
+      const mockFrom = mockSupabaseFrom({
+        players: { data: player, error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayerById } = await import('@/lib/data/players');
+      const result = await getPlayerById('player-42');
+
+      expect(result?.squad_number).toBe(7);
+    });
+
+    it('resolves current_club from whichever history entry is current, regardless of team', async () => {
+      // Unlike squad_number, current club isn't limited to Tottenham - a player's
+      // current_club should reflect whichever team they have an ongoing stint with.
+      jest.resetModules();
+      const player = makePlayer({
+        id: 'player-42',
+        player_history: [
+          { team_id: 1, left_on: '2023-01-04', team: { id: 1, name: 'Tottenham Hotspur' } }, // past stint, ignored
+          { team_id: 5, left_on: null, team: { id: 5, name: 'Chelsea' } }, // current stint, different club
+        ],
+      });
+      const mockFrom = mockSupabaseFrom({
+        players: { data: player, error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayerById } = await import('@/lib/data/players');
+      const result = await getPlayerById('player-42');
+
+      expect(result?.current_club).toEqual({ id: 5, name: 'Chelsea' });
+    });
+
+    it('returns current_club null when the player has no ongoing history entry', async () => {
+      jest.resetModules();
+      const player = makePlayer({
+        id: 'player-42',
+        player_history: [
+          { team_id: 1, left_on: '2023-01-04', team: { id: 1, name: 'Tottenham Hotspur' } },
+        ],
+      });
+      const mockFrom = mockSupabaseFrom({
+        players: { data: player, error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayerById } = await import('@/lib/data/players');
+      const result = await getPlayerById('player-42');
+
+      expect(result?.current_club).toBeNull();
+    });
+
+    it('builds full club history sorted with the ongoing stint first, then most recently joined', async () => {
+      jest.resetModules();
+      const player = makePlayer({
+        id: 'player-42',
+        player_history: [
+          { team_id: 1, joined_on: '2018-08-01', left_on: '2020-06-30', squad_number: 22, is_loan: false, team: { id: 1, name: 'Tottenham Hotspur' } },
+          { team_id: 5, joined_on: '2020-07-01', left_on: '2023-01-04', squad_number: 10, is_loan: true, team: { id: 5, name: 'Chelsea' } },
+          { team_id: 1, joined_on: '2023-01-05', left_on: null, squad_number: 7, is_loan: false, team: { id: 1, name: 'Tottenham Hotspur' } },
+        ],
+      });
+      const mockFrom = mockSupabaseFrom({
+        players: { data: player, error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayerById } = await import('@/lib/data/players');
+      const result = await getPlayerById('player-42');
+
+      expect(result?.history).toEqual([
+        { team: { id: 1, name: 'Tottenham Hotspur' }, joined_on: '2023-01-05', left_on: null, squad_number: 7, is_loan: false },
+        { team: { id: 5, name: 'Chelsea' }, joined_on: '2020-07-01', left_on: '2023-01-04', squad_number: 10, is_loan: true },
+        { team: { id: 1, name: 'Tottenham Hotspur' }, joined_on: '2018-08-01', left_on: '2020-06-30', squad_number: 22, is_loan: false },
+      ]);
+    });
+
+    it('returns an empty history array when the player has no player_history rows', async () => {
+      jest.resetModules();
+      const player = makePlayer({ id: 'player-42', player_history: [] });
+      const mockFrom = mockSupabaseFrom({
+        players: { data: player, error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayerById } = await import('@/lib/data/players');
+      const result = await getPlayerById('player-42');
+
+      expect(result?.history).toEqual([]);
     });
 
     it('returns null (not throw) when the query errors', async () => {
@@ -251,6 +354,75 @@ describe('players data layer', () => {
       const result = await getPlayerById('missing');
 
       expect(result).toBeNull();
+    });
+  });
+
+  describe('getPlayerMatchHistory', () => {
+    it('maps player_stats rows to appearances, sorted most recent match first', async () => {
+      jest.resetModules();
+      const rows = [
+        {
+          started: true, minutes_played: 90, goals: 1, assists: 0, yellow_cards: 0, red_cards: 0,
+          player_rating: 7.5, player_of_the_match: false,
+          match: { id: 'm1', date: '2026-01-01' },
+        },
+        {
+          started: true, minutes_played: 90, goals: 2, assists: 1, yellow_cards: 1, red_cards: 0,
+          player_rating: 8.2, player_of_the_match: true,
+          match: { id: 'm2', date: '2026-03-01' },
+        },
+      ];
+      const mockFrom = mockSupabaseFrom({
+        player_stats: { data: rows, error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayerMatchHistory } = await import('@/lib/data/players');
+      const result = await getPlayerMatchHistory('player-1');
+
+      expect(result.map((a) => a.match.id)).toEqual(['m2', 'm1']);
+      expect(result[0]).toEqual({
+        match: { id: 'm2', date: '2026-03-01' },
+        started: true,
+        minutes_played: 90,
+        goals: 2,
+        assists: 1,
+        yellow_cards: 1,
+        red_cards: 0,
+        player_rating: 8.2,
+        player_of_the_match: true,
+      });
+    });
+
+    it('drops rows with no matching match record', async () => {
+      jest.resetModules();
+      const rows = [
+        { started: true, minutes_played: 90, goals: 0, assists: 0, yellow_cards: 0, red_cards: 0, player_rating: null, player_of_the_match: false, match: null },
+        { started: true, minutes_played: 90, goals: 1, assists: 0, yellow_cards: 0, red_cards: 0, player_rating: null, player_of_the_match: false, match: { id: 'm1', date: '2026-01-01' } },
+      ];
+      const mockFrom = mockSupabaseFrom({
+        player_stats: { data: rows, error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayerMatchHistory } = await import('@/lib/data/players');
+      const result = await getPlayerMatchHistory('player-1');
+
+      expect(result).toHaveLength(1);
+      expect(result[0].match.id).toBe('m1');
+    });
+
+    it('returns [] (not throw) when the query errors', async () => {
+      jest.resetModules();
+      const mockFrom = mockSupabaseFrom({
+        player_stats: { data: null, error: { message: 'db down' } },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayerMatchHistory } = await import('@/lib/data/players');
+      const result = await getPlayerMatchHistory('player-1');
+
+      expect(result).toEqual([]);
     });
   });
 });

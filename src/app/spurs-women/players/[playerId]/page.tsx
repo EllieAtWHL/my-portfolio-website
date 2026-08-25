@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getPlayerById } from '@/lib/data/players';
+import { getPlayerById, getPlayerMatchHistory } from '@/lib/data/players';
 import PlayerClient from './PlayerClient';
 import { generatePageMetadata } from '@/lib/metadata';
 
@@ -39,5 +39,7 @@ export default async function PlayerPage({ params }: PageProps) {
     notFound();
   }
 
-  return <PlayerClient player={player} />;
+  const matchHistory = await getPlayerMatchHistory(playerId);
+
+  return <PlayerClient player={player} matchHistory={matchHistory} />;
 }

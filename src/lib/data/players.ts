@@ -1,5 +1,14 @@
 import { supabase } from '@/utils/supabase';
 import { createCachedFunction, CACHE_TAGS } from './cache-utils';
+import { Match } from './matches';
+
+export interface PlayerHistoryEntry {
+  team: { id: number; name: string } | null;
+  joined_on: string | null;
+  left_on: string | null;
+  squad_number: number | null;
+  is_loan: boolean;
+}
 
 export interface Player {
   id: string;
@@ -12,6 +21,8 @@ export interface Player {
   weight_kg: number | null;
   profile_image_url: string | null;
   squad_number: number | null;
+  current_club?: { id: number; name: string } | null;
+  history?: PlayerHistoryEntry[];
   created_at: string;
   updated_at: string;
 }
@@ -69,6 +80,40 @@ function getSquadNumberFromHistory(player: any): number | null {
   );
 
   return relevantHistory?.squad_number || null;
+}
+
+// Helper function to find a player's current club (any team, not just Tottenham) from player_history
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getCurrentClubFromHistory(player: any): { id: number; name: string } | null {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const currentHistory = player?.player_history?.find((history: any) =>
+    !history.left_on || new Date(history.left_on) > new Date()
+  );
+
+  return currentHistory?.team ? { id: currentHistory.team.id, name: currentHistory.team.name } : null;
+}
+
+// Helper function to build a player's full club history (all teams, ongoing stint first,
+// then most recently joined first) from their raw player_history rows.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getHistoryFromRecord(player: any): PlayerHistoryEntry[] {
+  const history = player?.player_history ?? [];
+
+  return [...history]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .map((entry: any) => ({
+      team: entry.team ? { id: entry.team.id, name: entry.team.name } : null,
+      joined_on: entry.joined_on ?? null,
+      left_on: entry.left_on ?? null,
+      squad_number: entry.squad_number ?? null,
+      is_loan: !!entry.is_loan,
+    }))
+    .sort((a, b) => {
+      const aOngoing = !a.left_on;
+      const bOngoing = !b.left_on;
+      if (aOngoing !== bOngoing) return aOngoing ? -1 : 1;
+      return (b.joined_on ?? '').localeCompare(a.joined_on ?? '');
+    });
 }
 
 async function fetchPlayersByMatchFromDB(matchId: string): Promise<PlayerWithStats[]> {
@@ -248,7 +293,7 @@ export const getTeamLineupsByMatch = createCachedFunction(
 async function fetchPlayerByIdFromDB(playerId: string): Promise<Player | null> {
   const { data, error } = await supabase
     .from('players')
-    .select('*')
+    .select('*, player_history:player_history(*, team:teams(id, name))')
     .eq('id', playerId)
     .single();
 
@@ -257,7 +302,12 @@ async function fetchPlayerByIdFromDB(playerId: string): Promise<Player | null> {
     return null;
   }
 
-  return data;
+  return {
+    ...data,
+    squad_number: getSquadNumberFromHistory(data),
+    current_club: getCurrentClubFromHistory(data),
+    history: getHistoryFromRecord(data),
+  };
 }
 
 export const getPlayerById = createCachedFunction(
@@ -266,5 +316,69 @@ export const getPlayerById = createCachedFunction(
     keyParts: ['player-by-id'],
     tags: [CACHE_TAGS.PLAYERS],
     ttl: 'PLAYER_DATA'
+  }
+);
+
+export interface PlayerMatchAppearance {
+  match: Match;
+  started: boolean;
+  minutes_played: number;
+  goals: number;
+  assists: number;
+  yellow_cards: number;
+  red_cards: number;
+  player_rating: number | null;
+  player_of_the_match: boolean;
+}
+
+async function fetchPlayerMatchHistoryFromDB(playerId: string): Promise<PlayerMatchAppearance[]> {
+  const { data, error } = await supabase
+    .from('player_stats')
+    .select(`
+      started,
+      minutes_played,
+      goals,
+      assists,
+      yellow_cards,
+      red_cards,
+      player_rating,
+      player_of_the_match,
+      match:matches_with_stadium(
+        *,
+        home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
+        away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
+        competitions:competition_id(name, icon_svg)
+      )
+    `)
+    .eq('player_id', playerId);
+
+  if (error) {
+    console.error('Error fetching player match history:', error);
+    return [];
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data as any[])
+    .filter((row) => row.match)
+    .map((row) => ({
+      match: row.match,
+      started: row.started,
+      minutes_played: row.minutes_played,
+      goals: row.goals,
+      assists: row.assists,
+      yellow_cards: row.yellow_cards,
+      red_cards: row.red_cards,
+      player_rating: row.player_rating,
+      player_of_the_match: row.player_of_the_match,
+    }))
+    .sort((a, b) => new Date(b.match.date).getTime() - new Date(a.match.date).getTime());
+}
+
+export const getPlayerMatchHistory = createCachedFunction(
+  fetchPlayerMatchHistoryFromDB,
+  {
+    keyParts: ['player-match-history'],
+    tags: [CACHE_TAGS.MATCHES, CACHE_TAGS.PLAYERS],
+    ttl: 'PLAYER_STATS'
   }
 );

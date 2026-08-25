@@ -104,34 +104,48 @@ async function fetchPlayersForTeamFromDB(teamId: string): Promise<TeamPlayers> {
     stats.red_cards += stat.red_cards || 0;
   });
 
+  // Group history records by player first, rather than bucketing each record
+  // independently - a player who left and later re-signed (e.g. a squad-number
+  // change) has multiple records, and must be classified once overall, not
+  // once per record (which would put them in both current and former).
+  type HistoryRecord = { player: Player | null; left_on: string | null; squad_number: number | null; joined_on?: string | null };
+  const recordsByPlayer = new Map<string, { player: Player; records: HistoryRecord[] }>();
+
+  playerHistory?.forEach((record: HistoryRecord) => {
+    const player = record.player;
+    if (!player) return;
+
+    if (!recordsByPlayer.has(player.id)) {
+      recordsByPlayer.set(player.id, { player, records: [] });
+    }
+    recordsByPlayer.get(player.id)!.records.push(record);
+  });
+
+  const isCurrentRecord = (record: HistoryRecord) => !record.left_on || new Date(record.left_on) > new Date();
+
   // Separate into current and former players with stats
   const currentPlayers: PlayerWithStats[] = [];
   const formerPlayers: PlayerWithStats[] = [];
 
-  playerHistory?.forEach((record: { player: Player | null; left_on: string | null; squad_number: number | null }) => {
-    const player = record.player;
-    if (!player) return;
+  recordsByPlayer.forEach(({ player, records }) => {
+    const currentRecord = records.find(isCurrentRecord);
+    // A player with no current record is former - use their most recent stint
+    // (by joined_on) for squad number, since that's the number they left under.
+    const relevantRecord = currentRecord ?? records.reduce((latest, record) =>
+      (record.joined_on ?? '') > (latest.joined_on ?? '') ? record : latest
+    );
 
-    // Check if player is currently on the team (no left_on or left_on is in the future)
-    const isCurrent = !record.left_on || new Date(record.left_on) > new Date();
-    
     const playerStats = statsByPlayer.get(player.id) || { appearances: 0, goals: 0, assists: 0, yellow_cards: 0, red_cards: 0 };
     const playerWithStats: PlayerWithStats = {
       ...player,
-      squad_number: record.squad_number,
+      squad_number: relevantRecord.squad_number,
       ...playerStats
     };
-    
-    if (isCurrent) {
-      // Avoid duplicates
-      if (!currentPlayers.find((p) => p.id === player.id)) {
-        currentPlayers.push(playerWithStats);
-      }
+
+    if (currentRecord) {
+      currentPlayers.push(playerWithStats);
     } else {
-      // Avoid duplicates
-      if (!formerPlayers.find((p) => p.id === player.id)) {
-        formerPlayers.push(playerWithStats);
-      }
+      formerPlayers.push(playerWithStats);
     }
   });
 
