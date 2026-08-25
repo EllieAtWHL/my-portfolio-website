@@ -1,6 +1,14 @@
 import { supabase } from '@/utils/supabase';
 import { createCachedFunction, CACHE_TAGS } from './cache-utils';
 
+export interface PlayerHistoryEntry {
+  team: { id: number; name: string } | null;
+  joined_on: string | null;
+  left_on: string | null;
+  squad_number: number | null;
+  is_loan: boolean;
+}
+
 export interface Player {
   id: string;
   first_name: string | null;
@@ -13,6 +21,7 @@ export interface Player {
   profile_image_url: string | null;
   squad_number: number | null;
   current_club?: { id: number; name: string } | null;
+  history?: PlayerHistoryEntry[];
   created_at: string;
   updated_at: string;
 }
@@ -81,6 +90,29 @@ function getCurrentClubFromHistory(player: any): { id: number; name: string } | 
   );
 
   return currentHistory?.team ? { id: currentHistory.team.id, name: currentHistory.team.name } : null;
+}
+
+// Helper function to build a player's full club history (all teams, ongoing stint first,
+// then most recently joined first) from their raw player_history rows.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getHistoryFromRecord(player: any): PlayerHistoryEntry[] {
+  const history = player?.player_history ?? [];
+
+  return [...history]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .map((entry: any) => ({
+      team: entry.team ? { id: entry.team.id, name: entry.team.name } : null,
+      joined_on: entry.joined_on ?? null,
+      left_on: entry.left_on ?? null,
+      squad_number: entry.squad_number ?? null,
+      is_loan: !!entry.is_loan,
+    }))
+    .sort((a, b) => {
+      const aOngoing = !a.left_on;
+      const bOngoing = !b.left_on;
+      if (aOngoing !== bOngoing) return aOngoing ? -1 : 1;
+      return (b.joined_on ?? '').localeCompare(a.joined_on ?? '');
+    });
 }
 
 async function fetchPlayersByMatchFromDB(matchId: string): Promise<PlayerWithStats[]> {
@@ -273,6 +305,7 @@ async function fetchPlayerByIdFromDB(playerId: string): Promise<Player | null> {
     ...data,
     squad_number: getSquadNumberFromHistory(data),
     current_club: getCurrentClubFromHistory(data),
+    history: getHistoryFromRecord(data),
   };
 }
 

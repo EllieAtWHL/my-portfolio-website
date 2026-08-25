@@ -67,4 +67,50 @@ describe('PlayerClient', () => {
 
     expect(screen.getByText('03/06/1994')).toBeInTheDocument();
   });
+
+  it('renders a Club History entry with team link, dates, squad number, and loan tag', () => {
+    render(
+      <PlayerClient
+        player={{
+          ...basePlayer,
+          history: [
+            {
+              team: { id: 5, name: 'Chelsea' },
+              joined_on: '2020-07-01',
+              left_on: '2023-01-04',
+              squad_number: 10,
+              is_loan: true,
+            },
+          ],
+        }}
+      />
+    );
+
+    expect(screen.getByText('Club History')).toBeInTheDocument();
+    const link = screen.getByRole('link', { name: 'Chelsea' });
+    expect(link).toHaveAttribute('href', '/spurs-women/teams/5');
+    expect(screen.getByText('· #10')).toBeInTheDocument();
+    expect(screen.getByText('· Loan')).toBeInTheDocument();
+    expect(screen.getByText('01/07/2020 – 04/01/2023')).toBeInTheDocument();
+  });
+
+  it('shows "Present" for an ongoing history entry with no left_on', () => {
+    render(
+      <PlayerClient
+        player={{
+          ...basePlayer,
+          history: [
+            { team: { id: 1, name: 'Tottenham Hotspur' }, joined_on: '2023-01-05', left_on: null, squad_number: 7, is_loan: false },
+          ],
+        }}
+      />
+    );
+
+    expect(screen.getByText('05/01/2023 – Present')).toBeInTheDocument();
+  });
+
+  it('does not render the Club History section when history is empty or absent', () => {
+    render(<PlayerClient player={{ ...basePlayer, history: [] }} />);
+    expect(screen.queryByText('Club History')).not.toBeInTheDocument();
+  });
 });

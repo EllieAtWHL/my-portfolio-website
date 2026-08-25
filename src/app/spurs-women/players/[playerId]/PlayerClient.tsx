@@ -90,6 +90,35 @@ export default function PlayerClient({ player }: PlayerClientProps) {
             )}
           </Card>
         </div>
+
+        {player.history && player.history.length > 0 && (
+          <Card variant="spursAccent" padding="md" hover={false} className="mt-6">
+            <h2 className="spurs-text font-bold mb-4">Club History</h2>
+            <ul className="spurs-text">
+              {player.history.map((entry, index) => (
+                <li
+                  key={index}
+                  className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-3 border-b border-gray-700 last:border-b-0 last:pb-0 first:pt-0"
+                >
+                  <div>
+                    {entry.team ? (
+                      <Link href={`/spurs-women/teams/${entry.team.id}`} className="spurs-text font-semibold hover:underline">
+                        {entry.team.name}
+                      </Link>
+                    ) : (
+                      <span className="font-semibold">Unknown club</span>
+                    )}
+                    {entry.squad_number && <span className="opacity-75"> · #{entry.squad_number}</span>}
+                    {entry.is_loan && <span className="opacity-75"> · Loan</span>}
+                  </div>
+                  <div className="opacity-75 text-sm">
+                    {entry.joined_on ? formatDateConsistent(entry.joined_on) : 'Unknown'} – {entry.left_on ? formatDateConsistent(entry.left_on) : 'Present'}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        )}
       </div>
     </main>
   );

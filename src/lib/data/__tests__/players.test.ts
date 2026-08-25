@@ -237,7 +237,7 @@ describe('players data layer', () => {
       const { getPlayerById } = await import('@/lib/data/players');
       const result = await getPlayerById('player-42');
 
-      expect(result).toEqual({ ...player, current_club: null });
+      expect(result).toEqual({ ...player, current_club: null, history: [] });
     });
 
     it('resolves squad_number from active Tottenham history rather than the players table', async () => {
@@ -302,6 +302,45 @@ describe('players data layer', () => {
       const result = await getPlayerById('player-42');
 
       expect(result?.current_club).toBeNull();
+    });
+
+    it('builds full club history sorted with the ongoing stint first, then most recently joined', async () => {
+      jest.resetModules();
+      const player = makePlayer({
+        id: 'player-42',
+        player_history: [
+          { team_id: 1, joined_on: '2018-08-01', left_on: '2020-06-30', squad_number: 22, is_loan: false, team: { id: 1, name: 'Tottenham Hotspur' } },
+          { team_id: 5, joined_on: '2020-07-01', left_on: '2023-01-04', squad_number: 10, is_loan: true, team: { id: 5, name: 'Chelsea' } },
+          { team_id: 1, joined_on: '2023-01-05', left_on: null, squad_number: 7, is_loan: false, team: { id: 1, name: 'Tottenham Hotspur' } },
+        ],
+      });
+      const mockFrom = mockSupabaseFrom({
+        players: { data: player, error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayerById } = await import('@/lib/data/players');
+      const result = await getPlayerById('player-42');
+
+      expect(result?.history).toEqual([
+        { team: { id: 1, name: 'Tottenham Hotspur' }, joined_on: '2023-01-05', left_on: null, squad_number: 7, is_loan: false },
+        { team: { id: 5, name: 'Chelsea' }, joined_on: '2020-07-01', left_on: '2023-01-04', squad_number: 10, is_loan: true },
+        { team: { id: 1, name: 'Tottenham Hotspur' }, joined_on: '2018-08-01', left_on: '2020-06-30', squad_number: 22, is_loan: false },
+      ]);
+    });
+
+    it('returns an empty history array when the player has no player_history rows', async () => {
+      jest.resetModules();
+      const player = makePlayer({ id: 'player-42', player_history: [] });
+      const mockFrom = mockSupabaseFrom({
+        players: { data: player, error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayerById } = await import('@/lib/data/players');
+      const result = await getPlayerById('player-42');
+
+      expect(result?.history).toEqual([]);
     });
 
     it('returns null (not throw) when the query errors', async () => {
