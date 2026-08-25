@@ -42,6 +42,8 @@ const statValue = (label: string): string =>
 const makeAppearance = (overrides: Partial<PlayerMatchAppearance> = {}): PlayerMatchAppearance => ({
   match: makeMatch(),
   started: true,
+  was_substitute: false,
+  was_unused_substitute: false,
   minutes_played: 90,
   goals: 1,
   assists: 0,
@@ -201,6 +203,20 @@ describe('PlayerClient', () => {
     expect(link).toHaveAttribute('href', '/spurs-women/matches/m1');
     expect(screen.getByText('Womens Super League')).toBeInTheDocument();
     expect(screen.getByText('2 - 1')).toBeInTheDocument();
+    expect(screen.getByText('Started')).toBeInTheDocument();
+  });
+
+  it('labels each match row with the player\'s role: Started, Sub (on), or Unused Sub', () => {
+    const matchHistory = [
+      makeAppearance({ match: makeMatch({ id: 'm1' }), started: true, was_substitute: false, was_unused_substitute: false, minutes_played: 90 }),
+      makeAppearance({ match: makeMatch({ id: 'm2' }), started: false, was_substitute: true, was_unused_substitute: false, minutes_played: 20 }),
+      makeAppearance({ match: makeMatch({ id: 'm3' }), started: false, was_substitute: false, was_unused_substitute: true, minutes_played: 0 }),
+    ];
+    render(<PlayerClient player={basePlayer} matchHistory={matchHistory} />);
+
+    expect(screen.getByText('Started')).toBeInTheDocument();
+    expect(screen.getByText('Sub (on)')).toBeInTheDocument();
+    expect(screen.getByText('Unused Sub')).toBeInTheDocument();
   });
 
   it('narrows Career Stats and Matches to the selected competition filter', () => {

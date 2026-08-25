@@ -362,12 +362,12 @@ describe('players data layer', () => {
       jest.resetModules();
       const rows = [
         {
-          started: true, minutes_played: 90, goals: 1, assists: 0, yellow_cards: 0, red_cards: 0,
+          started: true, was_substitute: false, was_unused_substitute: false, minutes_played: 90, goals: 1, assists: 0, yellow_cards: 0, red_cards: 0,
           player_rating: 7.5, player_of_the_match: false,
           match: { id: 'm1', date: '2026-01-01' },
         },
         {
-          started: true, minutes_played: 90, goals: 2, assists: 1, yellow_cards: 1, red_cards: 0,
+          started: true, was_substitute: false, was_unused_substitute: false, minutes_played: 90, goals: 2, assists: 1, yellow_cards: 1, red_cards: 0,
           player_rating: 8.2, player_of_the_match: true,
           match: { id: 'm2', date: '2026-03-01' },
         },
@@ -384,6 +384,8 @@ describe('players data layer', () => {
       expect(result[0]).toEqual({
         match: { id: 'm2', date: '2026-03-01' },
         started: true,
+        was_substitute: false,
+        was_unused_substitute: false,
         minutes_played: 90,
         goals: 2,
         assists: 1,
@@ -397,8 +399,8 @@ describe('players data layer', () => {
     it('drops rows with no matching match record', async () => {
       jest.resetModules();
       const rows = [
-        { started: true, minutes_played: 90, goals: 0, assists: 0, yellow_cards: 0, red_cards: 0, player_rating: null, player_of_the_match: false, match: null },
-        { started: true, minutes_played: 90, goals: 1, assists: 0, yellow_cards: 0, red_cards: 0, player_rating: null, player_of_the_match: false, match: { id: 'm1', date: '2026-01-01' } },
+        { started: true, was_substitute: false, was_unused_substitute: false, minutes_played: 90, goals: 0, assists: 0, yellow_cards: 0, red_cards: 0, player_rating: null, player_of_the_match: false, match: null },
+        { started: true, was_substitute: false, was_unused_substitute: false, minutes_played: 90, goals: 1, assists: 0, yellow_cards: 0, red_cards: 0, player_rating: null, player_of_the_match: false, match: { id: 'm1', date: '2026-01-01' } },
       ];
       const mockFrom = mockSupabaseFrom({
         player_stats: { data: rows, error: null },

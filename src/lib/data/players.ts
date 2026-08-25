@@ -322,6 +322,8 @@ export const getPlayerById = createCachedFunction(
 export interface PlayerMatchAppearance {
   match: Match;
   started: boolean;
+  was_substitute: boolean;
+  was_unused_substitute: boolean;
   minutes_played: number;
   goals: number;
   assists: number;
@@ -336,6 +338,8 @@ async function fetchPlayerMatchHistoryFromDB(playerId: string): Promise<PlayerMa
     .from('player_stats')
     .select(`
       started,
+      was_substitute,
+      was_unused_substitute,
       minutes_played,
       goals,
       assists,
@@ -363,6 +367,8 @@ async function fetchPlayerMatchHistoryFromDB(playerId: string): Promise<PlayerMa
     .map((row) => ({
       match: row.match,
       started: row.started,
+      was_substitute: row.was_substitute,
+      was_unused_substitute: row.was_unused_substitute,
       minutes_played: row.minutes_played,
       goals: row.goals,
       assists: row.assists,
