@@ -87,6 +87,24 @@ async function fetchStadiumsWithMatchCountsFromDB(): Promise<StadiumWithMatchCou
   return fetchWithSingleMatchCountFromDB<Stadium>('stadia', 'matches', 'stadium_id', 'name');
 }
 
+// A team can have more than one stadium on record (e.g. a bigger venue used for select
+// fixtures alongside a regular home ground - Arsenal have both Emirates Stadium and
+// Meadow Park), so this returns all of them rather than assuming a single home stadium.
+async function fetchStadiumsForTeamFromDB(teamId: string): Promise<Stadium[]> {
+  const { data, error } = await supabase
+    .from('stadia')
+    .select('*')
+    .eq('home_team_id', teamId)
+    .order('name');
+
+  if (error) {
+    console.error('Error fetching stadiums for team:', error.message || JSON.stringify(error));
+    return [];
+  }
+
+  return (data as Stadium[]) || [];
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchMatchesAtStadiumFromDB(stadiumSlug: string): Promise<any[]> {
   const { data, error } = await supabase
@@ -113,6 +131,15 @@ export const getStadiumBySlug = createCachedFunction(
   fetchStadiumBySlugFromDB,
   {
     keyParts: ['stadium', 'by-slug'],
+    tags: [CACHE_TAGS.STADIUMS],
+    revalidate: CACHE_TTL.STADIUM_DATA,
+  }
+);
+
+export const getStadiumsForTeam = createCachedFunction(
+  fetchStadiumsForTeamFromDB,
+  {
+    keyParts: ['stadiums', 'for-team'],
     tags: [CACHE_TAGS.STADIUMS],
     revalidate: CACHE_TTL.STADIUM_DATA,
   }

@@ -44,6 +44,48 @@ describe('stadiums data layer', () => {
     });
   });
 
+  describe('getStadiumsForTeam', () => {
+    // A team can have more than one stadium on record (e.g. Arsenal have both Emirates
+    // Stadium and Meadow Park) - home_team_id is one-to-many, so this always returns a list.
+    it('returns every stadium on record for the team', async () => {
+      const stadiums = [
+        { id: 's1', name: 'Emirates Stadium', slug: 'emirates-stadium', home_team_id: 4 },
+        { id: 's2', name: 'Meadow Park', slug: 'meadow-park', home_team_id: 4 },
+      ];
+      const mockFrom = mockSupabaseFrom({ stadia: { data: stadiums, error: null } });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getStadiumsForTeam } = await import('@/lib/data/stadiums');
+      const result = await getStadiumsForTeam('4');
+
+      expect(result).toEqual(stadiums);
+      expect(mockFrom).toHaveBeenCalledWith('stadia');
+      const chain = mockFrom.mock.results[0].value;
+      expect(chain.eq).toHaveBeenCalledWith('home_team_id', '4');
+      expect(chain.order).toHaveBeenCalledWith('name');
+    });
+
+    it('returns [] (not throw) when the team has no stadium on record', async () => {
+      const mockFrom = mockSupabaseFrom({ stadia: { data: [], error: null } });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getStadiumsForTeam } = await import('@/lib/data/stadiums');
+      const result = await getStadiumsForTeam('99');
+
+      expect(result).toEqual([]);
+    });
+
+    it('returns [] (not throw) when the query errors', async () => {
+      const mockFrom = mockSupabaseFrom({ stadia: { data: null, error: { message: 'db down' } } });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getStadiumsForTeam } = await import('@/lib/data/stadiums');
+      const result = await getStadiumsForTeam('4');
+
+      expect(result).toEqual([]);
+    });
+  });
+
   describe('getStadiumNames', () => {
     it('returns the stadium name history on success', async () => {
       const names = [
