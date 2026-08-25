@@ -20,7 +20,6 @@ const alice: Player = {
   weight_kg: null,
   profile_image_url: null,
   squad_number: null,
-  is_active: true,
   created_at: '',
   updated_at: '',
 };
@@ -43,7 +42,6 @@ const emptyPlayerFormShape = {
   height_cm: null,
   weight_kg: null,
   profile_image_url: null,
-  is_active: true,
 };
 
 const emptyPlayerHistoryFormShape = {
@@ -206,7 +204,6 @@ describe('usePlayersAdmin', () => {
         height_cm: null,
         weight_kg: null,
         profile_image_url: null,
-        is_active: true,
       });
       // Disambiguating fixtures: only alice's records should survive the filter.
       expect(result.current.relatedPlayerStatsForPlayer).toEqual([statsAlice]);
@@ -311,7 +308,6 @@ describe('usePlayersAdmin', () => {
           height_cm: 170,
           weight_kg: 65,
           profile_image_url: 'http://img.example/jane.png',
-          is_active: true,
         })
       );
 
@@ -331,7 +327,6 @@ describe('usePlayersAdmin', () => {
           height_cm: 170,
           weight_kg: 65,
           profile_image_url: 'http://img.example/jane.png',
-          is_active: true,
         }),
       });
       expect(showMessage).toHaveBeenCalledWith('Player created successfully', 'success');
@@ -367,7 +362,7 @@ describe('usePlayersAdmin', () => {
       expect(showMessage).toHaveBeenCalledWith('Player updated successfully', 'success');
     });
 
-    it('falls back to null for blank fields and defaults is_active to true when undefined', async () => {
+    it('falls back to null for blank fields', async () => {
       (global.fetch as jest.Mock)
         .mockResolvedValueOnce(fetchOk({ data: {} }))
         .mockResolvedValueOnce(fetchOk({}));
@@ -383,7 +378,6 @@ describe('usePlayersAdmin', () => {
           height_cm: 0,
           weight_kg: 0,
           profile_image_url: '',
-          // is_active intentionally omitted -> undefined
         })
       );
 
@@ -401,22 +395,7 @@ describe('usePlayersAdmin', () => {
         height_cm: null,
         weight_kg: null,
         profile_image_url: null,
-        is_active: true,
       });
-    });
-
-    it('preserves an explicit is_active: false rather than defaulting it to true', async () => {
-      (global.fetch as jest.Mock).mockResolvedValueOnce(fetchOk({ data: {} })).mockResolvedValueOnce(fetchOk({}));
-      const { result } = setup();
-
-      act(() => result.current.setPlayerForm({ ...emptyPlayerFormShape, last_name: 'Doe', is_active: false }));
-
-      await act(async () => {
-        await result.current.handlePlayerSubmit(fakeEvent);
-      });
-
-      const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
-      expect(body.is_active).toBe(false);
     });
 
     it('does not call setPlayers when the reload response has no data', async () => {

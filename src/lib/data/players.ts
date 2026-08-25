@@ -12,7 +12,6 @@ export interface Player {
   weight_kg: number | null;
   profile_image_url: string | null;
   squad_number: number | null;
-  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -268,34 +267,6 @@ export const getPlayerById = createCachedFunction(
   fetchPlayerByIdFromDB,
   {
     keyParts: ['player-by-id'],
-    tags: [CACHE_TAGS.PLAYERS],
-    ttl: 'PLAYER_DATA'
-  }
-);
-
-async function fetchActivePlayersFromDB(): Promise<Player[]> {
-  const { data, error } = await supabase
-    .from('players')
-    .select('*, player_history:player_history(*)')
-    .eq('is_active', true)
-    .order('last_name');
-
-  if (error) {
-    console.error('Error fetching active players:', error);
-    throw error;
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return data.map((player: any) => ({
-    ...player,
-    squad_number: getSquadNumberFromHistory(player),
-  }));
-}
-
-export const getActivePlayers = createCachedFunction(
-  fetchActivePlayersFromDB,
-  {
-    keyParts: ['active-players'],
     tags: [CACHE_TAGS.PLAYERS],
     ttl: 'PLAYER_DATA'
   }

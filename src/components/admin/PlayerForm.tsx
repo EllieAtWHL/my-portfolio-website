@@ -10,7 +10,6 @@ interface PlayerForm {
   height_cm: number | null;
   weight_kg: number | null;
   profile_image_url: string | null;
-  is_active: boolean;
 }
 
 interface PlayerFormProps {
@@ -116,15 +115,6 @@ export function PlayerForm({
               name="profile_image_url"
               value={playerForm.profile_image_url || ''}
               onChange={(value) => setPlayerForm({ ...playerForm, profile_image_url: value })}
-            />
-          </FormField>
-          <FormField label="Is Active?" htmlFor="player-is-active">
-            <SelectInput
-              id="player-is-active"
-              name="is_active"
-              value={playerForm.is_active ? 'true' : 'false'}
-              onChange={(value) => setPlayerForm({ ...playerForm, is_active: value === 'true' })}
-              options={[{ value: 'true', label: 'Yes' }, { value: 'false', label: 'No' }]}
             />
           </FormField>
         </div>

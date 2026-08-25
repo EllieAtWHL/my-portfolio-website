@@ -103,7 +103,6 @@ const mockPlayer = {
   weight_kg: null,
   profile_image_url: null,
   squad_number: null,
-  is_active: true,
   created_at: '',
   updated_at: '',
 };

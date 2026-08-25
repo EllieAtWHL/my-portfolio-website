@@ -114,6 +114,37 @@ a separate job in `.github/workflows/ci.yml`). It triggers on push to
 main/develop and PRs to main, but only when the change touches the manifest
 script, validator, or manifest file itself (path-filtered, not every push/PR).
 
+**In practice this step happens automatically** for match photos: pushing
+image files to `spurs-women-photo-gallery`'s `main` branch triggers that
+repo's own `.github/workflows/update-manifest.yml`, which checks out this
+repo, runs `generate-external-manifest` + `validate-manifest`, and lands the
+regenerated manifest here. Because this repo's `main` is protected with
+required status checks (and `enforce_admins`), the Action can't push directly
+to `main` - a commit that doesn't exist on the remote yet can never have
+already-passed checks, so a plain `git push` is rejected outright. Instead it
+commits to a throwaway `auto/update-manifest-<sha>` branch, opens a PR via
+`gh pr create`, and enables auto-merge (`gh pr merge --auto --merge
+--delete-branch`, a regular merge commit matching this repo's convention) -
+the PR merges itself once all 7 required checks pass, no manual step needed.
+`player-photos/` (WEB-29) is excluded from this pipeline at two independent
+layers, since those photos are referenced via a direct CDN URL pasted into a
+player's `profile_image_url`, not the manifest:
+
+- The trigger's `paths:` filter excludes `player-photos/**`, so a push that
+  *only* touches that folder never starts the Action at all.
+- `generate-external-manifest.js` skips `player-photos` explicitly (see
+  `NON_GALLERY_FOLDERS`) when it walks the repo's top-level folders. This
+  matters independently of the trigger filter above: `generate-external-manifest`
+  regenerates the *entire* manifest from the repo's current state on every
+  run, so a run triggered by an unrelated match-photo push (or a manual
+  `workflow_dispatch`) would otherwise still walk `player-photos/` and add it
+  as a bogus gallery entry - the script treats every top-level folder with
+  images directly inside it as its own gallery, with no knowledge of what
+  triggered the run.
+
+Manual regeneration (steps 1-4 above) is still the right approach for local
+development/testing.
+
 ### 5. Test locally, then deploy
 
 ```bash

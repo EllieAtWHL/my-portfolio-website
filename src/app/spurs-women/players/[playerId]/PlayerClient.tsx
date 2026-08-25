@@ -50,9 +50,6 @@ export default function PlayerClient({ player }: PlayerClientProps) {
                   <span className="font-semibold">Weight:</span> {player.weight_kg} kg
                 </div>
               )}
-              <div>
-                <span className="font-semibold">Status:</span> {player.is_active ? 'Active' : 'Inactive'}
-              </div>
             </div>
           </Card>
 
