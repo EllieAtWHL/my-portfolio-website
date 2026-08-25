@@ -290,7 +290,9 @@ describe('TeamClient', () => {
     await waitFor(() => {
       expect(screen.getByText('Head-to-head vs Tottenham:')).toBeInTheDocument()
     })
-    expect(screen.getByText('1W 1D 1L')).toBeInTheDocument()
+    // Explicitly attributes each count to a side, rather than a bare "1W 1D 1L"
+    // that leaves it ambiguous whose win/loss column is whose.
+    expect(screen.getByText('Tottenham wins: 1 · Draws: 1 · Chelsea wins: 1')).toBeInTheDocument()
   })
 
   it('labels the record as overall (not head-to-head) on Tottenham\'s own team page', async () => {
@@ -303,6 +305,7 @@ describe('TeamClient', () => {
     await waitFor(() => {
       expect(screen.getByText('Overall record:')).toBeInTheDocument()
     })
+    expect(screen.getByText('Wins: 1 · Draws: 0 · Losses: 0')).toBeInTheDocument()
     expect(screen.queryByText('Head-to-head vs Tottenham:')).not.toBeInTheDocument()
   })
 

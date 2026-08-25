@@ -202,7 +202,15 @@ export default function TeamClient({ team, teamId, stadiums = [] }: TeamClientPr
                   <Card variant="spursAccent" padding="md" hover={false} className="mb-4">
                     <p className="spurs-text">
                       <strong>{team.is_tottenham ? 'Overall record:' : 'Head-to-head vs Tottenham:'}</strong>{' '}
-                      <span>{record.wins}W {record.draws}D {record.losses}L</span>
+                      {team.is_tottenham ? (
+                        <span>
+                          Wins: {record.wins} &middot; Draws: {record.draws} &middot; Losses: {record.losses}
+                        </span>
+                      ) : (
+                        <span>
+                          Tottenham wins: {record.wins} &middot; Draws: {record.draws} &middot; {team.name} wins: {record.losses}
+                        </span>
+                      )}
                     </p>
                   </Card>
                 )}
