@@ -37,7 +37,8 @@ export default function PlayerClient({ player, matchHistory = [] }: PlayerClient
 
   const stats = filteredAppearances.reduce(
     (acc, appearance) => ({
-      appearances: acc.appearances + 1,
+      // An unused substitute never took the pitch, so it shouldn't count as an appearance.
+      appearances: acc.appearances + (appearance.was_unused_substitute ? 0 : 1),
       goals: acc.goals + appearance.goals,
       assists: acc.assists + appearance.assists,
       yellow_cards: acc.yellow_cards + appearance.yellow_cards,
