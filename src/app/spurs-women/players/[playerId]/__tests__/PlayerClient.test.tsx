@@ -47,4 +47,24 @@ describe('PlayerClient', () => {
     const profileCard = within(screen.getByText('Profile Image').parentElement!);
     expect(profileCard.queryByText(/^#/)).not.toBeInTheDocument();
   });
+
+  it('links Current Club to the team page when the player has a current club', () => {
+    render(<PlayerClient player={{ ...basePlayer, current_club: { id: 1, name: 'Tottenham Hotspur' } }} />);
+
+    const link = screen.getByRole('link', { name: 'Tottenham Hotspur' });
+    expect(link).toHaveAttribute('href', '/spurs-women/teams/1');
+  });
+
+  it('shows "No club found" instead of a link when the player has no current club', () => {
+    render(<PlayerClient player={{ ...basePlayer, current_club: null }} />);
+
+    expect(screen.getByText('No club found')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /tottenham/i })).not.toBeInTheDocument();
+  });
+
+  it('formats date of birth consistently regardless of runtime locale', () => {
+    render(<PlayerClient player={{ ...basePlayer, date_of_birth: '1994-06-03' }} />);
+
+    expect(screen.getByText('03/06/1994')).toBeInTheDocument();
+  });
 });

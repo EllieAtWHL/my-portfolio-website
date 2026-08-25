@@ -1,7 +1,9 @@
 'use client';
 
+import Link from 'next/link';
 import { Card } from '@/components/Card';
 import { Player } from '@/lib/data/players';
+import { formatDateConsistent } from '@/lib/utils/date';
 
 interface PlayerClientProps {
   player: Player;
@@ -37,7 +39,7 @@ export default function PlayerClient({ player }: PlayerClientProps) {
               )}
               {player.date_of_birth && (
                 <div>
-                  <span className="font-semibold">Date of Birth:</span> {new Date(player.date_of_birth).toLocaleDateString()}
+                  <span className="font-semibold">Date of Birth:</span> {formatDateConsistent(player.date_of_birth)}
                 </div>
               )}
               {player.height_cm && (
@@ -50,6 +52,16 @@ export default function PlayerClient({ player }: PlayerClientProps) {
                   <span className="font-semibold">Weight:</span> {player.weight_kg} kg
                 </div>
               )}
+              <div>
+                <span className="font-semibold">Current Club:</span>{' '}
+                {player.current_club ? (
+                  <Link href={`/spurs-women/teams/${player.current_club.id}`} className="hover:underline">
+                    {player.current_club.name}
+                  </Link>
+                ) : (
+                  'No club found'
+                )}
+              </div>
             </div>
           </Card>
 

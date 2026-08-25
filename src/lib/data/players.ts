@@ -12,6 +12,7 @@ export interface Player {
   weight_kg: number | null;
   profile_image_url: string | null;
   squad_number: number | null;
+  current_club?: { id: number; name: string } | null;
   created_at: string;
   updated_at: string;
 }
@@ -69,6 +70,17 @@ function getSquadNumberFromHistory(player: any): number | null {
   );
 
   return relevantHistory?.squad_number || null;
+}
+
+// Helper function to find a player's current club (any team, not just Tottenham) from player_history
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getCurrentClubFromHistory(player: any): { id: number; name: string } | null {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const currentHistory = player?.player_history?.find((history: any) =>
+    !history.left_on || new Date(history.left_on) > new Date()
+  );
+
+  return currentHistory?.team ? { id: currentHistory.team.id, name: currentHistory.team.name } : null;
 }
 
 async function fetchPlayersByMatchFromDB(matchId: string): Promise<PlayerWithStats[]> {
@@ -248,7 +260,7 @@ export const getTeamLineupsByMatch = createCachedFunction(
 async function fetchPlayerByIdFromDB(playerId: string): Promise<Player | null> {
   const { data, error } = await supabase
     .from('players')
-    .select('*, player_history:player_history(*)')
+    .select('*, player_history:player_history(*, team:teams(id, name))')
     .eq('id', playerId)
     .single();
 
@@ -260,6 +272,7 @@ async function fetchPlayerByIdFromDB(playerId: string): Promise<Player | null> {
   return {
     ...data,
     squad_number: getSquadNumberFromHistory(data),
+    current_club: getCurrentClubFromHistory(data),
   };
 }
 

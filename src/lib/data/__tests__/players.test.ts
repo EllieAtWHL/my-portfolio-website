@@ -237,7 +237,7 @@ describe('players data layer', () => {
       const { getPlayerById } = await import('@/lib/data/players');
       const result = await getPlayerById('player-42');
 
-      expect(result).toEqual(player);
+      expect(result).toEqual({ ...player, current_club: null });
     });
 
     it('resolves squad_number from active Tottenham history rather than the players table', async () => {
@@ -261,6 +261,47 @@ describe('players data layer', () => {
       const result = await getPlayerById('player-42');
 
       expect(result?.squad_number).toBe(7);
+    });
+
+    it('resolves current_club from whichever history entry is current, regardless of team', async () => {
+      // Unlike squad_number, current club isn't limited to Tottenham - a player's
+      // current_club should reflect whichever team they have an ongoing stint with.
+      jest.resetModules();
+      const player = makePlayer({
+        id: 'player-42',
+        player_history: [
+          { team_id: 1, left_on: '2023-01-04', team: { id: 1, name: 'Tottenham Hotspur' } }, // past stint, ignored
+          { team_id: 5, left_on: null, team: { id: 5, name: 'Chelsea' } }, // current stint, different club
+        ],
+      });
+      const mockFrom = mockSupabaseFrom({
+        players: { data: player, error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayerById } = await import('@/lib/data/players');
+      const result = await getPlayerById('player-42');
+
+      expect(result?.current_club).toEqual({ id: 5, name: 'Chelsea' });
+    });
+
+    it('returns current_club null when the player has no ongoing history entry', async () => {
+      jest.resetModules();
+      const player = makePlayer({
+        id: 'player-42',
+        player_history: [
+          { team_id: 1, left_on: '2023-01-04', team: { id: 1, name: 'Tottenham Hotspur' } },
+        ],
+      });
+      const mockFrom = mockSupabaseFrom({
+        players: { data: player, error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayerById } = await import('@/lib/data/players');
+      const result = await getPlayerById('player-42');
+
+      expect(result?.current_club).toBeNull();
     });
 
     it('returns null (not throw) when the query errors', async () => {

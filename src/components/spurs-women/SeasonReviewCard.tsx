@@ -2,6 +2,7 @@
 
 import { Card } from '@/components/Card';
 import ReactMarkdown from 'react-markdown';
+import { formatDateConsistent } from '@/lib/utils/date';
 
 interface SeasonReview {
   id?: number;
@@ -50,7 +51,7 @@ export default function SeasonReviewCard({ review }: SeasonReviewCardProps) {
 
           {review.updated_at && (
             <div className="text-sm text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-gray-600">
-              Last updated: {new Date(review.updated_at).toLocaleDateString()}
+              Last updated: {formatDateConsistent(review.updated_at)}
             </div>
           )}
         </div>
