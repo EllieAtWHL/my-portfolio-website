@@ -63,11 +63,11 @@ export default function PlayerClient({ player }: PlayerClientProps) {
               <img
                 src={player.profile_image_url}
                 alt={`${player.first_name} ${player.last_name}`}
-                className="w-full max-w-sm mx-auto rounded-lg"
+                className="w-56 h-56 object-cover mx-auto rounded-full"
               />
             ) : (
               <div
-                className="w-40 h-40 mx-auto rounded-full flex items-center justify-center font-bold text-5xl"
+                className="w-56 h-56 mx-auto rounded-full flex items-center justify-center font-bold text-6xl"
                 style={{ backgroundColor: 'var(--spurs-dark-accent)', color: 'var(--spurs-dark-bg-1)' }}
               >
                 {player.last_name.charAt(0).toUpperCase()}
