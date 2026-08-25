@@ -106,5 +106,11 @@ tottenhamhotspur.com via the Kernel browser-automation connector (see above).
 
 ## Cadence
 
-Runs weekly. See the routine itself at `https://claude.ai/code/routines` for
-the exact schedule and to disable/update it.
+Runs every Monday at 08:00 UTC. Routine:
+`https://claude.ai/code/routines/trig_01PFuWYkHULYADSMTRjSQnxz` - see it
+there to disable/update the schedule or prompt.
+
+Depends on `scripts/find-matches-missing-player-stats.js` being merged to
+`main` (PR #84) - if it isn't yet by the next Monday run, the routine posts
+a comment on WEB-114 saying so and does nothing else, rather than failing
+silently.
