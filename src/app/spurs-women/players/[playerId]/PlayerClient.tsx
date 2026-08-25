@@ -55,7 +55,7 @@ export default function PlayerClient({ player }: PlayerClientProps) {
               <div>
                 <span className="font-semibold">Current Club:</span>{' '}
                 {player.current_club ? (
-                  <Link href={`/spurs-women/teams/${player.current_club.id}`} className="hover:underline">
+                  <Link href={`/spurs-women/teams/${player.current_club.id}`} className="spurs-text hover:underline">
                     {player.current_club.name}
                   </Link>
                 ) : (
