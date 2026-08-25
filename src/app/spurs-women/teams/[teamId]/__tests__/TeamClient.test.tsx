@@ -45,7 +45,6 @@ const makePlayer = (id: string, lastName: string) => ({
   weight_kg: null,
   profile_image_url: null,
   squad_number: 10,
-  is_active: true,
   created_at: '2026-01-01T00:00:00Z',
   updated_at: '2026-01-01T00:00:00Z',
   appearances: 1,

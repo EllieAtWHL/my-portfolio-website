@@ -14,7 +14,6 @@ function makePlayer(overrides: Record<string, any> = {}) {
     weight_kg: 65,
     profile_image_url: null,
     squad_number: null,
-    is_active: true,
     created_at: '2020-01-01T00:00:00.000Z',
     updated_at: '2020-01-01T00:00:00.000Z',
     player_history: [],
@@ -252,33 +251,6 @@ describe('players data layer', () => {
       const result = await getPlayerById('missing');
 
       expect(result).toBeNull();
-    });
-  });
-
-  describe('getActivePlayers', () => {
-    it('returns the active players list on success', async () => {
-      jest.resetModules();
-      const players = [makePlayer({ id: 'a' }), makePlayer({ id: 'b' })];
-      const mockFrom = mockSupabaseFrom({
-        players: { data: players, error: null },
-      });
-      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
-
-      const { getActivePlayers } = await import('@/lib/data/players');
-      const result = await getActivePlayers();
-
-      expect(result).toEqual(players);
-    });
-
-    it('throws when the query fails', async () => {
-      jest.resetModules();
-      const mockFrom = mockSupabaseFrom({
-        players: { data: null, error: { message: 'db down' } },
-      });
-      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
-
-      const { getActivePlayers } = await import('@/lib/data/players');
-      await expect(getActivePlayers()).rejects.toBeTruthy();
     });
   });
 });

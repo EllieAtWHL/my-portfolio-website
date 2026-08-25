@@ -72,7 +72,6 @@ export interface Player {
   weight_kg: number | null;
   profile_image_url: string | null;
   squad_number: number | null;
-  is_active: boolean;
   created_at: string;
   updated_at: string;
 }

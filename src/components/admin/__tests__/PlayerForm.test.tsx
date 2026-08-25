@@ -10,7 +10,6 @@ const baseForm = {
   height_cm: null,
   weight_kg: null,
   profile_image_url: null,
-  is_active: true,
 };
 
 const baseProps = {
