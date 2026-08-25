@@ -249,7 +249,7 @@ export const getTeamLineupsByMatch = createCachedFunction(
 async function fetchPlayerByIdFromDB(playerId: string): Promise<Player | null> {
   const { data, error } = await supabase
     .from('players')
-    .select('*')
+    .select('*, player_history:player_history(*)')
     .eq('id', playerId)
     .single();
 
@@ -258,7 +258,10 @@ async function fetchPlayerByIdFromDB(playerId: string): Promise<Player | null> {
     return null;
   }
 
-  return data;
+  return {
+    ...data,
+    squad_number: getSquadNumberFromHistory(data),
+  };
 }
 
 export const getPlayerById = createCachedFunction(
@@ -273,7 +276,7 @@ export const getPlayerById = createCachedFunction(
 async function fetchActivePlayersFromDB(): Promise<Player[]> {
   const { data, error } = await supabase
     .from('players')
-    .select('*')
+    .select('*, player_history:player_history(*)')
     .eq('is_active', true)
     .order('last_name');
 
@@ -282,7 +285,11 @@ async function fetchActivePlayersFromDB(): Promise<Player[]> {
     throw error;
   }
 
-  return data;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return data.map((player: any) => ({
+    ...player,
+    squad_number: getSquadNumberFromHistory(player),
+  }));
 }
 
 export const getActivePlayers = createCachedFunction(

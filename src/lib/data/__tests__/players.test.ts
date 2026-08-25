@@ -241,6 +241,29 @@ describe('players data layer', () => {
       expect(result).toEqual(player);
     });
 
+    it('resolves squad_number from active Tottenham history rather than the players table', async () => {
+      // squad_number doesn't live on the players table - it's per team_id stint
+      // in player_history, since it can change (e.g. a renumbering).
+      jest.resetModules();
+      const player = makePlayer({
+        id: 'player-42',
+        player_history: [
+          { team_id: 5, squad_number: 99, left_on: null }, // different team, ignored
+          { team_id: 1, squad_number: 32, left_on: '2020-01-01' }, // past Tottenham stint, ignored
+          { team_id: 1, squad_number: 7, left_on: null }, // current Tottenham stint
+        ],
+      });
+      const mockFrom = mockSupabaseFrom({
+        players: { data: player, error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayerById } = await import('@/lib/data/players');
+      const result = await getPlayerById('player-42');
+
+      expect(result?.squad_number).toBe(7);
+    });
+
     it('returns null (not throw) when the query errors', async () => {
       jest.resetModules();
       const mockFrom = mockSupabaseFrom({
@@ -268,6 +291,23 @@ describe('players data layer', () => {
       const result = await getActivePlayers();
 
       expect(result).toEqual(players);
+    });
+
+    it('resolves squad_number from active Tottenham history for each player', async () => {
+      jest.resetModules();
+      const players = [
+        makePlayer({ id: 'a', player_history: [{ team_id: 1, squad_number: 4, left_on: null }] }),
+        makePlayer({ id: 'b', player_history: [{ team_id: 1, squad_number: 11, left_on: null }] }),
+      ];
+      const mockFrom = mockSupabaseFrom({
+        players: { data: players, error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getActivePlayers } = await import('@/lib/data/players');
+      const result = await getActivePlayers();
+
+      expect(result.map((p) => p.squad_number)).toEqual([4, 11]);
     });
 
     it('throws when the query fails', async () => {
