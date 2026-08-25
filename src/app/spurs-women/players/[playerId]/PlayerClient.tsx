@@ -57,16 +57,23 @@ export default function PlayerClient({ player }: PlayerClientProps) {
           </Card>
 
           {/* Profile Image */}
-          {player.profile_image_url && (
-            <Card variant="spursAccent" padding="md" hover={false}>
-              <h2 className="spurs-text font-bold mb-4">Profile Image</h2>
-              <img 
-                src={player.profile_image_url} 
+          <Card variant="spursAccent" padding="md" hover={false}>
+            <h2 className="spurs-text font-bold mb-4">Profile Image</h2>
+            {player.profile_image_url ? (
+              <img
+                src={player.profile_image_url}
                 alt={`${player.first_name} ${player.last_name}`}
                 className="w-full max-w-sm mx-auto rounded-lg"
               />
-            </Card>
-          )}
+            ) : (
+              <div
+                className="w-40 h-40 mx-auto rounded-full flex items-center justify-center font-bold text-5xl"
+                style={{ backgroundColor: 'var(--spurs-dark-accent)', color: 'var(--spurs-dark-bg-1)' }}
+              >
+                {player.last_name.charAt(0).toUpperCase()}
+              </div>
+            )}
+          </Card>
         </div>
       </div>
     </main>
