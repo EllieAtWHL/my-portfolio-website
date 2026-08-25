@@ -1,15 +1,45 @@
 'use client';
 
+import { useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Card } from '@/components/Card';
-import { Player } from '@/lib/data/players';
-import { formatDateConsistent } from '@/lib/utils/date';
+import MatchFilterControls from '@/components/spurs-women/MatchFilterControls';
+import { Player, PlayerMatchAppearance } from '@/lib/data/players';
+import { Match } from '@/lib/data/matches';
+import { formatDateConsistent, formatDateForCard } from '@/lib/utils/date';
 
 interface PlayerClientProps {
   player: Player;
+  matchHistory?: PlayerMatchAppearance[];
 }
 
-export default function PlayerClient({ player }: PlayerClientProps) {
+export default function PlayerClient({ player, matchHistory = [] }: PlayerClientProps) {
+  const matches = useMemo(() => matchHistory.map((appearance) => appearance.match), [matchHistory]);
+  const [filteredMatches, setFilteredMatches] = useState<Match[]>(matches);
+
+  const handleFilteredMatchesChange = useCallback((newFilteredMatches: Match[]) => {
+    setFilteredMatches(newFilteredMatches);
+  }, []);
+
+  const appearanceByMatchId = useMemo(
+    () => new Map(matchHistory.map((appearance) => [appearance.match.id, appearance])),
+    [matchHistory]
+  );
+  const filteredAppearances = filteredMatches
+    .map((match) => appearanceByMatchId.get(match.id))
+    .filter((appearance): appearance is PlayerMatchAppearance => !!appearance);
+
+  const stats = filteredAppearances.reduce(
+    (acc, appearance) => ({
+      appearances: acc.appearances + 1,
+      goals: acc.goals + appearance.goals,
+      assists: acc.assists + appearance.assists,
+      yellow_cards: acc.yellow_cards + appearance.yellow_cards,
+      red_cards: acc.red_cards + appearance.red_cards,
+    }),
+    { appearances: 0, goals: 0, assists: 0, yellow_cards: 0, red_cards: 0 }
+  );
+
   return (
     <main id="main-content" className="p-4 pb-footer-clearance">
       <div className="max-w-6xl mx-auto">
@@ -115,6 +145,104 @@ export default function PlayerClient({ player }: PlayerClientProps) {
               ))}
             </ul>
           </Card>
+        )}
+
+        {matchHistory.length > 0 && (
+          <div className="mt-6">
+            <h2 className="spurs-text font-bold mb-4">Career Stats</h2>
+            <MatchFilterControls
+              matches={matches}
+              onFilteredMatchesChange={handleFilteredMatchesChange}
+              showCompetitionFilter={true}
+              showVenueFilter={false}
+              showAttendedFilter={false}
+              showResultFilter={false}
+              showMonthFilter={false}
+            />
+
+            <Card variant="spursAccent" padding="md" hover={false} className="mb-6">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 text-center spurs-text">
+                <div>
+                  <div className="text-2xl font-bold">{stats.appearances}</div>
+                  <div className="text-sm opacity-75">Appearances</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{stats.goals}</div>
+                  <div className="text-sm opacity-75">Goals</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{stats.assists}</div>
+                  <div className="text-sm opacity-75">Assists</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{stats.yellow_cards}</div>
+                  <div className="text-sm opacity-75">Yellow Cards</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{stats.red_cards}</div>
+                  <div className="text-sm opacity-75">Red Cards</div>
+                </div>
+              </div>
+            </Card>
+
+            <Card variant="spursAccent" padding="md" hover={false}>
+              <h2 className="spurs-text font-bold mb-4">Matches</h2>
+              {filteredAppearances.length > 0 ? (
+                <div className="overflow-x-auto max-h-96 overflow-y-auto">
+                  <table className="w-full">
+                    <thead className="sticky top-0 z-10" style={{ backgroundColor: 'var(--spurs-dark-bg-1)' }}>
+                      <tr className="border-b border-gray-200 dark:border-gray-700">
+                        <th className="text-left py-3 px-4 spurs-text font-semibold">Date</th>
+                        <th className="text-left py-3 px-4 spurs-text font-semibold">Opponent</th>
+                        <th className="text-left py-3 px-4 spurs-text font-semibold">Competition</th>
+                        <th className="text-center py-3 px-4 spurs-text font-semibold">Result</th>
+                        <th className="text-center py-3 px-4 spurs-text font-semibold">Mins</th>
+                        <th className="text-center py-3 px-4 spurs-text font-semibold">G</th>
+                        <th className="text-center py-3 px-4 spurs-text font-semibold">A</th>
+                        <th className="text-center py-3 px-4 spurs-text font-semibold">YC</th>
+                        <th className="text-center py-3 px-4 spurs-text font-semibold">RC</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredAppearances.map((appearance) => {
+                        const { match } = appearance;
+                        const opponent = match.is_home_match ? match.away_team : match.home_team;
+                        return (
+                          <tr key={match.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-[var(--spurs-opacity-20)]">
+                            <td className="py-3 px-4 spurs-text opacity-75 whitespace-nowrap">
+                              {formatDateForCard(match.date)}
+                            </td>
+                            <td className="py-3 px-4 spurs-text">
+                              <Link
+                                href={`/spurs-women/matches/${match.id}`}
+                                className="font-medium hover:underline"
+                                style={{ color: 'var(--spurs-dark-text)' }}
+                              >
+                                {opponent?.name || 'Unknown'} ({match.is_home_match ? 'H' : 'A'})
+                              </Link>
+                            </td>
+                            <td className="py-3 px-4 spurs-text opacity-75">
+                              {match.competitions?.name || '-'}
+                            </td>
+                            <td className="py-3 px-4 text-center spurs-text">
+                              {match.spurs_score ?? '-'} - {match.opponent_score ?? '-'}
+                            </td>
+                            <td className="py-3 px-4 text-center spurs-text">{appearance.minutes_played}</td>
+                            <td className="py-3 px-4 text-center spurs-text">{appearance.goals}</td>
+                            <td className="py-3 px-4 text-center spurs-text">{appearance.assists}</td>
+                            <td className="py-3 px-4 text-center spurs-text">{appearance.yellow_cards}</td>
+                            <td className="py-3 px-4 text-center spurs-text">{appearance.red_cards}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="spurs-text">No matches found for the selected filters.</p>
+              )}
+            </Card>
+          </div>
         )}
       </div>
     </main>

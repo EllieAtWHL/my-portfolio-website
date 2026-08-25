@@ -356,4 +356,73 @@ describe('players data layer', () => {
       expect(result).toBeNull();
     });
   });
+
+  describe('getPlayerMatchHistory', () => {
+    it('maps player_stats rows to appearances, sorted most recent match first', async () => {
+      jest.resetModules();
+      const rows = [
+        {
+          started: true, minutes_played: 90, goals: 1, assists: 0, yellow_cards: 0, red_cards: 0,
+          player_rating: 7.5, player_of_the_match: false,
+          match: { id: 'm1', date: '2026-01-01' },
+        },
+        {
+          started: true, minutes_played: 90, goals: 2, assists: 1, yellow_cards: 1, red_cards: 0,
+          player_rating: 8.2, player_of_the_match: true,
+          match: { id: 'm2', date: '2026-03-01' },
+        },
+      ];
+      const mockFrom = mockSupabaseFrom({
+        player_stats: { data: rows, error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayerMatchHistory } = await import('@/lib/data/players');
+      const result = await getPlayerMatchHistory('player-1');
+
+      expect(result.map((a) => a.match.id)).toEqual(['m2', 'm1']);
+      expect(result[0]).toEqual({
+        match: { id: 'm2', date: '2026-03-01' },
+        started: true,
+        minutes_played: 90,
+        goals: 2,
+        assists: 1,
+        yellow_cards: 1,
+        red_cards: 0,
+        player_rating: 8.2,
+        player_of_the_match: true,
+      });
+    });
+
+    it('drops rows with no matching match record', async () => {
+      jest.resetModules();
+      const rows = [
+        { started: true, minutes_played: 90, goals: 0, assists: 0, yellow_cards: 0, red_cards: 0, player_rating: null, player_of_the_match: false, match: null },
+        { started: true, minutes_played: 90, goals: 1, assists: 0, yellow_cards: 0, red_cards: 0, player_rating: null, player_of_the_match: false, match: { id: 'm1', date: '2026-01-01' } },
+      ];
+      const mockFrom = mockSupabaseFrom({
+        player_stats: { data: rows, error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayerMatchHistory } = await import('@/lib/data/players');
+      const result = await getPlayerMatchHistory('player-1');
+
+      expect(result).toHaveLength(1);
+      expect(result[0].match.id).toBe('m1');
+    });
+
+    it('returns [] (not throw) when the query errors', async () => {
+      jest.resetModules();
+      const mockFrom = mockSupabaseFrom({
+        player_stats: { data: null, error: { message: 'db down' } },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayerMatchHistory } = await import('@/lib/data/players');
+      const result = await getPlayerMatchHistory('player-1');
+
+      expect(result).toEqual([]);
+    });
+  });
 });
