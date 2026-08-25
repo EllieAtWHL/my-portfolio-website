@@ -23,6 +23,7 @@ export default function TeamClient({ team, teamId }: TeamClientProps) {
   const [players, setPlayers] = useState<TeamPlayers>({ current: [], former: [] });
   const [activeTab, setActiveTab] = useState<'current' | 'former'>('current');
   const [hasError, setHasError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
 
   const handleFilteredMatchesChange = useCallback((newFilteredMatches: Match[]) => {
@@ -37,6 +38,7 @@ export default function TeamClient({ team, teamId }: TeamClientProps) {
   // to re-trigger this same effect.
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true);
       try {
         const [matches, players] = await Promise.all([
           getMatchesForTeam(teamId),
@@ -50,6 +52,8 @@ export default function TeamClient({ team, teamId }: TeamClientProps) {
       } catch (error) {
         console.error('Error loading team data:', error);
         setHasError(true);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -71,7 +75,22 @@ export default function TeamClient({ team, teamId }: TeamClientProps) {
         </div>
 
         {/* Players Section */}
-        {(players.current.length > 0 || players.former.length > 0) && (
+        {isLoading ? (
+          <div className="mb-8">
+            <h2 className="spurs-text font-bold mb-4">Players</h2>
+            <Card variant="spursAccent" padding="md" hover={false}>
+              <div className="flex gap-4 mb-4" role="status" aria-label="Loading players">
+                <div className="h-8 w-28 rounded-full bg-gray-700 animate-pulse motion-reduce:animate-none" />
+                <div className="h-8 w-28 rounded-full bg-gray-700 animate-pulse motion-reduce:animate-none" />
+              </div>
+              <div className="space-y-2">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <div key={index} className="h-10 rounded bg-gray-800 animate-pulse motion-reduce:animate-none" />
+                ))}
+              </div>
+            </Card>
+          </div>
+        ) : (players.current.length > 0 || players.former.length > 0) && (
           <div className="mb-8">
             <h2 className="spurs-text font-bold mb-4">Players</h2>
             <Card variant="spursAccent" padding="md" hover={false}>
@@ -109,6 +128,15 @@ export default function TeamClient({ team, teamId }: TeamClientProps) {
                 cardVariant="spursAccent"
                 buttonVariant="spurs"
               />
+            ) : isLoading ? (
+              <div className="grid gap-4 md:grid-cols-2" role="status" aria-label="Loading matches">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="rounded-xl bg-gray-800 animate-pulse motion-reduce:animate-none h-32"
+                  />
+                ))}
+              </div>
             ) : (
               <>
                 <MatchFilterControls

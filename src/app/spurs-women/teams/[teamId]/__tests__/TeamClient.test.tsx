@@ -65,6 +65,31 @@ describe('TeamClient', () => {
     mockGetPlayersForTeam.mockReset().mockResolvedValue(players)
   })
 
+  it('shows loading skeletons instead of "no matches found" while data is still in flight', async () => {
+    // Deferred promises: fetches stay pending until we resolve them below, so we
+    // can assert on the in-between state React actually renders on first paint.
+    let resolveMatches!: (value: []) => void
+    let resolvePlayers!: (value: TeamPlayers) => void
+    mockGetMatchesForTeam.mockReturnValue(new Promise((resolve) => { resolveMatches = resolve }))
+    mockGetPlayersForTeam.mockReturnValue(new Promise((resolve) => { resolvePlayers = resolve }))
+
+    render(<TeamClient team={team} teamId="1" />)
+
+    expect(screen.getByRole('status', { name: 'Loading matches' })).toBeInTheDocument()
+    expect(screen.getByRole('status', { name: 'Loading players' })).toBeInTheDocument()
+    expect(screen.queryByText('No matches found for this team.')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Current/ })).not.toBeInTheDocument()
+
+    resolveMatches([])
+    resolvePlayers(players)
+
+    await waitFor(() => {
+      expect(screen.getByText('No matches found for this team.')).toBeInTheDocument()
+    })
+    expect(screen.queryByRole('status', { name: 'Loading matches' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('status', { name: 'Loading players' })).not.toBeInTheDocument()
+  })
+
   it('defaults to the Current players tab', async () => {
     render(<TeamClient team={team} teamId="1" />)
 
@@ -112,7 +137,7 @@ describe('TeamClient', () => {
     render(<TeamClient team={team} teamId="1" />)
 
     await waitFor(() => {
-      expect(mockGetPlayersForTeam).toHaveBeenCalled()
+      expect(screen.queryByRole('status', { name: 'Loading players' })).not.toBeInTheDocument()
     })
 
     expect(screen.queryByText('Players')).not.toBeInTheDocument()
