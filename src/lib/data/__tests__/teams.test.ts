@@ -194,6 +194,57 @@ describe('teams data layer', () => {
       expect(playerC.squad_number).toBe(7);
     });
 
+    it('does not count an unused substitute record towards appearances', async () => {
+      const playerHistory = [
+        { player: { id: 'A', last_name: 'Zeta', first_name: 'X' }, left_on: null, squad_number: 10 },
+      ];
+      const playerStats = [
+        { player_id: 'A', goals: 1, assists: 0, yellow_cards: 0, red_cards: 0, was_unused_substitute: false },
+        { player_id: 'A', goals: 0, assists: 0, yellow_cards: 0, red_cards: 0, was_unused_substitute: true },
+      ];
+      const mockFrom = mockSupabaseFrom({
+        player_history: { data: playerHistory, error: null },
+        player_stats: { data: playerStats, error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayersForTeam } = await import('@/lib/data/teams');
+      const result = await getPlayersForTeam('1');
+
+      const playerA = result.current.find((p) => p.id === 'A')!;
+      expect(playerA.appearances).toBe(1);
+      expect(playerA.goals).toBe(1);
+    });
+
+    it('paginates past a 1000-row page to aggregate stats from every player_stats row', async () => {
+      const playerHistory = [
+        { player: { id: 'A', last_name: 'Zeta', first_name: 'X' }, left_on: null, squad_number: 10 },
+      ];
+      // A full first page of 1000 rows for other players, then a second page containing
+      // the row that would be silently dropped without pagination.
+      const firstPage = Array.from({ length: 1000 }, () => ({
+        player_id: 'other', goals: 0, assists: 0, yellow_cards: 0, red_cards: 0, was_unused_substitute: false,
+      }));
+      const secondPage = [
+        { player_id: 'A', goals: 1, assists: 0, yellow_cards: 0, red_cards: 0, was_unused_substitute: false },
+      ];
+      const mockFrom = mockSupabaseFrom({
+        player_history: { data: playerHistory, error: null },
+        player_stats: [
+          { data: firstPage, error: null },
+          { data: secondPage, error: null },
+        ],
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayersForTeam } = await import('@/lib/data/teams');
+      const result = await getPlayersForTeam('1');
+
+      const playerA = result.current.find((p) => p.id === 'A')!;
+      expect(playerA.appearances).toBe(1);
+      expect(playerA.goals).toBe(1);
+    });
+
     it('treats a future left_on date as still current', async () => {
       const playerHistory = [
         { player: { id: 'A', last_name: 'Future', first_name: 'X' }, left_on: '2099-01-01', squad_number: 1 },

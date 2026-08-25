@@ -78,11 +78,26 @@ async function fetchPlayersForTeamFromDB(teamId: string): Promise<TeamPlayers> {
     return { current: [], former: [] };
   }
 
-  // Fetch player_stats for all matches to aggregate stats
-  const { data: playerStats, error: statsError } = await supabase
-    .from('player_stats')
-    .select('*')
-    .eq('team_id', teamId);
+  // Fetch player_stats for all matches to aggregate stats. Paginated - PostgREST caps
+  // a single request at 1000 rows, and Tottenham alone has more player_stats rows than
+  // that, which was silently truncating (and undercounting) these aggregates.
+  const playerStats: { player_id: string; goals: number | null; assists: number | null; yellow_cards: number | null; red_cards: number | null; was_unused_substitute: boolean | null }[] = [];
+  let statsError: { message: string } | null = null;
+  const PLAYER_STATS_PAGE_SIZE = 1000;
+  for (let from = 0; ; from += PLAYER_STATS_PAGE_SIZE) {
+    const { data: page, error } = await supabase
+      .from('player_stats')
+      .select('*')
+      .eq('team_id', teamId)
+      .range(from, from + PLAYER_STATS_PAGE_SIZE - 1);
+
+    if (error) {
+      statsError = error;
+      break;
+    }
+    playerStats.push(...(page ?? []));
+    if (!page || page.length < PLAYER_STATS_PAGE_SIZE) break;
+  }
 
   if (statsError) {
     console.error('Error fetching player stats for team:', statsError);
@@ -91,13 +106,17 @@ async function fetchPlayersForTeamFromDB(teamId: string): Promise<TeamPlayers> {
   // Aggregate stats by player
   const statsByPlayer = new Map<string, { appearances: number; goals: number; assists: number; yellow_cards: number; red_cards: number }>();
   
-  playerStats?.forEach((stat: { player_id: string; goals: number | null; assists: number | null; yellow_cards: number | null; red_cards: number | null }) => {
+  playerStats.forEach((stat) => {
     const playerId = stat.player_id;
     if (!statsByPlayer.has(playerId)) {
       statsByPlayer.set(playerId, { appearances: 0, goals: 0, assists: 0, yellow_cards: 0, red_cards: 0 });
     }
     const stats = statsByPlayer.get(playerId)!;
-    stats.appearances++;
+    // An unused substitute never took the pitch, so it shouldn't count as an appearance
+    // (goals/assists/cards still aggregate normally, though they'll always be 0 for these rows).
+    if (!stat.was_unused_substitute) {
+      stats.appearances++;
+    }
     stats.goals += stat.goals || 0;
     stats.assists += stat.assists || 0;
     stats.yellow_cards += stat.yellow_cards || 0;

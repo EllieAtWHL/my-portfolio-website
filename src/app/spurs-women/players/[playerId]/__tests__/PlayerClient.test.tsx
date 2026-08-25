@@ -187,6 +187,17 @@ describe('PlayerClient', () => {
     expect(statValue('Red Cards')).toBe('1'); // 0 + 1
   });
 
+  it('does not count an unused substitute appearance towards Appearances', () => {
+    const matchHistory = [
+      makeAppearance({ match: makeMatch({ id: 'm1' }), started: true, was_substitute: false, was_unused_substitute: false }),
+      makeAppearance({ match: makeMatch({ id: 'm2' }), started: false, was_substitute: true, was_unused_substitute: false }),
+      makeAppearance({ match: makeMatch({ id: 'm3' }), started: false, was_substitute: false, was_unused_substitute: true, minutes_played: 0, goals: 0, assists: 0, yellow_cards: 0, red_cards: 0 }),
+    ];
+    render(<PlayerClient player={basePlayer} matchHistory={matchHistory} />);
+
+    expect(statValue('Appearances')).toBe('2');
+  });
+
   it('lists every match from player stats records with opponent, competition, result, and per-match stats', () => {
     const matchHistory = [
       makeAppearance({
