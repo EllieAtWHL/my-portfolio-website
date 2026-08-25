@@ -6,6 +6,7 @@
     "dev": "next dev",
     "dev:live": "env $(cat .env.local | xargs) next dev",
     "validate-manifest": "node scripts/validate-manifest.js",
+    "find-missing-player-stats": "node scripts/find-matches-missing-player-stats.js",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
