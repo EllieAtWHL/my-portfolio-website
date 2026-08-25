@@ -211,6 +211,26 @@ describe('teams data layer', () => {
       expect(result.former).toEqual([]);
     });
 
+    it('only lists a player once, as current, when they have a past record and a current record (e.g. re-signed under a new squad number)', async () => {
+      const playerHistory = [
+        // Player left under squad number 22, then re-signed and is now current under 14
+        { player: { id: 'A', last_name: 'Tandberg', first_name: 'Tinka' }, left_on: '2022-06-30', squad_number: 22, joined_on: '2020-08-01' },
+        { player: { id: 'A', last_name: 'Tandberg', first_name: 'Tinka' }, left_on: null, squad_number: 14, joined_on: '2023-07-01' },
+      ];
+      const mockFrom = mockSupabaseFrom({
+        player_history: { data: playerHistory, error: null },
+        player_stats: { data: [], error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayersForTeam } = await import('@/lib/data/teams');
+      const result = await getPlayersForTeam('1');
+
+      expect(result.current.map((p) => p.id)).toEqual(['A']);
+      expect(result.former).toEqual([]);
+      expect(result.current[0].squad_number).toBe(14);
+    });
+
     it('still aggregates stats and returns current/former even if the player_stats query errors', async () => {
       const playerHistory = [
         { player: { id: 'A', last_name: 'Solo', first_name: 'X' }, left_on: null, squad_number: 1 },
