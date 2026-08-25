@@ -151,6 +151,72 @@ describe('players data layer', () => {
       const { getPlayersByMatch } = await import('@/lib/data/players');
       await expect(getPlayersByMatch('match-1')).rejects.toBeTruthy();
     });
+
+    it('resolves squad_number as of the match date, not today, for a player who has since left the team', async () => {
+      // Regression test for WEB-116: a player who has left Tottenham by "today"
+      // should still show the squad number they wore on the date of this (older) match.
+      jest.resetModules();
+      const statRow = makeStatRow({
+        match: { date: '2024-03-01' },
+        player: makePlayer({
+          player_history: [
+            { team_id: 1, squad_number: 9, joined_on: '2022-01-01', left_on: '2025-06-30' },
+          ],
+        }),
+      });
+      const mockFrom = mockSupabaseFrom({
+        player_stats: { data: [statRow], error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayersByMatch } = await import('@/lib/data/players');
+      const result = await getPlayersByMatch('match-1');
+
+      expect(result[0].squad_number).toBe(9);
+    });
+
+    it('resolves squad_number null when the match predates the player joining the team', async () => {
+      jest.resetModules();
+      const statRow = makeStatRow({
+        match: { date: '2021-01-01' },
+        player: makePlayer({
+          player_history: [
+            { team_id: 1, squad_number: 9, joined_on: '2022-01-01', left_on: null },
+          ],
+        }),
+      });
+      const mockFrom = mockSupabaseFrom({
+        player_stats: { data: [statRow], error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayersByMatch } = await import('@/lib/data/players');
+      const result = await getPlayersByMatch('match-1');
+
+      expect(result[0].squad_number).toBeNull();
+    });
+
+    it('resolves the correct squad number when a player wore different numbers in different stints', async () => {
+      jest.resetModules();
+      const statRow = makeStatRow({
+        match: { date: '2019-05-01' },
+        player: makePlayer({
+          player_history: [
+            { team_id: 1, squad_number: 7, joined_on: '2023-01-01', left_on: null }, // current number
+            { team_id: 1, squad_number: 22, joined_on: '2018-01-01', left_on: '2020-01-01' }, // number worn on the match date
+          ],
+        }),
+      });
+      const mockFrom = mockSupabaseFrom({
+        player_stats: { data: [statRow], error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayersByMatch } = await import('@/lib/data/players');
+      const result = await getPlayersByMatch('match-1');
+
+      expect(result[0].squad_number).toBe(22);
+    });
   });
 
   describe('getTeamLineupsByMatch', () => {
@@ -222,6 +288,29 @@ describe('players data layer', () => {
 
       const { getTeamLineupsByMatch } = await import('@/lib/data/players');
       await expect(getTeamLineupsByMatch('match-1')).rejects.toBeTruthy();
+    });
+
+    it('resolves squad_number as of the match date, not today, for a player who has since left the team', async () => {
+      // Regression test for WEB-116.
+      jest.resetModules();
+      const row = makeStatRow({
+        match: { date: '2024-03-01' },
+        player: makePlayer({
+          player_history: [
+            { team_id: 1, squad_number: 9, joined_on: '2022-01-01', left_on: '2025-06-30' },
+          ],
+        }),
+      });
+      const mockFrom = mockSupabaseFrom({
+        player_history: { data: [], error: null },
+        player_stats: { data: [row], error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getTeamLineupsByMatch } = await import('@/lib/data/players');
+      const result = await getTeamLineupsByMatch('match-1');
+
+      expect(result[0].players[0].squad_number).toBe(9);
     });
   });
 

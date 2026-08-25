@@ -69,14 +69,18 @@ export interface TeamLineup {
   players: PlayerWithStats[];
 }
 
-// Helper function to find the correct squad number from player_history
+// Helper function to find the correct squad number from player_history as of a
+// given reference date (the match date for match lineups, or today for a
+// player's current squad number) - not always "today", since a squad number
+// active at match time may since have changed or lapsed.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getSquadNumberFromHistory(player: any): number | null {
+function getSquadNumberFromHistory(player: any, referenceDate: Date = new Date()): number | null {
   // Find the correct player_history record for this team (team_id = 1 for Tottenham)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const relevantHistory = player?.player_history?.find((history: any) =>
     history.team_id === 1 &&
-    (!history.left_on || new Date(history.left_on) > new Date())
+    (!history.joined_on || new Date(history.joined_on) <= referenceDate) &&
+    (!history.left_on || new Date(history.left_on) > referenceDate)
   );
 
   return relevantHistory?.squad_number || null;
@@ -121,7 +125,8 @@ async function fetchPlayersByMatchFromDB(matchId: string): Promise<PlayerWithSta
     .from('player_stats')
     .select(`
       *,
-      player:players(*)
+      player:players(*, player_history:player_history(*)),
+      match:matches(date)
     `)
     .eq('match_id', matchId)
     .order('started', { ascending: false })
@@ -135,7 +140,7 @@ async function fetchPlayersByMatchFromDB(matchId: string): Promise<PlayerWithSta
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return data.map((stat: any) => ({
     ...stat.player,
-    squad_number: getSquadNumberFromHistory(stat.player),
+    squad_number: getSquadNumberFromHistory(stat.player, stat.match?.date ? new Date(stat.match.date) : new Date()),
     player_stats: {
       id: stat.id,
       player_id: stat.player_id,
@@ -184,7 +189,8 @@ async function fetchTeamLineupsByMatchFromDB(matchId: string): Promise<TeamLineu
     .from('player_stats')
     .select(`
       *,
-      player:players(*, player_history:player_history(*))
+      player:players(*, player_history:player_history(*)),
+      match:matches(date)
     `)
     .eq('match_id', matchId)
     .order('team_id')
@@ -240,11 +246,15 @@ async function fetchTeamLineupsByMatchFromDB(matchId: string): Promise<TeamLineu
         player_of_the_match: boolean;
         created_at: string;
         player: Player & { player_history?: { squad_number: number | null }[] | null };
+        match: { date: string } | null;
       };
-      
+
       return {
         ...statRecord.player,
-        squad_number: getSquadNumberFromHistory(statRecord.player),
+        squad_number: getSquadNumberFromHistory(
+          statRecord.player,
+          statRecord.match?.date ? new Date(statRecord.match.date) : new Date()
+        ),
         player_stats: {
           id: statRecord.id,
           player_id: statRecord.player_id,
