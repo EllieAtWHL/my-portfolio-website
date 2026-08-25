@@ -14,7 +14,6 @@ const emptyPlayerForm: Partial<Player> = {
   height_cm: null,
   weight_kg: null,
   profile_image_url: null,
-  is_active: true,
 };
 
 const emptyPlayerHistoryForm: Partial<PlayerHistory> = {
@@ -99,7 +98,6 @@ export function usePlayersAdmin({ players, setPlayers, setLoading, showMessage }
       height_cm: player.height_cm,
       weight_kg: player.weight_kg,
       profile_image_url: player.profile_image_url,
-      is_active: player.is_active,
     });
   }, []);
 
@@ -137,7 +135,6 @@ export function usePlayersAdmin({ players, setPlayers, setLoading, showMessage }
         height_cm: playerForm.height_cm || null,
         weight_kg: playerForm.weight_kg || null,
         profile_image_url: playerForm.profile_image_url || null,
-        is_active: playerForm.is_active !== undefined ? playerForm.is_active : true,
       };
 
       let response;

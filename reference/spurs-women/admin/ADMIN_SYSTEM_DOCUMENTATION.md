@@ -139,10 +139,9 @@ The admin system manages the following entities:
   - `height_cm` (number, nullable)
   - `weight_kg` (number, nullable)
   - `profile_image_url` (string, nullable)
-  - `squad_number` (number, nullable)
-  - `is_active` (boolean)
   - `created_at` (string, timestamp)
   - `updated_at` (string, timestamp)
+  - Note: `squad_number` is **not** a column here - it lives on `player_history` (per team_id stint, since it can change) and is resolved via the `getSquadNumberFromHistory` helper in `src/lib/data/players.ts`. The `Player`/`PlayerWithStats` TypeScript types include `squad_number` because it's merged on after the fetch, not because the underlying table has it.
 
 ### Player Stats
 - **Table**: `player_stats`
