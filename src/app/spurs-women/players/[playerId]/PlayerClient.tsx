@@ -13,6 +13,12 @@ interface PlayerClientProps {
   matchHistory?: PlayerMatchAppearance[];
 }
 
+function getAppearanceRole(appearance: PlayerMatchAppearance): string {
+  if (appearance.was_unused_substitute) return 'Unused Sub';
+  if (appearance.started) return 'Started';
+  return 'Sub (on)';
+}
+
 export default function PlayerClient({ player, matchHistory = [] }: PlayerClientProps) {
   const matches = useMemo(() => matchHistory.map((appearance) => appearance.match), [matchHistory]);
   const [filteredMatches, setFilteredMatches] = useState<Match[]>(matches);
@@ -196,6 +202,7 @@ export default function PlayerClient({ player, matchHistory = [] }: PlayerClient
                         <th className="text-left py-3 px-4 spurs-text font-semibold">Opponent</th>
                         <th className="text-left py-3 px-4 spurs-text font-semibold">Competition</th>
                         <th className="text-center py-3 px-4 spurs-text font-semibold">Result</th>
+                        <th className="text-left py-3 px-4 spurs-text font-semibold">Role</th>
                         <th className="text-center py-3 px-4 spurs-text font-semibold">Mins</th>
                         <th className="text-center py-3 px-4 spurs-text font-semibold">G</th>
                         <th className="text-center py-3 px-4 spurs-text font-semibold">A</th>
@@ -227,6 +234,7 @@ export default function PlayerClient({ player, matchHistory = [] }: PlayerClient
                             <td className="py-3 px-4 text-center spurs-text">
                               {match.spurs_score ?? '-'} - {match.opponent_score ?? '-'}
                             </td>
+                            <td className="py-3 px-4 spurs-text opacity-75">{getAppearanceRole(appearance)}</td>
                             <td className="py-3 px-4 text-center spurs-text">{appearance.minutes_played}</td>
                             <td className="py-3 px-4 text-center spurs-text">{appearance.goals}</td>
                             <td className="py-3 px-4 text-center spurs-text">{appearance.assists}</td>
