@@ -75,7 +75,10 @@ Also enforced in `updateSession` for the same `/api/admin/*` requests: non-GET/H
 
 ## Data Entities
 
-The admin system manages the following entities:
+The admin system manages the following entities (field lists below cover what
+the admin UI reads/writes; for the full authoritative schema - every column,
+constraint, and index, not just the ones the admin UI touches - see
+`supabase/migrations/`, in particular the `baseline_schema` migration):
 
 ### Match
 - **Table**: `matches`
