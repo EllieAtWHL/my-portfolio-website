@@ -3,6 +3,7 @@
 import { YouTubeVideo } from '../../lib/rss';
 import { formatDateForCard } from '@/lib/utils/date';
 import { Card } from '@/components/Card';
+import { ExternalLinkIcon } from './ExternalLinkIcon';
 
 interface VideoCardProps {
   video: YouTubeVideo & { channel?: string };
@@ -49,9 +50,7 @@ export default function VideoCard({ video, showDate = true }: VideoCardProps) {
             <h3 className="font-semibold spurs-text line-clamp-2 flex-1">
               {video.title}
             </h3>
-            <svg className="w-4 h-4 text-gray-400 ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
+            <ExternalLinkIcon className="w-4 h-4 text-gray-400 ml-2 flex-shrink-0" />
           </div>
           {/* gray-400, not gray-500: VideoCard only renders inside .spurs-accent-card,
               which is always dark regardless of the site-wide light/dark toggle - gray-500
