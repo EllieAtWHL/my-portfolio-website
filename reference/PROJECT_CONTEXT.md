@@ -394,6 +394,23 @@ Rules:
   - No secrets committed to the repo.
   - Public vs server-only variables clearly separated.
 
+### Database Connection Pooling (WEB-61)
+
+Decision:
+  - No app-managed Postgres connection pool, and none is needed.
+
+Rationale:
+  - All database access goes through `@supabase/supabase-js` and `@supabase/ssr`
+    (see `src/lib/supabase/`), which talk to Supabase's PostgREST API over HTTP -
+    the app never opens a raw Postgres connection to pool in the first place.
+  - Supabase's own infrastructure (Supavisor) already pools connections between
+    PostgREST and Postgres on Supabase's side; this is confirmed by the
+    `pooler-url` entry the Supabase CLI caches for the linked project.
+  - Raised during the WEB-61 "database optimization" investigation, which found
+    the original ticket's "add database connection pooling" item didn't map onto
+    this architecture - documented here rather than left as an open question to
+    re-investigate later.
+
 ## Performance & Monitoring
 ### Performance Monitoring (Core Web Vitals)
 
