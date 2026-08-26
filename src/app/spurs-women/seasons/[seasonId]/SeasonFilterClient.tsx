@@ -1,12 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import MatchCard from '@/components/spurs-women/MatchCard';
-import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
+import FilteredMatchList from '@/components/spurs-women/FilteredMatchList';
 import MatchFilterControls from '@/components/spurs-women/MatchFilterControls';
 import SeasonReviewCard from '@/components/spurs-women/SeasonReviewCard';
 import SeasonStats from '@/components/spurs-women/SeasonStats';
+import { useFilteredMatches } from '@/hooks/useFilteredMatches';
 import { Match } from '@/lib/data/matches';
 import { SeasonReview } from '@/lib/data/seasons';
 
@@ -17,7 +15,7 @@ interface SeasonFilterClientProps {
 }
 
 export default function SeasonFilterClient({ matches, seasonName, seasonReview }: SeasonFilterClientProps) {
-  const [filteredMatches, setFilteredMatches] = useState<Match[]>(matches);
+  const { filteredMatches, onFilteredMatchesChange, resetFilters } = useFilteredMatches(matches);
 
   return (
     <main id="main-content" className="p-8 pb-footer-clearance">
@@ -27,8 +25,8 @@ export default function SeasonFilterClient({ matches, seasonName, seasonReview }
         </h1>
 
         {/* Season Review Card */}
-        <SeasonReviewCard 
-          review={seasonReview} 
+        <SeasonReviewCard
+          review={seasonReview}
         />
 
         {/* Season Stats */}
@@ -37,24 +35,15 @@ export default function SeasonFilterClient({ matches, seasonName, seasonReview }
         {/* Comprehensive Filters */}
         <MatchFilterControls
           matches={matches}
-          onFilteredMatchesChange={setFilteredMatches}
+          onFilteredMatchesChange={onFilteredMatchesChange}
         />
 
         {/* Matches Grid */}
-        {filteredMatches.length === 0 ? (
-          <Card variant="spursAccent" padding="lg" className="text-center">
-            <p className="spurs-text text-lg mb-4">No matches found with the current filters.</p>
-            <Button variant="spurs" onClick={() => setFilteredMatches(matches)}>
-              Clear Filters
-            </Button>
-          </Card>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
-            {filteredMatches.map((match) => (
-              <MatchCard key={match.id} match={match} />
-            ))}
-          </div>
-        )}
+        <FilteredMatchList
+          matches={filteredMatches}
+          emptyMessage="No matches found with the current filters."
+          onClear={resetFilters}
+        />
       </div>
     </main>
   );

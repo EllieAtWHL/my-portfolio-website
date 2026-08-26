@@ -53,6 +53,32 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
+  images: {
+    // Player profile photos (profile_image_url, admin-entered free text - see
+    // WEB-83) are always jsDelivr-served URLs from the spurs-women-photo-gallery
+    // repo in practice, matching the match-photo manifest system's CDN_PROVIDER
+    // (see reference/photo-gallery/README.md). Scoped to that repo's own path,
+    // not the whole jsDelivr host, so next/image won't optimize (and thereby
+    // proxy) an unrelated jsDelivr-hosted URL if one ever ended up in the field.
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "cdn.jsdelivr.net",
+        // jsDelivr's GitHub path is /gh/{user}/{repo}@{ref}/{path} - the ref
+        // is appended directly to the repo name with no slash before it, so
+        // it needs its own single-segment `*` (a `**` here would only match
+        // within one path segment, same as `*` - it only gets "globstar"
+        // behaviour spanning slashes as a standalone segment) ahead of the
+        // `/**` that matches the rest of the path. Verified against a real
+        // manifest URL from reference/photo-gallery/README.md via live
+        // /_next/image requests: this pattern proxies a real file (404 from
+        // jsDelivr itself, past the allowlist check) while a different repo
+        // under the same host, and a different host entirely, both correctly
+        // 400 at the allowlist check.
+        pathname: "/gh/EllieAtWHL/spurs-women-photo-gallery@*/**",
+      },
+    ],
+  },
   async headers() {
     return [
       {

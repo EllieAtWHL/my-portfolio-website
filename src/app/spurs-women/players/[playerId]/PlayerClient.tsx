@@ -1,11 +1,12 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Card } from '@/components/Card';
 import MatchFilterControls from '@/components/spurs-women/MatchFilterControls';
+import { useFilteredMatches } from '@/hooks/useFilteredMatches';
 import { Player, PlayerMatchAppearance } from '@/lib/data/players';
-import { Match } from '@/lib/data/matches';
 import { formatDateConsistent, formatDateForCard } from '@/lib/utils/date';
 
 interface PlayerClientProps {
@@ -21,11 +22,7 @@ function getAppearanceRole(appearance: PlayerMatchAppearance): string {
 
 export default function PlayerClient({ player, matchHistory = [] }: PlayerClientProps) {
   const matches = useMemo(() => matchHistory.map((appearance) => appearance.match), [matchHistory]);
-  const [filteredMatches, setFilteredMatches] = useState<Match[]>(matches);
-
-  const handleFilteredMatchesChange = useCallback((newFilteredMatches: Match[]) => {
-    setFilteredMatches(newFilteredMatches);
-  }, []);
+  const { filteredMatches, onFilteredMatchesChange } = useFilteredMatches(matches);
 
   const appearanceByMatchId = useMemo(
     () => new Map(matchHistory.map((appearance) => [appearance.match.id, appearance])),
@@ -64,9 +61,11 @@ export default function PlayerClient({ player, matchHistory = [] }: PlayerClient
           <div className="flex flex-col sm:flex-row gap-6">
             <div className="flex-shrink-0 mx-auto sm:mx-0" data-testid="player-photo">
               {player.profile_image_url ? (
-                <img
+                <Image
                   src={player.profile_image_url}
                   alt={`${player.first_name} ${player.last_name}`}
+                  width={224}
+                  height={224}
                   className="w-56 h-56 object-cover rounded-full"
                 />
               ) : (
@@ -159,7 +158,7 @@ export default function PlayerClient({ player, matchHistory = [] }: PlayerClient
             <h2 className="spurs-text font-bold mb-4">Career Stats</h2>
             <MatchFilterControls
               matches={matches}
-              onFilteredMatchesChange={handleFilteredMatchesChange}
+              onFilteredMatchesChange={onFilteredMatchesChange}
               showCompetitionFilter={true}
               showVenueFilter={false}
               showAttendedFilter={false}
