@@ -1,6 +1,3 @@
-
-
-
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
@@ -12,52 +9,9 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
-
-COMMENT ON SCHEMA "public" IS 'standard public schema';
-
-
-
-CREATE EXTENSION IF NOT EXISTS "hypopg" WITH SCHEMA "extensions";
-
-
-
-
-
-
-CREATE EXTENSION IF NOT EXISTS "index_advisor" WITH SCHEMA "extensions";
-
-
-
-
-
-
-CREATE EXTENSION IF NOT EXISTS "pg_stat_statements" WITH SCHEMA "extensions";
-
-
-
-
-
-
 CREATE EXTENSION IF NOT EXISTS "pgcrypto" WITH SCHEMA "extensions";
 
-
-
-
-
-
-CREATE EXTENSION IF NOT EXISTS "supabase_vault" WITH SCHEMA "vault";
-
-
-
-
-
-
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA "extensions";
-
-
-
-
-
 
 CREATE TYPE "public"."media_type" AS ENUM (
     'article',
@@ -67,10 +21,6 @@ CREATE TYPE "public"."media_type" AS ENUM (
     'video-external'
 );
 
-
-ALTER TYPE "public"."media_type" OWNER TO "postgres";
-
-
 CREATE TYPE "public"."position" AS ENUM (
     'Goalkeeper',
     'Defender',
@@ -78,26 +28,14 @@ CREATE TYPE "public"."position" AS ENUM (
     'Forward'
 );
 
-
-ALTER TYPE "public"."position" OWNER TO "postgres";
-
-
 COMMENT ON TYPE "public"."position" IS 'Player positions';
-
-
 
 CREATE TYPE "public"."stoarge_source" AS ENUM (
     'supabase',
     'github'
 );
 
-
-ALTER TYPE "public"."stoarge_source" OWNER TO "postgres";
-
-
 COMMENT ON TYPE "public"."stoarge_source" IS 'Used whilst migrating image to Github so we can have a hybrid approach';
-
-
 
 CREATE OR REPLACE FUNCTION "public"."update_stadium_names_updated_at"() RETURNS "trigger"
     LANGUAGE "plpgsql"
@@ -108,10 +46,6 @@ begin
 end;
 $$;
 
-
-ALTER FUNCTION "public"."update_stadium_names_updated_at"() OWNER TO "postgres";
-
-
 CREATE OR REPLACE FUNCTION "public"."update_updated_at_column"() RETURNS "trigger"
     LANGUAGE "plpgsql"
     AS $$
@@ -121,13 +55,9 @@ begin
 end;
 $$;
 
-
-ALTER FUNCTION "public"."update_updated_at_column"() OWNER TO "postgres";
-
 SET default_tablespace = '';
 
 SET default_table_access_method = "heap";
-
 
 CREATE TABLE IF NOT EXISTS "public"."competitions" (
     "id" "uuid" DEFAULT "extensions"."uuid_generate_v4"() NOT NULL,
@@ -137,10 +67,6 @@ CREATE TABLE IF NOT EXISTS "public"."competitions" (
     "nickname" "text",
     "icon_svg" "text"
 );
-
-
-ALTER TABLE "public"."competitions" OWNER TO "postgres";
-
 
 CREATE TABLE IF NOT EXISTS "public"."matches" (
     "id" "uuid" DEFAULT "extensions"."uuid_generate_v4"() NOT NULL,
@@ -173,25 +99,13 @@ CREATE TABLE IF NOT EXISTS "public"."matches" (
     "is_neutral_venue" boolean
 );
 
-
-ALTER TABLE "public"."matches" OWNER TO "postgres";
-
-
 COMMENT ON COLUMN "public"."matches"."spurs_score_aet" IS 'Used only if extra time is played and the score is different than after 90 mins';
-
-
 
 COMMENT ON COLUMN "public"."matches"."opponent_score_aet" IS 'Used only if extra time is played and the score is different than after 90 mins';
 
-
-
 COMMENT ON COLUMN "public"."matches"."spurs_score_pens" IS 'Used only if a penalty shoot out takes place';
 
-
-
 COMMENT ON COLUMN "public"."matches"."opponent_score_pens" IS 'Used only if a penalty shoot out takes place';
-
-
 
 CREATE TABLE IF NOT EXISTS "public"."media" (
     "id" "uuid" DEFAULT "extensions"."uuid_generate_v4"() NOT NULL,
@@ -204,10 +118,6 @@ CREATE TABLE IF NOT EXISTS "public"."media" (
     "created_at" timestamp with time zone DEFAULT "now"()
 );
 
-
-ALTER TABLE "public"."media" OWNER TO "postgres";
-
-
 CREATE TABLE IF NOT EXISTS "public"."teams" (
     "id" integer NOT NULL,
     "name" character varying(100) NOT NULL,
@@ -218,10 +128,6 @@ CREATE TABLE IF NOT EXISTS "public"."teams" (
     "created_at" timestamp with time zone DEFAULT "now"(),
     "updated_at" timestamp with time zone DEFAULT "now"()
 );
-
-
-ALTER TABLE "public"."teams" OWNER TO "postgres";
-
 
 CREATE OR REPLACE VIEW "public"."match_media_summary" WITH ("security_invoker"='on') AS
  SELECT "ma"."id" AS "match_id",
@@ -241,10 +147,6 @@ CREATE OR REPLACE VIEW "public"."match_media_summary" WITH ("security_invoker"='
      LEFT JOIN "public"."teams" "away_team" ON (("ma"."away_team_id" = "away_team"."id")))
   GROUP BY "ma"."id", "ma"."date", "ma"."attended", "home_team"."name", "away_team"."name"
   ORDER BY "ma"."date" DESC;
-
-
-ALTER VIEW "public"."match_media_summary" OWNER TO "postgres";
-
 
 CREATE TABLE IF NOT EXISTS "public"."stadia" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
@@ -266,10 +168,6 @@ CREATE TABLE IF NOT EXISTS "public"."stadia" (
     CONSTRAINT "valid_dates" CHECK ((("closed_date" IS NULL) OR ("closed_date" >= "opened_date")))
 );
 
-
-ALTER TABLE "public"."stadia" OWNER TO "postgres";
-
-
 CREATE TABLE IF NOT EXISTS "public"."stadium_names" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "stadium_id" "uuid" NOT NULL,
@@ -281,10 +179,6 @@ CREATE TABLE IF NOT EXISTS "public"."stadium_names" (
     "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     CONSTRAINT "valid_date_range" CHECK ((("valid_to" IS NULL) OR ("valid_to" >= "valid_from")))
 );
-
-
-ALTER TABLE "public"."stadium_names" OWNER TO "postgres";
-
 
 CREATE OR REPLACE VIEW "public"."matches_with_stadium" WITH ("security_invoker"='on') AS
  SELECT "m"."id",
@@ -324,10 +218,6 @@ CREATE OR REPLACE VIEW "public"."matches_with_stadium" WITH ("security_invoker"=
      LEFT JOIN "public"."stadia" "s" ON (("m"."stadium_id" = "s"."id")))
      LEFT JOIN "public"."stadium_names" "sn" ON ((("sn"."stadium_id" = "s"."id") AND ("m"."date" >= "sn"."valid_from") AND (("sn"."valid_to" IS NULL) OR ("m"."date" <= "sn"."valid_to")))));
 
-
-ALTER VIEW "public"."matches_with_stadium" OWNER TO "postgres";
-
-
 CREATE TABLE IF NOT EXISTS "public"."seasons" (
     "id" "uuid" DEFAULT "extensions"."uuid_generate_v4"() NOT NULL,
     "name" "text" NOT NULL,
@@ -336,10 +226,6 @@ CREATE TABLE IF NOT EXISTS "public"."seasons" (
     "created_at" timestamp with time zone DEFAULT "now"(),
     "season_review" "text"
 );
-
-
-ALTER TABLE "public"."seasons" OWNER TO "postgres";
-
 
 CREATE OR REPLACE VIEW "public"."media_with_match_details" WITH ("security_invoker"='on') AS
  SELECT "m"."id" AS "media_id",
@@ -367,10 +253,6 @@ CREATE OR REPLACE VIEW "public"."media_with_match_details" WITH ("security_invok
      LEFT JOIN "public"."competitions" "c" ON (("ma"."competition_id" = "c"."id")))
      LEFT JOIN "public"."seasons" "s" ON (("ma"."season_id" = "s"."id")));
 
-
-ALTER VIEW "public"."media_with_match_details" OWNER TO "postgres";
-
-
 CREATE TABLE IF NOT EXISTS "public"."player_history" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "player_id" "uuid" NOT NULL,
@@ -381,10 +263,6 @@ CREATE TABLE IF NOT EXISTS "public"."player_history" (
     "is_loan" boolean DEFAULT false NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL
 );
-
-
-ALTER TABLE "public"."player_history" OWNER TO "postgres";
-
 
 CREATE TABLE IF NOT EXISTS "public"."player_stats" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
@@ -422,10 +300,6 @@ CREATE TABLE IF NOT EXISTS "public"."player_stats" (
     CONSTRAINT "player_stats_minutes_chk" CHECK (("minutes_played" >= 0))
 );
 
-
-ALTER TABLE "public"."player_stats" OWNER TO "postgres";
-
-
 CREATE TABLE IF NOT EXISTS "public"."players" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "first_name" "text",
@@ -440,10 +314,6 @@ CREATE TABLE IF NOT EXISTS "public"."players" (
     "position" "public"."position"
 );
 
-
-ALTER TABLE "public"."players" OWNER TO "postgres";
-
-
 CREATE SEQUENCE IF NOT EXISTS "public"."teams_id_seq"
     AS integer
     START WITH 1
@@ -452,728 +322,279 @@ CREATE SEQUENCE IF NOT EXISTS "public"."teams_id_seq"
     NO MAXVALUE
     CACHE 1;
 
-
-ALTER SEQUENCE "public"."teams_id_seq" OWNER TO "postgres";
-
-
 ALTER SEQUENCE "public"."teams_id_seq" OWNED BY "public"."teams"."id";
 
-
-
 ALTER TABLE ONLY "public"."teams" ALTER COLUMN "id" SET DEFAULT "nextval"('"public"."teams_id_seq"'::"regclass");
-
-
 
 ALTER TABLE ONLY "public"."competitions"
     ADD CONSTRAINT "competitions_pkey" PRIMARY KEY ("id");
 
-
-
 ALTER TABLE ONLY "public"."matches"
     ADD CONSTRAINT "matches_pkey" PRIMARY KEY ("id");
-
-
 
 ALTER TABLE ONLY "public"."media"
     ADD CONSTRAINT "media_pkey" PRIMARY KEY ("id");
 
-
-
 ALTER TABLE ONLY "public"."player_history"
     ADD CONSTRAINT "player_history_pkey" PRIMARY KEY ("id");
-
-
 
 ALTER TABLE ONLY "public"."player_stats"
     ADD CONSTRAINT "player_stats_pkey" PRIMARY KEY ("id");
 
-
-
 ALTER TABLE ONLY "public"."player_stats"
     ADD CONSTRAINT "player_stats_unique_player_match" UNIQUE ("player_id", "match_id");
-
-
 
 ALTER TABLE ONLY "public"."players"
     ADD CONSTRAINT "players_pkey" PRIMARY KEY ("id");
 
-
-
 ALTER TABLE ONLY "public"."seasons"
     ADD CONSTRAINT "seasons_pkey" PRIMARY KEY ("id");
-
-
 
 ALTER TABLE ONLY "public"."stadia"
     ADD CONSTRAINT "stadia_pkey" PRIMARY KEY ("id");
 
-
-
 ALTER TABLE ONLY "public"."stadia"
     ADD CONSTRAINT "stadia_slug_key" UNIQUE ("slug");
-
-
 
 ALTER TABLE ONLY "public"."stadium_names"
     ADD CONSTRAINT "stadium_names_pkey" PRIMARY KEY ("id");
 
-
-
 ALTER TABLE ONLY "public"."teams"
     ADD CONSTRAINT "teams_name_key" UNIQUE ("name");
-
-
 
 ALTER TABLE ONLY "public"."teams"
     ADD CONSTRAINT "teams_pkey" PRIMARY KEY ("id");
 
-
-
 CREATE INDEX "idx_matches_away_team_id" ON "public"."matches" USING "btree" ("away_team_id");
-
-
 
 CREATE INDEX "idx_matches_competition_id" ON "public"."matches" USING "btree" ("competition_id");
 
-
-
 CREATE INDEX "idx_matches_home_team_id" ON "public"."matches" USING "btree" ("home_team_id");
-
-
 
 CREATE INDEX "idx_matches_season_id" ON "public"."matches" USING "btree" ("season_id");
 
-
-
 CREATE INDEX "idx_matches_stadium_id" ON "public"."matches" USING "btree" ("stadium_id");
-
-
 
 CREATE INDEX "idx_media_match_id" ON "public"."media" USING "btree" ("match_id");
 
-
-
 CREATE INDEX "idx_stadia_home_team" ON "public"."stadia" USING "btree" ("home_team_id");
-
-
 
 CREATE INDEX "idx_stadia_slug" ON "public"."stadia" USING "btree" ("slug");
 
-
-
 CREATE INDEX "idx_stadium_names_stadium_id" ON "public"."stadium_names" USING "btree" ("stadium_id");
-
-
 
 CREATE INDEX "player_history_player_idx" ON "public"."player_history" USING "btree" ("player_id");
 
-
-
 CREATE INDEX "player_history_team_idx" ON "public"."player_history" USING "btree" ("team_id");
-
-
 
 CREATE INDEX "player_stats_match_idx" ON "public"."player_stats" USING "btree" ("match_id");
 
-
-
 CREATE INDEX "player_stats_player_idx" ON "public"."player_stats" USING "btree" ("player_id");
-
-
 
 CREATE UNIQUE INDEX "player_stats_single_potm_per_match_idx" ON "public"."player_stats" USING "btree" ("match_id") WHERE ("player_of_the_match" = true);
 
-
-
 CREATE INDEX "player_stats_team_idx" ON "public"."player_stats" USING "btree" ("team_id");
-
-
 
 CREATE INDEX "players_last_name_idx" ON "public"."players" USING "btree" ("last_name");
 
-
-
 CREATE UNIQUE INDEX "uniq_stadia_name_city" ON "public"."stadia" USING "btree" ("lower"("name"), "lower"("city"));
-
-
 
 CREATE OR REPLACE TRIGGER "update_stadia_updated_at" BEFORE UPDATE ON "public"."stadia" FOR EACH ROW EXECUTE FUNCTION "public"."update_updated_at_column"();
 
-
-
 CREATE OR REPLACE TRIGGER "update_stadium_names_updated_at" BEFORE UPDATE ON "public"."stadium_names" FOR EACH ROW EXECUTE FUNCTION "public"."update_stadium_names_updated_at"();
-
-
 
 ALTER TABLE ONLY "public"."matches"
     ADD CONSTRAINT "matches_away_team_id_fkey" FOREIGN KEY ("away_team_id") REFERENCES "public"."teams"("id");
 
-
-
 ALTER TABLE ONLY "public"."matches"
     ADD CONSTRAINT "matches_competition_id_fkey" FOREIGN KEY ("competition_id") REFERENCES "public"."competitions"("id") ON DELETE RESTRICT;
-
-
 
 ALTER TABLE ONLY "public"."matches"
     ADD CONSTRAINT "matches_home_team_id_fkey" FOREIGN KEY ("home_team_id") REFERENCES "public"."teams"("id");
 
-
-
 ALTER TABLE ONLY "public"."matches"
     ADD CONSTRAINT "matches_season_id_fkey" FOREIGN KEY ("season_id") REFERENCES "public"."seasons"("id") ON DELETE RESTRICT;
-
-
 
 ALTER TABLE ONLY "public"."matches"
     ADD CONSTRAINT "matches_stadium_id_fkey" FOREIGN KEY ("stadium_id") REFERENCES "public"."stadia"("id");
 
-
-
 ALTER TABLE ONLY "public"."media"
     ADD CONSTRAINT "media_match_id_fkey" FOREIGN KEY ("match_id") REFERENCES "public"."matches"("id") ON DELETE CASCADE;
-
-
 
 ALTER TABLE ONLY "public"."player_history"
     ADD CONSTRAINT "player_history_player_id_fkey" FOREIGN KEY ("player_id") REFERENCES "public"."players"("id") ON DELETE CASCADE;
 
-
-
 ALTER TABLE ONLY "public"."player_history"
     ADD CONSTRAINT "player_history_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "public"."teams"("id") ON DELETE RESTRICT;
-
-
 
 ALTER TABLE ONLY "public"."player_stats"
     ADD CONSTRAINT "player_stats_match_id_fkey" FOREIGN KEY ("match_id") REFERENCES "public"."matches"("id") ON DELETE CASCADE;
 
-
-
 ALTER TABLE ONLY "public"."player_stats"
     ADD CONSTRAINT "player_stats_player_id_fkey" FOREIGN KEY ("player_id") REFERENCES "public"."players"("id") ON DELETE CASCADE;
-
-
 
 ALTER TABLE ONLY "public"."player_stats"
     ADD CONSTRAINT "player_stats_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "public"."teams"("id") ON DELETE RESTRICT;
 
-
-
 ALTER TABLE ONLY "public"."stadia"
     ADD CONSTRAINT "stadia_home_team_id_fkey" FOREIGN KEY ("home_team_id") REFERENCES "public"."teams"("id");
-
-
 
 ALTER TABLE ONLY "public"."stadium_names"
     ADD CONSTRAINT "stadium_names_stadium_id_fkey" FOREIGN KEY ("stadium_id") REFERENCES "public"."stadia"("id") ON DELETE CASCADE;
 
-
-
 CREATE POLICY "Authenticated delete stadia" ON "public"."stadia" FOR DELETE TO "authenticated" USING (true);
-
-
 
 CREATE POLICY "Authenticated delete stadium_names" ON "public"."stadium_names" FOR DELETE TO "authenticated" USING (true);
 
-
-
 CREATE POLICY "Authenticated insert stadia" ON "public"."stadia" FOR INSERT TO "authenticated" WITH CHECK (true);
-
-
 
 CREATE POLICY "Authenticated insert stadium_names" ON "public"."stadium_names" FOR INSERT TO "authenticated" WITH CHECK (true);
 
-
-
 CREATE POLICY "Authenticated update stadia" ON "public"."stadia" FOR UPDATE TO "authenticated" USING (true) WITH CHECK (true);
-
-
 
 CREATE POLICY "Authenticated update stadium_names" ON "public"."stadium_names" FOR UPDATE TO "authenticated" USING (true) WITH CHECK (true);
 
-
-
 CREATE POLICY "Enable delete for authenticated users only" ON "public"."matches" FOR DELETE TO "authenticated" USING (true);
-
-
 
 CREATE POLICY "Enable delete for authenticated users only" ON "public"."media" FOR DELETE TO "authenticated" USING (true);
 
-
-
 CREATE POLICY "Enable insert for authenticated users only" ON "public"."matches" FOR INSERT TO "authenticated" WITH CHECK (true);
-
-
 
 CREATE POLICY "Enable insert for authenticated users only" ON "public"."media" FOR INSERT TO "authenticated" WITH CHECK (true);
 
-
-
 CREATE POLICY "Enable insert for authenticated users only" ON "public"."player_history" FOR INSERT TO "authenticated" WITH CHECK (true);
-
-
 
 CREATE POLICY "Enable insert for authenticated users only" ON "public"."player_stats" FOR INSERT TO "authenticated" WITH CHECK (true);
 
-
-
 CREATE POLICY "Enable insert for authenticated users only" ON "public"."players" FOR INSERT TO "authenticated" WITH CHECK (true);
-
-
 
 CREATE POLICY "Enable insert for authenticated users only" ON "public"."teams" FOR INSERT TO "authenticated" WITH CHECK (true);
 
-
-
 CREATE POLICY "Enable read access for all users" ON "public"."player_history" FOR SELECT USING (true);
-
-
 
 CREATE POLICY "Enable update for authenticated users only" ON "public"."matches" FOR UPDATE TO "authenticated" USING (true);
 
-
-
 CREATE POLICY "Enable update for authenticated users only" ON "public"."media" FOR UPDATE TO "authenticated" USING (true);
-
-
 
 CREATE POLICY "Player stats are viewable by everyone" ON "public"."player_stats" FOR SELECT USING (true);
 
-
-
 CREATE POLICY "Players are viewable by everyone" ON "public"."players" FOR SELECT USING (true);
-
-
 
 CREATE POLICY "Public read access" ON "public"."competitions" FOR SELECT USING (true);
 
-
-
 CREATE POLICY "Public read access" ON "public"."matches" FOR SELECT USING (true);
-
-
 
 CREATE POLICY "Public read access" ON "public"."media" FOR SELECT USING (true);
 
-
-
 CREATE POLICY "Public read access" ON "public"."seasons" FOR SELECT USING (true);
-
-
 
 CREATE POLICY "Public read access" ON "public"."teams" FOR SELECT USING (true);
 
-
-
 CREATE POLICY "Public read stadia" ON "public"."stadia" FOR SELECT USING (true);
-
-
 
 CREATE POLICY "Public read stadium_names" ON "public"."stadium_names" FOR SELECT USING (true);
 
-
-
 ALTER TABLE "public"."competitions" ENABLE ROW LEVEL SECURITY;
-
 
 ALTER TABLE "public"."matches" ENABLE ROW LEVEL SECURITY;
 
-
 ALTER TABLE "public"."media" ENABLE ROW LEVEL SECURITY;
-
 
 ALTER TABLE "public"."player_history" ENABLE ROW LEVEL SECURITY;
 
-
 ALTER TABLE "public"."player_stats" ENABLE ROW LEVEL SECURITY;
-
 
 ALTER TABLE "public"."players" ENABLE ROW LEVEL SECURITY;
 
-
 ALTER TABLE "public"."seasons" ENABLE ROW LEVEL SECURITY;
-
 
 ALTER TABLE "public"."stadia" ENABLE ROW LEVEL SECURITY;
 
-
 ALTER TABLE "public"."stadium_names" ENABLE ROW LEVEL SECURITY;
 
-
 ALTER TABLE "public"."teams" ENABLE ROW LEVEL SECURITY;
-
-
-
-
-ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
-
 
 GRANT USAGE ON SCHEMA "public" TO "postgres";
 GRANT USAGE ON SCHEMA "public" TO "anon";
 GRANT USAGE ON SCHEMA "public" TO "authenticated";
 GRANT USAGE ON SCHEMA "public" TO "service_role";
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 GRANT ALL ON FUNCTION "public"."update_stadium_names_updated_at"() TO "anon";
 GRANT ALL ON FUNCTION "public"."update_stadium_names_updated_at"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."update_stadium_names_updated_at"() TO "service_role";
-
-
 
 GRANT ALL ON FUNCTION "public"."update_updated_at_column"() TO "anon";
 GRANT ALL ON FUNCTION "public"."update_updated_at_column"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."update_updated_at_column"() TO "service_role";
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 GRANT ALL ON TABLE "public"."competitions" TO "anon";
 GRANT ALL ON TABLE "public"."competitions" TO "authenticated";
 GRANT ALL ON TABLE "public"."competitions" TO "service_role";
-
-
 
 GRANT ALL ON TABLE "public"."matches" TO "anon";
 GRANT ALL ON TABLE "public"."matches" TO "authenticated";
 GRANT ALL ON TABLE "public"."matches" TO "service_role";
 
-
-
 GRANT ALL ON TABLE "public"."media" TO "anon";
 GRANT ALL ON TABLE "public"."media" TO "authenticated";
 GRANT ALL ON TABLE "public"."media" TO "service_role";
-
-
 
 GRANT ALL ON TABLE "public"."teams" TO "anon";
 GRANT ALL ON TABLE "public"."teams" TO "authenticated";
 GRANT ALL ON TABLE "public"."teams" TO "service_role";
 
-
-
 GRANT ALL ON TABLE "public"."match_media_summary" TO "anon";
 GRANT ALL ON TABLE "public"."match_media_summary" TO "authenticated";
 GRANT ALL ON TABLE "public"."match_media_summary" TO "service_role";
-
-
 
 GRANT ALL ON TABLE "public"."stadia" TO "anon";
 GRANT ALL ON TABLE "public"."stadia" TO "authenticated";
 GRANT ALL ON TABLE "public"."stadia" TO "service_role";
 
-
-
 GRANT ALL ON TABLE "public"."stadium_names" TO "anon";
 GRANT ALL ON TABLE "public"."stadium_names" TO "authenticated";
 GRANT ALL ON TABLE "public"."stadium_names" TO "service_role";
-
-
 
 GRANT ALL ON TABLE "public"."matches_with_stadium" TO "anon";
 GRANT ALL ON TABLE "public"."matches_with_stadium" TO "authenticated";
 GRANT ALL ON TABLE "public"."matches_with_stadium" TO "service_role";
 
-
-
 GRANT ALL ON TABLE "public"."seasons" TO "anon";
 GRANT ALL ON TABLE "public"."seasons" TO "authenticated";
 GRANT ALL ON TABLE "public"."seasons" TO "service_role";
-
-
 
 GRANT ALL ON TABLE "public"."media_with_match_details" TO "anon";
 GRANT ALL ON TABLE "public"."media_with_match_details" TO "authenticated";
 GRANT ALL ON TABLE "public"."media_with_match_details" TO "service_role";
 
-
-
 GRANT ALL ON TABLE "public"."player_history" TO "anon";
 GRANT ALL ON TABLE "public"."player_history" TO "authenticated";
 GRANT ALL ON TABLE "public"."player_history" TO "service_role";
-
-
 
 GRANT ALL ON TABLE "public"."player_stats" TO "anon";
 GRANT ALL ON TABLE "public"."player_stats" TO "authenticated";
 GRANT ALL ON TABLE "public"."player_stats" TO "service_role";
 
-
-
 GRANT ALL ON TABLE "public"."players" TO "anon";
 GRANT ALL ON TABLE "public"."players" TO "authenticated";
 GRANT ALL ON TABLE "public"."players" TO "service_role";
 
-
-
 GRANT ALL ON SEQUENCE "public"."teams_id_seq" TO "anon";
 GRANT ALL ON SEQUENCE "public"."teams_id_seq" TO "authenticated";
 GRANT ALL ON SEQUENCE "public"."teams_id_seq" TO "service_role";
-
-
-
-
-
-
-
-
 
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES TO "postgres";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES TO "anon";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES TO "authenticated";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES TO "service_role";
 
-
-
-
-
-
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON FUNCTIONS TO "postgres";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON FUNCTIONS TO "anon";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON FUNCTIONS TO "authenticated";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON FUNCTIONS TO "service_role";
 
-
-
-
-
-
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "postgres";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "anon";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "authenticated";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "service_role";
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
