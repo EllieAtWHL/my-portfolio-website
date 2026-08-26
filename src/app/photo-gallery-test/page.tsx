@@ -16,7 +16,6 @@ const testPhotos: PhotoMedia[] = [
     date: null,
     sort_order: 1,
     created_at: new Date().toISOString(),
-    storage_source: 'github'
   }
 ];
 

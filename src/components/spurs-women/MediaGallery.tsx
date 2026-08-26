@@ -99,8 +99,7 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
   const allPhotos = photos.reduce((acc: PhotoMedia[], photo) => {
     if (photo.type === 'photo album') {
       const storageKey = photo.url;
-      
-      
+
       if (storageKey && albumPhotos[storageKey]) {
         const albumImages = albumPhotos[storageKey].map((url, index) => ({
           id: `${photo.id}-${index}`,
@@ -115,10 +114,8 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
           date: photo.date,
           sort_order: photo.sort_order,
           created_at: photo.created_at,
-          storage_source: photo.storage_source
         }));
         return [...acc, ...albumImages];
-      } else {
       }
     } else if (photo.type === 'photo') {
       // Add individual photo (skip photo album entries)
