@@ -54,8 +54,8 @@ From the Media interface:
 - `url`: Media URL
 - `caption`: Media caption/description
 - `sort_order`: Display order
-- `created_at`: Creation timestamp
-- `updated_at`: Last update timestamp
+
+(The Media interface has no `created_at`/`updated_at` fields.)
 
 ## Configuring Player Stats Related List
 

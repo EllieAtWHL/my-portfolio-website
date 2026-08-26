@@ -603,7 +603,7 @@ For implementation detail on specific systems, see:
 
 The backlog/TODO list lives in Jira, not in this repo - see the "Jira is the source of truth" section in CLAUDE.md. The `WEB` project covers both the core site (`core-site` label) and Spurs Women (`spurs-women` label), with epics labeled both where work spans the whole site.
 
-Known open tech debt at time of writing: Button migration is incomplete (10
+Known open tech debt at time of writing: Button migration is incomplete (13
 files still render raw `<button>` elements outside the shared component - see
 BUTTON_MIGRATION.md for the current list), and cache hit-rate monitoring/
 metrics collection has not been implemented (see the Technical Debt & Performance epic in Jira).
