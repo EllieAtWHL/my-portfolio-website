@@ -57,7 +57,44 @@ WHERE match_id = 'your-match-id'
 
 ## Adding a New Photo Gallery
 
-### 1. Optimize photos with ImageMagick
+### Automated (recommended): one command
+
+```bash
+./scripts/navigate-to-images-and-optimise.bash "<local folder name under SPURS_IMAGES_BASE_PATH>"
+```
+
+This does the whole pipeline in one go:
+
+1. **Optimises** the photos (see settings below), same as always
+2. Once optimisation finishes, prompts you to review the new `optimised/`
+   folder and remove anything you don't want to publish
+3. On confirmation (default: yes — press Enter), hands off to
+   `scripts/publish-match-photos.js`, which resolves the match from the
+   folder's `YYYYMMDD` date prefix (local folder names are inconsistent -
+   dashes, mixed capitalisation, full competition names - so it doesn't try
+   to parse team/competition out of them), builds the canonical destination
+   folder name from the match record itself, copies the optimised photos
+   into `spurs-women-photo-gallery`, commits + pushes, and upserts the
+   `media` "photo album" row (steps 2-3 below)
+
+Say no at the prompt to stop after optimising (e.g. to curate photos over
+several sittings), then run the publish step yourself later:
+
+```bash
+npm run publish-match-photos -- "<same folder name>"
+```
+
+Pass `--match-id=<uuid>` to either command to skip the date lookup if it's
+ambiguous (e.g. two matches on the same day) or fails:
+
+```bash
+./scripts/navigate-to-images-and-optimise.bash "<folder name>" --match-id=<uuid>
+```
+
+The manual steps below are what the automated pipeline does under the hood,
+and remain the fallback for anything it can't resolve automatically.
+
+### 1. Optimize photos with ImageMagick (manual)
 
 ```bash
 # Install (macOS)
@@ -76,26 +113,6 @@ magick mogrify \
 
 Recommended settings: WebP format, 82% quality, max 2000px width, target
 <500KB per photo, `-strip` to remove metadata.
-
-`scripts/navigate-to-images-and-optimise.bash "<folder name>"` automates this
-step: point it at a local folder under `SPURS_IMAGES_BASE_PATH` and it
-creates the `optimised/` subfolder for you (`npm run dev`-style env loading
-from `.env.local`, ImageMagick presence check, etc.).
-
-### 2 & 3. Automated: upload + link to the match
-
-Once photos are optimised, `npm run publish-match-photos -- "<same folder
-name>"` (`scripts/publish-match-photos.js`) automates steps 2 and 3 below:
-it resolves the match from the folder's `YYYYMMDD` date prefix (local folder
-names are inconsistent - dashes, mixed capitalisation, full competition
-names - so it doesn't try to parse team/competition out of them), builds the
-canonical destination folder name from the match record itself, copies the
-optimised photos into `spurs-women-photo-gallery`, commits + pushes, and
-upserts the `media` "photo album" row. Pass `--match-id=<uuid>` to skip the
-date lookup if it's ambiguous (e.g. two matches on the same day) or fails.
-
-The manual steps below are what it does under the hood, and remain the
-fallback for anything the script can't resolve automatically.
 
 ### 2. Upload to the external repository (manual)
 
