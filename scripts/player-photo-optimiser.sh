@@ -39,7 +39,21 @@ PLAYER_NAME="$1"
 PLAYER_ID="${2:-}"
 
 # "Bethany England" -> "bethany-england"
+# "Celin Bizet Ildhusøy" -> "celin-bizet-ildhusoy" (transliterated, not dropped -
+# iconv//TRANSLIT is unreliable on macOS's BSD iconv, hence the explicit table)
 SLUG=$(echo "$PLAYER_NAME" \
+  | sed \
+    -e 's/[áàâäã]/a/g' -e 's/[ÁÀÂÄÃ]/A/g' \
+    -e 's/å/a/g' -e 's/Å/A/g' \
+    -e 's/æ/ae/g' -e 's/Æ/Ae/g' \
+    -e 's/ç/c/g' -e 's/Ç/C/g' \
+    -e 's/[éèêë]/e/g' -e 's/[ÉÈÊË]/E/g' \
+    -e 's/[íìîï]/i/g' -e 's/[ÍÌÎÏ]/I/g' \
+    -e 's/ñ/n/g' -e 's/Ñ/N/g' \
+    -e 's/[óòôöõø]/o/g' -e 's/[ÓÒÔÖÕØ]/O/g' \
+    -e 's/œ/oe/g' -e 's/Œ/Oe/g' \
+    -e 's/[úùûü]/u/g' -e 's/[ÚÙÛÜ]/U/g' \
+    -e 's/[ýÿ]/y/g' -e 's/[ÝŸ]/Y/g' \
   | tr '[:upper:]' '[:lower:]' \
   | tr ' ' '-' \
   | tr -s '-' \
