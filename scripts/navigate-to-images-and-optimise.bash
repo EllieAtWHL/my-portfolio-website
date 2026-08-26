@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 
 # Run using `./scripts/navigate-to-images-and-optimise.bash "OneDrive 3 May 2026"`
+# Pass extra flags through to publish-match-photos.js, e.g. --match-id=<uuid>:
+#   ./scripts/navigate-to-images-and-optimise.bash "OneDrive 3 May 2026" --match-id=abc123
 
 # Image Optimization Script
-# Navigates to a user-specified folder, creates an 'optimised' folder, and optimizes all images
+# Navigates to a user-specified folder, creates an 'optimised' folder, and optimizes all images.
+# Once optimisation finishes, offers to hand off straight to publish-match-photos.js, which
+# resolves the match, uploads the photos to spurs-women-photo-gallery, and links them to the
+# match in Supabase - see reference/photo-gallery/README.md.
 # Based on the photo gallery system documentation
 
 set -e  # Exit on any error
@@ -218,8 +223,10 @@ main() {
     
     print_info "Starting directory validation..."
     
-    # Get and validate directory
+    # Get and validate directory. Remaining args (e.g. --match-id=<uuid>) are
+    # forwarded to publish-match-photos.js at the end.
     local folder_name="$1"
+    shift || true
     local validated_dir
     validated_dir=$(validate_directory "$folder_name")
     
@@ -257,11 +264,30 @@ main() {
         print_success "All images optimized successfully!"
         print_info "Optimized images saved to: $optimised_dir"
         echo
-        print_info "Next steps:"
-        echo "1. Upload optimized images to your photo repository"
-        echo "2. Update the database with correct folder keys"
-        echo "3. Run: npm run generate-external-manifest"
-        echo "4. Run: npm run validate-manifest"
+
+        local publish_script
+        publish_script="$(dirname "${BASH_SOURCE[0]}")/publish-match-photos.js"
+
+        if ! command -v node &> /dev/null || [[ ! -f "$publish_script" ]]; then
+            print_warning "Can't hand off to publish-match-photos.js (node or the script itself is missing)."
+            print_info "Next steps:"
+            echo "1. Upload optimized images to your photo repository"
+            echo "2. Update the database with correct folder keys"
+            echo "3. Run: npm run generate-external-manifest"
+            echo "4. Run: npm run validate-manifest"
+            return 0
+        fi
+
+        print_info "Review the photos in '$optimised_dir' now if you want to remove any before they go live."
+        read -p "Publish these photos to the gallery repo and link them to the match now? (Y/n): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Nn]$ ]]; then
+            print_info "Skipping publish. Run this when you're ready:"
+            echo "  npm run publish-match-photos -- \"$folder_name\""
+            return 0
+        fi
+
+        node "$publish_script" "$folder_name" "$@"
     else
         print_error "Optimization failed!"
         exit 1
