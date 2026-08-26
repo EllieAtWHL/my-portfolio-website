@@ -266,6 +266,31 @@ describe('AdminPage', () => {
     expect(await screen.findByRole('status')).toHaveTextContent('Team created successfully');
   });
 
+  it('invalidates the cache when the button is clicked', async () => {
+    render(<AdminPage />);
+    await waitFor(() => expect(screen.getByText('Matches')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'Invalidate Cache' }));
+
+    await waitFor(() => {
+      expect(callAdminApiMock).toHaveBeenCalledWith('cache/revalidate', 'POST');
+    });
+    expect(await screen.findByText('Cache invalidated successfully')).toBeInTheDocument();
+  });
+
+  it('shows an error message if cache invalidation fails', async () => {
+    callAdminApiMock.mockImplementation((endpoint: string) =>
+      endpoint === 'cache/revalidate' ? Promise.reject(new Error('Revalidation failed')) : defaultCallAdminApiImpl(endpoint)
+    );
+
+    render(<AdminPage />);
+    await waitFor(() => expect(screen.getByText('Matches')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'Invalidate Cache' }));
+
+    expect(await screen.findByText('Revalidation failed')).toBeInTheDocument();
+  });
+
   it('deletes an existing team after confirming', async () => {
     render(<AdminPage />);
     await waitFor(() => expect(screen.getByText('Matches')).toBeInTheDocument());

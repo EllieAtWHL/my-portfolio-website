@@ -129,6 +129,20 @@ export default function AdminPage() {
     router.push('/spurs-women/login');
   };
 
+  const [invalidatingCache, setInvalidatingCache] = useState(false);
+
+  const handleInvalidateCache = async () => {
+    setInvalidatingCache(true);
+    try {
+      const result = await callAdminApi('cache/revalidate', 'POST');
+      showMessage(result.message || 'Cache invalidated successfully', 'success');
+    } catch (error) {
+      showMessage(error instanceof Error ? error.message : 'Failed to invalidate cache', 'error');
+    } finally {
+      setInvalidatingCache(false);
+    }
+  };
+
   // Load dropdown data
   useEffect(() => {
     const loadDropdownData = async () => {
@@ -249,6 +263,15 @@ export default function AdminPage() {
               <Link href="/spurs-women/profile" className="text-sm hover:opacity-80 transition-opacity" style={{ color: 'var(--spurs-dark-accent)' }}>
                 {user.email}
               </Link>
+              <Button
+                variant="spurs"
+                size="sm"
+                onClick={handleInvalidateCache}
+                loading={invalidatingCache}
+                title="Refresh the live site's cached data immediately, instead of waiting for it to expire on its own"
+              >
+                Invalidate Cache
+              </Button>
               <Button
                 variant="spurs"
                 size="sm"
