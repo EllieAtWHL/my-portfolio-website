@@ -3,7 +3,11 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
-import SpursSelect from '@/components/spurs-women/SpursSelect';
+import { CompetitionFilter } from './filters/CompetitionFilter';
+import { VenueFilter } from './filters/VenueFilter';
+import { AttendedFilter } from './filters/AttendedFilter';
+import { ResultFilter } from './filters/ResultFilter';
+import { DateRangeFilter } from './filters/DateRangeFilter';
 import { Match } from '@/lib/data/matches';
 
 interface MatchFilterControlsProps {
@@ -33,15 +37,6 @@ export default function MatchFilterControls({
   const [dateToFilter, setDateToFilter] = useState<string>('');
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
-
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLDivElement>(null);
-
-  const competitions = useMemo(() => {
-    const uniqueCompetitions = [...new Set(matches.map(match => match.competitions?.name).filter(Boolean))];
-    return uniqueCompetitions.sort();
-  }, [matches]);
 
   const filteredMatches = useMemo(() => {
     const filtered = matches.filter(match => {
@@ -52,33 +47,33 @@ export default function MatchFilterControls({
           if (!match.competitions?.name || !competitionFilter.includes(match.competitions.name)) return false;
         }
       }
-      
+
       if (showVenueFilter && venueFilter !== 'all') {
         if (venueFilter === 'home' && !match.is_home_match) return false;
         if (venueFilter === 'away' && match.is_home_match) return false;
         if (venueFilter === 'neutral' && !match.is_neutral_venue) return false;
       }
-      
+
       if (showAttendedFilter && attendedFilter !== 'all') {
         if (attendedFilter === 'attended' && !match.attended) return false;
         if (attendedFilter === 'not-attended' && match.attended) return false;
       }
-      
+
       if (showResultFilter && resultFilter !== 'all') {
         const hasScore = match.spurs_score !== null && match.opponent_score !== null;
         if (!hasScore) return false;
-        
+
         const spursScore = match.spurs_score!;
         const opponentScore = match.opponent_score!;
         const isWin = spursScore > opponentScore;
         const isDraw = spursScore === opponentScore;
         const isLoss = spursScore < opponentScore;
-        
+
         if (resultFilter === 'won' && !isWin) return false;
         if (resultFilter === 'draw' && !isDraw) return false;
         if (resultFilter === 'lost' && !isLoss) return false;
       }
-      
+
       if (showMonthFilter && (dateFromFilter || dateToFilter)) {
         const matchDate = new Date(match.date);
         if (dateFromFilter) {
@@ -90,10 +85,10 @@ export default function MatchFilterControls({
           if (matchDate > toDate) return false;
         }
       }
-      
+
       return true;
     });
-    
+
     return filtered.sort((a, b) => {
       const dateA = new Date(a.date);
       const dateB = new Date(b.date);
@@ -102,54 +97,13 @@ export default function MatchFilterControls({
   }, [matches, competitionFilter, venueFilter, attendedFilter, resultFilter, dateFromFilter, dateToFilter, showCompetitionFilter, showVenueFilter, showAttendedFilter, showResultFilter, showMonthFilter, sortOrder]);
 
   const prevFilteredMatchesRef = useRef<Match[]>([]);
-  
+
   useEffect(() => {
     if (JSON.stringify(prevFilteredMatchesRef.current) !== JSON.stringify(filteredMatches)) {
       onFilteredMatchesChange(filteredMatches);
       prevFilteredMatchesRef.current = filteredMatches;
     }
   }, [filteredMatches, onFilteredMatchesChange]);
-
-  // Update dropdown position on scroll
-  useEffect(() => {
-    if (!isDropdownOpen || !dropdownRef.current || !triggerRef.current) return;
-
-    const updatePosition = () => {
-      if (triggerRef.current && dropdownRef.current) {
-        const rect = triggerRef.current.getBoundingClientRect();
-        dropdownRef.current.style.top = `${rect.bottom + window.scrollY + 4}px`;
-        dropdownRef.current.style.left = `${rect.left + window.scrollX}px`;
-      }
-    };
-
-    const handleScroll = () => {
-      updatePosition();
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    updatePosition(); // Initial position
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, [isDropdownOpen]);
-
-  // Handle click outside to close dropdown
-  useEffect(() => {
-    if (!isDropdownOpen) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
-          triggerRef.current && !triggerRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isDropdownOpen]);
 
   const clearFilters = () => {
     setCompetitionFilter([]);
@@ -160,10 +114,10 @@ export default function MatchFilterControls({
     setDateToFilter('');
   };
 
-  const hasActiveFilters = (showCompetitionFilter && competitionFilter.length > 0) || 
-                          (showVenueFilter && venueFilter !== 'all') || 
-                          (showAttendedFilter && attendedFilter !== 'all') || 
-                          (showResultFilter && resultFilter !== 'all') || 
+  const hasActiveFilters = (showCompetitionFilter && competitionFilter.length > 0) ||
+                          (showVenueFilter && venueFilter !== 'all') ||
+                          (showAttendedFilter && attendedFilter !== 'all') ||
+                          (showResultFilter && resultFilter !== 'all') ||
                           (showMonthFilter && (dateFromFilter || dateToFilter));
 
   const filterCount = [
@@ -193,11 +147,11 @@ export default function MatchFilterControls({
               onClick={clearFilters}
               aria-label="Clear filters"
             >
-              <svg 
-                className="w-4 h-4" 
-                viewBox="-3.2 -3.2 38.4 38.4" 
-                fill="currentColor" 
-                stroke="currentColor" 
+              <svg
+                className="w-4 h-4"
+                viewBox="-3.2 -3.2 38.4 38.4"
+                fill="currentColor"
+                stroke="currentColor"
                 strokeWidth={4}
               >
                 <path d="M22.5,9A7.4522,7.4522,0,0,0,16,12.792V8H14v8h8V14H17.6167A5.4941,5.4941,0,1,1,22.5,22H22v2h.5a7.5,7.5,0,0,0,0-15Z"/>
@@ -212,9 +166,9 @@ export default function MatchFilterControls({
             onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
             aria-label={`Sort by date ${sortOrder === 'asc' ? 'descending' : 'ascending'}`}
           >
-            <svg 
-              className="w-4 h-4" 
-              fill="currentColor" 
+            <svg
+              className="w-4 h-4"
+              fill="currentColor"
               viewBox="0 0 20 20"
               style={{ transform: sortOrder === 'desc' ? 'rotate(180deg)' : 'rotate(0deg)' }}
             >
@@ -245,194 +199,28 @@ export default function MatchFilterControls({
         <Card variant="spursAccent" padding="md" clickable={false}>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
             {showCompetitionFilter && (
-              <div className="lg:col-span-2 xl:col-span-1">
-                {/* Not a <label>: pairs with a role="button" div below, not a native form control - associated via aria-labelledby instead */}
-                <span id="competition-filter-label" className="block spurs-text text-xs font-medium mb-1">
-                  Competition
-                </span>
-                <div className="relative">
-                  <div
-                    ref={triggerRef}
-                    className="w-full px-2 py-1.5 text-sm bg-gray-800 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:bg-gray-700 transition-colors duration-200 cursor-pointer"
-                    role="button"
-                    tabIndex={0}
-                    aria-haspopup="listbox"
-                    aria-expanded={isDropdownOpen}
-                    aria-labelledby="competition-filter-label"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setIsDropdownOpen(!isDropdownOpen);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setIsDropdownOpen(!isDropdownOpen);
-                      } else if (e.key === 'Escape' && isDropdownOpen) {
-                        setIsDropdownOpen(false);
-                      }
-                    }}
-                  >
-                    <div className="flex justify-between items-center">
-                      <span>
-                        {competitionFilter.length === 0 
-                          ? 'All' 
-                          : competitionFilter.length === 1 
-                            ? competitionFilter[0]
-                            : `${competitionFilter.length} selected`
-                        }
-                      </span>
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div 
-                    ref={dropdownRef}
-                    className={`fixed bg-gray-800 border border-gray-600 rounded-md shadow-lg z-50 ${isDropdownOpen ? 'block' : 'hidden'}`}
-                    style={{ 
-                      maxHeight: '200px', 
-                      overflowY: 'auto',
-                      minWidth: '200px'
-                    }}
-                  >
-                    <div className="p-2">
-                      <label className="flex items-center gap-2 p-1 hover:bg-gray-700 rounded cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={competitionFilter.length === 0}
-                          onChange={(e) => {
-                            e.stopPropagation();
-                            if (e.target.checked) {
-                              setCompetitionFilter([]);
-                            }
-                          }}
-                          className="rounded text-blue-500 focus:ring-blue-500"
-                        />
-                        <span className="text-sm text-white">All</span>
-                      </label>
-                      {competitions.map(competition => (
-                        <label key={competition || 'unknown'} className="flex items-center gap-2 p-1 hover:bg-gray-700 rounded cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={competitionFilter.includes(competition || 'unknown')}
-                            onChange={(e) => {
-                              e.stopPropagation();
-                              const value = competition || 'unknown';
-                              if (e.target.checked) {
-                                setCompetitionFilter([...competitionFilter.filter(c => c !== 'unknown'), value]);
-                              } else {
-                                setCompetitionFilter(competitionFilter.filter(c => c !== value));
-                              }
-                            }}
-                            className="rounded text-blue-500 focus:ring-blue-500"
-                          />
-                          <span className="text-sm text-white">
-                            {(competition && competition.length > 20) ? competition.substring(0, 17) + '...' : competition || 'Unknown'}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <CompetitionFilter matches={matches} value={competitionFilter} onChange={setCompetitionFilter} />
             )}
 
             {showVenueFilter && (
-              <div className="xl:col-span-1">
-                <label htmlFor="venue-filter" className="block spurs-text text-xs font-medium mb-1">
-                  Home/Away
-                </label>
-                <SpursSelect
-                  id="venue-filter"
-                  value={venueFilter}
-                  onChange={(e) => setVenueFilter(e.target.value)}
-                >
-                  <option value="all">All</option>
-                  <option value="home">Home</option>
-                  <option value="away">Away</option>
-                  <option value="neutral">Neutral</option>
-                </SpursSelect>
-              </div>
+              <VenueFilter value={venueFilter} onChange={setVenueFilter} />
             )}
 
             {showAttendedFilter && (
-              <div className="xl:col-span-1">
-                <label htmlFor="attended-filter" className="block spurs-text text-xs font-medium mb-1">
-                  Attended
-                </label>
-                <SpursSelect
-                  id="attended-filter"
-                  value={attendedFilter}
-                  onChange={(e) => setAttendedFilter(e.target.value)}
-                >
-                  <option value="all">All</option>
-                  <option value="attended">Attended</option>
-                  <option value="not-attended">Not Attended</option>
-                </SpursSelect>
-              </div>
+              <AttendedFilter value={attendedFilter} onChange={setAttendedFilter} />
             )}
 
             {showResultFilter && (
-              <div className="xl:col-span-1">
-                <label htmlFor="result-filter" className="block spurs-text text-xs font-medium mb-1">
-                  Result
-                </label>
-                <SpursSelect
-                  id="result-filter"
-                  value={resultFilter}
-                  onChange={(e) => setResultFilter(e.target.value)}
-                >
-                  <option value="all">All</option>
-                  <option value="won">Won</option>
-                  <option value="draw">Draw</option>
-                  <option value="lost">Lost</option>
-                </SpursSelect>
-              </div>
+              <ResultFilter value={resultFilter} onChange={setResultFilter} />
             )}
 
             {showMonthFilter && (
-              <div className="lg:col-span-2 xl:col-span-2">
-                {/* Not a <label>: heads a group of two inputs (From/To below), not a single control */}
-                <span className="block spurs-text text-xs font-medium mb-1">
-                  Date Range
-                </span>
-                <div className="flex gap-2">
-                  <div className="flex-1">
-                    <label htmlFor="date-from-filter" className="block spurs-text text-xs font-medium mb-1 opacity-75">
-                      From
-                    </label>
-                    <input
-                      id="date-from-filter"
-                      type="date"
-                      value={dateFromFilter}
-                      onChange={(e) => setDateFromFilter(e.target.value)}
-                      className="w-full px-2 py-1.5 text-sm bg-gray-800 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:bg-gray-700 transition-colors duration-200"
-                      style={{
-                        WebkitTextFillColor: 'white',
-                        color: 'white'
-                      }}
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <label htmlFor="date-to-filter" className="block spurs-text text-xs font-medium mb-1 opacity-75">
-                      To
-                    </label>
-                    <input
-                      id="date-to-filter"
-                      type="date"
-                      value={dateToFilter}
-                      onChange={(e) => setDateToFilter(e.target.value)}
-                      className="w-full px-2 py-1.5 text-sm bg-gray-800 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:bg-gray-700 transition-colors duration-200"
-                      style={{
-                        WebkitTextFillColor: 'white',
-                        color: 'white'
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
+              <DateRangeFilter
+                fromValue={dateFromFilter}
+                toValue={dateToFilter}
+                onFromChange={setDateFromFilter}
+                onToChange={setDateToFilter}
+              />
             )}
           </div>
         </Card>
