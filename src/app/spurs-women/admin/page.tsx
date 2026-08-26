@@ -6,21 +6,12 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/Button';
-import { MatchForm } from '@/components/admin/MatchForm';
-import { TeamForm } from '@/components/admin/TeamForm';
-import { PlayerForm } from '@/components/admin/PlayerForm';
-import { StadiumForm } from '@/components/admin/StadiumForm';
-import { RelatedList } from '@/components/admin/RelatedList';
 import { TabNav } from '@/components/admin/TabNav';
-import { Pagination } from '@/components/admin/Pagination';
-import { MatchesTable } from '@/components/admin/tables/MatchesTable';
-import { TeamsTable } from '@/components/admin/tables/TeamsTable';
-import { PlayersTable } from '@/components/admin/tables/PlayersTable';
-import { StadiumsTable } from '@/components/admin/tables/StadiumsTable';
-import { MediaModal } from '@/components/admin/modals/MediaModal';
 import { PlayerStatsModal } from '@/components/admin/modals/PlayerStatsModal';
-import { PlayerHistoryModal } from '@/components/admin/modals/PlayerHistoryModal';
-import { StadiumNameModal } from '@/components/admin/modals/StadiumNameModal';
+import { MatchesTabPanel } from '@/components/admin/panels/MatchesTabPanel';
+import { TeamsTabPanel } from '@/components/admin/panels/TeamsTabPanel';
+import { PlayersTabPanel } from '@/components/admin/panels/PlayersTabPanel';
+import { StadiumsTabPanel } from '@/components/admin/panels/StadiumsTabPanel';
 import { useTeamsAdmin } from '@/hooks/admin/useTeamsAdmin';
 import { usePlayersAdmin } from '@/hooks/admin/usePlayersAdmin';
 import { useStadiumsAdmin } from '@/hooks/admin/useStadiumsAdmin';
@@ -31,9 +22,7 @@ import type {
   Competition,
   Season,
   Match,
-  Media,
   Player,
-  PlayerStats,
   Stadium,
   StadiumName,
 } from '@/types/spurs-women-admin';
@@ -66,137 +55,43 @@ export default function AdminPage() {
   // Search + pagination for each entity list. Stadiums search the
   // separately-fetched `recentStadiums` (loaded per-tab), not `stadiums`
   // (the full dropdown list used elsewhere for stadium selects).
+  const matchesAdmin = useMatchesAdmin({ matches, setMatches, teams, stadiums, stadiumNames, setLoading, showMessage });
+  const teamsAdmin = useTeamsAdmin({ teams, setTeams, setLoading, showMessage });
+  const playersAdmin = usePlayersAdmin({ players, setPlayers, setLoading, showMessage });
+  const stadiumsAdmin = useStadiumsAdmin({ recentStadiums, setStadiums, setRecentStadiums, setStadiumNames, setLoading, showMessage });
+
   const {
-    search: matchSearch,
-    setSearch: setMatchSearch,
-    currentPage: matchesCurrentPage,
-    setCurrentPage: setMatchesCurrentPage,
-    totalPages: matchesTotalPages,
-    filteredCount: filteredMatchesCount,
-    paginatedItems: paginatedMatches,
-    perPage: matchesPerPage,
     isEditMode,
     editingMatchId,
     showMatchForm,
     setShowMatchForm,
-    matchForm,
-    setMatchForm,
-    matchEditTab,
-    setMatchEditTab,
-    showExtraTimeSection,
-    setShowExtraTimeSection,
-    showStatsSection,
-    setShowStatsSection,
-    relatedPlayerStats,
-    setRelatedPlayerStats,
-    getMediaByType,
-    handleEditMatch,
     handleCancelEdit,
-    handleDeleteMatch,
-    handleMatchSubmit,
+    setRelatedPlayerStats,
     resetTabState: resetMatchesTab,
-    showMediaModal,
-    editingMediaId,
-    newMediaForm,
-    setNewMediaForm,
-    openNewMedia,
-    openEditMedia,
-    closeMediaModal,
-    handleDeleteMedia,
-    handleMediaSubmit,
-    getCurrentStadiumName,
-  } = useMatchesAdmin({ matches, setMatches, teams, stadiums, stadiumNames, setLoading, showMessage });
+  } = matchesAdmin;
   const {
-    search: teamSearch,
-    setSearch: setTeamSearch,
-    currentPage: teamsCurrentPage,
-    setCurrentPage: setTeamsCurrentPage,
-    totalPages: teamsTotalPages,
-    filteredCount: filteredTeamsCount,
-    paginatedItems: paginatedTeams,
-    perPage: teamsPerPage,
     isTeamEditMode,
-    editingTeamId,
     showTeamForm,
     setShowTeamForm,
-    teamForm,
-    setTeamForm,
-    handleEditTeam,
     handleCancelEditTeam,
-    handleDeleteTeam,
-    handleTeamSubmit,
     resetTabState: resetTeamsTab,
-  } = useTeamsAdmin({ teams, setTeams, setLoading, showMessage });
+  } = teamsAdmin;
   const {
-    search: playerSearch,
-    setSearch: setPlayerSearch,
-    currentPage: playersCurrentPage,
-    setCurrentPage: setPlayersCurrentPage,
-    totalPages: playersTotalPages,
-    filteredCount: filteredPlayersCount,
-    paginatedItems: paginatedPlayers,
-    perPage: playersPerPage,
     isPlayerEditMode,
     editingPlayerId,
     showPlayerForm,
     setShowPlayerForm,
-    playerForm,
-    setPlayerForm,
-    playerEditTab,
-    setPlayerEditTab,
-    relatedPlayerStatsForPlayer,
-    setRelatedPlayerStatsForPlayer,
-    relatedPlayerHistory,
-    handleEditPlayer,
     handleCancelEditPlayer,
-    handleDeletePlayer,
-    handlePlayerSubmit,
+    setRelatedPlayerStatsForPlayer,
     resetTabState: resetPlayersTab,
-    showPlayerHistoryModal,
-    editingPlayerHistoryId,
-    playerHistoryForm,
-    setPlayerHistoryForm,
-    playerHistoryFormError,
-    openNewPlayerHistory,
-    openEditPlayerHistory,
-    closePlayerHistoryModal,
-    handleDeletePlayerHistory,
-    handlePlayerHistorySubmit,
-  } = usePlayersAdmin({ players, setPlayers, setLoading, showMessage });
+  } = playersAdmin;
   const {
-    search: stadiumSearch,
-    setSearch: setStadiumSearch,
-    currentPage: stadiumsCurrentPage,
-    setCurrentPage: setStadiumsCurrentPage,
-    totalPages: stadiumsTotalPages,
-    filteredCount: filteredStadiumsCount,
-    paginatedItems: paginatedStadiums,
-    perPage: stadiumsPerPage,
     isStadiumEditMode,
-    editingStadiumId,
     showStadiumForm,
     setShowStadiumForm,
-    stadiumForm,
-    setStadiumForm,
-    stadiumEditTab,
-    setStadiumEditTab,
-    relatedStadiumNames,
-    handleEditStadium,
     handleCancelEditStadium,
-    handleDeleteStadium,
-    handleStadiumSubmit,
     resetTabState: resetStadiumsTab,
-    showStadiumNameModal,
-    editingStadiumNameId,
-    stadiumNameForm,
-    setStadiumNameForm,
-    stadiumNameFormError,
-    openNewStadiumName,
-    openEditStadiumName,
-    closeStadiumNameModal,
-    handleDeleteStadiumName,
-    handleStadiumNameSubmit,
-  } = useStadiumsAdmin({ recentStadiums, setStadiums, setRecentStadiums, setStadiumNames, setLoading, showMessage });
+  } = stadiumsAdmin;
 
   const {
     showPlayerStatsModal,
@@ -282,7 +177,7 @@ export default function AdminPage() {
 
       // Determine which table to fetch based on active tab
       let tableName = '';
-      
+
       switch (activeTab) {
         case 'players':
           tableName = 'players';
@@ -416,411 +311,42 @@ export default function AdminPage() {
           )}
         </div>
 
-        {/* Match Form */}
         {activeTab === 'matches' && (
-          <>
-            {isEditMode && (
-              <TabNav
-                className="mb-4 flex space-x-2"
-                tabs={[
-                  { key: 'details', label: 'Details', panelId: 'match-details-panel' },
-                  { key: 'related', label: 'Related Records', panelId: 'match-related-panel' },
-                ]}
-                activeKey={matchEditTab}
-                onChange={setMatchEditTab}
-              />
-            )}
-
-            {matchEditTab === 'details' && (isEditMode || showMatchForm) && (
-              <div id="match-details-panel" role="tabpanel" aria-labelledby="tab-details">
-              <MatchForm
-                matchForm={matchForm}
-                setMatchForm={setMatchForm}
-                seasons={seasons}
-                competitions={competitions}
-                teams={teams}
-                stadiums={stadiums}
-                isEditMode={isEditMode}
-                editingMatchId={editingMatchId}
-                loading={loading}
-                showStatsSection={showStatsSection}
-                showExtraTimeSection={showExtraTimeSection}
-                setShowStatsSection={setShowStatsSection}
-                setShowExtraTimeSection={setShowExtraTimeSection}
-                getCurrentStadiumName={getCurrentStadiumName}
-                onSubmit={handleMatchSubmit}
-                onDelete={() => {
-                  if (confirm('Are you sure you want to delete this match?')) {
-                    handleDeleteMatch(editingMatchId!);
-                  }
-                }}
-                onCancel={handleCancelEdit}
-              />
-              </div>
-            )}
-
-            {matchEditTab === 'related' && isEditMode && (
-              <div id="match-related-panel" role="tabpanel" aria-labelledby="tab-related" className="space-y-4">
-                {/* Media related lists grouped by type */}
-                {Object.entries(getMediaByType()).map(([mediaType, mediaRecords]) => (
-                  <RelatedList
-                    key={mediaType}
-                    title={`${mediaType.charAt(0).toUpperCase() + mediaType.slice(1)}`}
-                    records={mediaRecords}
-                    columns={[
-                      { key: 'title', label: 'Title' },
-                      { key: 'url', label: 'URL', render: (value: unknown) => {
-                        const url = value as string;
-                        return (
-                          <a href={url} target="_blank" rel="noopener noreferrer" className="spurs-text hover:underline">
-                            {url.length > 50 ? `${url.substring(0, 50)}...` : url}
-                          </a>
-                        );
-                      }},
-                      { key: 'sort_order', label: 'Sort Order' },
-                    ]}
-                    onNew={() => openNewMedia(mediaType as Media['type'])}
-                    onRecordClick={openEditMedia}
-                    emptyMessage={`No ${mediaType} records found`}
-                  />
-                ))}
-                
-                {/* Player Stats related list */}
-                <RelatedList
-                  title="Player Stats"
-                  records={relatedPlayerStats}
-                  columns={[
-                    {
-                      key: 'player_id',
-                      label: 'Player',
-                      render: (value: unknown) => {
-                        const playerId = value as string;
-                        const player = players.find(p => p.id === playerId);
-                        return player ? `${player.first_name} ${player.last_name}` : playerId;
-                      }
-                    },
-                    { key: 'started', label: 'Started', render: (value: unknown) => (value as boolean) ? 'Yes' : 'No' },
-                    { key: 'captain', label: 'Captain', render: (value: unknown) => (value as boolean) ? 'Yes' : 'No' },
-                    { key: 'goals', label: 'Goals' },
-                    { key: 'assists', label: 'Assists' },
-                  ]}
-                  onNew={() => openNewPlayerStats('match')}
-                  onRecordClick={(stat) => openEditPlayerStats(stat, 'match')}
-                  emptyMessage="No player stats records found"
-                />
-              </div>
-            )}
-          </>
+          <MatchesTabPanel
+            matchesAdmin={matchesAdmin}
+            seasons={seasons}
+            competitions={competitions}
+            teams={teams}
+            stadiums={stadiums}
+            players={players}
+            loading={loading}
+            openNewPlayerStats={openNewPlayerStats}
+            openEditPlayerStats={openEditPlayerStats}
+          />
         )}
 
-        {/* Team Form */}
         {activeTab === 'teams' && (
-          <>
-            {(isTeamEditMode || showTeamForm) && (
-              <TeamForm
-                teamForm={teamForm}
-                setTeamForm={setTeamForm}
-                isTeamEditMode={isTeamEditMode}
-                editingTeamId={editingTeamId}
-                loading={loading}
-                onSubmit={handleTeamSubmit}
-                onDelete={() => {
-                  if (editingTeamId && confirm('Are you sure you want to delete this team?')) {
-                    handleDeleteTeam(editingTeamId);
-                  }
-                }}
-                onCancel={handleCancelEditTeam}
-              />
-            )}
-          </>
+          <TeamsTabPanel teamsAdmin={teamsAdmin} loading={loading} />
         )}
 
-        {/* Player Form */}
         {activeTab === 'players' && (
-          <>
-            {isPlayerEditMode && (
-              <TabNav
-                className="mb-4 flex space-x-2"
-                tabs={[
-                  { key: 'details', label: 'Details', panelId: 'player-details-panel' },
-                  { key: 'related', label: 'Related Records', panelId: 'player-related-panel' },
-                ]}
-                activeKey={playerEditTab}
-                onChange={setPlayerEditTab}
-              />
-            )}
-
-            {playerEditTab === 'details' && (isPlayerEditMode || showPlayerForm) && (
-              <div id="player-details-panel" role="tabpanel" aria-labelledby="tab-details">
-              <PlayerForm
-                playerForm={playerForm}
-                setPlayerForm={setPlayerForm}
-                isPlayerEditMode={isPlayerEditMode}
-                editingPlayerId={editingPlayerId}
-                loading={loading}
-                onSubmit={handlePlayerSubmit}
-                onDelete={() => {
-                  if (editingPlayerId && confirm('Are you sure you want to delete this player?')) {
-                    handleDeletePlayer(editingPlayerId);
-                  }
-                }}
-                onCancel={handleCancelEditPlayer}
-              />
-              </div>
-            )}
-
-            {playerEditTab === 'related' && isPlayerEditMode && (
-              <div id="player-related-panel" role="tabpanel" aria-labelledby="tab-related" className="space-y-4">
-                {/* Player Stats related list */}
-                <RelatedList
-                  title="Player Stats"
-                  records={relatedPlayerStatsForPlayer}
-                  columns={[
-                    {
-                      key: 'match_id',
-                      label: 'Match',
-                      render: (value: unknown) => {
-                        const matchId = value as string;
-                        const match = matches.find(m => m.id === matchId);
-                        return match ? `${match.date}` : matchId;
-                      }
-                    },
-                    {
-                      key: 'match_id',
-                      id: 'opponent',
-                      label: 'Opponent',
-                      render: (value: unknown, stat: PlayerStats) => {
-                        const match = matches.find(m => m.id === (value as string));
-                        if (!match) return '-';
-                        const opponentTeamId = match.home_team_id === stat.team_id
-                          ? match.away_team_id
-                          : match.home_team_id;
-                        const opponentTeam = teams.find(t => t.id === opponentTeamId);
-                        return opponentTeam?.short_name || opponentTeam?.name || '-';
-                      }
-                    },
-                    { key: 'started', label: 'Started', render: (value: unknown) => (value as boolean) ? 'Yes' : 'No' },
-                    { key: 'goals', label: 'Goals' },
-                    { key: 'assists', label: 'Assists' },
-                  ]}
-                  onNew={() => openNewPlayerStats('player')}
-                  onRecordClick={(stat) => openEditPlayerStats(stat, 'player')}
-                  emptyMessage="No player stats records found"
-                />
-
-                {/* Player History related list */}
-                <RelatedList
-                  title="Player History"
-                  records={relatedPlayerHistory}
-                  columns={[
-                    {
-                      key: 'team_id',
-                      label: 'Team',
-                      render: (value: unknown) => {
-                        const teamId = value as number;
-                        const team = teams.find(t => t.id === teamId);
-                        return team ? team.name : teamId.toString();
-                      }
-                    },
-                    { key: 'joined_on', label: 'Joined On' },
-                    { key: 'left_on', label: 'Left On' },
-                    { key: 'squad_number', label: 'Squad Number' },
-                  ]}
-                  onNew={openNewPlayerHistory}
-                  onRecordClick={openEditPlayerHistory}
-                  emptyMessage="No player history records found"
-                />
-              </div>
-            )}
-          </>
+          <PlayersTabPanel
+            playersAdmin={playersAdmin}
+            teams={teams}
+            matches={matches}
+            loading={loading}
+            openNewPlayerStats={openNewPlayerStats}
+            openEditPlayerStats={openEditPlayerStats}
+          />
         )}
 
-        {/* Stadium Form */}
         {activeTab === 'stadiums' && (
-          <>
-            {isStadiumEditMode && (
-              <TabNav
-                className="mb-4 flex space-x-2"
-                tabs={[
-                  { key: 'details', label: 'Details', panelId: 'stadium-details-panel' },
-                  { key: 'related', label: 'Related Records', panelId: 'stadium-related-panel' },
-                ]}
-                activeKey={stadiumEditTab}
-                onChange={setStadiumEditTab}
-              />
-            )}
-
-            {stadiumEditTab === 'details' && (isStadiumEditMode || showStadiumForm) && (
-              <div id="stadium-details-panel" role="tabpanel" aria-labelledby="tab-details">
-              <StadiumForm
-                teams={teams}
-                stadiumForm={stadiumForm}
-                setStadiumForm={setStadiumForm}
-                isStadiumEditMode={isStadiumEditMode}
-                editingStadiumId={editingStadiumId}
-                loading={loading}
-                onSubmit={handleStadiumSubmit}
-                onDelete={() => {
-                  if (editingStadiumId && confirm('Are you sure you want to delete this stadium?')) {
-                    handleDeleteStadium(editingStadiumId);
-                  }
-                }}
-                onCancel={handleCancelEditStadium}
-              />
-              </div>
-            )}
-
-            {stadiumEditTab === 'related' && isStadiumEditMode && (
-              <div id="stadium-related-panel" role="tabpanel" aria-labelledby="tab-related" className="space-y-4">
-                {/* Stadium Names related list */}
-                <RelatedList
-                  title="Stadium Names"
-                  records={relatedStadiumNames}
-                  columns={[
-                    { key: 'name', label: 'Name' },
-                    { key: 'valid_from', label: 'Valid From' },
-                    { key: 'valid_to', label: 'Valid To' },
-                  ]}
-                  onNew={openNewStadiumName}
-                  onRecordClick={openEditStadiumName}
-                  emptyMessage="No stadium names found"
-                />
-              </div>
-            )}
-          </>
+          <StadiumsTabPanel stadiumsAdmin={stadiumsAdmin} teams={teams} loading={loading} />
         )}
-
-        {/* Recent Records Preview */}
-        <div className="mt-8 spurs-accent-card rounded-lg p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-semibold spurs-text">
-              {activeTab === 'matches'
-                ? (matchSearch ? `All Matches (${filteredMatchesCount} filtered)` : 'All Matches')
-                : activeTab === 'teams' ? (teamSearch ? `All Teams (${filteredTeamsCount} filtered)` : 'All Teams') :
-                activeTab === 'players' ? (playerSearch ? `All Players (${filteredPlayersCount} filtered)` : 'All Players') :
-                activeTab === 'stadiums' ? (stadiumSearch ? `All Stadiums (${filteredStadiumsCount} filtered)` : 'All Stadiums') :
-                'Recent Records'}
-            </h3>
-          </div>
-          {activeTab === 'matches' && (
-            <div className="mb-4">
-              <input
-                type="text"
-                placeholder="Search matches by date, opponent, or stadium..."
-                value={matchSearch}
-                onChange={(e) => setMatchSearch(e.target.value)}
-                className="w-full px-4 py-2 rounded border border-gray-600 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          )}
-          {activeTab === 'teams' && (
-            <div className="mb-4">
-              <input
-                type="text"
-                placeholder="Search teams by name or short name..."
-                value={teamSearch}
-                onChange={(e) => setTeamSearch(e.target.value)}
-                className="w-full px-4 py-2 rounded border border-gray-600 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          )}
-          {activeTab === 'players' && (
-            <div className="mb-4">
-              <input
-                type="text"
-                placeholder="Search players by name, position, or nationality..."
-                value={playerSearch}
-                onChange={(e) => setPlayerSearch(e.target.value)}
-                className="w-full px-4 py-2 rounded border border-gray-600 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          )}
-          {activeTab === 'stadiums' && (
-            <div className="mb-4">
-              <input
-                type="text"
-                placeholder="Search stadiums by name, slug, city, or country..."
-                value={stadiumSearch}
-                onChange={(e) => setStadiumSearch(e.target.value)}
-                className="w-full px-4 py-2 rounded border border-gray-600 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          )}
-          {activeTab === 'matches' && (
-            <MatchesTable matches={paginatedMatches} teams={teams} competitions={competitions} onSelect={handleEditMatch} />
-          )}
-          {activeTab === 'teams' && (
-            <TeamsTable teams={paginatedTeams} onSelect={handleEditTeam} />
-          )}
-          {activeTab === 'players' && (
-            <PlayersTable players={paginatedPlayers} onSelect={handleEditPlayer} />
-          )}
-          {activeTab === 'stadiums' && (
-            <StadiumsTable stadiums={paginatedStadiums} onSelect={handleEditStadium} />
-          )}
-
-          {/* Pagination Controls */}
-          {activeTab === 'matches' && (
-            <Pagination
-              currentPage={matchesCurrentPage}
-              totalPages={matchesTotalPages}
-              totalItems={filteredMatchesCount}
-              perPage={matchesPerPage}
-              itemLabel="matches"
-              onPageChange={setMatchesCurrentPage}
-            />
-          )}
-          {activeTab === 'teams' && (
-            <Pagination
-              currentPage={teamsCurrentPage}
-              totalPages={teamsTotalPages}
-              totalItems={filteredTeamsCount}
-              perPage={teamsPerPage}
-              itemLabel="teams"
-              onPageChange={setTeamsCurrentPage}
-            />
-          )}
-          {activeTab === 'players' && (
-            <Pagination
-              currentPage={playersCurrentPage}
-              totalPages={playersTotalPages}
-              totalItems={filteredPlayersCount}
-              perPage={playersPerPage}
-              itemLabel="players"
-              onPageChange={setPlayersCurrentPage}
-            />
-          )}
-          {activeTab === 'stadiums' && (
-            <Pagination
-              currentPage={stadiumsCurrentPage}
-              totalPages={stadiumsTotalPages}
-              totalItems={filteredStadiumsCount}
-              perPage={stadiumsPerPage}
-              itemLabel="stadiums"
-              onPageChange={setStadiumsCurrentPage}
-            />
-          )}
-        </div>
       </div>
 
-      {/* Media Modal */}
-      {showMediaModal && (
-        <MediaModal
-          editingMediaId={editingMediaId}
-          form={newMediaForm}
-          onChange={setNewMediaForm}
-          onCancel={closeMediaModal}
-          onDelete={() => {
-            if (editingMediaId && confirm('Are you sure you want to delete this media item?')) {
-              handleDeleteMedia(editingMediaId);
-              closeMediaModal();
-            }
-          }}
-          onSubmit={handleMediaSubmit}
-        />
-      )}
-
-      {/* Player Stats Modal */}
+      {/* Player Stats Modal - shared between the Matches and Players tabs
+          (see usePlayerStatsModal), so it stays here rather than in either panel */}
       {showPlayerStatsModal && (
         <PlayerStatsModal
           editingPlayerStatsId={editingPlayerStatsId}
@@ -838,43 +364,6 @@ export default function AdminPage() {
             }
           }}
           onSubmit={handlePlayerStatsSubmit}
-        />
-      )}
-
-      {/* Player History Modal */}
-      {showPlayerHistoryModal && (
-        <PlayerHistoryModal
-          editingPlayerHistoryId={editingPlayerHistoryId}
-          form={playerHistoryForm}
-          onChange={setPlayerHistoryForm}
-          error={playerHistoryFormError}
-          teams={teams}
-          onCancel={closePlayerHistoryModal}
-          onDelete={() => {
-            if (editingPlayerHistoryId && confirm('Are you sure you want to delete this player history record?')) {
-              handleDeletePlayerHistory(editingPlayerHistoryId);
-              closePlayerHistoryModal();
-            }
-          }}
-          onSubmit={handlePlayerHistorySubmit}
-        />
-      )}
-
-      {/* Stadium Name Modal */}
-      {showStadiumNameModal && (
-        <StadiumNameModal
-          editingStadiumNameId={editingStadiumNameId}
-          form={stadiumNameForm}
-          onChange={setStadiumNameForm}
-          error={stadiumNameFormError}
-          onCancel={closeStadiumNameModal}
-          onDelete={() => {
-            if (editingStadiumNameId && confirm('Are you sure you want to delete this stadium name?')) {
-              handleDeleteStadiumName(editingStadiumNameId);
-              closeStadiumNameModal();
-            }
-          }}
-          onSubmit={handleStadiumNameSubmit}
         />
       )}
     </main>

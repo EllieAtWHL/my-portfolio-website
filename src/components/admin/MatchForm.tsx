@@ -1,5 +1,8 @@
 import { FormWrapper } from './FormWrapper';
 import { FormField, TextInput, NumberInput, SelectInput, CheckboxInput, RadioGroup, TextArea } from './FormField';
+import { CollapsibleFormSection } from './CollapsibleFormSection';
+import { MatchStatsFields } from './MatchStatsFields';
+import { MatchExtraTimeFields } from './MatchExtraTimeFields';
 
 interface Team {
   id: number;
@@ -25,7 +28,7 @@ interface Stadium {
   city: string | null;
 }
 
-interface MatchForm {
+export interface MatchForm {
   season_id: string;
   competition_id: string;
   date: string;
@@ -227,167 +230,24 @@ export function MatchForm({
         </FormField>
 
         {/* Stats Collapsible Section */}
-        <div className="border border-gray-600 rounded-lg overflow-hidden">
-          <button
-            type="button"
-            onClick={() => setShowStatsSection(!showStatsSection)}
-            className="w-full px-4 py-3 bg-gray-800 hover:bg-gray-700 flex items-center justify-between transition-colors"
-            style={{
-              backgroundColor: showStatsSection ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
-              borderColor: showStatsSection ? 'var(--spurs-dark-accent)' : 'transparent',
-              borderWidth: showStatsSection ? '2px' : '0',
-            }}
-            aria-expanded={showStatsSection}
-            aria-controls="match-stats-section"
-          >
-            <span className="font-medium text-white">Match Stats</span>
-            <span className="text-gray-400 transform transition-transform">
-              {showStatsSection ? '▼' : '▶'}
-            </span>
-          </button>
-
-          {showStatsSection && (
-            <div id="match-stats-section" className="p-4 space-y-4 bg-gray-800/50">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Possession */}
-                <FormField label="Home Possession (%)" htmlFor="home-possession">
-                  <NumberInput
-                    id="home-possession"
-                    value={matchForm.home_possession}
-                    onChange={(value) => setMatchForm({ ...matchForm, home_possession: value })}
-                    min={0}
-                    max={100}
-                    step="0.1"
-                  />
-                </FormField>
-                <FormField label="Away Possession (%)" htmlFor="away-possession">
-                  <NumberInput
-                    id="away-possession"
-                    value={matchForm.away_possession}
-                    onChange={(value) => setMatchForm({ ...matchForm, away_possession: value })}
-                    min={0}
-                    max={100}
-                    step="0.1"
-                  />
-                </FormField>
-
-                <FormField label="Home Total Shots" htmlFor="home-total-shots">
-                  <NumberInput
-                    id="home-total-shots"
-                    value={matchForm.home_total_shots}
-                    onChange={(value) => setMatchForm({ ...matchForm, home_total_shots: value })}
-                    min={0}
-                  />
-                </FormField>
-                <FormField label="Away Total Shots" htmlFor="away-total-shots">
-                  <NumberInput
-                    id="away-total-shots"
-                    value={matchForm.away_total_shots}
-                    onChange={(value) => setMatchForm({ ...matchForm, away_total_shots: value })}
-                    min={0}
-                  />
-                </FormField>
-
-                <FormField label="Home Shots On Target" htmlFor="home-shots-on-target">
-                  <NumberInput
-                    id="home-shots-on-target"
-                    value={matchForm.home_shots_on_target}
-                    onChange={(value) => setMatchForm({ ...matchForm, home_shots_on_target: value })}
-                    min={0}
-                  />
-                </FormField>
-                <FormField label="Away Shots On Target" htmlFor="away-shots-on-target">
-                  <NumberInput
-                    id="away-shots-on-target"
-                    value={matchForm.away_shots_on_target}
-                    onChange={(value) => setMatchForm({ ...matchForm, away_shots_on_target: value })}
-                    min={0}
-                  />
-                </FormField>
-
-                <FormField label="Home Corners" htmlFor="home-corners">
-                  <NumberInput
-                    id="home-corners"
-                    value={matchForm.home_corners}
-                    onChange={(value) => setMatchForm({ ...matchForm, home_corners: value })}
-                    min={0}
-                  />
-                </FormField>
-                <FormField label="Away Corners" htmlFor="away-corners">
-                  <NumberInput
-                    id="away-corners"
-                    value={matchForm.away_corners}
-                    onChange={(value) => setMatchForm({ ...matchForm, away_corners: value })}
-                    min={0}
-                  />
-                </FormField>
-              </div>
-            </div>
-          )}
-        </div>
+        <CollapsibleFormSection
+          title="Match Stats"
+          isOpen={showStatsSection}
+          onToggle={() => setShowStatsSection(!showStatsSection)}
+          controlsId="match-stats-section"
+        >
+          <MatchStatsFields matchForm={matchForm} setMatchForm={setMatchForm} />
+        </CollapsibleFormSection>
 
         {/* Extra Time & Penalties Collapsible Section */}
-        <div className="border border-gray-600 rounded-lg overflow-hidden">
-          <button
-            type="button"
-            onClick={() => setShowExtraTimeSection(!showExtraTimeSection)}
-            className="w-full px-4 py-3 bg-gray-800 hover:bg-gray-700 flex items-center justify-between transition-colors"
-            style={{
-              backgroundColor: showExtraTimeSection ? 'var(--spurs-dark-bg-1)' : 'var(--spurs-dark-opacity-30)',
-              borderColor: showExtraTimeSection ? 'var(--spurs-dark-accent)' : 'transparent',
-              borderWidth: showExtraTimeSection ? '2px' : '0',
-            }}
-            aria-expanded={showExtraTimeSection}
-            aria-controls="extra-time-section"
-          >
-            <span className="font-medium text-white">Extra Time</span>
-            <span className="text-gray-400 transform transition-transform">
-              {showExtraTimeSection ? '▼' : '▶'}
-            </span>
-          </button>
-
-          {showExtraTimeSection && (
-            <div id="extra-time-section" className="p-4 space-y-4 bg-gray-800/50">
-              <div className="grid grid-cols-2 gap-4">
-                <FormField label="Spurs Score (AET)" htmlFor="spurs-score-aet">
-                  <NumberInput
-                    id="spurs-score-aet"
-                    value={matchForm.spurs_score_aet ?? null}
-                    onChange={(value) => setMatchForm({ ...matchForm, spurs_score_aet: value })}
-                    min={0}
-                  />
-                </FormField>
-                <FormField label="Opponent Score (AET)" htmlFor="opponent-score-aet">
-                  <NumberInput
-                    id="opponent-score-aet"
-                    value={matchForm.opponent_score_aet ?? null}
-                    onChange={(value) => setMatchForm({ ...matchForm, opponent_score_aet: value })}
-                    min={0}
-                  />
-                </FormField>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <FormField label="Spurs Score (Penalties)" htmlFor="spurs-score-pens">
-                  <NumberInput
-                    id="spurs-score-pens"
-                    value={matchForm.spurs_score_pens ?? null}
-                    onChange={(value) => setMatchForm({ ...matchForm, spurs_score_pens: value })}
-                    min={0}
-                  />
-                </FormField>
-                <FormField label="Opponent Score (Penalties)" htmlFor="opponent-score-pens">
-                  <NumberInput
-                    id="opponent-score-pens"
-                    value={matchForm.opponent_score_pens ?? null}
-                    onChange={(value) => setMatchForm({ ...matchForm, opponent_score_pens: value })}
-                    min={0}
-                  />
-                </FormField>
-              </div>
-            </div>
-          )}
-        </div>
+        <CollapsibleFormSection
+          title="Extra Time"
+          isOpen={showExtraTimeSection}
+          onToggle={() => setShowExtraTimeSection(!showExtraTimeSection)}
+          controlsId="extra-time-section"
+        >
+          <MatchExtraTimeFields matchForm={matchForm} setMatchForm={setMatchForm} />
+        </CollapsibleFormSection>
 
       </FormWrapper>
   );
