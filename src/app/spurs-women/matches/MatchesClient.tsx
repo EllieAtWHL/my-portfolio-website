@@ -1,48 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import MatchCard from '@/components/spurs-women/MatchCard';
+import FilteredMatchList from '@/components/spurs-women/FilteredMatchList';
 import MatchFilterControls from '@/components/spurs-women/MatchFilterControls';
 import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
 import { ErrorState } from '@/components/ErrorState';
-import { getMatchesWithFilter } from '@/lib/data/matches';
-import { Match } from '@/lib/data/matches';
+import { useRetryableAsync } from '@/hooks/useRetryableAsync';
+import { useFilteredMatches } from '@/hooks/useFilteredMatches';
+import { getMatchesWithFilter, Match } from '@/lib/data/matches';
 
 export default function MatchesClient() {
-  const [allMatches, setAllMatches] = useState<Match[]>([]);
-  const [filteredMatches, setFilteredMatches] = useState<Match[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
-
-  // Load matches on mount, and again whenever retryCount changes (bumped by
-  // the "Try Again" button below) - keeps the fetch logic local to the
-  // effect rather than a shared useCallback, which is what a memoized
-  // fetch function invoked from both an effect and a button triggers
-  // react-hooks/set-state-in-effect on, even though the setState calls only
-  // ever run after the awaited request settles, never synchronously.
-  useEffect(() => {
-    const fetchMatches = async () => {
-      setLoading(true);
-      try {
-        const matches = await getMatchesWithFilter('all');
-        setAllMatches(matches);
-        setFilteredMatches(matches);
-        setHasError(false);
-      } catch (error) {
-        console.error('Error loading matches:', error);
-        setHasError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMatches();
-  }, [retryCount]);
-
-  const retryLoadMatches = () => setRetryCount((count) => count + 1);
+  const { data: allMatches, loading, hasError, retry } = useRetryableAsync<Match[]>(
+    () => getMatchesWithFilter('all'),
+    [],
+    [],
+    'Error loading matches:'
+  );
+  const { filteredMatches, onFilteredMatchesChange, resetFilters } = useFilteredMatches(allMatches);
 
   if (loading) {
     return (
@@ -63,7 +37,7 @@ export default function MatchesClient() {
           <h1 className="spurs-text font-bold mb-8 text-center">All Tottenham Hotspur Women Matches</h1>
           <ErrorState
             message="Couldn't load matches. Please try again."
-            onRetry={retryLoadMatches}
+            onRetry={retry}
             cardVariant="spursAccent"
             buttonVariant="spurs"
           />
@@ -81,25 +55,16 @@ export default function MatchesClient() {
           {/* Comprehensive filter controls */}
           <MatchFilterControls
             matches={allMatches}
-            onFilteredMatchesChange={setFilteredMatches}
+            onFilteredMatchesChange={onFilteredMatchesChange}
           />
         </div>
 
         {/* Matches list */}
-        <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
-          {filteredMatches.length > 0 ? (
-            filteredMatches.map((match) => (
-              <MatchCard key={match.id} match={match} />
-            ))
-          ) : (
-            <Card variant="spursAccent" padding="lg" className="col-span-full text-center">
-              <p className="spurs-text text-lg mb-4">No matches found with the current filters.</p>
-              <Button variant="spurs" onClick={() => setFilteredMatches(allMatches)}>
-                Clear Filters
-              </Button>
-            </Card>
-          )}
-        </div>
+        <FilteredMatchList
+          matches={filteredMatches}
+          emptyMessage="No matches found with the current filters."
+          onClear={resetFilters}
+        />
 
         {/* Back to seasons link */}
         <div className="mt-12 text-center">

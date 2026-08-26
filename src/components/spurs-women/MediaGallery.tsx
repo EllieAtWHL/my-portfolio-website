@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { PhotoMedia } from '../../lib/data/media';
 import { fetchPhotoManifest } from '@/lib/photo-manifest';
 import { loadPhotosFromGitHub } from '@/lib/external-photo-loader';
 import LightboxGallery from './LightboxGallery';
+import { Skeleton } from './Skeleton';
 import { Button } from '@/components/Button';
 import { ErrorState } from '@/components/ErrorState';
+import { useRetryableAsync } from '@/hooks/useRetryableAsync';
 
 type MediaGalleryProps = {
   photos: PhotoMedia[];
@@ -20,52 +22,33 @@ const PHOTO_ASPECT_RATIO_PADDING = '66.67%';
 export default function MediaGallery({ photos, fullWidth = false }: MediaGalleryProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [initialIndex, setInitialIndex] = useState(0);
-  const [albumPhotos, setAlbumPhotos] = useState<Record<string, string[]>>({});
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
 
-  // Fetch logic stays local to the effect (rather than a shared useCallback
-  // also called from the retry button) - keeps react-hooks/set-state-in-effect
-  // happy, since it flags a memoized fetch function reachable from both an
-  // effect and an external handler even though these setState calls only
-  // ever run after the awaited request settles. Retrying bumps retryCount
-  // to re-trigger this same effect.
-  useEffect(() => {
-    async function loadPhotoData() {
-      setIsLoading(true);
-      try {
-        // Load manifest for GitHub-based photos
-        const manifest = await fetchPhotoManifest();
+  const { data: albumPhotos, loading: isLoading, hasError, retry: retryLoadPhotoData } = useRetryableAsync<
+    Record<string, string[]>
+  >(
+    async () => {
+      // Load manifest for GitHub-based photos
+      const manifest = await fetchPhotoManifest();
 
-        // Load photos for all albums using GitHub
-        const photoAlbums = photos.filter(photo => photo.type === 'photo album');
-        const albumData: Record<string, string[]> = {};
+      // Load photos for all albums using GitHub
+      const photoAlbums = photos.filter((photo) => photo.type === 'photo album');
+      const albumData: Record<string, string[]> = {};
 
-        for (const album of photoAlbums) {
-          if (album.url) {
-            const albumPhotos = loadPhotosFromGitHub(album, manifest);
-            if (albumPhotos.length > 0) {
-              albumData[album.url] = albumPhotos;
-            }
+      for (const album of photoAlbums) {
+        if (album.url) {
+          const albumPhotos = loadPhotosFromGitHub(album, manifest);
+          if (albumPhotos.length > 0) {
+            albumData[album.url] = albumPhotos;
           }
         }
-
-        setAlbumPhotos(albumData);
-        setHasError(false);
-
-      } catch (error) {
-        console.error('Error loading photo data:', error);
-        setHasError(true);
-      } finally {
-        setIsLoading(false);
       }
-    }
 
-    loadPhotoData();
-  }, [photos, retryCount]);
-
-  const retryLoadPhotoData = () => setRetryCount((count) => count + 1);
+      return albumData;
+    },
+    {},
+    [photos],
+    'Error loading photo data:'
+  );
 
   // Determine grid layout based on fullWidth prop
   const gridClass = fullWidth
@@ -84,9 +67,9 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
         <h2 className="font-bold media-title mb-4">Photos</h2>
         <div className={gridClass} role="status" aria-label="Loading photos">
           {Array.from({ length: 6 }).map((_, index) => (
-            <div
+            <Skeleton
               key={index}
-              className="rounded-lg overflow-hidden bg-gray-800 relative animate-pulse motion-reduce:animate-none"
+              className="rounded-lg overflow-hidden bg-gray-800 relative"
               style={{ paddingBottom: PHOTO_ASPECT_RATIO_PADDING }}
             />
           ))}
@@ -124,7 +107,7 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
     // Skip photo album entries from final display
     return acc;
   }, []);
-  
+
 
   const openLightbox = (index: number) => {
     setInitialIndex(index);
@@ -151,7 +134,7 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
             </Button>
           )}
         </div>
-        
+
         {allPhotos.length > 0 ? (
           <div className={gridClass}>
             {allPhotos.slice(0, 12).map((photo, index) => ( // Only show first 12 photos initially
@@ -183,7 +166,7 @@ export default function MediaGallery({ photos, fullWidth = false }: MediaGallery
                     console.error('Failed to load image:', photo.url);
                   }}
                 />
-                <div 
+                <div
                   className="absolute inset-0 pointer-events-auto"
                   style={{ backgroundColor: 'transparent' }}
                   onContextMenu={(e) => e.preventDefault()}
