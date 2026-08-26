@@ -15,11 +15,3 @@ export interface PhotoGalleryItem {
 }
 
 export type FolderKey = string;
-
-export interface PhotoAlbumMedia {
-  id: number | string;
-  type: 'photo album';
-  url: FolderKey;
-  caption: string | null;
-  title?: string | null;
-}
