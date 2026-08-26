@@ -77,7 +77,27 @@ magick mogrify \
 Recommended settings: WebP format, 82% quality, max 2000px width, target
 <500KB per photo, `-strip` to remove metadata.
 
-### 2. Upload to the external repository
+`scripts/navigate-to-images-and-optimise.bash "<folder name>"` automates this
+step: point it at a local folder under `SPURS_IMAGES_BASE_PATH` and it
+creates the `optimised/` subfolder for you (`npm run dev`-style env loading
+from `.env.local`, ImageMagick presence check, etc.).
+
+### 2 & 3. Automated: upload + link to the match
+
+Once photos are optimised, `npm run publish-match-photos -- "<same folder
+name>"` (`scripts/publish-match-photos.js`) automates steps 2 and 3 below:
+it resolves the match from the folder's `YYYYMMDD` date prefix (local folder
+names are inconsistent - dashes, mixed capitalisation, full competition
+names - so it doesn't try to parse team/competition out of them), builds the
+canonical destination folder name from the match record itself, copies the
+optimised photos into `spurs-women-photo-gallery`, commits + pushes, and
+upserts the `media` "photo album" row. Pass `--match-id=<uuid>` to skip the
+date lookup if it's ambiguous (e.g. two matches on the same day) or fails.
+
+The manual steps below are what it does under the hood, and remain the
+fallback for anything the script can't resolve automatically.
+
+### 2. Upload to the external repository (manual)
 
 ```bash
 git clone https://github.com/EllieAtWHL/spurs-women-photo-gallery.git
@@ -89,7 +109,7 @@ git commit -m "Add Chelsea vs Spurs photos"
 git push origin main
 ```
 
-### 3. Update the database
+### 3. Update the database (manual)
 
 Insert (or update) the media record with the folder key as `url` and
 `storage_source = 'github'` (see SQL above). Find the match ID first:
