@@ -13,7 +13,11 @@ describe('BlogArticleLayout', () => {
     );
 
     expect(screen.getByRole('heading', { name: 'Test Article' })).toBeInTheDocument();
-    expect(screen.getByAltText('Lightning Strike')).toHaveAttribute('src', '/lightning-rollout/lightning.jpeg');
+    // next/image rewrites src through its optimizer proxy (/_next/image?url=...&w=...&q=...),
+    // so assert on the underlying url param rather than the raw src.
+    const heroSrc = screen.getByAltText('Lightning Strike').getAttribute('src') || '';
+    const heroUrl = new URL(heroSrc, 'http://localhost').searchParams.get('url');
+    expect(heroUrl).toBe('/lightning-rollout/lightning.jpeg');
     expect(screen.getByText('Article body')).toBeInTheDocument();
   });
 

@@ -30,6 +30,13 @@ export default function LightningRolloutPart1() {
             <h5 className="subtopic-title">Lightning Readiness Report</h5>
             <p>The number one way to determine the implications of migrating to Lightning is by running the Lightning Readiness Report within your org.</p>
             <div className="blog-image">
+              {/* Plain <img>, not next/image: this is an animated GIF, and next/image's
+                  built-in optimizer doesn't support animated GIFs - by default it silently
+                  drops the animation, and unoptimized={true} (the only way to keep it) disables
+                  the whole optimization pipeline anyway, defeating the point of switching. See
+                  https://github.com/vercel/next.js/discussions/23181 and
+                  https://github.com/vercel/next.js/discussions/18628. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/lightning-rollout/lightningReadinessReport.gif"
                 alt="Lightning Readiness Report"

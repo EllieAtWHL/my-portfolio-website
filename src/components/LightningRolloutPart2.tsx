@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Card } from '@/components/Card';
 import { BlogArticleLayout } from '@/components/lightning-rollout/BlogArticleLayout';
 
@@ -94,9 +95,11 @@ export default function LightningRolloutPart2() {
             <Card variant="default" padding="md" className="subtopic">
               <h5 className="subtopic-title">Why is my List View empty?</h5>
               <div className="blog-image">
-                <img
+                <Image
                   src="/lightning-rollout/empty-list-view.png"
                   alt="Empty List View"
+                  width={875}
+                  height={296}
                   className="content-image"
                 />
               </div>
@@ -106,9 +109,11 @@ export default function LightningRolloutPart2() {
             <Card variant="default" padding="md" className="subtopic">
               <h5 className="subtopic-title">Where are all my reports?</h5>
               <div className="blog-image">
-                <img
+                <Image
                   src="/lightning-rollout/no-reports.png"
                   alt="No Reports"
+                  width={875}
+                  height={369}
                   className="content-image"
                 />
               </div>

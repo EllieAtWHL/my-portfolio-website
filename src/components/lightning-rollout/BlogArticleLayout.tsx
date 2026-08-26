@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { BlogNavigation } from './BlogNavigation';
 
 interface BlogNavLink {
@@ -22,10 +23,13 @@ export function BlogArticleLayout({ title, mediumUrl, mediumDate, navLeft, navRi
         <h1 className="blog-main-title">{title}</h1>
 
         <div className="blog-hero-image">
-          <img
+          <Image
             src="/lightning-rollout/lightning.jpeg"
             alt="Lightning Strike"
+            width={1400}
+            height={933}
             className="hero-image"
+            priority
           />
         </div>
 
