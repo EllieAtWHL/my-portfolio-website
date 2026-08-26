@@ -56,6 +56,13 @@ export interface MatchForm {
   notes: string | null;
 }
 
+export interface MatchFormSectionState {
+  showStats: boolean;
+  showExtraTime: boolean;
+  setShowStats: (show: boolean) => void;
+  setShowExtraTime: (show: boolean) => void;
+}
+
 interface MatchFormProps {
   matchForm: Partial<MatchForm>;
   setMatchForm: (form: Partial<MatchForm>) => void;
@@ -66,10 +73,7 @@ interface MatchFormProps {
   isEditMode: boolean;
   editingMatchId: string | null;
   loading: boolean;
-  showStatsSection: boolean;
-  showExtraTimeSection: boolean;
-  setShowStatsSection: (show: boolean) => void;
-  setShowExtraTimeSection: (show: boolean) => void;
+  sectionState: MatchFormSectionState;
   getCurrentStadiumName: (stadiumId: string, matchDate: string) => string;
   onSubmit: (e: React.FormEvent) => void;
   onDelete: () => void;
@@ -86,10 +90,12 @@ export function MatchForm({
   isEditMode,
   editingMatchId,
   loading,
-  showStatsSection,
-  showExtraTimeSection,
-  setShowStatsSection,
-  setShowExtraTimeSection,
+  sectionState: {
+    showStats: showStatsSection,
+    showExtraTime: showExtraTimeSection,
+    setShowStats: setShowStatsSection,
+    setShowExtraTime: setShowExtraTimeSection,
+  },
   getCurrentStadiumName,
   onSubmit,
   onDelete,

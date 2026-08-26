@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { Button } from '@/components/Button';
+import { ChevronIcon } from '@/components/ChevronIcon';
 import { Match, MatchNavSummary } from '@/lib/data/matches';
 import TeamPill from '@/components/spurs-women/TeamPill';
 
@@ -55,16 +56,11 @@ export default function MatchNavigation({
   // pulse, per the design system's loading-state guidance.
   const renderNavIcon = (direction: 'previous' | 'next', sizeClasses: string) => {
     const isLoading = isPending && pendingDirection === direction;
-    const path = direction === 'previous' ? 'M15 19l-7-7 7-7' : 'M9 5l7 7-7 7';
     return (
-      <svg
+      <ChevronIcon
+        direction={direction === 'previous' ? 'left' : 'right'}
         className={`${sizeClasses} ${isLoading ? 'animate-pulse motion-reduce:animate-none' : ''}`}
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={path} />
-      </svg>
+      />
     );
   };
 

@@ -2,21 +2,17 @@ import { FormWrapper } from './FormWrapper';
 import { FormField, TextInput } from './FormField';
 import { ColorPicker } from './ColorPicker';
 
+interface TeamFormValues {
+  name: string;
+  short_name: string;
+  primary_color: string | null;
+  secondary_color: string | null;
+  is_tottenham: boolean;
+}
+
 interface TeamFormProps {
-  teamForm: {
-    name?: string;
-    short_name?: string;
-    primary_color?: string | null;
-    secondary_color?: string | null;
-    is_tottenham?: boolean;
-  };
-  setTeamForm: (form: {
-    name?: string;
-    short_name?: string;
-    primary_color?: string | null;
-    secondary_color?: string | null;
-    is_tottenham?: boolean;
-  }) => void;
+  teamForm: Partial<TeamFormValues>;
+  setTeamForm: (form: Partial<TeamFormValues>) => void;
   isTeamEditMode: boolean;
   editingTeamId: number | null;
   loading: boolean;

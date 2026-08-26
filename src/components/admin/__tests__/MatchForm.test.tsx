@@ -45,10 +45,12 @@ const baseProps = {
   isEditMode: false,
   editingMatchId: null,
   loading: false,
-  showStatsSection: false,
-  showExtraTimeSection: false,
-  setShowStatsSection: () => {},
-  setShowExtraTimeSection: () => {},
+  sectionState: {
+    showStats: false,
+    showExtraTime: false,
+    setShowStats: () => {},
+    setShowExtraTime: () => {},
+  },
   getCurrentStadiumName: () => 'Tottenham Hotspur Stadium',
   onSubmit: () => {},
   onDelete: () => {},
@@ -130,15 +132,23 @@ describe('MatchForm', () => {
   });
 
   it('toggles the Match Stats section and edits a stat field', () => {
-    const setShowStatsSection = jest.fn();
-    const { rerender } = render(<MatchForm {...baseProps} setShowStatsSection={setShowStatsSection} />);
+    const setShowStats = jest.fn();
+    const { rerender } = render(
+      <MatchForm {...baseProps} sectionState={{ ...baseProps.sectionState, setShowStats }} />
+    );
 
     expect(screen.getByText('Match Stats').closest('button')).toHaveAttribute('aria-expanded', 'false');
     fireEvent.click(screen.getByText('Match Stats'));
-    expect(setShowStatsSection).toHaveBeenCalledWith(true);
+    expect(setShowStats).toHaveBeenCalledWith(true);
 
     const setMatchForm = jest.fn();
-    rerender(<MatchForm {...baseProps} showStatsSection setMatchForm={setMatchForm} />);
+    rerender(
+      <MatchForm
+        {...baseProps}
+        sectionState={{ ...baseProps.sectionState, showStats: true }}
+        setMatchForm={setMatchForm}
+      />
+    );
     expect(screen.getByText('Match Stats').closest('button')).toHaveAttribute('aria-expanded', 'true');
     // NumberInput only parses as a float when step="any"; this field uses
     // step="0.1", so it still parses with parseInt.
@@ -147,15 +157,23 @@ describe('MatchForm', () => {
   });
 
   it('toggles the Extra Time section and edits a penalties field', () => {
-    const setShowExtraTimeSection = jest.fn();
-    const { rerender } = render(<MatchForm {...baseProps} setShowExtraTimeSection={setShowExtraTimeSection} />);
+    const setShowExtraTime = jest.fn();
+    const { rerender } = render(
+      <MatchForm {...baseProps} sectionState={{ ...baseProps.sectionState, setShowExtraTime }} />
+    );
 
     expect(screen.getByText('Extra Time').closest('button')).toHaveAttribute('aria-expanded', 'false');
     fireEvent.click(screen.getByText('Extra Time'));
-    expect(setShowExtraTimeSection).toHaveBeenCalledWith(true);
+    expect(setShowExtraTime).toHaveBeenCalledWith(true);
 
     const setMatchForm = jest.fn();
-    rerender(<MatchForm {...baseProps} showExtraTimeSection setMatchForm={setMatchForm} />);
+    rerender(
+      <MatchForm
+        {...baseProps}
+        sectionState={{ ...baseProps.sectionState, showExtraTime: true }}
+        setMatchForm={setMatchForm}
+      />
+    );
     expect(screen.getByText('Extra Time').closest('button')).toHaveAttribute('aria-expanded', 'true');
     fireEvent.change(screen.getByLabelText(/Spurs Score \(Penalties\)/i), { target: { value: '4' } });
     expect(setMatchForm).toHaveBeenCalledWith({ ...baseForm, spurs_score_pens: 4 });

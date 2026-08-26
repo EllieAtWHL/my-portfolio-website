@@ -1,13 +1,16 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { Card } from '@/components/Card';
 import { ErrorState } from '@/components/ErrorState';
-import MatchCard from '@/components/spurs-women/MatchCard';
+import FilteredMatchList from '@/components/spurs-women/FilteredMatchList';
 import MatchFilterControls from '@/components/spurs-women/MatchFilterControls';
 import PlayerTable from '@/components/spurs-women/PlayerTable';
+import { Skeleton } from '@/components/spurs-women/Skeleton';
 import SpursTabButton from '@/components/spurs-women/SpursTabButton';
+import { useRetryableAsync } from '@/hooks/useRetryableAsync';
+import { useFilteredMatches } from '@/hooks/useFilteredMatches';
 import { getMatchesForTeam, getPlayersForTeam, TeamPlayers } from '@/lib/data/teams';
 import { Match } from '@/lib/data/matches';
 import TeamPill from '@/components/spurs-women/TeamPill';
@@ -18,6 +21,13 @@ interface TeamClientProps {
   teamId: string;
   stadiums?: Stadium[];
 }
+
+interface TeamPageData {
+  matches: Match[];
+  players: TeamPlayers;
+}
+
+const INITIAL_DATA: TeamPageData = { matches: [], players: { current: [], former: [] } };
 
 // Ranks a team's home stadiums by how many of the team's matches were played there
 // (rather than the stadium's all-time match count, which would include other teams' visits).
@@ -44,49 +54,21 @@ function computeMatchRecord(matches: Match[]) {
 }
 
 export default function TeamClient({ team, teamId, stadiums = [] }: TeamClientProps) {
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [filteredMatches, setFilteredMatches] = useState<Match[]>([]);
-  const [players, setPlayers] = useState<TeamPlayers>({ current: [], former: [] });
+  const { data, loading: isLoading, hasError, retry: retryFetchData } = useRetryableAsync<TeamPageData>(
+    async () => {
+      const [matches, players] = await Promise.all([
+        getMatchesForTeam(teamId),
+        getPlayersForTeam(teamId),
+      ]);
+      return { matches: matches || [], players: players || { current: [], former: [] } };
+    },
+    INITIAL_DATA,
+    [teamId],
+    'Error loading team data:'
+  );
+  const { matches, players } = data;
+  const { filteredMatches, onFilteredMatchesChange } = useFilteredMatches(matches);
   const [activeTab, setActiveTab] = useState<'current' | 'former'>('current');
-  const [hasError, setHasError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [retryCount, setRetryCount] = useState(0);
-
-  const handleFilteredMatchesChange = useCallback((newFilteredMatches: Match[]) => {
-    setFilteredMatches(newFilteredMatches);
-  }, []);
-
-  // Fetch logic stays local to the effect (rather than a shared useCallback
-  // also called from the retry button) - keeps react-hooks/set-state-in-effect
-  // happy, since it flags a memoized fetch function reachable from both an
-  // effect and an external handler even though these setState calls only
-  // ever run after the awaited request settles. Retrying bumps retryCount
-  // to re-trigger this same effect.
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const [matches, players] = await Promise.all([
-          getMatchesForTeam(teamId),
-          getPlayersForTeam(teamId)
-        ]);
-
-        setMatches(matches || []);
-        setFilteredMatches(matches || []);
-        setPlayers(players || { current: [], former: [] });
-        setHasError(false);
-      } catch (error) {
-        console.error('Error loading team data:', error);
-        setHasError(true);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [teamId, retryCount]);
-
-  const retryFetchData = () => setRetryCount((count) => count + 1);
 
   const record = computeMatchRecord(matches);
   const rankedStadiums = sortStadiumsByMatchCount(stadiums, matches);
@@ -95,7 +77,7 @@ export default function TeamClient({ team, teamId, stadiums = [] }: TeamClientPr
     <main id="main-content" className="p-4 pb-footer-clearance">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8 text-center">
-          <TeamPill 
+          <TeamPill
             teamName={team.name}
             primaryColor={team.primary_color}
             secondaryColor={team.secondary_color}
@@ -139,12 +121,12 @@ export default function TeamClient({ team, teamId, stadiums = [] }: TeamClientPr
             <h2 className="spurs-text font-bold mb-4">Players</h2>
             <Card variant="spursAccent" padding="md" hover={false}>
               <div className="flex gap-4 mb-4" role="status" aria-label="Loading players">
-                <div className="h-8 w-28 rounded-full bg-gray-700 animate-pulse motion-reduce:animate-none" />
-                <div className="h-8 w-28 rounded-full bg-gray-700 animate-pulse motion-reduce:animate-none" />
+                <Skeleton className="h-8 w-28 rounded-full bg-gray-700" />
+                <Skeleton className="h-8 w-28 rounded-full bg-gray-700" />
               </div>
               <div className="space-y-2">
                 {Array.from({ length: 5 }).map((_, index) => (
-                  <div key={index} className="h-10 rounded bg-gray-800 animate-pulse motion-reduce:animate-none" />
+                  <Skeleton key={index} className="h-10 rounded bg-gray-800" />
                 ))}
               </div>
             </Card>
@@ -190,10 +172,7 @@ export default function TeamClient({ team, teamId, stadiums = [] }: TeamClientPr
             ) : isLoading ? (
               <div className="grid gap-4 md:grid-cols-2" role="status" aria-label="Loading matches">
                 {Array.from({ length: 4 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="rounded-xl bg-gray-800 animate-pulse motion-reduce:animate-none h-32"
-                  />
+                  <Skeleton key={index} className="rounded-xl bg-gray-800 h-32" />
                 ))}
               </div>
             ) : (
@@ -217,7 +196,7 @@ export default function TeamClient({ team, teamId, stadiums = [] }: TeamClientPr
 
                 <MatchFilterControls
                   matches={matches}
-                  onFilteredMatchesChange={handleFilteredMatchesChange}
+                  onFilteredMatchesChange={onFilteredMatchesChange}
                   showCompetitionFilter={true}
                   showVenueFilter={true}
                   showAttendedFilter={true}
@@ -225,19 +204,11 @@ export default function TeamClient({ team, teamId, stadiums = [] }: TeamClientPr
                   showMonthFilter={false}
                 />
 
-                {filteredMatches.length > 0 ? (
-                  <div className="grid gap-4 md:grid-cols-2">
-                    {filteredMatches.map((match) => (
-                      <MatchCard key={match.id} match={match} />
-                    ))}
-                  </div>
-                ) : (
-                  <Card variant="spursAccent" padding="md" hover={false}>
-                    <p className="spurs-text">
-                      No matches found for this team.
-                    </p>
-                  </Card>
-                )}
+                <FilteredMatchList
+                  matches={filteredMatches}
+                  emptyMessage="No matches found for this team."
+                  gridClassName="grid gap-4 md:grid-cols-2"
+                />
               </>
             )}
           </div>

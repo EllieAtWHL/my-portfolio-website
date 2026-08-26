@@ -74,7 +74,11 @@ describe('PlayerClient', () => {
     render(<PlayerClient player={{ ...basePlayer, profile_image_url: 'https://cdn.example.com/photo.webp' }} />);
 
     const image = screen.getByRole('img', { name: 'Bethany England' });
-    expect(image).toHaveAttribute('src', 'https://cdn.example.com/photo.webp');
+    // next/image rewrites src through its optimizer proxy (/_next/image?url=...&w=...&q=...),
+    // so assert on the underlying url param rather than the raw src.
+    const src = image.getAttribute('src') || '';
+    const originalUrl = new URL(src, 'http://localhost').searchParams.get('url');
+    expect(originalUrl).toBe('https://cdn.example.com/photo.webp');
   });
 
   it('shows a two-line initials placeholder with squad number instead of hiding the card when there is no photo', () => {
