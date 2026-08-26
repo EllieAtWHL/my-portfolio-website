@@ -43,6 +43,38 @@ export async function fetchByIdFromDB<T>(
 }
 
 /**
+ * Fetches one row per match count for the given column, filtered to the given entity ids,
+ * and reduces it to a per-id count. A single query regardless of how many entities/ids there
+ * are, rather than one query per entity.
+ */
+async function fetchColumnCounts(
+  matchTableName: string,
+  matchColumn: string,
+  ids: (string | number)[]
+): Promise<Map<string | number, number>> {
+  const counts = new Map<string | number, number>();
+
+  const { data, error } = await supabase
+    .from(matchTableName)
+    .select(matchColumn)
+    .in(matchColumn, ids);
+
+  if (error) {
+    console.error(`Error fetching ${matchColumn} counts from ${matchTableName}:`, error);
+    return counts;
+  }
+
+  for (const row of (data ?? []) as unknown as Record<string, string | number | null>[]) {
+    const id = row[matchColumn];
+    if (id !== null && id !== undefined) {
+      counts.set(id, (counts.get(id) ?? 0) + 1);
+    }
+  }
+
+  return counts;
+}
+
+/**
  * Generic function to fetch records with match count aggregation
  * Counts matches where the entity appears in either of two columns (e.g., home_team_id or away_team_id)
  */
@@ -64,29 +96,21 @@ export async function fetchWithMatchCountFromDB<T extends { id: string | number 
     throw entitiesError;
   }
 
-  // Fetch match counts for each entity
-  const entitiesWithCounts = await Promise.all(
-    (entitiesData as T[]).map(async (entity) => {
-      const { count: count1, error: error1 } = await supabase
-        .from(matchTableName)
-        .select('*', { count: 'exact', head: true })
-        .eq(matchColumn1, entity.id);
+  const entities = entitiesData as T[];
+  if (entities.length === 0) {
+    return [];
+  }
 
-      const { count: count2, error: error2 } = await supabase
-        .from(matchTableName)
-        .select('*', { count: 'exact', head: true })
-        .eq(matchColumn2, entity.id);
+  const ids = entities.map((entity) => entity.id);
+  const [counts1, counts2] = await Promise.all([
+    fetchColumnCounts(matchTableName, matchColumn1, ids),
+    fetchColumnCounts(matchTableName, matchColumn2, ids),
+  ]);
 
-      const totalMatches = (error1 ? 0 : count1 || 0) + (error2 ? 0 : count2 || 0);
-
-      return {
-        ...entity,
-        match_count: totalMatches
-      };
-    })
-  );
-
-  return entitiesWithCounts;
+  return entities.map((entity) => ({
+    ...entity,
+    match_count: (counts1.get(entity.id) ?? 0) + (counts2.get(entity.id) ?? 0),
+  }));
 }
 
 /**
@@ -110,20 +134,16 @@ export async function fetchWithSingleMatchCountFromDB<T extends { id: string | n
     throw entitiesError;
   }
 
-  // Fetch match counts for each entity
-  const entitiesWithCounts = await Promise.all(
-    (entitiesData as T[]).map(async (entity) => {
-      const { count, error: countError } = await supabase
-        .from(matchTableName)
-        .select('*', { count: 'exact', head: true })
-        .eq(matchColumn, entity.id);
+  const entities = entitiesData as T[];
+  if (entities.length === 0) {
+    return [];
+  }
 
-      return {
-        ...entity,
-        match_count: countError ? 0 : count || 0
-      };
-    })
-  );
+  const ids = entities.map((entity) => entity.id);
+  const counts = await fetchColumnCounts(matchTableName, matchColumn, ids);
 
-  return entitiesWithCounts;
+  return entities.map((entity) => ({
+    ...entity,
+    match_count: counts.get(entity.id) ?? 0,
+  }));
 }

@@ -123,54 +123,65 @@ describe('generic-fetchers', () => {
       expect(errorSpy).toHaveBeenCalledWith('Error fetching teams:', dbError);
     });
 
-    it('sums home and away counts for a single entity when both queries succeed', async () => {
+    it('sums home and away counts across multiple entities using one batched query per column', async () => {
       currentMockFrom = mockSupabaseFrom({
-        teams: { data: [{ id: 1, name: 'Spurs' }], error: null },
+        teams: {
+          data: [{ id: 1, name: 'Spurs' }, { id: 2, name: 'Arsenal' }],
+          error: null,
+        },
         matches: [
-          { data: null, error: null, count: 10 }, // home count
-          { data: null, error: null, count: 4 }, // away count
+          {
+            data: [{ home_team_id: 1 }, { home_team_id: 1 }, { home_team_id: 2 }],
+            error: null,
+          }, // home counts
+          { data: [{ away_team_id: 1 }], error: null }, // away counts
         ],
       });
 
       const result = await fetchWithMatchCountFromDB<{ id: number; name: string }>('teams');
 
-      expect(result).toEqual([{ id: 1, name: 'Spurs', match_count: 14 }]);
+      expect(result).toEqual([
+        { id: 1, name: 'Spurs', match_count: 3 },
+        { id: 2, name: 'Arsenal', match_count: 1 },
+      ]);
+      // Entities + one count query per column, regardless of how many entities there are.
+      expect(currentMockFrom).toHaveBeenCalledTimes(3);
     });
 
-    it('falls back to 0 for the home count only when the home-count query errors', async () => {
+    it('falls back to 0 for the home contribution only when the home-count query errors', async () => {
       currentMockFrom = mockSupabaseFrom({
         teams: { data: [{ id: 1, name: 'Spurs' }], error: null },
         matches: [
-          { data: null, error: { message: 'fail' }, count: 99 }, // home count errored - should NOT count
-          { data: null, error: null, count: 4 }, // away count succeeded
+          { data: null, error: { message: 'fail' } }, // home count errored - should NOT count
+          { data: [{ away_team_id: 1 }], error: null }, // away count succeeded
         ],
       });
 
       const result = await fetchWithMatchCountFromDB<{ id: number; name: string }>('teams');
 
-      expect(result).toEqual([{ id: 1, name: 'Spurs', match_count: 4 }]);
+      expect(result).toEqual([{ id: 1, name: 'Spurs', match_count: 1 }]);
     });
 
-    it('falls back to 0 for the away count only when the away-count query errors', async () => {
+    it('falls back to 0 for the away contribution only when the away-count query errors', async () => {
       currentMockFrom = mockSupabaseFrom({
         teams: { data: [{ id: 1, name: 'Spurs' }], error: null },
         matches: [
-          { data: null, error: null, count: 10 }, // home count succeeded
-          { data: null, error: { message: 'fail' }, count: 99 }, // away count errored - should NOT count
+          { data: [{ home_team_id: 1 }], error: null }, // home count succeeded
+          { data: null, error: { message: 'fail' } }, // away count errored - should NOT count
         ],
       });
 
       const result = await fetchWithMatchCountFromDB<{ id: number; name: string }>('teams');
 
-      expect(result).toEqual([{ id: 1, name: 'Spurs', match_count: 10 }]);
+      expect(result).toEqual([{ id: 1, name: 'Spurs', match_count: 1 }]);
     });
 
-    it('treats a null count (no error) as 0', async () => {
+    it('treats no matching rows as 0', async () => {
       currentMockFrom = mockSupabaseFrom({
         teams: { data: [{ id: 1, name: 'Spurs' }], error: null },
         matches: [
-          { data: null, error: null, count: null },
-          { data: null, error: null, count: null },
+          { data: [], error: null },
+          { data: [], error: null },
         ],
       });
 
@@ -185,12 +196,16 @@ describe('generic-fetchers', () => {
       const result = await fetchWithMatchCountFromDB('teams');
 
       expect(result).toEqual([]);
+      expect(currentMockFrom).toHaveBeenCalledTimes(1);
     });
 
-    it('queries counts against the custom match table/columns when provided', async () => {
+    it('queries counts against the custom match table/columns, filtered by entity ids, when provided', async () => {
       currentMockFrom = mockSupabaseFrom({
         stadia: { data: [{ id: 1, name: 'Stadium A' }], error: null },
-        appearances: { data: null, error: null, count: 2 },
+        appearances: [
+          { data: [{ home_stadium_id: 1 }], error: null },
+          { data: [], error: null },
+        ],
       });
 
       await fetchWithMatchCountFromDB(
@@ -200,15 +215,15 @@ describe('generic-fetchers', () => {
         'away_stadium_id'
       );
 
-      // Call 0 = entities('stadia'); call 1 = home count('appearances'); call 2 = away
-      // count('appearances') - deterministic order since there's a single entity, so the
-      // two count awaits inside the map callback run sequentially, not interleaved.
+      // Call 0 = entities('stadia'); call 1 = home counts('appearances'); call 2 = away
+      // counts('appearances') - deterministic order since Promise.all evaluates its array
+      // left-to-right and each query resolves synchronously up to its first await.
       expect(currentMockFrom).toHaveBeenNthCalledWith(2, 'appearances');
       expect(currentMockFrom).toHaveBeenNthCalledWith(3, 'appearances');
       const homeChain = currentMockFrom.mock.results[1].value;
       const awayChain = currentMockFrom.mock.results[2].value;
-      expect(homeChain.eq).toHaveBeenCalledWith('home_stadium_id', 1);
-      expect(awayChain.eq).toHaveBeenCalledWith('away_stadium_id', 1);
+      expect(homeChain.in).toHaveBeenCalledWith('home_stadium_id', [1]);
+      expect(awayChain.in).toHaveBeenCalledWith('away_stadium_id', [1]);
     });
   });
 
@@ -221,21 +236,32 @@ describe('generic-fetchers', () => {
       expect(errorSpy).toHaveBeenCalledWith('Error fetching stadia:', dbError);
     });
 
-    it('attaches the match count for a single entity on success', async () => {
+    it('attaches match counts for multiple entities using a single batched query', async () => {
       currentMockFrom = mockSupabaseFrom({
-        stadia: { data: [{ id: 1, name: 'Stadium A' }], error: null },
-        matches: { data: null, error: null, count: 7 },
+        stadia: {
+          data: [{ id: 1, name: 'Stadium A' }, { id: 2, name: 'Stadium B' }],
+          error: null,
+        },
+        matches: {
+          data: [{ stadium_id: 1 }, { stadium_id: 1 }, { stadium_id: 2 }],
+          error: null,
+        },
       });
 
       const result = await fetchWithSingleMatchCountFromDB<{ id: number; name: string }>('stadia');
 
-      expect(result).toEqual([{ id: 1, name: 'Stadium A', match_count: 7 }]);
+      expect(result).toEqual([
+        { id: 1, name: 'Stadium A', match_count: 2 },
+        { id: 2, name: 'Stadium B', match_count: 1 },
+      ]);
+      // Entities + a single count query, regardless of how many entities there are.
+      expect(currentMockFrom).toHaveBeenCalledTimes(2);
     });
 
-    it('falls back to 0 when the count query errors', async () => {
+    it('falls back to 0 for every entity when the count query errors', async () => {
       currentMockFrom = mockSupabaseFrom({
         stadia: { data: [{ id: 1, name: 'Stadium A' }], error: null },
-        matches: { data: null, error: { message: 'fail' }, count: 42 },
+        matches: { data: null, error: { message: 'fail' } },
       });
 
       const result = await fetchWithSingleMatchCountFromDB<{ id: number; name: string }>('stadia');
@@ -243,10 +269,10 @@ describe('generic-fetchers', () => {
       expect(result).toEqual([{ id: 1, name: 'Stadium A', match_count: 0 }]);
     });
 
-    it('treats a null count (no error) as 0', async () => {
+    it('treats no matching rows as 0', async () => {
       currentMockFrom = mockSupabaseFrom({
         stadia: { data: [{ id: 1, name: 'Stadium A' }], error: null },
-        matches: { data: null, error: null, count: null },
+        matches: { data: [], error: null },
       });
 
       const result = await fetchWithSingleMatchCountFromDB<{ id: number; name: string }>('stadia');
@@ -254,25 +280,26 @@ describe('generic-fetchers', () => {
       expect(result).toEqual([{ id: 1, name: 'Stadium A', match_count: 0 }]);
     });
 
-    it('filters the count query by the custom match column against the entity id', async () => {
+    it('filters the count query by the custom match column against all entity ids', async () => {
       currentMockFrom = mockSupabaseFrom({
         stadia: { data: [{ id: 9, name: 'Stadium A' }], error: null },
-        matches: { data: null, error: null, count: 1 },
+        matches: { data: [{ stadium_id: 9 }], error: null },
       });
 
       await fetchWithSingleMatchCountFromDB('stadia', 'matches', 'stadium_id');
-      // Call 0 = entities('stadia'); call 1 = count('matches')
+      // Call 0 = entities('stadia'); call 1 = counts('matches')
       const matchesChain = currentMockFrom.mock.results[1].value;
 
-      expect(matchesChain.eq).toHaveBeenCalledWith('stadium_id', 9);
+      expect(matchesChain.in).toHaveBeenCalledWith('stadium_id', [9]);
     });
 
-    it('returns an empty array when there are no entities', async () => {
+    it('returns an empty array when there are no entities (no count query attempted)', async () => {
       currentMockFrom = mockSupabaseFrom({ stadia: { data: [], error: null } });
 
       const result = await fetchWithSingleMatchCountFromDB('stadia');
 
       expect(result).toEqual([]);
+      expect(currentMockFrom).toHaveBeenCalledTimes(1);
     });
   });
 });
