@@ -6,34 +6,24 @@ interface Team {
   name: string;
 }
 
+interface StadiumFormValues {
+  name: string;
+  slug: string;
+  city: string | null;
+  country: string | null;
+  capacity: number | null;
+  opened_date: string | null;
+  address_line_1: string | null;
+  postcode: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  home_team_id: number | null;
+}
+
 interface StadiumFormProps {
   teams: Team[];
-  stadiumForm: {
-    name?: string;
-    slug?: string;
-    city?: string | null;
-    country?: string | null;
-    capacity?: number | null;
-    opened_date?: string | null;
-    address_line_1?: string | null;
-    postcode?: string | null;
-    latitude?: number | null;
-    longitude?: number | null;
-    home_team_id?: number | null;
-  };
-  setStadiumForm: (form: {
-    name?: string;
-    slug?: string;
-    city?: string | null;
-    country?: string | null;
-    capacity?: number | null;
-    opened_date?: string | null;
-    address_line_1?: string | null;
-    postcode?: string | null;
-    latitude?: number | null;
-    longitude?: number | null;
-    home_team_id?: number | null;
-  }) => void;
+  stadiumForm: Partial<StadiumFormValues>;
+  setStadiumForm: (form: Partial<StadiumFormValues>) => void;
   isStadiumEditMode: boolean;
   editingStadiumId: string | null;
   loading: boolean;
