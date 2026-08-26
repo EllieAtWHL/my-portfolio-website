@@ -394,6 +394,69 @@ Rules:
   - No secrets committed to the repo.
   - Public vs server-only variables clearly separated.
 
+### Database Schema Management (WEB-135)
+
+Decision:
+  - The Postgres schema is now tracked in git as SQL migration files under
+    `supabase/migrations/`, applied via the Supabase CLI. This reverses the
+    prior practice (schema managed entirely via the Supabase dashboard, with
+    no record of it anywhere in the repo).
+
+Workflow going forward:
+  - New schema change: `supabase migration new <name>` creates an empty
+    timestamped file in `supabase/migrations/`; write the SQL by hand; apply
+    it with `supabase db push` (pushes to the linked project - currently the
+    production "Spurs Women" project, there is no separate staging project).
+  - This loop (`migration new` -> hand-write SQL -> `db push`) does **not**
+    require Docker.
+  - Make schema changes through a migration file, not the Supabase dashboard
+    directly, so this stays an accurate record. If a change does happen via
+    the dashboard, reconciling it back into a migration file needs
+    `supabase db pull`/`db diff` (see below).
+
+Docker dependency:
+  - `supabase db pull` and `supabase db diff` **do** require Docker (they run
+    a temporary shadow Postgres instance to diff schemas) - this machine
+    doesn't have Docker installed, and installing Docker Desktop was judged
+    not worth it for a project at this scale.
+  - These two commands are only needed to reconcile schema drift (a change
+    made outside a migration file) or to regenerate a full baseline from
+    scratch - not for the normal add-a-migration loop above.
+  - Workaround used to seed the initial baseline without Docker:
+    `supabase db dump --dry-run` prints the exact `pg_dump` command and
+    temporary scoped credentials the CLI would otherwise run inside Docker;
+    running that command directly against a locally-installed `pg_dump`
+    (`brew install libpq`, keg-only - binaries are under
+    `$(brew --prefix libpq)/bin`, not on `PATH` by default) produces the same
+    output without Docker. The resulting file was then registered as already
+    applied with `supabase migration repair --status applied <version>`
+    (since it captures existing state, not a change to run).
+
+Current state:
+  - `supabase/migrations/20260826173645_add_matches_fk_indexes.sql` (WEB-61) -
+    the first migration, adding indexes on `matches.home_team_id`,
+    `matches.away_team_id`, `matches.stadium_id`.
+  - `supabase/migrations/20260826175328_baseline_schema.sql` (WEB-135) - a
+    full schema-only dump of every table/column/constraint/index/view in the
+    `public` schema at that point, captured via the `pg_dump` workaround
+    above. Treat this as a point-in-time baseline, not a live mirror - it
+    will drift from the real schema as new migrations are added on top, the
+    same way any snapshot does.
+  - For field-level documentation of what each table/column means (not just
+    its DDL), see `reference/spurs-women/admin/ADMIN_SYSTEM_DOCUMENTATION.md`'s
+    "Data Entities" section - that doc explains purpose and usage, the
+    migrations are the authoritative source for exact structure.
+
+Rationale:
+  - Recreatability (rebuilding the schema from the repo alone, without
+    depending on Supabase's dashboard/backups) is itself a form of backup,
+    and came up during the WEB-61 database-optimization investigation as a
+    cheap, code-only complement to whatever Supabase-side backup/PITR
+    settings the project ends up using (tracked separately in WEB-135).
+  - A real migrations workflow is a bigger commitment than a one-off fix,
+    but was judged worth it for a project with zero prior schema history -
+    the alternative was staying at zero indefinitely.
+
 ## Performance & Monitoring
 ### Performance Monitoring (Core Web Vitals)
 
