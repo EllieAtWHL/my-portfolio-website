@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Card } from '@/components/Card';
 import MatchFilterControls from '@/components/spurs-women/MatchFilterControls';
@@ -60,9 +61,11 @@ export default function PlayerClient({ player, matchHistory = [] }: PlayerClient
           <div className="flex flex-col sm:flex-row gap-6">
             <div className="flex-shrink-0 mx-auto sm:mx-0" data-testid="player-photo">
               {player.profile_image_url ? (
-                <img
+                <Image
                   src={player.profile_image_url}
                   alt={`${player.first_name} ${player.last_name}`}
+                  width={224}
+                  height={224}
                   className="w-56 h-56 object-cover rounded-full"
                 />
               ) : (
