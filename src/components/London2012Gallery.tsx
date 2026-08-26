@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
+import { ChevronIcon } from '@/components/ChevronIcon';
 
 interface SlideData {
   src: string;
@@ -202,18 +203,14 @@ export default function London2012Gallery() {
           className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 dark:bg-dark-text dark:text-dark-text-darker dark:hover:bg-dark-text transition-all"
           aria-label="Previous slide"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
+          <ChevronIcon direction="left" />
         </button>
         <button
           onClick={nextSlide}
           className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 dark:bg-dark-text dark:text-dark-text-darker dark:hover:bg-dark-text transition-all"
           aria-label="Next slide"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
+          <ChevronIcon direction="right" />
         </button>
       </div>
 
