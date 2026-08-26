@@ -43,17 +43,26 @@ Folder naming convention: `SEASON/YYYYMMDD Competition Team1 vs Team2/`, e.g.
 ### Database
 
 Photo albums use the `media` table with `type = 'photo album'` (note: a space,
-not a hyphen) and `storage_source = 'github'`. The `url` field stores the
-GitHub folder key (not a full URL) - the app looks this up in the manifest at
-render time.
+not a hyphen). The `url` field stores the GitHub folder key (not a full URL)
+- the app looks this up in the manifest at render time.
 
 ```sql
 UPDATE media
-SET url = '2025-26/20260208 WSL Spurs vs Chelsea',
-    storage_source = 'github'
+SET url = '2025-26/20260208 WSL Spurs vs Chelsea'
 WHERE match_id = 'your-match-id'
   AND type = 'photo album';
 ```
+
+**Note**: `media` has no `storage_source` column, despite some historical
+references to one (a TypeScript `storage_source?: 'github' | null` field on
+`Media`/`PhotoMedia` in `src/lib/data/media.ts`, threaded through in
+`MediaGallery.tsx`, and the now-doubly-inert `migrate-storage-source.js`).
+Confirmed against the live PostgREST schema
+(`GET {SUPABASE_URL}/rest/v1/` → `definitions.media`) while debugging a
+`publish-match-photos.js` failure - `storage_source` is never actually read
+to branch on anything (every `photo album` is already resolved via the
+manifest regardless of its value), so this is dead type/doc drift rather
+than a functional bug. Tracked for cleanup in WEB-123.
 
 ## Adding a New Photo Gallery
 
@@ -128,8 +137,8 @@ git push origin main
 
 ### 3. Update the database (manual)
 
-Insert (or update) the media record with the folder key as `url` and
-`storage_source = 'github'` (see SQL above). Find the match ID first:
+Insert (or update) the media record with the folder key as `url` (see SQL
+above). Find the match ID first:
 
 ```sql
 SELECT id, date, opponent, competition FROM matches ORDER BY date DESC;
@@ -208,7 +217,7 @@ Other CDN providers: `unpkg` (https://unpkg.com), `statically`
 
 - [ ] Photos optimized with ImageMagick (WebP, <500KB, ≤2000px)
 - [ ] Photos pushed to the external repository
-- [ ] Database updated with the correct folder key and `storage_source = 'github'`
+- [ ] Database updated with the correct folder key
 - [ ] Manifest generated: `npm run generate-external-manifest`
 - [ ] Manifest validated: `npm run validate-manifest`
 - [ ] Verified locally with `npm run dev`
@@ -240,19 +249,20 @@ curl -I "https://cdn.jsdelivr.net/gh/EllieAtWHL/spurs-women-photo-gallery@main/2
 ## History
 
 This system replaced an earlier Supabase Storage-based approach (hitting
-Supabase's free-tier storage limits). The migration is complete: all photo
-albums use `storage_source = 'github'`, there's no remaining Supabase Storage
-dependency for images, and images were never copied into
+Supabase's free-tier storage limits). The migration is complete: every photo
+album now resolves via the GitHub-backed manifest, there's no remaining
+Supabase Storage dependency for images, and images were never copied into
 `public/spurs-women/photo-gallery/` in this repo - they live solely in the
 external repository and are served via CDN (`public/spurs-women/photo-gallery/`
 is only ever created empty, on demand, as a local dev stub by `npm run
 init-external-local`).
 
-**Leftover script**: `npm run migrate-storage` / `migrate-storage:dry-run`
-(`scripts/migrate-storage-source.js`) is the one-time script that performed
-this migration - it backfills the `storage_source` field on existing `media`
-rows based on URL pattern. It's now inert (nothing left to migrate) but still
-present in `package.json`. Note it reads `SUPABASE_URL`/`SUPABASE_ANON_KEY`,
-not the `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY` names used
-elsewhere in this codebase (e.g. `src/lib/supabase/`) - if it's ever run
-again, set both legacy variable names explicitly.
+**Leftover script, now broken**: `npm run migrate-storage` /
+`migrate-storage:dry-run` (`scripts/migrate-storage-source.js`) was the
+one-time script that performed this migration by backfilling a
+`storage_source` field on `media` rows. That column has since been dropped
+from the live schema (see the Database section above) - the script would now
+error if run, not just no-op. It, its two `package.json` entries, and the
+matching dead `storage_source` TypeScript field/passthrough in
+`src/lib/data/media.ts` and `MediaGallery.tsx` are tracked for removal in
+WEB-123 rather than fixed here.

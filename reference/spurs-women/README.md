@@ -89,7 +89,7 @@ Core tables (Supabase/PostgreSQL):
 - **`players`** - profile fields, indexed on `last_name`
 - **`player_history`** - squad membership per team (`joined_on`/`left_on`, loan flag), indexed on `player_id`/`team_id`
 - **`player_stats`** - per-match player statistics (goals, assists, cards, minutes, ratings, etc.), unique on `(player_id, match_id)`, RLS enabled with public SELECT policy
-- **`media`** - photos, articles, social posts, videos linked to a match; see `reference/photo-gallery/README.md` for the `storage_source = 'github'` convention
+- **`media`** - photos, articles, social posts, videos linked to a match; see `reference/photo-gallery/README.md` for the `type = 'photo album'` / GitHub folder-key convention
 
 See `admin/ADMIN_SYSTEM_DOCUMENTATION.md` for the full field-level breakdown used by the admin CRUD forms.
 

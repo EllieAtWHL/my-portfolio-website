@@ -209,7 +209,7 @@ async function main() {
   }
 
   if (existing) {
-    const { error } = await supabase.from('media').update({ url: folderKey, storage_source: 'github' }).eq('id', existing.id);
+    const { error } = await supabase.from('media').update({ url: folderKey }).eq('id', existing.id);
     if (error) {
       console.error(`Failed to update media row ${existing.id}: ${error.message}`);
       process.exit(1);
@@ -222,7 +222,6 @@ async function main() {
         match_id: match.id,
         type: 'photo album',
         url: folderKey,
-        storage_source: 'github',
         title: null,
         caption: null,
         sort_order: 0,
