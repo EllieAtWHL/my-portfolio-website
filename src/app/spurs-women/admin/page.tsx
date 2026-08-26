@@ -443,10 +443,12 @@ export default function AdminPage() {
                 isEditMode={isEditMode}
                 editingMatchId={editingMatchId}
                 loading={loading}
-                showStatsSection={showStatsSection}
-                showExtraTimeSection={showExtraTimeSection}
-                setShowStatsSection={setShowStatsSection}
-                setShowExtraTimeSection={setShowExtraTimeSection}
+                sectionState={{
+                  showStats: showStatsSection,
+                  showExtraTime: showExtraTimeSection,
+                  setShowStats: setShowStatsSection,
+                  setShowExtraTime: setShowExtraTimeSection,
+                }}
                 getCurrentStadiumName={getCurrentStadiumName}
                 onSubmit={handleMatchSubmit}
                 onDelete={() => {
