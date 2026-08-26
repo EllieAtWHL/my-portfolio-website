@@ -257,12 +257,9 @@ external repository and are served via CDN (`public/spurs-women/photo-gallery/`
 is only ever created empty, on demand, as a local dev stub by `npm run
 init-external-local`).
 
-**Leftover script, now broken**: `npm run migrate-storage` /
-`migrate-storage:dry-run` (`scripts/migrate-storage-source.js`) was the
-one-time script that performed this migration by backfilling a
-`storage_source` field on `media` rows. That column has since been dropped
-from the live schema (see the Database section above) - the script would now
-error if run, not just no-op. It, its two `package.json` entries, and the
-matching dead `storage_source` TypeScript field/passthrough in
-`src/lib/data/media.ts` and `MediaGallery.tsx` are tracked for removal in
-WEB-123 rather than fixed here.
+The one-time `scripts/migrate-storage-source.js` script that performed this
+migration (backfilling a `storage_source` field on `media` rows) has been
+removed, along with the matching dead `storage_source` TypeScript
+field/passthrough in `src/lib/data/media.ts` and `MediaGallery.tsx` -
+`storage_source` was never a real column on `media` in the live schema (see
+the Database section above), so both were pure dead weight (WEB-123).
