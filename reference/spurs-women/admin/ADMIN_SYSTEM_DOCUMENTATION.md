@@ -9,9 +9,10 @@ The admin system provides a web-based interface for managing Spurs Women's footb
 ### Components
 
 1. **Admin UI** (`src/app/spurs-women/admin/page.tsx`)
-   - Tabbed single-page interface; `page.tsx` itself is a composition root (~870 lines) that wires hooks to components, not where the logic lives
+   - Tabbed single-page interface; `page.tsx` itself is a composition root (394 lines, down from ~870 after a further decomposition into per-tab panel components - see below) that wires hooks to components, not where the logic lives
    - Per-entity state and CRUD logic live in hooks under `src/hooks/admin/` (`useMatchesAdmin`, `useTeamsAdmin`, `usePlayersAdmin`, `useStadiumsAdmin`, plus `usePlayerStatsModal` for the player-stats modal shared between the matches and players tabs)
-   - Presentational pieces live under `src/components/admin/`: `TabNav`, `Pagination`, entity tables in `tables/` (built on a shared `DataTable`), and related-record modals in `modals/` (built on a shared `FormModal`) — see "Frontend Component Architecture" below
+   - Each tab's JSX (including its `RelatedList` usages) now lives in its own panel component under `src/components/admin/panels/` (`MatchesTabPanel`, `TeamsTabPanel`, `PlayersTabPanel`, `StadiumsTabPanel`) rather than in `page.tsx` directly
+   - Presentational pieces live under `src/components/admin/`: `TabNav`, `Pagination`, entity tables in `tables/` (built on a shared `DataTable`), related-record modals in `modals/` (built on a shared `FormModal`), per-entity forms (`MatchForm`, `PlayerForm`, `StadiumForm`, `TeamForm`) and their shared building blocks (`FormField`, `FormWrapper`, `ColorPicker`, `CollapsibleFormSection`, `MatchExtraTimeFields`, `MatchStatsFields`) — see "Frontend Component Architecture" below
    - Authentication via Supabase Auth
    - Pagination for data tables, via the generic `useSearchPagination` hook
 
@@ -31,12 +32,14 @@ The admin system provides a web-based interface for managing Spurs Women's footb
 - **Types** — `src/types/spurs-women-admin.ts` (shared entity interfaces)
 - **Generic hooks** — `src/hooks/useSearchPagination.ts` (search + pagination over any list)
 - **Per-entity hooks** — `src/hooks/admin/{useMatchesAdmin,useTeamsAdmin,usePlayersAdmin,useStadiumsAdmin}.ts`, each owning that entity's list state, edit-mode state, and CRUD handlers. `usePlayerStatsModal.ts` is a separate hook because the player-stats modal is opened from *both* the matches and players tabs — it's wired in `page.tsx` with setters from both `useMatchesAdmin` and `usePlayersAdmin`, which is the trickiest piece of cross-hook wiring on the page (see the "adds player stats to a player" test in `page.test.tsx`, which specifically exercises this wiring).
+- **Tab panels** — `src/components/admin/panels/{MatchesTabPanel,TeamsTabPanel,PlayersTabPanel,StadiumsTabPanel}.tsx`, added in a further decomposition pass after the one described below: each owns the JSX for one tab (list view, edit form, and any `RelatedList` usages), taking the relevant per-entity hook's state/handlers as props. `page.tsx` itself no longer renders any tab JSX directly - it just wires `TabNav` to whichever panel is active.
 - **Entity tables** — `src/components/admin/tables/{MatchesTable,TeamsTable,PlayersTable,StadiumsTable}.tsx`, each a thin column-definition wrapper around a shared `DataTable.tsx`.
 - **Related-record modals** — `src/components/admin/modals/{MediaModal,PlayerStatsModal,PlayerHistoryModal,StadiumNameModal}.tsx`, each a thin fields-only wrapper around a shared `FormModal.tsx` (handles the overlay/card/title/error-banner/footer-buttons chrome).
+- **Per-entity forms** — `src/components/admin/{MatchForm,PlayerForm,StadiumForm,TeamForm}.tsx`, each built from shared form-building-block components also under `src/components/admin/`: `FormField.tsx`, `FormWrapper.tsx`, `ColorPicker.tsx`, `CollapsibleFormSection.tsx`, `MatchExtraTimeFields.tsx`, `MatchStatsFields.tsx` (each with its own test under `src/components/admin/__tests__/`).
 - **Nav/pagination** — `TabNav.tsx`, `Pagination.tsx`.
 
 **Why `RelatedList.tsx` was *not* merged onto `DataTable`**: `RelatedList` renders the Media/Player Stats/Player History/Stadium Name lists shown inside a match/player/stadium's "Related Records" tab, and looks superficially like the same table-rendering job as the four entity tables. It was deliberately left as its own component rather than rebuilt on `DataTable`, because:
-1. `DataTable`'s `render` is mandatory by design, so it never needs to touch a record field via an unsafe cast. `RelatedList` relies on an *optional* `render` with a `record[key] ?? '-'` fallback (used by roughly a dozen column definitions in `page.tsx`) — supporting that would mean reintroducing that unsafe cast into `DataTable`, i.e. moving complexity into the component that's currently simplest.
+1. `DataTable`'s `render` is mandatory by design, so it never needs to touch a record field via an unsafe cast. `RelatedList` relies on an *optional* `render` with a `record[key] ?? '-'` fallback (used by around 20 column definitions total, split across `MatchesTabPanel.tsx` (8), `PlayersTabPanel.tsx` (9), and `StadiumsTabPanel.tsx` (3) - not `page.tsx`, since the tab-panel decomposition above moved them out of it) — supporting that would mean reintroducing that unsafe cast into `DataTable`, i.e. moving complexity into the component that's currently simplest.
 2. `RelatedList` also renders its own title/count/"New" button header and hides the table entirely (not just the rows) when there are no records — different chrome from the bare entity tables.
 3. `RelatedList` has no dedicated unit test file (only indirect coverage via `page.test.tsx`), and is wired into the riskiest part of the page (the shared player-stats modal, `usePlayerStatsModal`). A regression there is less likely to be caught immediately than one in the entity tables, which each have their own test file.
 
@@ -84,7 +87,7 @@ constraint, and index, not just the ones the admin UI touches - see
 - **Table**: `matches`
 - **Fields**:
   - `id` (string, UUID)
-  - `season_id` (number)
+  - `season_id` (string, UUID)
   - `competition_id` (string, UUID)
   - `date` (string, date)
   - `kickoff_time` (string, time)
@@ -473,7 +476,7 @@ Required environment variables:
 
 1. **Stadium Table Name**: The stadium table is named `stadia` (plural) in the database. The code queries `stadia` consistently (`src/lib/data/stadiums.ts`, `src/lib/data/query-builders.ts`, `src/app/api/admin/stadia/route.ts`) - there's no fallback to `stadiums`/`stadium` table names.
 
-2. **ID Types**: Most entities use UUID strings for IDs, but teams and seasons use integer IDs (players use UUID strings, like most other entities).
+2. **ID Types**: Most entities use UUID strings for IDs, but teams use integer IDs. Seasons use UUID strings like most other entities, not integers - confirmed both in `supabase/migrations/20260826175328_baseline_schema.sql` (`seasons.id` is `uuid`) and in the admin-specific types (`Season.id: string`, `Match.season_id: string` in `src/types/spurs-women-admin.ts`). Note this contradicts the *public-facing* data-layer types used outside the admin UI (`Season.id: number`, `Match.season_id: number` in `src/lib/data/seasons.ts`/`matches.ts`) - that's a pre-existing type inconsistency in the application code itself, out of scope for this doc to fix, but worth knowing about if you're working across both type systems.
 
 3. **Player Stats Upsert**: Player stats use `upsert` with conflict resolution on `player_id, match_id` to allow updating existing stats.
 

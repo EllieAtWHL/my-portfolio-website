@@ -120,26 +120,28 @@ The match statistics are stored in the database with the following columns:
 
 ```sql
 -- Possession
-home_possession   INTEGER
-away_possession   INTEGER
+home_possession   REAL
+away_possession   REAL
 
 -- Shots  
-home_total_shots      INTEGER
-away_total_shots      INTEGER
-home_shots_on_target  INTEGER
-away_shots_on_target  INTEGER
+home_total_shots      SMALLINT
+away_total_shots      SMALLINT
+home_shots_on_target  SMALLINT
+away_shots_on_target  SMALLINT
 
 -- Corners
-home_corners   INTEGER
-away_corners   INTEGER
+home_corners   SMALLINT
+away_corners   SMALLINT
 ```
+
+(Types confirmed against `supabase/migrations/20260826175328_baseline_schema.sql`.)
 
 ### Team Color Data
 Team colors are stored in the teams table:
 
 ```sql
-primary_color   VARCHAR(50)   -- Tailwind color class (e.g., 'blue-600')
-secondary_color VARCHAR(50)   -- Tailwind color class (e.g., 'white')
+primary_color   VARCHAR(20)   -- Tailwind color class (e.g., 'blue-600')
+secondary_color VARCHAR(20)   -- Tailwind color class (e.g., 'white')
 ```
 
 ## Implementation Details

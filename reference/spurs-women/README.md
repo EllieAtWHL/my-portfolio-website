@@ -57,7 +57,7 @@ Key components under `src/components/spurs-women/`:
 - **Layout**: `SpursHeader`, `SpursFooter`
 - **Matches**: `MatchCard`, `MatchStats` (see `match-stats.md`), `MatchFilterControls`, `SeasonStats` (see `SEASON_STATISTICS_CALCULATIONS.md`)
 - **Media**: `NewsCard`, `VideoCard`, `PodcastCard`, `LightboxGallery`, `SeasonReviewCard`, `MediaGallery` (see `reference/photo-gallery/README.md`)
-- **Players**: `PlayerTable` (with `PlayerRow`), `TeamLineup` (`PlayerCard` also exists under `src/components/spurs-women/` but is currently dead code - unimported anywhere, see `reference/TAILWIND_MIGRATION_PLAN.md`)
+- **Players**: `PlayerTable` (with `PlayerRow`), `TeamLineup` (`PlayerCard` was dead code under `src/components/spurs-women/` and has since been deleted outright, under WEB-29; `MatchFilters.tsx` - distinct from the actively-used `MatchFilterControls.tsx` - is the current unimported dead-code component in this directory, see `reference/TAILWIND_MIGRATION_PLAN.md`)
 - **Utility**: `TeamPill` (team-colored name pill), `InteractiveMap` (stadium location)
 
 ## Data Layer
@@ -72,7 +72,7 @@ components never fetch data directly. Caching is applied here (see
 | `seasons.ts` | `getSeasons`, `getSeasonsWithMatchCounts`, `getSeasonById`, `getSeasonReview` |
 | `news.ts` | `getSpursWomenNews`, `getSpursWomenVideos`, `getPodcasts`, `getHomePageContent` |
 | `stadiums.ts` | `getStadiumBySlug`, `getAllStadiums`, `getStadiumsWithMatchCounts`, `getStadiumNames`, `getMatchesAtStadium`, `getCurrentStadiumName` |
-| `players.ts` | `getPlayersByMatch`, `getTeamLineupsByMatch`, `getPlayerById`, `getActivePlayers` |
+| `players.ts` | `getPlayersByMatch`, `getTeamLineupsByMatch`, `getPlayerById`, `getPlayerMatchHistory` |
 | `teams.ts` | `getAllTeams`, `getTeamsWithMatchCounts`, `getTeamById`, `getMatchesForTeam`, `getPlayersForTeam` |
 | `media.ts` | `getMediaByMatch`, `getPhotosByMatch`, `getArticlesByMatch`, `getSocialMediaByMatch`, `getVideosByMatch` |
 
@@ -104,7 +104,7 @@ See `admin/ADMIN_SYSTEM_DOCUMENTATION.md` for the full field-level breakdown use
 
 - Tailwind CSS with a Spurs-specific design system: primary navy (`#132257`), white, gray accents
 - Utility classes: `.spurs-text`, `.spurs-wrapper`, `.spurs-accent`
-- **No dedicated light/dark mode design for this section, but the toggle isn't fully inert here**: the section is designed around a single fixed navy theme - `.spurs-wrapper` (in `spurs-theme.css`) sets its background and text color unconditionally, not gated behind a `.dark`/`.light` class. However, `ThemeProvider` (in `src/app/layout.tsx`) wraps the *entire* app, including `/spurs-women`, and several Spurs Women components/pages do ship stray `dark:` Tailwind variants (e.g. `src/app/spurs-women/page.tsx`, `PlayerTable.tsx`, `NewsCard.tsx`) - per the cascade-layers rules in `CSS_ARCHITECTURE.md`, a Tailwind `dark:` utility on a specific element wins over `.spurs-wrapper`'s unconditional color regardless of specificity, so those elements *do* visibly respond to the site's theme toggle. This is inconsistent, not an intentional per-element design - don't add new `dark:` variants in this section, and treat any existing ones as leftover rather than a pattern to follow.
+- **No dedicated light/dark mode design for this section, but the toggle isn't fully inert here**: the section is designed around a single fixed navy theme - `.spurs-wrapper` (in `spurs-theme.css`) sets its background and text color unconditionally, not gated behind a `.dark`/`.light` class. However, `ThemeProvider` (in `src/app/layout.tsx`) wraps the *entire* app, including `/spurs-women`, and a couple of Spurs Women components/pages do ship stray `dark:` Tailwind variants (e.g. `src/app/spurs-women/page.tsx`, `PlayerTable.tsx`) - per the cascade-layers rules in `CSS_ARCHITECTURE.md`, a Tailwind `dark:` utility on a specific element wins over `.spurs-wrapper`'s unconditional color regardless of specificity, so those elements *do* visibly respond to the site's theme toggle. This is inconsistent, not an intentional per-element design - don't add new `dark:` variants in this section, and treat any existing ones as leftover rather than a pattern to follow. (`NewsCard.tsx` previously had this same issue but has since been cleaned up - it now has no `dark:` classes, with a comment explaining it only renders inside `.spurs-accent-card`, which is always dark regardless of the toggle.)
 - Team colors are data-driven (`primary_color`/`secondary_color` columns) - see `TeamPill` and `getTeamColor` in `match-stats.md`
 - See `reference/CSS_ARCHITECTURE.md` for the site-wide CSS conventions this section follows
 

@@ -10,7 +10,7 @@ The related lists feature displays child records (media and player_stats) associ
 
 The related lists are implemented in:
 - Component: `/src/components/admin/RelatedList.tsx`
-- Usage: `/src/app/spurs-women/admin/page.tsx` - there are 5 `<RelatedList>` instances: Media (grouped by `media_type`, shown under a match), Player Stats (shown under a match), Player Stats (shown under a player - this one has the extra Opponent column, see below), Player History (shown under a player), and Stadium Names (shown under a stadium). Line numbers shift as the file changes; search for `<RelatedList` to find current locations.
+- Usage: split across three admin panel components (moved out of `/src/app/spurs-women/admin/page.tsx` as part of the admin page decomposition) - there are 5 `<RelatedList>` instances in total: in `src/components/admin/panels/MatchesTabPanel.tsx`, Media (grouped by `media_type`, shown under a match) and Player Stats (shown under a match); in `src/components/admin/panels/PlayersTabPanel.tsx`, Player Stats (shown under a player - this one has the extra Opponent column, see below) and Player History (shown under a player); in `src/components/admin/panels/StadiumsTabPanel.tsx`, Stadium Names (shown under a stadium). Line numbers shift as these files change; search for `<RelatedList` to find current locations.
 
 ## Configuring Media Related Lists
 
@@ -93,7 +93,7 @@ Each column object has:
 - `render` (optional): A custom render function for complex display logic
 - `id` (optional): Overrides the React key for this column - required when two columns derive from the same `key` (see below)
 
-The player-related Player Stats list (shown in a player's edit view, `relatedPlayerStatsForPlayer` in the admin page) adds an Opponent column that reads `match_id` but renders the *other* team from the match rather than the match itself:
+The player-related Player Stats list (shown in a player's edit view, `relatedPlayerStatsForPlayer` state in `src/hooks/admin/usePlayersAdmin.ts`) adds an Opponent column that reads `match_id` but renders the *other* team from the match rather than the match itself:
 
 ```typescript
 {
@@ -210,12 +210,12 @@ Custom render functions allow you to format data in specific ways:
 
 To add a new related list for a different entity type:
 
-1. Add state for the related records in the admin page:
+1. Add state for the related records in the relevant per-entity admin hook (e.g. `src/hooks/admin/useMatchesAdmin.ts` for a match-related list, `usePlayersAdmin.ts` for a player-related one):
 ```typescript
 const [relatedNewEntity, setRelatedNewEntity] = useState<NewEntity[]>([]);
 ```
 
-2. Fetch the related records in `handleEditMatch`:
+2. Fetch the related records in `handleEditMatch` (in `useMatchesAdmin.ts`):
 ```typescript
 const newEntityRes = await callAdminApi('new-entity', 'GET');
 if (newEntityRes.data) {

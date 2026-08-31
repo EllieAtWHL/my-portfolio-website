@@ -57,32 +57,46 @@ require templating that file at build time or reading
 ### TypeScript types
 
 ```typescript
+// src/lib/fullstory.ts
+interface FullStoryAPI {
+  event: (name: string, properties?: Record<string, unknown>) => void;
+  setUserVars: (vars: Record<string, unknown>) => void;
+  anonymize: () => void;
+  shutdown: () => void;
+  restart: () => void;
+  log: (level: string, message: string) => void;
+  consent: (granted: boolean) => void;
+}
+
 declare global {
   interface Window {
-    _fs_host?: string;
-    _fs_script?: string;
-    _fs_org?: string;
-    _fs_namespace?: string;
-    FS?: {
-      event: (name: string, properties?: Record<string, any>) => void;
-      identify: (uid: string, vars?: Record<string, any>) => void;
-      setUserVars: (vars: Record<string, any>) => void;
-      anonymize: () => void;
-      shutdown: () => void;
-      restart: () => void;
-      log: (level: string, message: string) => void;
-      consent: (granted: boolean) => void;
-    };
+    FS?: FullStoryAPI;
   }
 }
 ```
 
+Note: there's no TypeScript declaration for `_fs_host`/`_fs_script`/`_fs_org`/
+`_fs_namespace` anywhere in `src/` - those are only ever set as plain
+untyped JS globals by `public/fullstory-init.js`. `FS.identify(...)` isn't
+part of the typed `FullStoryAPI` interface above either (it's not called
+anywhere in this codebase - see "Raw window.FS API" below, which is
+illustrative of the vendor API rather than something this repo type-checks).
+
 ## Environment Detection
 
-FullStory records on every domain, including `localhost:3000` in development.
-There's no environment gating in code today - if you want to separate
-data by environment, create segments in FullStory based on
-`window.location.hostname` on the dashboard side, e.g.:
+The FullStory *script* itself loads on every domain, including
+`localhost:3000` in development, with no environment gating. But the
+*tracking calls* are gated in code: `trackEvent()` and `setUserVars()` in
+`src/lib/fullstory.ts` both no-op when `window.location.hostname ===
+'localhost'`, and every higher-level helper (`trackNavigation`,
+`trackFormInteraction`, `trackButtonClick`, `trackPageView`, `trackError`)
+is built on `trackEvent()`, so it inherits the same gate. In practice this
+means the script loads locally but sends no events - see
+`src/lib/__tests__/fullstory.test.ts` (localhost gate) and
+`fullstory.non-localhost.test.ts` (non-localhost path) for the tests
+covering this. If you want to separate *sessions* by environment on the
+FullStory dashboard side (since the script load itself isn't gated),
+segment on `window.location.hostname`, e.g.:
 
 ```javascript
 const isProduction = window.location.hostname !== 'localhost';
@@ -93,7 +107,7 @@ const isProduction = window.location.hostname !== 'localhost';
 - **Page views**: Home (`/`), Contact (`/contact-me`), Thank You (`/contact-me/thank-you`)
 - **Form interactions**: Contact form start → success → thank-you page visit
 - **Button clicks**: Contact Me button on the home page hero
-- **Errors**: `trackError()` is called from `src/app/spurs-women/error.tsx`'s error boundary (WEB-97). This is the only error-tracking call site - `trackError()` (like the rest of this file) only works from client-rendered code (`window.FS`), so it's not called from API route handlers or `src/lib/data/cache-utils.ts`'s `CacheError` path, both of which run server-side and would make it a silent no-op. Server-side errors remain `console.error`-only; a real server-side error-tracking integration is separate, larger scope than this helper.
+- **Errors**: `trackError()` is called from four route-level error boundaries - `src/app/error.tsx`, `src/app/global-error.tsx`, `src/app/spurs-women/error.tsx` (WEB-97, the original call site), and `src/app/spurs-women/admin/error.tsx` - plus the reusable `src/components/ErrorBoundary.tsx` class component for subtree-level boundaries (not currently rendered anywhere in the app; it exists for a future subtree that needs to fail without unmounting the whole page, per its own doc comment). `trackError()` (like the rest of this file) only works from client-rendered code (`window.FS`), so it's not called from API route handlers or `src/lib/data/cache-utils.ts`'s `CacheError` path, both of which run server-side and would make it a silent no-op. Server-side errors remain `console.error`-only; a real server-side error-tracking integration is separate, larger scope than this helper.
 - **Session-level data**: No user identification (appropriate for a portfolio site where users don't log in)
 
 ### Usage examples
@@ -143,9 +157,10 @@ FS.restart();
 ```
 
 - Never expose sensitive personal data in recordings; regularly audit recorded data and limit FullStory dashboard access to authorized people.
-- If using a CSP, allow the FullStory hosts:
+- If using a CSP, allow the FullStory hosts - this repo's actual CSP (`next.config.ts`) covers the script load via `script-src` and event/recording traffic via a `connect-src` wildcard:
   ```
-  script-src 'self' https://edge.fullstory.com https://www.fullstory.com;
+  script-src 'self' https://edge.fullstory.com;
+  connect-src 'self' https://*.fullstory.com;
   ```
 
 ## Troubleshooting
@@ -178,11 +193,11 @@ window.FS?.event('Debug Test', { timestamp: Date.now() });
 ## Testing
 
 ```typescript
-// __tests__/fullstory.test.ts
+// src/lib/__tests__/fullstory.test.ts
 describe('FullStory Integration', () => {
   beforeEach(() => {
     Object.defineProperty(window, 'FS', {
-      value: { event: jest.fn(), identify: jest.fn() },
+      value: { event: jest.fn() },
       writable: true,
     });
   });
@@ -193,6 +208,11 @@ describe('FullStory Integration', () => {
   });
 });
 ```
+
+The real test file also covers the localhost-gating behavior described
+above, plus a `fullstory.non-localhost.test.ts` sibling (pinned to a
+non-localhost hostname via a `@jest-environment-options` docblock) for the
+non-gated path.
 
 Mock `@/lib/fullstory` in component tests that don't care about analytics:
 

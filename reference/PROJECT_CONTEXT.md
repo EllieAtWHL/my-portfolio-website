@@ -55,7 +55,7 @@ These considerations may influence design, styling, and content decisions and sh
   - ✅ RSS parser integration for content feeds
 
 **Technical Implementation:**
-  - ✅ Feature-based organization implemented
+  - ✅ Feature-based organization implemented (conceptually - by section, core-site vs. Spurs Women; there is no literal top-level `features/` directory, see the "Example (conceptual) structure" below)
   - ✅ Server components used by default
   - ✅ Proper TypeScript typing throughout
   - ✅ Tailwind design tokens and CSS variables established
@@ -256,8 +256,8 @@ Approach:
   - Avoid try/catch in components unless handling a known failure case; prefer clear error states over silent fallbacks.
 
 Current state:
-  - `src/app/not-found.tsx` exists and is in use. `src/app/spurs-women/error.tsx` (WEB-96) is the first `error.tsx` boundary in the codebase - it sits above every `/spurs-women` route (matches, players, teams, stadiums, seasons, admin, etc.), so a single file catches thrown errors anywhere in that subtree via Next.js's nested-boundary behaviour. No `error.tsx` exists at the root or under core-site routes yet, since none of them have a data dependency that would throw.
-  - `trackError()` (WEB-97) is now called from `src/app/spurs-women/error.tsx`, the one place it can actually reach FullStory (client-rendered). It's deliberately not called from API routes or `cache-utils.ts`'s `CacheError` path, since both run server-side where `trackError()` no-ops - server-side errors are still `console.error`-only.
+  - `src/app/not-found.tsx` exists and is in use. `src/app/spurs-women/error.tsx` (WEB-96) was the first `error.tsx` boundary in the codebase - it sits above every `/spurs-women` route (matches, players, teams, stadiums, seasons, admin, etc.), so a single file catches thrown errors anywhere in that subtree via Next.js's nested-boundary behaviour. Since then (WEB-125, 2026-08-26), `src/app/error.tsx` (root) and `src/app/spurs-women/admin/error.tsx` were added too, plus `src/app/global-error.tsx` for errors in the root layout itself - so there are now four `error.tsx`/`global-error.tsx` boundaries in the codebase, not one, and the earlier "no `error.tsx` at the root or under core-site routes" caveat no longer holds. `src/components/ErrorBoundary.tsx` also exists as a reusable class-component boundary for subtree-level error handling, though it isn't currently rendered anywhere - it's there for a future subtree that needs to fail without unmounting the whole page.
+  - `trackError()` (WEB-97) is now called from all of the above error boundaries - `src/app/error.tsx`, `src/app/global-error.tsx`, `src/app/spurs-women/error.tsx`, `src/app/spurs-women/admin/error.tsx`, and `src/components/ErrorBoundary.tsx` - the places it can actually reach FullStory (client-rendered). It's deliberately not called from API routes or `cache-utils.ts`'s `CacheError` path, since both run server-side where `trackError()` no-ops - server-side errors are still `console.error`-only.
   - `src/components/ErrorState.tsx` (WEB-98) is the shared error-state component; `MatchesClient`, `MediaGallery`, `TeamClient`, and `StadiumClient` use it instead of silently rendering an empty/no-data state on fetch failure. `src/lib/data/client.ts` - the client-side fetcher module the original WEB-63 audit flagged - turned out to be dead code (zero callers besides its own test) once investigated, so it was deleted rather than "fixed."
   - `src/lib/retry.ts` (WEB-99) provides `retryWithBackoff()`, wrapping the outbound RSS/YouTube fetches in `src/lib/rss.ts` and the podcast RSS fetch in `src/lib/data/news.ts` - the external proxy routes (`spurs-women-news`, `spurs-women-videos`, `podcasts`) inherit it automatically since they call these same data-layer functions rather than fetching directly. Bounded at 3 attempts with exponential backoff by default; doesn't touch `src/lib/rate-limit.ts` (inbound) at all.
   - `public/sw.js` (WEB-100) is a minimal service worker that precaches exactly one file, `public/offline.html` (a self-contained static page, no JS/CSS dependencies), and serves it only for failed navigation requests - everything else (assets, API calls) passes straight through, untouched. Registered client-side by `src/components/ServiceWorkerRegistration.tsx`, production builds only (a dev-registered SW fights Next's own hot-reloading). `src/components/OfflineBanner.tsx` shows a fixed, site-wide banner via `useSyncExternalStore` subscribed to the browser's `online`/`offline` events - fixed positioning (`z-[200]`, matching `SkipLink`'s convention) is required because the core site's navbar is itself `position: fixed` (`z-index: 100` in `main-theme.css`), so a normal in-flow banner would render correctly in the DOM but sit invisibly behind it.
@@ -683,9 +683,10 @@ For implementation detail on specific systems, see:
 
 The backlog/TODO list lives in Jira, not in this repo - see the "Jira is the source of truth" section in CLAUDE.md. The `WEB` project covers both the core site (`core-site` label) and Spurs Women (`spurs-women` label), with epics labeled both where work spans the whole site.
 
-Known open tech debt at time of writing: Button migration is incomplete (13
+Known open tech debt at time of writing: Button migration is incomplete (14
 files still render raw `<button>` elements outside the shared component - see
-BUTTON_MIGRATION.md for the current list), and cache hit-rate monitoring/
+BUTTON_MIGRATION.md for the current list, since this count drifts as the
+codebase changes), and cache hit-rate monitoring/
 metrics collection has not been implemented (see the Technical Debt & Performance epic in Jira).
 
 This document should be used by both humans and AI as the source of truth for architectural intent. If code and documentation disagree, the documentation should be updated deliberately rather than ignored.
