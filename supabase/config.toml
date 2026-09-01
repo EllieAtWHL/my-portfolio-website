@@ -1,0 +1,22 @@
+# For detailed configuration reference documentation, visit:
+# https://supabase.com/docs/guides/local-development/cli/config
+#
+# Trimmed from `supabase init`'s default output: this project only uses the CLI/GitHub
+# integration against the remote "Spurs Women" project (`db push`, `migration new`,
+# `inspect db`) and never runs the local dev stack (`supabase start`, which needs
+# Docker - not installed on the dev machine used to set this up). The full default
+# config.toml also scaffolds local-only settings for auth email templates, storage
+# buckets, Edge Functions, Studio, and Inbucket, none of which apply here and would
+# read as this project's real settings if left in - see "Database Schema Management"
+# in reference/PROJECT_CONTEXT.md for the full workflow this file supports.
+
+# A string used to distinguish different Supabase projects on the same host.
+project_id = "my-portfolio-website"
+
+[db]
+# The database major version - has to match the remote database's (`SHOW server_version;`).
+major_version = 17
+
+[db.migrations]
+# If disabled, migrations are skipped during a db push or reset.
+enabled = true
