@@ -498,11 +498,58 @@ Rationale:
   - Recreatability (rebuilding the schema from the repo alone, without
     depending on Supabase's dashboard/backups) is itself a form of backup,
     and came up during the WEB-61 database-optimization investigation as a
-    cheap, code-only complement to whatever Supabase-side backup/PITR
-    settings the project ends up using (tracked separately in WEB-135).
+    cheap, code-only complement to the actual data-backup solution below.
   - A real migrations workflow is a bigger commitment than a one-off fix,
     but was judged worth it for a project with zero prior schema history -
     the alternative was staying at zero indefinitely.
+
+### Database Backups (WEB-135)
+
+Decision:
+  - Staying on the Supabase **free plan** - no platform-managed backups, no
+    PITR (Pro is $25/mo for 7 days of rolling daily backups; PITR is a
+    further $100/mo add-on on top of Pro, metered separately from Pro's
+    compute credit). Not worth it for a personal, non-commercial fan site
+    with hand-entered match/player data, not high-value transactional
+    records.
+  - Instead: a **free, self-managed weekly backup** via a scheduled GitHub
+    Action in a separate private repo,
+    [`spurs-women-db-backup`](https://github.com/EllieAtWHL/spurs-women-db-backup).
+
+What it covers, and what doesn't overlap:
+  - `supabase/migrations/` (this repo) - schema **structure** only (tables,
+    columns, constraints, indexes, views, RLS policies), applied
+    automatically via the GitHub integration above. No row data.
+  - `spurs-women-db-backup` - schema **and data**, as a full point-in-time
+    snapshot, on its own independent schedule. This is the actual
+    data-recreatability story - if the Supabase project were lost, this repo
+    has what's needed to rebuild it, migrations repo has what's needed to
+    version future structural changes on top.
+
+How the weekly backup works (full detail in that repo's own README):
+  - Runs every Monday 01:00 UTC (`workflow_dispatch` also available for a
+    manual run) - after the week's matches (mostly played on Sundays) and
+    admin-panel updates, before the next matchday.
+  - Dumps `roles.sql`, `schema.sql`, `data.sql` via the Supabase CLI (`db
+    dump`) to fixed filenames, scoped to `--schema public` only (an early
+    run before this was added leaked Supabase's internal `auth`/`storage`
+    schema data - hashed passwords, session/refresh tokens - into a commit;
+    caught during review, fixed, and the leaking commit purged from that
+    repo's git history rather than just superseded).
+  - Commits only if the dump actually changed since last time - git history
+    *is* the retention/versioning mechanism (`git log` for the full backup
+    history, `git diff` between any two backups for exactly what changed),
+    rather than a pile of timestamped files needing manual cleanup.
+
+Rationale:
+  - A scheduled `pg_dump` covers real disaster-recovery need (rebuilding
+    both schema and data from scratch) for $0, with better auditability
+    (reviewable diffs) than Supabase's opaque platform snapshots would give
+    even on Pro.
+  - PITR's minute-level restore granularity solves a problem this app
+    doesn't have - data changes via occasional admin-panel entries, not
+    continuous transactional writes, so weekly is an appropriate cadence and
+    daily/minute-level recovery wouldn't add meaningful protection here.
 
 ## Performance & Monitoring
 ### Performance Monitoring (Core Web Vitals)
