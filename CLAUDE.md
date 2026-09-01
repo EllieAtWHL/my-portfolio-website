@@ -98,7 +98,8 @@ When implementing a Jira issue:
 4. Keep commits focused and logically grouped.
 5. Ensure commit messages reference the Jira issue.
 6. Suggest an appropriate PR title and description when work is complete.
-7. Transition the Jira issue to the appropriate next status (for example, "In Review" or "Done", depending on the team's workflow) once the work reaches that stage.
+7. Before transitioning an issue to Done (or any terminal/closing status), post a comment summarizing the actions taken and any decisions made — final state, what was and wasn't resolved, and where any follow-up is tracked. Do this even if the same detail already exists across earlier progress comments, so the closing comment stands alone as the final record. Post it before the transition, not after.
+8. Transition the Jira issue to the appropriate next status (for example, "In Review" or "Done", depending on the team's workflow) once the work reaches that stage.
 
 Where Jira access is available, Claude should perform these updates directly. Where it is not, Claude should clearly state what actions should be taken manually.
 
