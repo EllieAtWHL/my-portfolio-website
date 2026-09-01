@@ -558,10 +558,14 @@ Decision (revised 2026-09, WEB-64):
   - `@vercel/analytics` (pageviews) and `@vercel/speed-insights` (Core Web
     Vitals) are both in use, consent-gated together via
     `src/components/ConsentGatedVercelScripts.tsx` - see
-    `reference/COOKIE_CONSENT.md`. No CSP changes were needed: Speed
-    Insights loads its script from the same `va.vercel-scripts.com` host
-    already allowlisted for Analytics, and reports vitals to a same-origin
-    endpoint already covered by `connect-src 'self'`.
+    `reference/COOKIE_CONSENT.md`. No CSP changes were needed: in
+    production (no `dsn`/`basePath`/`scriptSrc` prop passed), Speed
+    Insights requests its script from the same-origin
+    `/_vercel/speed-insights/script.js`, already covered by `script-src
+    'self'`, and reports vitals to a same-origin endpoint already covered
+    by `connect-src 'self'`. It only falls back to
+    `va.vercel-scripts.com` (already allowlisted for Analytics) in dev
+    mode, per `@vercel/speed-insights`'s `getScriptSrc()`.
   - Still no bespoke dashboarding/alerting beyond what the Vercel dashboard
     provides - that remains out of scope for a solo-maintained site.
 
