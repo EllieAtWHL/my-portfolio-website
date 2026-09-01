@@ -9,7 +9,8 @@ This site uses FullStory for user session recording and analytics.
 **Consent-gated (WEB-102)**: the script below only loads once a visitor
 accepts the site's cookie consent banner - see
 [`../COOKIE_CONSENT.md`](../COOKIE_CONSENT.md) for the consent layer that
-gates this (and Vercel Analytics, and the contact form's reCAPTCHA). This doc
+gates this (and Vercel Analytics/Speed Insights, and the contact form's
+reCAPTCHA). This doc
 covers the FullStory integration itself; that one covers when it's allowed
 to run.
 
