@@ -67,7 +67,6 @@
   --slider-gray: #ccc;
   --button-hover-light: #d1e7d1;
 
-  --spurs-dark-text-darker: #06101a;
   --spurs-button-hover-light: #b9cfff;
 
   /* Shadow and Opacity Variables */
@@ -98,7 +97,6 @@
   /* Spurs blue opacity variants */
   --spurs-opacity-15: rgba(120, 190, 232, 0.15);
   --spurs-opacity-20: rgba(120, 190, 232, 0.2);
-  --spurs-opacity-30: rgba(120, 190, 232, 0.3);
   --spurs-opacity-40: rgba(120, 190, 232, 0.4);
   
   /* Accent green opacity variants */
