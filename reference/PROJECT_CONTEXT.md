@@ -421,15 +421,45 @@ Decision:
 
 Workflow going forward:
   - New schema change: `supabase migration new <name>` creates an empty
-    timestamped file in `supabase/migrations/`; write the SQL by hand; apply
-    it with `supabase db push` (pushes to the linked project - currently the
-    production "Spurs Women" project, there is no separate staging project).
-  - This loop (`migration new` -> hand-write SQL -> `db push`) does **not**
-    require Docker.
+    timestamped file in `supabase/migrations/`; write the SQL by hand; open a
+    PR as normal. Once merged to `main`, the **GitHub integration** (below)
+    applies it automatically - no manual `supabase db push` needed for the
+    normal case. `db push` still works directly from the CLI too (used
+    throughout WEB-61/135/136 before the integration existed, and still the
+    right tool for testing a migration against the linked project - currently
+    the production "Spurs Women" project, there is no separate staging
+    project - before it's merged).
+  - This loop (`migration new` -> hand-write SQL -> merge, or `db push`) does
+    **not** require Docker.
   - Make schema changes through a migration file, not the Supabase dashboard
     directly, so this stays an accurate record. If a change does happen via
     the dashboard, reconciling it back into a migration file needs
     `supabase db pull`/`db diff` (see below).
+
+GitHub integration (WEB-137):
+  - Connected via the Supabase dashboard (Project Settings -> Integrations ->
+    GitHub), pointing at this repo with "Deploy to production" enabled. On
+    every push/merge to `main`, Supabase runs any migrations in
+    `supabase/migrations/` that haven't already been applied - the same
+    effect as running `supabase db push` by hand, just automatic.
+  - This is a free-tier feature (available on any plan) - **not** to be
+    confused with Supabase Branching (ephemeral per-PR preview databases),
+    which requires the Pro plan plus metered per-branch-hour cost on top and
+    is deliberately not enabled here; not worth it at this project's scale.
+    Only the "deploy migrations to production on merge" half of the GitHub
+    integration is turned on.
+  - Trade-off worth knowing: this removes the manual confirmation step that
+    existed between "PR merged" and "migration actually applied to
+    production" (previously a separate `db push` requiring explicit
+    approval). The review gate is now the PR merge itself - be as careful
+    merging a migration-containing PR as you would running `db push`
+    directly, since it'll apply within moments of landing on `main`.
+  - `supabase/config.toml` (added for this) is deliberately trimmed from
+    `supabase init`'s ~385-line default - the full default scaffolds local
+    dev stack settings (auth email templates, storage buckets, Edge
+    Functions, Studio, Inbucket) for `supabase start`, which this project
+    never runs (no Docker). Kept: `project_id` and `[db.migrations]` only -
+    what the CLI/integration actually need.
 
 Docker dependency:
   - `supabase db pull` and `supabase db diff` **do** require Docker (they run
