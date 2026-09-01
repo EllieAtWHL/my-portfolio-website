@@ -8,7 +8,7 @@ import { ServiceWorkerRegistration } from "../components/ServiceWorkerRegistrati
 import CookieConsentProvider from "../components/CookieConsentProvider";
 import { CookieConsentBanner } from "../components/CookieConsentBanner";
 import { FullStoryLoader } from "../components/FullStoryLoader";
-import { ConsentGatedAnalytics } from "../components/ConsentGatedAnalytics";
+import { ConsentGatedVercelScripts } from "../components/ConsentGatedVercelScripts";
 
 const nokora = Nokora({
   subsets: ["khmer", "latin"],
@@ -51,7 +51,7 @@ export default function RootLayout({
             <CookieConsentBanner />
             {children}
             <FullStoryLoader />
-            <ConsentGatedAnalytics />
+            <ConsentGatedVercelScripts />
           </CookieConsentProvider>
         </ThemeProvider>
         <ServiceWorkerRegistration />

@@ -9,7 +9,7 @@ const STORAGE_KEY = 'cookie-consent';
 // stored consent from an older version is treated as no consent at all, so
 // visitors who already chose under the old meaning are re-prompted rather
 // than silently carrying a choice that no longer reflects what they agreed to.
-const CONSENT_VERSION = 1;
+const CONSENT_VERSION = 2;
 
 interface StoredConsent {
   status: ConsentStatus;

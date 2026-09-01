@@ -2,10 +2,11 @@
 
 Site-wide cookie consent gate (WEB-102, split from WEB-71 "GDPR compliance").
 Nothing that sets a non-essential cookie loads until the visitor actively
-accepts: **FullStory** (session recording), **Vercel Analytics**, and Google
-**reCAPTCHA** on the contact form. See `fullstory/README.md` for FullStory's
-own integration details - this doc covers the consent layer that gates it
-(and the other two trackers) rather than duplicating that content.
+accepts: **FullStory** (session recording), **Vercel Analytics** and
+**Vercel Speed Insights** (WEB-64), and Google **reCAPTCHA** on the contact
+form. See `fullstory/README.md` for FullStory's own integration details -
+this doc covers the consent layer that gates it (and the other trackers)
+rather than duplicating that content.
 
 ## Architecture
 
@@ -14,7 +15,7 @@ own integration details - this doc covers the consent layer that gates it
 | `src/components/CookieConsentProvider.tsx` | React Context holding consent state, backed by `localStorage`. Exports `useCookieConsent()`. |
 | `src/components/CookieConsentBanner.tsx` | The visible Accept/Reject banner. |
 | `src/components/FullStoryLoader.tsx` | Loads `/public/fullstory-init.js` only once `consent === 'accepted'`. |
-| `src/components/ConsentGatedAnalytics.tsx` | Renders `@vercel/analytics/next`'s `<Analytics />` only once `consent === 'accepted'`. |
+| `src/components/ConsentGatedVercelScripts.tsx` | Renders `@vercel/analytics/next`'s `<Analytics />` and `@vercel/speed-insights/next`'s `<SpeedInsights />` only once `consent === 'accepted'`. |
 | `src/app/contact-me/page.tsx` | Gates the Google reCAPTCHA script the same way (see "reCAPTCHA" below). |
 | `src/components/Footer.tsx` / `src/components/spurs-women/SpursFooter.tsx` | Render a "Cookie preferences" icon control that reopens the banner. |
 | `src/components/CookieIcon.tsx` | The icon used by that control. |
@@ -28,7 +29,7 @@ All of it is wired into the root layout (`src/app/layout.tsx`):
     <CookieConsentBanner />   {/* before {children} - see "Tab order" below */}
     {children}
     <FullStoryLoader />
-    <ConsentGatedAnalytics />
+    <ConsentGatedVercelScripts />
   </CookieConsentProvider>
 </ThemeProvider>
 ```
@@ -55,7 +56,7 @@ Stored in `localStorage` under `cookie-consent` as `{ status, version }`, not
 a bare string:
 
 ```json
-{ "status": "accepted", "version": 1 }
+{ "status": "accepted", "version": 2 }
 ```
 
 **Versioning**: `CONSENT_VERSION` in `CookieConsentProvider.tsx` must be
@@ -66,7 +67,9 @@ pre-versioning bare `"accepted"`/`"rejected"` string format this replaced, and
 any malformed JSON - is treated as no consent at all, and the banner reopens.
 This is deliberate: a visitor who already chose under an old meaning of
 "accept" gets re-prompted rather than silently having their stale choice
-carried forward to cover something new they never agreed to.
+carried forward to cover something new they never agreed to. `CONSENT_VERSION`
+was bumped from 1 to 2 in WEB-64 when Vercel Speed Insights was added to the
+gate - a worked example of this rule, not just a hypothetical.
 
 `accept()`/`reject()` persist the choice and close the banner.
 `openPreferences()` (wired to the footer's "Cookie preferences" control)
@@ -83,10 +86,11 @@ calls `window.FS.consent(false)` and `window.FS.shutdown()` as a best-effort
 stop, since FullStory may already be recording by that point. This can't undo
 anything already captured before the call - there's no way to un-capture data
 already sent - but it does stop further capture within the current session
-without needing a page reload. Vercel Analytics and reCAPTCHA don't have an
-equivalent runtime "stop" API; `ConsentGatedAnalytics`/the reCAPTCHA effect
-simply won't inject either script on a future render once `consent` flips
-back away from `'accepted'`.
+without needing a page reload. Vercel Analytics, Vercel Speed Insights, and
+reCAPTCHA don't have an equivalent runtime "stop" API;
+`ConsentGatedVercelScripts`/the reCAPTCHA effect simply won't inject any of
+these scripts on a future render once `consent` flips back away from
+`'accepted'`.
 
 ## Per-section theming
 
@@ -122,8 +126,8 @@ so plain utility classes win without a specificity fight.
 
 The contact form's Google reCAPTCHA loading effect (`src/app/contact-me/page.tsx`)
 checks `consent === 'accepted'` the same way `FullStoryLoader`/
-`ConsentGatedAnalytics` do, and simply doesn't inject the reCAPTCHA `<script>`
-otherwise. Unlike the other two trackers, this one has a visible fallback:
+`ConsentGatedVercelScripts` do, and simply doesn't inject the reCAPTCHA `<script>`
+otherwise. Unlike the other trackers, this one has a visible fallback:
 if the visitor hasn't accepted, the form renders a message asking them to
 accept cookies (or use "Cookie preferences") to enable spam protection,
 rather than silently rendering a broken widget. The form itself still
@@ -177,7 +181,7 @@ that variant gets a real transparent background, not just this button.
 - `src/components/__tests__/CookieConsentBanner.test.tsx` - open/closed
   rendering, per-section (`usePathname`) theming.
 - `src/components/__tests__/FullStoryLoader.test.tsx` /
-  `ConsentGatedAnalytics.test.tsx` - gating behavior per consent value.
+  `ConsentGatedVercelScripts.test.tsx` - gating behavior per consent value.
 - `src/app/contact-me/__tests__/page.test.tsx` /
   `page.localhost.test.tsx` - reCAPTCHA gating and the localhost skip path
   (jsdom's `window.location` isn't reassignable at runtime in this jsdom
@@ -193,8 +197,9 @@ that variant gets a real transparent background, not just this button.
 - **WEB-103** (privacy policy page) will need to describe what's gated here
   in plain language - not yet written, tracked separately.
 - **WEB-104** (granular consent): FullStory (high-risk session recording),
-  Vercel Analytics (low-risk, largely cookieless), and reCAPTCHA (third-party
-  Google cookie) currently share a single Accept/Reject choice. An
+  Vercel Analytics and Vercel Speed Insights (low-risk, largely cookieless),
+  and reCAPTCHA (third-party Google cookie) currently share a single
+  Accept/Reject choice. An
   independent GDPR/cookie-consent review of WEB-102 flagged this as worth
   splitting into per-tracker toggles eventually, but not urgent enough to
   block WEB-102 shipping for this site's risk profile. Implementing it will
