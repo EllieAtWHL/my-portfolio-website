@@ -56,7 +56,7 @@ Stored in `localStorage` under `cookie-consent` as `{ status, version }`, not
 a bare string:
 
 ```json
-{ "status": "accepted", "version": 1 }
+{ "status": "accepted", "version": 2 }
 ```
 
 **Versioning**: `CONSENT_VERSION` in `CookieConsentProvider.tsx` must be
@@ -67,7 +67,9 @@ pre-versioning bare `"accepted"`/`"rejected"` string format this replaced, and
 any malformed JSON - is treated as no consent at all, and the banner reopens.
 This is deliberate: a visitor who already chose under an old meaning of
 "accept" gets re-prompted rather than silently having their stale choice
-carried forward to cover something new they never agreed to.
+carried forward to cover something new they never agreed to. `CONSENT_VERSION`
+was bumped from 1 to 2 in WEB-64 when Vercel Speed Insights was added to the
+gate - a worked example of this rule, not just a hypothetical.
 
 `accept()`/`reject()` persist the choice and close the banner.
 `openPreferences()` (wired to the footer's "Cookie preferences" control)
