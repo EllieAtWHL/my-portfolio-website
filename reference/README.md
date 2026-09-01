@@ -17,7 +17,7 @@ AI agents working in this codebase.
 | [`UPDATE_BANNER_MANAGEMENT.md`](./UPDATE_BANNER_MANAGEMENT.md) | The reusable `UpdateBanner` notification component |
 | [`RELATED_LISTS_CONFIGURATION.md`](./RELATED_LISTS_CONFIGURATION.md) | Configuring related-record tables in the admin UI |
 | [`testing/README.md`](./testing/README.md) | Testing requirements, patterns, and current coverage |
-| [`COOKIE_CONSENT.md`](./COOKIE_CONSENT.md) | Cookie consent banner - what it gates (FullStory, Vercel Analytics, reCAPTCHA), storage/versioning, per-section theming |
+| [`COOKIE_CONSENT.md`](./COOKIE_CONSENT.md) | Cookie consent banner - what it gates (FullStory, Vercel Analytics/Speed Insights, reCAPTCHA), storage/versioning, per-section theming |
 | [`fullstory/README.md`](./fullstory/README.md) | FullStory analytics integration |
 | [`photo-gallery/README.md`](./photo-gallery/README.md) | GitHub-hosted photo gallery system |
 | [`regicide/README.md`](./regicide/README.md) | Regicide card game: engine, component map, card face/toast systems, known gaps |
