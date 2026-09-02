@@ -72,6 +72,7 @@ export interface Player {
   weight_kg: number | null;
   profile_image_url: string | null;
   squad_number: number | null;
+  legacy_number: number | null;
   created_at: string;
   updated_at: string;
 }

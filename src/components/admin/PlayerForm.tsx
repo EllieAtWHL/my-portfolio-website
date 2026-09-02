@@ -10,6 +10,7 @@ interface PlayerForm {
   height_cm: number | null;
   weight_kg: number | null;
   profile_image_url: string | null;
+  legacy_number: number | null;
 }
 
 interface PlayerFormProps {
@@ -115,6 +116,14 @@ export function PlayerForm({
               name="profile_image_url"
               value={playerForm.profile_image_url || ''}
               onChange={(value) => setPlayerForm({ ...playerForm, profile_image_url: value })}
+            />
+          </FormField>
+          <FormField label="Legacy Number" htmlFor="player-legacy-number">
+            <NumberInput
+              id="player-legacy-number"
+              name="legacy_number"
+              value={playerForm.legacy_number}
+              onChange={(value) => setPlayerForm({ ...playerForm, legacy_number: value })}
             />
           </FormField>
         </div>

@@ -21,6 +21,7 @@ export interface Player {
   weight_kg: number | null;
   profile_image_url: string | null;
   squad_number: number | null;
+  legacy_number: number | null;
   current_club?: { id: number; name: string } | null;
   history?: PlayerHistoryEntry[];
   created_at: string;
