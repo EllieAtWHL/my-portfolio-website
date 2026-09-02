@@ -142,6 +142,7 @@ constraint, and index, not just the ones the admin UI touches - see
   - `height_cm` (number, nullable)
   - `weight_kg` (number, nullable)
   - `profile_image_url` (string, nullable)
+  - `legacy_number` (number, nullable, unique) - permanent number assigned by the club to every player on their competitive debut; distinct from `squad_number` below, and unlike it lives directly on this table since it never changes and isn't tied to a team stint. Populated manually via the admin form (see `WEB-144` in Jira) - not derived from other data.
   - `created_at` (string, timestamp)
   - `updated_at` (string, timestamp)
   - Note: `squad_number` is **not** a column here - it lives on `player_history` (per team_id stint, since it can change) and is resolved via the `getSquadNumberFromHistory` helper in `src/lib/data/players.ts`. The `Player`/`PlayerWithStats` TypeScript types include `squad_number` because it's merged on after the fetch, not because the underlying table has it.
