@@ -13,6 +13,7 @@ const makePlayer = (overrides: Partial<PlayerWithStats>): PlayerWithStats => ({
   weight_kg: null,
   profile_image_url: null,
   squad_number: 10,
+  legacy_number: null,
   created_at: '2026-01-01T00:00:00Z',
   updated_at: '2026-01-01T00:00:00Z',
   appearances: 1,
@@ -62,6 +63,17 @@ describe('PlayerTable', () => {
     expect(cells[0]).toHaveTextContent('-')
     expect(cells[2]).toHaveTextContent('-')
     expect(cells[3]).toHaveTextContent('-')
+  })
+
+  it('shows a legacy number badge next to the name when set, and omits it when unset', () => {
+    const players = [
+      makePlayer({ id: '1', first_name: 'Has', last_name: 'Legacy', legacy_number: 7 }),
+      makePlayer({ id: '2', first_name: 'No', last_name: 'Legacy', legacy_number: null }),
+    ]
+    render(<PlayerTable players={players} />)
+
+    expect(screen.getByRole('img', { name: 'Legacy number 7' })).toBeInTheDocument()
+    expect(screen.queryByRole('img', { name: /Legacy number/ })).toHaveAccessibleName('Legacy number 7')
   })
 
   it('defaults to sorting by name ascending', () => {

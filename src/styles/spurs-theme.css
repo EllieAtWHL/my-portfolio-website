@@ -202,3 +202,30 @@ button.lightbox-nav-button:hover {
     background: linear-gradient(135deg, var(--spurs-primary-dark) 0%, var(--spurs-primary-darker) 100%);
   }
 }
+
+/* Legacy number badge (WEB-142) - an original shield motif, not the club
+   crest, marking a player's permanent club-assigned legacy number. */
+.legacy-number-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.legacy-number-badge__shape {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: var(--spurs-dark-accent);
+  stroke: var(--spurs-dark-accent-bright);
+  stroke-width: 1;
+}
+
+.legacy-number-badge__number {
+  position: relative;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--spurs-primary-dark);
+}

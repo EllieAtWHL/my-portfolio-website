@@ -65,6 +65,15 @@ describe('PlayerForm', () => {
     expect(setPlayerForm).toHaveBeenCalledWith({ ...baseForm, height_cm: 170 });
   });
 
+  it('calls setPlayerForm when legacy number changes', () => {
+    const setPlayerForm = jest.fn();
+    render(<PlayerForm {...baseProps} setPlayerForm={setPlayerForm} />);
+
+    fireEvent.change(screen.getByLabelText(/Legacy Number/i), { target: { value: '7' } });
+
+    expect(setPlayerForm).toHaveBeenCalledWith({ ...baseForm, legacy_number: 7 });
+  });
+
   it('submits the form', () => {
     const onSubmit = jest.fn((e) => e.preventDefault());
     render(<PlayerForm {...baseProps} onSubmit={onSubmit} />);

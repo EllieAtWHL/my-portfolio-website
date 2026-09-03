@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
+import LegacyNumberBadge from '@/components/spurs-women/LegacyNumberBadge';
 import { PlayerWithStats } from '@/lib/data/teams';
 
 interface PlayerTableProps {
@@ -159,13 +160,18 @@ export default function PlayerTable({ players }: PlayerTableProps) {
                 {player.squad_number || '-'}
               </td>
               <td className="py-3 px-4 spurs-text">
-                <Link 
-                  href={`/spurs-women/players/${player.id}`}
-                  className="font-medium hover:underline transition-colors"
-                  style={{ color: 'var(--spurs-dark-text)' }}
-                >
-                  {player.first_name && `${player.first_name} `}{player.last_name}
-                </Link>
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={`/spurs-women/players/${player.id}`}
+                    className="font-medium hover:underline transition-colors"
+                    style={{ color: 'var(--spurs-dark-text)' }}
+                  >
+                    {player.first_name && `${player.first_name} `}{player.last_name}
+                  </Link>
+                  {player.legacy_number != null && (
+                    <LegacyNumberBadge number={player.legacy_number} size="sm" />
+                  )}
+                </div>
               </td>
               <td className="py-3 px-4 spurs-text opacity-75">
                 {player.nationality || '-'}

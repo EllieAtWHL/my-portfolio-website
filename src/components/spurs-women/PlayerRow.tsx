@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import LegacyNumberBadge from '@/components/spurs-women/LegacyNumberBadge';
 import { PlayerWithStats } from '@/lib/data/players';
 
 interface PlayerRowProps {
@@ -49,6 +50,10 @@ export default function PlayerRow({ player }: PlayerRowProps) {
         <div className="w-8 text-center font-mono text-sm text-[#f5f7fa]">
           {getJerseyNumber()}
         </div>
+      )}
+
+      {player.legacy_number != null && (
+        <LegacyNumberBadge number={player.legacy_number} size="sm" />
       )}
 
       {/* Player Info */}

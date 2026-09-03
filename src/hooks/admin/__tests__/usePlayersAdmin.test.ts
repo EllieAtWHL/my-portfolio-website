@@ -20,6 +20,7 @@ const alice: Player = {
   weight_kg: null,
   profile_image_url: null,
   squad_number: null,
+  legacy_number: null,
   created_at: '',
   updated_at: '',
 };
@@ -42,6 +43,7 @@ const emptyPlayerFormShape = {
   height_cm: null,
   weight_kg: null,
   profile_image_url: null,
+  legacy_number: null,
 };
 
 const emptyPlayerHistoryFormShape = {
@@ -204,6 +206,7 @@ describe('usePlayersAdmin', () => {
         height_cm: null,
         weight_kg: null,
         profile_image_url: null,
+        legacy_number: null,
       });
       // Disambiguating fixtures: only alice's records should survive the filter.
       expect(result.current.relatedPlayerStatsForPlayer).toEqual([statsAlice]);
@@ -308,6 +311,7 @@ describe('usePlayersAdmin', () => {
           height_cm: 170,
           weight_kg: 65,
           profile_image_url: 'http://img.example/jane.png',
+          legacy_number: 7,
         })
       );
 
@@ -327,6 +331,7 @@ describe('usePlayersAdmin', () => {
           height_cm: 170,
           weight_kg: 65,
           profile_image_url: 'http://img.example/jane.png',
+          legacy_number: 7,
         }),
       });
       expect(showMessage).toHaveBeenCalledWith('Player created successfully', 'success');
@@ -378,6 +383,7 @@ describe('usePlayersAdmin', () => {
           height_cm: 0,
           weight_kg: 0,
           profile_image_url: '',
+          legacy_number: 0,
         })
       );
 
@@ -395,6 +401,7 @@ describe('usePlayersAdmin', () => {
         height_cm: null,
         weight_kg: null,
         profile_image_url: null,
+        legacy_number: null,
       });
     });
 
