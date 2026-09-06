@@ -13,21 +13,32 @@ describe('LegacyNumberBadge', () => {
     render(<LegacyNumberBadge number={12} />)
 
     const badge = screen.getByRole('img', { name: 'Legacy number 12' })
-    expect(badge).toHaveStyle({ width: '32px', height: '38px' })
+    expect(badge).toHaveStyle({ width: '38px', height: '44px' })
   })
 
   it('renders at a smaller size when size="sm" is passed', () => {
     render(<LegacyNumberBadge number={3} size="sm" />)
 
     const badge = screen.getByRole('img', { name: 'Legacy number 3' })
-    expect(badge).toHaveStyle({ width: '20px', height: '24px' })
+    expect(badge).toHaveStyle({ width: '26px', height: '30px' })
   })
 
   it('renders at a larger size when size="lg" is passed', () => {
     render(<LegacyNumberBadge number={101} size="lg" />)
 
     const badge = screen.getByRole('img', { name: 'Legacy number 101' })
-    expect(badge).toHaveStyle({ width: '52px', height: '62px' })
+    expect(badge).toHaveStyle({ width: '61px', height: '71px' })
+  })
+
+  it('stays the same fixed size for a 3-digit number as for a 1-digit number', () => {
+    const { unmount } = render(<LegacyNumberBadge number={7} size="sm" />)
+    const shortBadge = screen.getByRole('img', { name: 'Legacy number 7' })
+    expect(shortBadge).toHaveStyle({ width: '26px', height: '30px' })
+    unmount()
+
+    render(<LegacyNumberBadge number={101} size="sm" />)
+    const longBadge = screen.getByRole('img', { name: 'Legacy number 101' })
+    expect(longBadge).toHaveStyle({ width: '26px', height: '30px' })
   })
 
   it('applies an additional className when provided', () => {
