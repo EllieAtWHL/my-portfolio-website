@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import LegacyNumberBadge from '@/components/spurs-women/LegacyNumberBadge';
 import { PlayerWithStats } from '@/lib/data/players';
 
 interface PlayerRowProps {
@@ -53,7 +54,12 @@ export default function PlayerRow({ player }: PlayerRowProps) {
 
       {/* Player Info */}
       <div className="flex-1 min-w-0">
-        <div className="font-medium text-[#f5f7fa] truncate">{fullName}</div>
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="font-medium text-[#f5f7fa] truncate">{fullName}</span>
+          {player.legacy_number != null && (
+            <LegacyNumberBadge number={player.legacy_number} size="sm" />
+          )}
+        </div>
         <div className="text-sm text-[#78BEE8] truncate">
           {player.position || '—'} • {player.nationality || '—'}
         </div>

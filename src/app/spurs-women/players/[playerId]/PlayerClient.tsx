@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card } from '@/components/Card';
+import LegacyNumberBadge from '@/components/spurs-women/LegacyNumberBadge';
 import MatchFilterControls from '@/components/spurs-women/MatchFilterControls';
 import { useFilteredMatches } from '@/hooks/useFilteredMatches';
 import { Player, PlayerMatchAppearance } from '@/lib/data/players';
@@ -53,6 +54,11 @@ export default function PlayerClient({ player, matchHistory = [] }: PlayerClient
           </h1>
           {player.squad_number && (
             <p className="spurs-text text-xl opacity-75">#{player.squad_number}</p>
+          )}
+          {player.legacy_number != null && (
+            <div className="flex justify-center mt-3">
+              <LegacyNumberBadge number={player.legacy_number} size="lg" />
+            </div>
           )}
         </div>
 

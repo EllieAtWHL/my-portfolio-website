@@ -65,6 +65,7 @@ const basePlayer: Player = {
   weight_kg: 65,
   profile_image_url: null,
   squad_number: 9,
+  legacy_number: null,
   created_at: '2024-01-01T00:00:00Z',
   updated_at: '2024-01-01T00:00:00Z',
 };
@@ -102,6 +103,18 @@ describe('PlayerClient', () => {
 
     const profileCard = within(screen.getByTestId('player-photo'));
     expect(profileCard.queryByText(/^#/)).not.toBeInTheDocument();
+  });
+
+  it('shows the legacy number badge when the player has a legacy number', () => {
+    render(<PlayerClient player={{ ...basePlayer, legacy_number: 42 }} />);
+
+    expect(screen.getByRole('img', { name: 'Legacy number 42' })).toBeInTheDocument();
+  });
+
+  it('omits the legacy number badge when the player has none', () => {
+    render(<PlayerClient player={{ ...basePlayer, legacy_number: null }} />);
+
+    expect(screen.queryByRole('img', { name: /Legacy number/ })).not.toBeInTheDocument();
   });
 
   it('links Current Club to the team page when the player has a current club', () => {

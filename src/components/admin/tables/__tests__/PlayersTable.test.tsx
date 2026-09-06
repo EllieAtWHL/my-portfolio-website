@@ -13,6 +13,7 @@ const player: Player = {
   weight_kg: null,
   profile_image_url: null,
   squad_number: null,
+  legacy_number: null,
   created_at: '',
   updated_at: '',
 };
