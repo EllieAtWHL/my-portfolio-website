@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 // WEB-148 spike: throwaway test page to drive the photo-upload-spike API route
 // from a phone. Deliberately unstyled/minimal - explicitly out of scope for
@@ -32,6 +32,9 @@ export default function PhotoUploadSpikePage() {
   const [status, setStatus] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle');
   const [result, setResult] = useState<SpikeResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [originalFileSize, setOriginalFileSize] = useState<number | null>(null);
+  const [elapsedAtFailureMs, setElapsedAtFailureMs] = useState<number | null>(null);
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
   async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -40,7 +43,22 @@ export default function PhotoUploadSpikePage() {
     setStatus('uploading');
     setResult(null);
     setErrorMessage(null);
+    setElapsedAtFailureMs(null);
+    setOriginalFileSize(file.size);
 
+    // Screen-lock during a slow mobile upload was one of the two real
+    // findings from phone testing (WEB-148) - the browser suspends the
+    // in-flight fetch and it comes back as a generic "Failed to fetch".
+    // Best-effort only: unsupported/denied wake lock shouldn't block testing.
+    if ('wakeLock' in navigator) {
+      try {
+        wakeLockRef.current = await navigator.wakeLock.request('screen');
+      } catch {
+        // ignore - not critical to the spike
+      }
+    }
+
+    const startedAt = Date.now();
     try {
       const formData = new FormData();
       formData.append('photo', file);
@@ -58,8 +76,12 @@ export default function PhotoUploadSpikePage() {
       setResult(body);
       setStatus('done');
     } catch (error) {
+      setElapsedAtFailureMs(Date.now() - startedAt);
       setErrorMessage((error as Error).message);
       setStatus('error');
+    } finally {
+      wakeLockRef.current?.release();
+      wakeLockRef.current = null;
     }
   }
 
@@ -74,15 +96,22 @@ export default function PhotoUploadSpikePage() {
       <input
         type="file"
         accept="image/*"
-        capture="environment"
         onChange={handleFileChange}
         disabled={status === 'uploading'}
       />
 
-      {status === 'uploading' && <p style={{ marginTop: '1rem' }}>Uploading...</p>}
+      {status === 'uploading' && (
+        <p style={{ marginTop: '1rem' }}>
+          Uploading{originalFileSize !== null ? ` (${formatBytes(originalFileSize)} original)` : ''}... keep this tab open and the screen awake.
+        </p>
+      )}
 
       {status === 'error' && (
-        <p style={{ marginTop: '1rem', color: 'crimson' }}>Failed: {errorMessage}</p>
+        <div style={{ marginTop: '1rem', color: 'crimson' }}>
+          <p>Failed: {errorMessage}</p>
+          {originalFileSize !== null && <p>Original file was {formatBytes(originalFileSize)}</p>}
+          {elapsedAtFailureMs !== null && <p>Failed after {(elapsedAtFailureMs / 1000).toFixed(1)}s</p>}
+        </div>
       )}
 
       {status === 'done' && result && (
