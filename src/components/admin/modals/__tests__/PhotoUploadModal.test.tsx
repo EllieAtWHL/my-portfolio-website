@@ -13,9 +13,18 @@ function makeItem(overrides: Partial<PhotoQueueItem>): PhotoQueueItem {
   };
 }
 
+const defaultProps = {
+  finalizeStatus: 'idle' as const,
+  finalizeError: null,
+  onFilesSelected: () => {},
+  onRetry: () => {},
+  onRetryFinalize: () => {},
+  onClose: () => {},
+};
+
 describe('PhotoUploadModal', () => {
   it('renders with an empty queue and a Choose Photos button', () => {
-    render(<PhotoUploadModal photoQueue={[]} onFilesSelected={() => {}} onRetry={() => {}} onClose={() => {}} />);
+    render(<PhotoUploadModal {...defaultProps} photoQueue={[]} />);
 
     expect(screen.getByText('Upload Photos')).toBeInTheDocument();
     expect(screen.getByText('Choose Photos')).toBeInTheDocument();
@@ -29,7 +38,7 @@ describe('PhotoUploadModal', () => {
       makeItem({ id: '3', name: 'c.jpg', status: 'uploading' }),
     ];
 
-    render(<PhotoUploadModal photoQueue={queue} onFilesSelected={() => {}} onRetry={() => {}} onClose={() => {}} />);
+    render(<PhotoUploadModal {...defaultProps} photoQueue={queue} />);
 
     expect(screen.getByText('1 of 3 uploaded, 1 failed')).toBeInTheDocument();
     expect(screen.getByText('Failed: boom')).toBeInTheDocument();
@@ -40,7 +49,7 @@ describe('PhotoUploadModal', () => {
     const onRetry = jest.fn();
     const queue = [makeItem({ id: '1', status: 'done' }), makeItem({ id: '2', status: 'error', error: 'boom' })];
 
-    render(<PhotoUploadModal photoQueue={queue} onFilesSelected={() => {}} onRetry={onRetry} onClose={() => {}} />);
+    render(<PhotoUploadModal {...defaultProps} photoQueue={queue} onRetry={onRetry} />);
 
     expect(screen.getAllByText('Retry')).toHaveLength(1);
     fireEvent.click(screen.getByText('Retry'));
@@ -50,14 +59,40 @@ describe('PhotoUploadModal', () => {
 
   it('shows a "continues in background" close label while uploads are in progress', () => {
     const queue = [makeItem({ id: '1', status: 'uploading' })];
-    render(<PhotoUploadModal photoQueue={queue} onFilesSelected={() => {}} onRetry={() => {}} onClose={() => {}} />);
+    render(<PhotoUploadModal {...defaultProps} photoQueue={queue} />);
 
     expect(screen.getByText('Close (continues in background)')).toBeInTheDocument();
   });
 
+  it('shows a "continues in background" close label while the batch is publishing', () => {
+    const queue = [makeItem({ id: '1', status: 'done' })];
+    render(<PhotoUploadModal {...defaultProps} photoQueue={queue} finalizeStatus="publishing" />);
+
+    expect(screen.getByText('Publishing photos to the gallery...')).toBeInTheDocument();
+    expect(screen.getByText('Close (continues in background)')).toBeInTheDocument();
+  });
+
+  it('shows a retry banner when publishing the batch fails', () => {
+    const onRetryFinalize = jest.fn();
+    const queue = [makeItem({ id: '1', status: 'done' })];
+    render(
+      <PhotoUploadModal
+        {...defaultProps}
+        photoQueue={queue}
+        finalizeStatus="error"
+        finalizeError="GitHub API error"
+        onRetryFinalize={onRetryFinalize}
+      />
+    );
+
+    expect(screen.getByText(/Photos uploaded, but publishing failed: GitHub API error/)).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Retry Publish'));
+    expect(onRetryFinalize).toHaveBeenCalledTimes(1);
+  });
+
   it('calls onClose when closed', () => {
     const onClose = jest.fn();
-    render(<PhotoUploadModal photoQueue={[]} onFilesSelected={() => {}} onRetry={() => {}} onClose={onClose} />);
+    render(<PhotoUploadModal {...defaultProps} photoQueue={[]} onClose={onClose} />);
 
     fireEvent.click(screen.getByText('Done'));
     expect(onClose).toHaveBeenCalledTimes(1);

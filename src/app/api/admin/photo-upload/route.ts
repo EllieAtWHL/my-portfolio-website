@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin, handleApiError, handleApiSuccess } from '@/lib/admin-api';
 import { buildGalleryFolderKey } from '@/lib/photo-gallery-folder';
-import { galleryFileExists, commitFileToGallery } from '@/lib/photo-gallery-github';
+import { createBlob } from '@/lib/photo-gallery-github';
 
 // WEB-149: the real mobile upload feature, built on the WEB-148 spike's
 // proven resize+commit mechanism (see
@@ -14,6 +14,14 @@ import { galleryFileExists, commitFileToGallery } from '@/lib/photo-gallery-gith
 // failure to one photo instead of the whole album. The client is
 // responsible for looping over a multi-photo selection and retrying
 // individual failures.
+//
+// This route only resizes/compresses the photo and creates a git blob for
+// it - it does NOT push to the gallery repo's `main` or touch the `media`
+// row. That happens once for the whole batch in
+// /api/admin/photo-upload/finalize, so an album of N photos triggers the
+// gallery repo's manifest-regeneration webhook exactly once, not N times
+// (seeing N of those in a row was what caused a pile-up of near-duplicate
+// auto-merging PRs and congested CI/Vercel during WEB-149 testing).
 
 // sharp's native bindings need the Node.js runtime, not the Edge runtime.
 export const runtime = 'nodejs';
@@ -37,37 +45,6 @@ function toWebpFilename(originalName: string): string {
   const base = originalName.replace(/\.[^./]+$/, '');
   const safe = base.replace(/[^a-zA-Z0-9_.-]/g, '_') || 'photo';
   return `${safe}.webp`;
-}
-
-async function upsertPhotoAlbumMedia(matchId: string, folderKey: string) {
-  const { data: existing, error: existingError } = await supabaseAdmin
-    .from('media')
-    .select('id, url')
-    .eq('match_id', matchId)
-    .eq('type', 'photo album')
-    .maybeSingle();
-
-  if (existingError) {
-    throw new Error(`Failed to check existing media row: ${existingError.message}`);
-  }
-
-  if (existing) {
-    if (existing.url !== folderKey) {
-      const { error } = await supabaseAdmin.from('media').update({ url: folderKey }).eq('id', existing.id);
-      if (error) throw new Error(`Failed to update media row ${existing.id}: ${error.message}`);
-    }
-    return existing.id as string;
-  }
-
-  const { data: inserted, error } = await supabaseAdmin
-    .from('media')
-    .insert({ match_id: matchId, type: 'photo album', url: folderKey, title: null, caption: null, sort_order: 0 })
-    .select('id')
-    .single();
-  if (error) {
-    throw new Error(`Failed to create media row: ${error.message}`);
-  }
-  return inserted.id as string;
 }
 
 export async function POST(request: NextRequest) {
@@ -135,29 +112,18 @@ export async function POST(request: NextRequest) {
     const filename = toWebpFilename(photo.name || 'photo');
     const path = `${folderKey}/${filename}`;
 
-    // Idempotency: if a client retries this exact photo (e.g. after a
-    // dropped connection), the filename is stable (same original name in
-    // the same folder), so a second attempt finds it already committed and
-    // skips straight to the media-row upsert instead of erroring or
-    // duplicating the file.
-    const alreadyCommitted = await galleryFileExists(path);
-    if (!alreadyCommitted) {
-      await commitFileToGallery(path, optimisedBuffer.toString('base64'), `Add match photo ${filename}`);
-    }
-
-    const mediaId = await upsertPhotoAlbumMedia(matchId, folderKey);
+    const blobSha = await createBlob(optimisedBuffer.toString('base64'));
 
     return NextResponse.json(
       handleApiSuccess(
         {
           path,
           folderKey,
-          mediaId,
-          skipped: alreadyCommitted,
+          blobSha,
           originalSizeBytes: originalBuffer.length,
           optimisedSizeBytes: optimisedBuffer.length,
         },
-        alreadyCommitted ? 'Photo already uploaded' : 'Photo uploaded'
+        'Photo processed'
       )
     );
   } catch (error) {

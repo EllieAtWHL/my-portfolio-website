@@ -11,7 +11,13 @@ export interface PhotoQueueItem {
   error?: string;
   originalSizeBytes: number;
   optimisedSizeBytes?: number;
+  path?: string;
+  blobSha?: string;
+  /** Set once this photo's blob has been included in a successful finalize call. */
+  published?: boolean;
 }
+
+export type FinalizeStatus = 'idle' | 'publishing' | 'error';
 
 interface UsePhotoUploadModalArgs {
   editingMatchId: string | null;
@@ -31,6 +37,15 @@ interface UsePhotoUploadModalArgs {
  * a Screen Wake Lock is held for the duration to reduce the chance of the
  * phone's screen lock suspending an in-flight upload.
  *
+ * Each per-photo request only resizes the photo and creates a git blob -
+ * it does not push to the gallery repo. Once every queued photo has
+ * settled, finalizeBatch sends the accumulated blobs to
+ * /api/admin/photo-upload/finalize in one request, which is the only place
+ * that actually commits+pushes - so an album of many photos triggers the
+ * gallery repo's manifest webhook once, not once per photo (see WEB-149:
+ * one-push-per-photo caused a pile-up of near-duplicate auto-merging PRs
+ * that congested CI/Vercel).
+ *
  * `queueRef` is the single source of truth for the queue; `photoQueue`
  * state is only a rendering snapshot of it, refreshed via `commit()`.
  * Deriving "the next queued item" from React state instead (e.g. via a
@@ -48,11 +63,12 @@ export function usePhotoUploadModal({
 }: UsePhotoUploadModalArgs) {
   const [showPhotoUploadModal, setShowPhotoUploadModal] = useState(false);
   const [photoQueue, setPhotoQueue] = useState<PhotoQueueItem[]>([]);
+  const [finalizeStatus, setFinalizeStatus] = useState<FinalizeStatus>('idle');
+  const [finalizeError, setFinalizeError] = useState<string | null>(null);
 
   const queueRef = useRef<PhotoQueueItem[]>([]);
   const processingRef = useRef(false);
   const wakeLockRef = useRef<{ release: () => Promise<void> } | null>(null);
-  const hasSucceededOnceRef = useRef(false);
 
   const commit = useCallback(() => {
     setPhotoQueue([...queueRef.current]);
@@ -92,12 +108,20 @@ export function usePhotoUploadModal({
   // requests that never reached the server at all (consistent with a
   // momentary mobile-connection drop, not a code defect - client-side
   // compression was working fine for every photo either side of them).
-  // Both classes tend to clear within a couple of seconds, so one automatic
-  // retry recovers most of them without the admin needing to notice and tap
-  // Retry themselves; a manual retry (via the queue item's own Retry
-  // button) remains the fallback if both attempts fail.
+  // Both classes tend to clear within a couple of seconds, so a single
+  // automatic retry (used for both per-photo uploads and the batch finalize
+  // call below) recovers most of them without the admin needing to notice
+  // and tap Retry themselves.
+  const withOneAutoRetry = useCallback(async <T,>(attempt: () => Promise<T>): Promise<T> => {
+    try {
+      return await attempt();
+    } catch {
+      await new Promise((resolve) => setTimeout(resolve, autoRetryDelayMs));
+      return attempt();
+    }
+  }, [autoRetryDelayMs]);
 
-  const attemptUpload = useCallback(async (item: PhotoQueueItem): Promise<number | undefined> => {
+  const attemptUpload = useCallback(async (item: PhotoQueueItem) => {
     updateItem(item.id, { status: 'compressing', error: undefined });
     // Compression can throw (ImageTooLargeError) rather than silently
     // falling back to a too-large original - a request over Vercel's
@@ -118,17 +142,8 @@ export function usePhotoUploadModal({
       throw new Error(result.error || 'Upload failed');
     }
 
-    return result.data?.optimisedSizeBytes as number | undefined;
+    return result.data as { path: string; blobSha: string; optimisedSizeBytes: number };
   }, [editingMatchId, updateItem]);
-
-  const handleUploadSuccess = useCallback(async (item: PhotoQueueItem, optimisedSizeBytes: number | undefined) => {
-    updateItem(item.id, { status: 'done', optimisedSizeBytes });
-
-    if (!hasSucceededOnceRef.current) {
-      hasSucceededOnceRef.current = true;
-      await refreshRelatedMedia();
-    }
-  }, [updateItem, refreshRelatedMedia]);
 
   const uploadOne = useCallback(async (item: PhotoQueueItem) => {
     if (!editingMatchId) {
@@ -139,18 +154,44 @@ export function usePhotoUploadModal({
     }
 
     try {
-      const optimisedSizeBytes = await attemptUpload(item);
-      await handleUploadSuccess(item, optimisedSizeBytes);
-    } catch {
-      await new Promise((resolve) => setTimeout(resolve, autoRetryDelayMs));
-      try {
-        const optimisedSizeBytes = await attemptUpload(item);
-        await handleUploadSuccess(item, optimisedSizeBytes);
-      } catch (error) {
-        updateItem(item.id, { status: 'error', error: (error as Error).message || 'Upload failed' });
-      }
+      const { path, blobSha, optimisedSizeBytes } = await withOneAutoRetry(() => attemptUpload(item));
+      updateItem(item.id, { status: 'done', path, blobSha, optimisedSizeBytes });
+    } catch (error) {
+      updateItem(item.id, { status: 'error', error: (error as Error).message || 'Upload failed' });
     }
-  }, [editingMatchId, updateItem, attemptUpload, handleUploadSuccess, autoRetryDelayMs]);
+  }, [editingMatchId, updateItem, attemptUpload, withOneAutoRetry]);
+
+  const finalizeBatch = useCallback(async () => {
+    const toPublish = queueRef.current.filter((item) => item.status === 'done' && !item.published && item.path && item.blobSha);
+    if (toPublish.length === 0) return;
+
+    setFinalizeStatus('publishing');
+    setFinalizeError(null);
+
+    try {
+      await withOneAutoRetry(async () => {
+        const response = await fetch('/api/admin/photo-upload/finalize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            matchId: editingMatchId,
+            blobs: toPublish.map((item) => ({ path: item.path, sha: item.blobSha })),
+          }),
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to publish photos');
+        }
+      });
+
+      toPublish.forEach((item) => updateItem(item.id, { published: true }));
+      setFinalizeStatus('idle');
+      await refreshRelatedMedia();
+    } catch (error) {
+      setFinalizeStatus('error');
+      setFinalizeError((error as Error).message || 'Failed to publish photos');
+    }
+  }, [editingMatchId, updateItem, withOneAutoRetry, refreshRelatedMedia]);
 
   const processQueue = useCallback(async () => {
     if (processingRef.current) return;
@@ -166,9 +207,9 @@ export function usePhotoUploadModal({
     } finally {
       processingRef.current = false;
       await releaseWakeLock();
-      await refreshRelatedMedia();
+      await finalizeBatch();
     }
-  }, [uploadOne, acquireWakeLock, releaseWakeLock, refreshRelatedMedia]);
+  }, [uploadOne, acquireWakeLock, releaseWakeLock, finalizeBatch]);
 
   const addFiles = useCallback((files: FileList | File[]) => {
     const items: PhotoQueueItem[] = Array.from(files).map((file) => ({
@@ -188,10 +229,15 @@ export function usePhotoUploadModal({
     void processQueue();
   }, [updateItem, processQueue]);
 
+  const retryFinalize = useCallback(() => {
+    void finalizeBatch();
+  }, [finalizeBatch]);
+
   const openPhotoUploadModal = useCallback(() => {
     queueRef.current = [];
     commit();
-    hasSucceededOnceRef.current = false;
+    setFinalizeStatus('idle');
+    setFinalizeError(null);
     setShowPhotoUploadModal(true);
   }, [commit]);
 
@@ -199,15 +245,20 @@ export function usePhotoUploadModal({
     setShowPhotoUploadModal(false);
     if (queueRef.current.some((item) => item.status === 'error')) {
       showMessage('Some photos failed to upload - reopen "Upload Photos" to retry them', 'error');
+    } else if (finalizeStatus === 'error') {
+      showMessage('Photos uploaded but publishing failed - reopen "Upload Photos" to retry', 'error');
     }
-  }, [showMessage]);
+  }, [showMessage, finalizeStatus]);
 
   return {
     showPhotoUploadModal,
     photoQueue,
+    finalizeStatus,
+    finalizeError,
     openPhotoUploadModal,
     closePhotoUploadModal,
     addFiles,
     retryItem,
+    retryFinalize,
   };
 }

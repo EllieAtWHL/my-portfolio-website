@@ -221,8 +221,11 @@ export function MatchesTabPanel({
       {photoUpload.showPhotoUploadModal && (
         <PhotoUploadModal
           photoQueue={photoUpload.photoQueue}
+          finalizeStatus={photoUpload.finalizeStatus}
+          finalizeError={photoUpload.finalizeError}
           onFilesSelected={photoUpload.addFiles}
           onRetry={photoUpload.retryItem}
+          onRetryFinalize={photoUpload.retryFinalize}
           onClose={photoUpload.closePhotoUploadModal}
         />
       )}

@@ -1,12 +1,15 @@
 import { useId, useRef } from 'react';
 import { Button } from '@/components/Button';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
-import type { PhotoQueueItem } from '@/hooks/admin/usePhotoUploadModal';
+import type { FinalizeStatus, PhotoQueueItem } from '@/hooks/admin/usePhotoUploadModal';
 
 interface PhotoUploadModalProps {
   photoQueue: PhotoQueueItem[];
+  finalizeStatus: FinalizeStatus;
+  finalizeError: string | null;
   onFilesSelected: (files: FileList) => void;
   onRetry: (id: string) => void;
+  onRetryFinalize: () => void;
   onClose: () => void;
 }
 
@@ -26,14 +29,24 @@ function statusLabel(item: PhotoQueueItem): string {
   }
 }
 
-export function PhotoUploadModal({ photoQueue, onFilesSelected, onRetry, onClose }: PhotoUploadModalProps) {
+export function PhotoUploadModal({
+  photoQueue,
+  finalizeStatus,
+  finalizeError,
+  onFilesSelected,
+  onRetry,
+  onRetryFinalize,
+  onClose,
+}: PhotoUploadModalProps) {
   const titleId = useId();
   const containerRef = useFocusTrap<HTMLDivElement>(true, onClose);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const doneCount = photoQueue.filter((item) => item.status === 'done').length;
   const errorCount = photoQueue.filter((item) => item.status === 'error').length;
-  const isBusy = photoQueue.some((item) => item.status === 'queued' || item.status === 'compressing' || item.status === 'uploading');
+  const isBusy =
+    photoQueue.some((item) => item.status === 'queued' || item.status === 'compressing' || item.status === 'uploading') ||
+    finalizeStatus === 'publishing';
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -96,6 +109,19 @@ export function PhotoUploadModal({ photoQueue, onFilesSelected, onRetry, onClose
               ))}
             </ul>
           </>
+        )}
+
+        {finalizeStatus === 'publishing' && (
+          <p className="text-sm text-gray-400 mb-4">Publishing photos to the gallery...</p>
+        )}
+
+        {finalizeStatus === 'error' && (
+          <div className="flex items-center justify-between gap-2 mb-4 p-3 rounded bg-red-950 text-red-300 text-sm">
+            <span>Photos uploaded, but publishing failed: {finalizeError}</span>
+            <Button variant="spurs" size="sm" onClick={onRetryFinalize}>
+              Retry Publish
+            </Button>
+          </div>
         )}
 
         <div className="flex justify-end space-x-2 mt-6">
