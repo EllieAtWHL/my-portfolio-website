@@ -198,6 +198,38 @@ describe('PlayerTable', () => {
     expect(links[2]).toHaveTextContent('At Wolves')
   })
 
+  it('sorts by position in on-pitch order (GK, DEF, MID, FWD), not alphabetically, with unset/unrecognised sorted last in both directions', () => {
+    const players = [
+      makePlayer({ id: '1', first_name: 'Is', last_name: 'Forward', position: 'Forward' }),
+      makePlayer({ id: '2', first_name: 'Is', last_name: 'Goalkeeper', position: 'Goalkeeper' }),
+      makePlayer({ id: '3', first_name: 'No', last_name: 'Position', position: '' }),
+      makePlayer({ id: '4', first_name: 'Is', last_name: 'Defender', position: 'Defender' }),
+      makePlayer({ id: '5', first_name: 'Is', last_name: 'Midfielder', position: 'Midfielder' }),
+    ]
+    render(<PlayerTable players={players} />)
+
+    const positionHeader = screen.getByRole('columnheader', { name: /^Position/ })
+    fireEvent.click(positionHeader)
+
+    let links = screen.getAllByRole('link')
+    expect(links[0]).toHaveTextContent('Is Goalkeeper')
+    expect(links[1]).toHaveTextContent('Is Defender')
+    expect(links[2]).toHaveTextContent('Is Midfielder')
+    expect(links[3]).toHaveTextContent('Is Forward')
+    expect(links[4]).toHaveTextContent('No Position')
+
+    // Alphabetically, "Forward" would sort before "Goalkeeper" - confirms
+    // this isn't a plain string comparison.
+    fireEvent.click(screen.getByRole('columnheader', { name: /Position ↑/ }))
+
+    links = screen.getAllByRole('link')
+    expect(links[0]).toHaveTextContent('Is Forward')
+    expect(links[1]).toHaveTextContent('Is Midfielder')
+    expect(links[2]).toHaveTextContent('Is Defender')
+    expect(links[3]).toHaveTextContent('Is Goalkeeper')
+    expect(links[4]).toHaveTextContent('No Position')
+  })
+
   it('sorts by squad number, with unset numbers sorted last in both directions', () => {
     const players = [
       makePlayer({ id: '1', first_name: 'Has', last_name: 'Number', squad_number: 5 }),

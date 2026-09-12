@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import LegacyNumberBadge from '@/components/spurs-women/LegacyNumberBadge';
+import { getPositionSortOrder } from '@/lib/utils/player-position';
 import { PlayerWithStats } from '@/lib/data/teams';
 
 interface PlayerTableProps {
@@ -72,10 +73,17 @@ export default function PlayerTable({ players, constrainHeight = true, showCurre
           aValue = (a.nationality || '').toLowerCase();
           bValue = (b.nationality || '').toLowerCase();
           break;
-        case 'position':
-          aValue = (a.position || '').toLowerCase();
-          bValue = (b.position || '').toLowerCase();
+        case 'position': {
+          // On-pitch order (Goalkeeper, Defender, Midfielder, Forward),
+          // not alphabetical - see getPositionSortOrder.
+          const aOrder = getPositionSortOrder(a.position);
+          const bOrder = getPositionSortOrder(b.position);
+          const nullResult = compareNullableLast(aOrder, bOrder);
+          if (nullResult !== null) return nullResult;
+          aValue = aOrder!;
+          bValue = bOrder!;
           break;
+        }
         case 'current_club':
           aValue = (a.current_club?.name || '').toLowerCase();
           bValue = (b.current_club?.name || '').toLowerCase();
