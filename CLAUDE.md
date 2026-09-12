@@ -97,9 +97,10 @@ When implementing a Jira issue:
 3. Transition the Jira issue to the appropriate status (for example, "In Progress") before beginning work, if possible.
 4. Keep commits focused and logically grouped.
 5. Ensure commit messages reference the Jira issue.
-6. Suggest an appropriate PR title and description when work is complete.
-7. Before transitioning an issue to Done (or any terminal/closing status), post a comment summarizing the actions taken and any decisions made — final state, what was and wasn't resolved, and where any follow-up is tracked. Do this even if the same detail already exists across earlier progress comments, so the closing comment stands alone as the final record. Post it before the transition, not after.
-8. Transition the Jira issue to Done once its PR has merged — not before. The `WEB` project's workflow only has four statuses: **To Do**, **In Progress**, **Done**, **Blocked** — there is no "In Review" state, so an issue with an open PR stays in **In Progress**.
+6. Before raising the PR, run `/code-review` against the branch diff and fix the issues it finds (or re-run with `--fix` to apply them directly). Do this once commits for the issue are settled, so the review covers the complete logical change rather than a partial diff.
+7. Suggest an appropriate PR title and description when work is complete.
+8. Before transitioning an issue to Done (or any terminal/closing status), post a comment summarizing the actions taken and any decisions made — final state, what was and wasn't resolved, and where any follow-up is tracked. Do this even if the same detail already exists across earlier progress comments, so the closing comment stands alone as the final record. Post it before the transition, not after.
+9. Transition the Jira issue to Done once its PR has merged — not before. The `WEB` project's workflow only has four statuses: **To Do**, **In Progress**, **Done**, **Blocked** — there is no "In Review" state, so an issue with an open PR stays in **In Progress**.
 
 Where Jira access is available, Claude should perform these updates directly. Where it is not, Claude should clearly state what actions should be taken manually.
 
