@@ -17,6 +17,7 @@ export default function Header() {
     { href: "/spurs-women/seasons", label: "Seasons" },
     { href: "/spurs-women/matches", label: "Matches" },
     { href: "/spurs-women/teams", label: "Teams" },
+    { href: "/spurs-women/players", label: "Players" },
     { href: "/spurs-women/stadiums", label: "Stadiums" }
   ];
 

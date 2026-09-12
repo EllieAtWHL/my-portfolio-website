@@ -45,7 +45,7 @@ src/
 | `/spurs-women/seasons/[seasonId]` | Season detail: full match list, statistics dashboard, season review |
 | `/spurs-women/teams` | Grid of all teams with match counts |
 | `/spurs-women/teams/[teamId]` | Team detail: match history, head-to-head vs Spurs |
-| `/spurs-women/players` | Grid of all players with stats summary |
+| `/spurs-women/players` | Sortable table of the current squad (name, position, squad/legacy number, career stats) |
 | `/spurs-women/players/[playerId]` | Player profile: match history, career timeline |
 | `/spurs-women/stadiums` | Grid of all stadiums with match counts |
 | `/spurs-women/stadiums/[stadiumSlug]` | Stadium detail: historical names, match history, capacity/location |
@@ -57,7 +57,7 @@ Key components under `src/components/spurs-women/`:
 - **Layout**: `SpursHeader`, `SpursFooter`
 - **Matches**: `MatchCard`, `MatchStats` (see `match-stats.md`), `MatchFilterControls`, `SeasonStats` (see `SEASON_STATISTICS_CALCULATIONS.md`)
 - **Media**: `NewsCard`, `VideoCard`, `PodcastCard`, `LightboxGallery`, `SeasonReviewCard`, `MediaGallery` (see `reference/photo-gallery/README.md`)
-- **Players**: `PlayerTable` (with `PlayerRow`), `TeamLineup` (`PlayerCard` also exists under `src/components/spurs-women/` but is currently dead code - unimported anywhere, see `reference/TAILWIND_MIGRATION_PLAN.md`)
+- **Players**: `PlayerTable` (with `PlayerRow`) - sortable by name, position, nationality, squad/legacy number, and career stats; shared between the team roster tabs and `/spurs-women/players` - `TeamLineup` (`PlayerCard` also exists under `src/components/spurs-women/` but is currently dead code - unimported anywhere, see `reference/TAILWIND_MIGRATION_PLAN.md`)
 - **Utility**: `TeamPill` (team-colored name pill), `InteractiveMap` (stadium location)
 
 ## Data Layer
