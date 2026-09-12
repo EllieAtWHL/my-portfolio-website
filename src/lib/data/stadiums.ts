@@ -181,32 +181,6 @@ export const getMatchesAtStadium = createCachedFunction(
   }
 );
 
-export async function invalidateStadiumCache(stadiumId?: string, stadiumSlug?: string) {
-  const cacheKeys = [];
-  
-  if (stadiumId) {
-    cacheKeys.push(`stadium:by-id:${stadiumId}`);
-  }
-  
-  if (stadiumSlug) {
-    cacheKeys.push(`stadium:by-slug:${stadiumSlug}`);
-  }
-  
-  cacheKeys.push('stadiums');
-  
-  cacheKeys.push('stadium-names');
-
-}
-
-export async function invalidateAllStadiumCaches() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const cacheKeys = [
-    'stadiums',
-    'stadium-names'
-  ];
-
-}
-
 export function getCurrentStadiumName(stadiumNames: StadiumName[], date?: Date): string | null {
   if (!stadiumNames || stadiumNames.length === 0) {
     return null;

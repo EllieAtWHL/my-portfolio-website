@@ -54,26 +54,39 @@ A separate `CACHE_KEYS` helper (`cache-utils.ts`) *can* build dynamic, value-bea
 
 ## Invalidation
 
-Prefer tag-based revalidation (`revalidateTag`) over blanket purges. Use the
-`cache-invalidation.ts` utilities when data changes:
+Prefer tag-based revalidation (`revalidateTag`) over blanket purges. Every
+`/api/admin/*` write route (`players`, `player-history`, `player-stats`,
+`teams`, `matches`, `media` + `photo-upload/finalize`, `stadia`,
+`stadium-names`) calls the matching `cache-invalidation.ts` function
+immediately after a successful insert/update/delete, so an admin edit is
+reflected on the public site without needing the manual revalidation API
+below. (`seasons` and `competitions` are admin-readonly - no write route
+exists for either, so nothing to invalidate.)
 
 ```typescript
-import { invalidateMatchCache, invalidateNewsCache } from '@/lib/data';
+import { invalidateMatchCache, invalidatePlayerHistoryCache } from '@/lib/data';
 
-invalidateMatchCache(); // match updated - revalidates the MATCHES tag
-invalidateNewsCache();  // news updated - revalidates the NEWS tag
+invalidateMatchCache();          // match written - revalidates MATCHES
+invalidatePlayerHistoryCache();  // player_history written - revalidates PLAYERS + TEAMS
 ```
 
-Both take no arguments - `cache-invalidation.ts` invalidates by fixed tag per entity type (`invalidateMatchCache`, `invalidateSeasonCache`, `invalidateMediaCache`, `invalidateNewsCache`, `invalidateVideoCache`), not by a specific season/competition/entity value.
+All take no arguments - `cache-invalidation.ts` invalidates by a fixed set of
+tags per entity type, not by a specific season/competition/entity value. Some
+functions invalidate more than one tag, matching which cached reads actually
+embed that entity's data:
 
-**Known bug**: `invalidateStadiumCache`/`invalidateAllStadiumCaches`
-(`src/lib/data/stadiums.ts`) build a local `cacheKeys` array but never call
-`revalidateTag`/`revalidateCacheTags` with it - they are currently no-ops that
-have no effect on the cache. Stadium/stadium-name edits in the admin UI do not
-actually invalidate the cache today. Don't rely on these functions until
-they're fixed to call `revalidateCacheTags([CACHE_TAGS.STADIUMS])` (or
-equivalent) - use the manual revalidation API below as a workaround in the
-meantime.
+| Function | Tags invalidated | Why |
+|---|---|---|
+| `invalidateMatchCache` | `MATCHES` | Also covers `UPCOMING_MATCHES`/`PREVIOUS_MATCHES` reads, since those are tagged with `MATCHES` too |
+| `invalidateSeasonCache` | `SEASONS` | No admin write route calls this today (seasons are admin-readonly) |
+| `invalidateMediaCache` | `MEDIA` | |
+| `invalidateNewsCache` / `invalidateVideoCache` | `NEWS` / `VIDEOS` | No admin write route calls these - news/videos come from RSS/YouTube, not admin CRUD |
+| `invalidatePlayerCache` | `PLAYERS` | |
+| `invalidateTeamCache` | `TEAMS` | |
+| `invalidatePlayerHistoryCache` | `PLAYERS`, `TEAMS` | Squad membership is read by both a player's own pages and a team's roster tabs |
+| `invalidatePlayerStatsCache` | `PLAYERS`, `MATCHES` | Match lineups/appearances are tagged with both |
+| `invalidateStadiumCache` | `STADIUMS`, `MATCHES` | Matches embed a stadium's display name via the `matches_with_stadium` view |
+| `invalidateStadiumNamesCache` | `STADIUM_NAMES`, `STADIUMS`, `MATCHES` | Same embedding, plus the dedicated `STADIUM_NAMES`-tagged history read |
 
 For emergencies or bulk updates, use the API endpoints instead of a server
 restart:
@@ -147,10 +160,11 @@ API-key auth logic (currently duplicated across routes), cache size/memory
 visibility, more granular TTLs than the generic "static content" bucket where
 it would help.
 
-Automated tests do exist for `cache-utils.ts` and `cache-invalidation.ts`
+Automated tests exist for `cache-utils.ts` and `cache-invalidation.ts`
 (`src/lib/data/__tests__/cache-utils.test.ts`,
-`src/lib/data/__tests__/cache-invalidation.test.ts`) and for the stadium
-functions (`stadiums-import.test.ts`, `stadiums.test.ts`), but the stadium
-tests only assert `invalidateStadiumCache`/`invalidateAllStadiumCaches`
-resolve without throwing - they don't assert that `revalidateTag` was called,
-so they don't catch the no-op bug described above.
+`src/lib/data/__tests__/cache-invalidation.test.ts`), asserting the correct
+tags are passed to `revalidateCacheTags` for every entity type. The `/api/admin/*`
+route handlers that call these functions aren't Jest-tested (API routes
+generally aren't in this repo - see the root `CLAUDE.md`'s Testing section);
+verify a live admin edit reflects on the public page manually if changing
+these routes.

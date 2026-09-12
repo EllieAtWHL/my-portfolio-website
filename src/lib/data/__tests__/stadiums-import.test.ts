@@ -1,4 +1,4 @@
-import { getCurrentStadiumName, StadiumName, invalidateStadiumCache, invalidateAllStadiumCaches } from '../stadiums';
+import { getCurrentStadiumName, StadiumName } from '../stadiums';
 
 describe('getCurrentStadiumName', () => {
   it('returns null when stadium names array is empty', () => {
@@ -215,27 +215,5 @@ describe('getCurrentStadiumName', () => {
 
     const result = getCurrentStadiumName(stadiumNames, new Date('2025-01-01'))
     expect(result).toBe('Currently Valid Name')
-  })
-})
-
-describe('Stadium Cache Invalidation', () => {
-  it('invalidateStadiumCache should complete without error', async () => {
-    await expect(invalidateStadiumCache('stadium-123', 'test-slug')).resolves.not.toThrow()
-  })
-
-  it('invalidateStadiumCache should handle stadiumId only', async () => {
-    await expect(invalidateStadiumCache('stadium-123')).resolves.not.toThrow()
-  })
-
-  it('invalidateStadiumCache should handle stadiumSlug only', async () => {
-    await expect(invalidateStadiumCache(undefined, 'test-slug')).resolves.not.toThrow()
-  })
-
-  it('invalidateStadiumCache should handle no parameters', async () => {
-    await expect(invalidateStadiumCache()).resolves.not.toThrow()
-  })
-
-  it('invalidateAllStadiumCaches should complete without error', async () => {
-    await expect(invalidateAllStadiumCaches()).resolves.not.toThrow()
   })
 })

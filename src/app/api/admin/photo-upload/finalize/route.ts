@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin, handleApiError, handleApiSuccess } from '@/lib/admin-api';
+import { invalidateMediaCache } from '@/lib/data/cache-invalidation';
 import { buildGalleryFolderKey } from '@/lib/photo-gallery-folder';
 import { finalizeGalleryBatch, type GalleryBlobEntry } from '@/lib/photo-gallery-github';
 
@@ -100,6 +101,7 @@ export async function POST(request: NextRequest) {
     const { skipped, commitSha } = await finalizeGalleryBatch(blobs, message);
     const mediaId = await upsertPhotoAlbumMedia(matchId, folderKey);
 
+    invalidateMediaCache();
     return NextResponse.json(
       handleApiSuccess(
         { folderKey, mediaId, commitSha, skipped, photoCount: blobs.length },

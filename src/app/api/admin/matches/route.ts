@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/admin-api';
+import { invalidateMatchCache } from '@/lib/data/cache-invalidation';
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,6 +12,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: insertError.message }, { status: 400 });
     }
 
+    invalidateMatchCache();
     return NextResponse.json({ data, message: 'Match created successfully' });
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -59,6 +61,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
+    invalidateMatchCache();
     return NextResponse.json({ data, message: 'Match updated successfully' });
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -80,6 +83,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
+    invalidateMatchCache();
     return NextResponse.json({ success: true, message: 'Match deleted successfully' });
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
