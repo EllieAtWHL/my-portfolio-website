@@ -17,6 +17,7 @@ import { usePlayersAdmin } from '@/hooks/admin/usePlayersAdmin';
 import { useStadiumsAdmin } from '@/hooks/admin/useStadiumsAdmin';
 import { useMatchesAdmin } from '@/hooks/admin/useMatchesAdmin';
 import { usePlayerStatsModal } from '@/hooks/admin/usePlayerStatsModal';
+import { usePhotoUploadModal } from '@/hooks/admin/usePhotoUploadModal';
 import type {
   Team,
   Competition,
@@ -110,6 +111,12 @@ export default function AdminPage() {
     setRelatedPlayerStats,
     setRelatedPlayerStatsForPlayer,
     setLoading,
+    showMessage,
+  });
+
+  const photoUpload = usePhotoUploadModal({
+    editingMatchId,
+    refreshRelatedMedia: matchesAdmin.refreshRelatedMedia,
     showMessage,
   });
 
@@ -337,6 +344,7 @@ export default function AdminPage() {
         {activeTab === 'matches' && (
           <MatchesTabPanel
             matchesAdmin={matchesAdmin}
+            photoUpload={photoUpload}
             seasons={seasons}
             competitions={competitions}
             teams={teams}
