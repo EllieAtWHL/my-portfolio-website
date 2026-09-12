@@ -12,6 +12,12 @@ import {
   invalidateMediaCache,
   invalidateNewsCache,
   invalidateVideoCache,
+  invalidatePlayerCache,
+  invalidateTeamCache,
+  invalidatePlayerHistoryCache,
+  invalidatePlayerStatsCache,
+  invalidateStadiumCache,
+  invalidateStadiumNamesCache,
   invalidateAllRelatedCaches,
   invalidateCacheByEntityType,
 } from '../cache-invalidation';
@@ -65,6 +71,52 @@ describe('cache-invalidation', () => {
     });
   });
 
+  describe('invalidatePlayerCache', () => {
+    it('invalidates the PLAYERS tag', () => {
+      invalidatePlayerCache();
+      expect(mockRevalidateCacheTags).toHaveBeenCalledWith([CACHE_TAGS.PLAYERS]);
+    });
+  });
+
+  describe('invalidateTeamCache', () => {
+    it('invalidates the TEAMS tag', () => {
+      invalidateTeamCache();
+      expect(mockRevalidateCacheTags).toHaveBeenCalledWith([CACHE_TAGS.TEAMS]);
+    });
+  });
+
+  describe('invalidatePlayerHistoryCache', () => {
+    it('invalidates both the PLAYERS and TEAMS tags', () => {
+      invalidatePlayerHistoryCache();
+      expect(mockRevalidateCacheTags).toHaveBeenCalledWith([CACHE_TAGS.PLAYERS, CACHE_TAGS.TEAMS]);
+    });
+  });
+
+  describe('invalidatePlayerStatsCache', () => {
+    it('invalidates both the PLAYERS and MATCHES tags', () => {
+      invalidatePlayerStatsCache();
+      expect(mockRevalidateCacheTags).toHaveBeenCalledWith([CACHE_TAGS.PLAYERS, CACHE_TAGS.MATCHES]);
+    });
+  });
+
+  describe('invalidateStadiumCache', () => {
+    it('invalidates both the STADIUMS and MATCHES tags', () => {
+      invalidateStadiumCache();
+      expect(mockRevalidateCacheTags).toHaveBeenCalledWith([CACHE_TAGS.STADIUMS, CACHE_TAGS.MATCHES]);
+    });
+  });
+
+  describe('invalidateStadiumNamesCache', () => {
+    it('invalidates the STADIUM_NAMES, STADIUMS, and MATCHES tags', () => {
+      invalidateStadiumNamesCache();
+      expect(mockRevalidateCacheTags).toHaveBeenCalledWith([
+        CACHE_TAGS.STADIUM_NAMES,
+        CACHE_TAGS.STADIUMS,
+        CACHE_TAGS.MATCHES,
+      ]);
+    });
+  });
+
   describe('invalidateAllRelatedCaches', () => {
     it('invalidates every tag defined in CACHE_TAGS', () => {
       invalidateAllRelatedCaches();
@@ -96,6 +148,40 @@ describe('cache-invalidation', () => {
     it('dispatches "video" to invalidateVideoCache (VIDEOS tag)', () => {
       invalidateCacheByEntityType('video');
       expect(mockRevalidateCacheTags).toHaveBeenCalledWith([CACHE_TAGS.VIDEOS]);
+    });
+
+    it('dispatches "player" to invalidatePlayerCache (PLAYERS tag)', () => {
+      invalidateCacheByEntityType('player');
+      expect(mockRevalidateCacheTags).toHaveBeenCalledWith([CACHE_TAGS.PLAYERS]);
+    });
+
+    it('dispatches "team" to invalidateTeamCache (TEAMS tag)', () => {
+      invalidateCacheByEntityType('team');
+      expect(mockRevalidateCacheTags).toHaveBeenCalledWith([CACHE_TAGS.TEAMS]);
+    });
+
+    it('dispatches "playerHistory" to invalidatePlayerHistoryCache (PLAYERS + TEAMS tags)', () => {
+      invalidateCacheByEntityType('playerHistory');
+      expect(mockRevalidateCacheTags).toHaveBeenCalledWith([CACHE_TAGS.PLAYERS, CACHE_TAGS.TEAMS]);
+    });
+
+    it('dispatches "playerStats" to invalidatePlayerStatsCache (PLAYERS + MATCHES tags)', () => {
+      invalidateCacheByEntityType('playerStats');
+      expect(mockRevalidateCacheTags).toHaveBeenCalledWith([CACHE_TAGS.PLAYERS, CACHE_TAGS.MATCHES]);
+    });
+
+    it('dispatches "stadium" to invalidateStadiumCache (STADIUMS + MATCHES tags)', () => {
+      invalidateCacheByEntityType('stadium');
+      expect(mockRevalidateCacheTags).toHaveBeenCalledWith([CACHE_TAGS.STADIUMS, CACHE_TAGS.MATCHES]);
+    });
+
+    it('dispatches "stadiumName" to invalidateStadiumNamesCache (STADIUM_NAMES + STADIUMS + MATCHES tags)', () => {
+      invalidateCacheByEntityType('stadiumName');
+      expect(mockRevalidateCacheTags).toHaveBeenCalledWith([
+        CACHE_TAGS.STADIUM_NAMES,
+        CACHE_TAGS.STADIUMS,
+        CACHE_TAGS.MATCHES,
+      ]);
     });
 
     it('warns and does not invalidate anything for an unknown entity type', () => {

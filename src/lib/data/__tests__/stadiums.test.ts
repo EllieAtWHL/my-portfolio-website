@@ -1,11 +1,12 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { mockSupabaseFrom } from '@/test-utils/supabase-query-mock';
 
-// NOTE: getCurrentStadiumName's date-range branching and invalidateStadiumCache/
-// invalidateAllStadiumCaches are already covered thoroughly in
-// stadiums-import.test.ts - this file focuses on the Supabase-backed data
-// fetchers (getStadiumBySlug, getAllStadiums, getStadiumsWithMatchCounts,
-// getStadiumNames, getMatchesAtStadium) to avoid duplicating that coverage.
+// NOTE: getCurrentStadiumName's date-range branching is already covered
+// thoroughly in stadiums-import.test.ts - this file focuses on the
+// Supabase-backed data fetchers (getStadiumBySlug, getAllStadiums,
+// getStadiumsWithMatchCounts, getStadiumNames, getMatchesAtStadium) to avoid
+// duplicating that coverage. Cache invalidation for stadium/stadium-name
+// writes now lives in cache-invalidation.ts, covered by its own test file.
 
 describe('stadiums data layer', () => {
   beforeEach(() => {
