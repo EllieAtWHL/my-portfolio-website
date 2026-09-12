@@ -21,6 +21,19 @@ interface PlayerTableProps {
 type SortColumn = 'squad_number' | 'name' | 'nationality' | 'position' | 'current_club' | 'appearances' | 'goals' | 'assists' | 'yellow_cards' | 'red_cards' | 'legacy_number';
 type SortDirection = 'asc' | 'desc';
 
+// A definitive sort-compare result when either value is unset (so it always
+// sorts last, regardless of ascending/descending direction - a placeholder
+// value like Number.MAX_SAFE_INTEGER would instead flip which end it lands
+// on when direction reverses, since it's still just an ordinary value to an
+// asc/desc comparison), or null when both are present, meaning "fall through
+// to a normal value comparison".
+function compareNullableLast(a: number | null | undefined, b: number | null | undefined): number | null {
+  if (a == null && b == null) return 0;
+  if (a == null) return 1;
+  if (b == null) return -1;
+  return null;
+}
+
 export default function PlayerTable({ players, constrainHeight = true, showCurrentClub = false }: PlayerTableProps) {
   const [sortColumn, setSortColumn] = useState<SortColumn>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
@@ -41,18 +54,16 @@ export default function PlayerTable({ players, constrainHeight = true, showCurre
       let bValue: string | number;
 
       switch (sortColumn) {
-        case 'squad_number':
-          // Same "always last, in both directions" handling as legacy_number
-          // below - a placeholder value would flip which end unset numbers
-          // land on when direction reverses. Matters more now than when this
-          // table only ever showed a team's current squad (all numbered):
-          // the all-players index also lists players with no squad number.
-          if (a.squad_number == null && b.squad_number == null) return 0;
-          if (a.squad_number == null) return 1;
-          if (b.squad_number == null) return -1;
-          aValue = a.squad_number;
-          bValue = b.squad_number;
+        case 'squad_number': {
+          // Matters more now than when this table only ever showed a team's
+          // current squad (all numbered): the all-players index also lists
+          // players with no squad number.
+          const nullResult = compareNullableLast(a.squad_number, b.squad_number);
+          if (nullResult !== null) return nullResult;
+          aValue = a.squad_number!;
+          bValue = b.squad_number!;
           break;
+        }
         case 'name':
           aValue = `${a.last_name}, ${a.first_name || ''}`.toLowerCase();
           bValue = `${b.last_name}, ${b.first_name || ''}`.toLowerCase();
@@ -89,17 +100,13 @@ export default function PlayerTable({ players, constrainHeight = true, showCurre
           aValue = a.red_cards;
           bValue = b.red_cards;
           break;
-        case 'legacy_number':
-          // Keeps unset legacy numbers last regardless of sort direction - a
-          // placeholder value (e.g. Number.MAX_SAFE_INTEGER) would flip which
-          // end they land on when direction reverses, since it's still just
-          // an ordinary value to the asc/desc comparison below.
-          if (a.legacy_number == null && b.legacy_number == null) return 0;
-          if (a.legacy_number == null) return 1;
-          if (b.legacy_number == null) return -1;
-          aValue = a.legacy_number;
-          bValue = b.legacy_number;
+        case 'legacy_number': {
+          const nullResult = compareNullableLast(a.legacy_number, b.legacy_number);
+          if (nullResult !== null) return nullResult;
+          aValue = a.legacy_number!;
+          bValue = b.legacy_number!;
           break;
+        }
         default:
           return 0;
       }
