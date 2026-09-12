@@ -45,7 +45,7 @@ src/
 | `/spurs-women/seasons/[seasonId]` | Season detail: full match list, statistics dashboard, season review |
 | `/spurs-women/teams` | Grid of all teams with match counts |
 | `/spurs-women/teams/[teamId]` | Team detail: match history, head-to-head vs Spurs |
-| `/spurs-women/players` | Sortable table of the current squad (name, position, squad/legacy number, career stats) |
+| `/spurs-women/players` | Sortable table of every player on file (name, position, squad/legacy number, current club, career Tottenham stats) |
 | `/spurs-women/players/[playerId]` | Player profile: match history, career timeline |
 | `/spurs-women/stadiums` | Grid of all stadiums with match counts |
 | `/spurs-women/stadiums/[stadiumSlug]` | Stadium detail: historical names, match history, capacity/location |
@@ -72,7 +72,7 @@ components never fetch data directly. Caching is applied here (see
 | `seasons.ts` | `getSeasons`, `getSeasonsWithMatchCounts`, `getSeasonById`, `getSeasonReview` |
 | `news.ts` | `getSpursWomenNews`, `getSpursWomenVideos`, `getPodcasts`, `getHomePageContent` |
 | `stadiums.ts` | `getStadiumBySlug`, `getAllStadiums`, `getStadiumsWithMatchCounts`, `getStadiumNames`, `getMatchesAtStadium`, `getCurrentStadiumName` |
-| `players.ts` | `getPlayersByMatch`, `getTeamLineupsByMatch`, `getPlayerById`, `getActivePlayers` |
+| `players.ts` | `getPlayersByMatch`, `getTeamLineupsByMatch`, `getPlayerById`, `getAllPlayers` |
 | `teams.ts` | `getAllTeams`, `getTeamsWithMatchCounts`, `getTeamById`, `getMatchesForTeam`, `getPlayersForTeam` |
 | `media.ts` | `getMediaByMatch`, `getPhotosByMatch`, `getArticlesByMatch`, `getSocialMediaByMatch`, `getVideosByMatch` |
 

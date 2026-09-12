@@ -5,12 +5,23 @@ import { PlayerWithStats } from '@/lib/data/teams';
 
 interface PlayerTableProps {
   players: PlayerWithStats[];
+  // Caps the table at a fixed height with its own internal scrollbar - a good
+  // fit when the table sits alongside other content (e.g. the team roster
+  // page's tabs/stadium card), but not for a page where the table is the
+  // only content and should just flow to its full length.
+  constrainHeight?: boolean;
+  // Only getAllPlayers (the all-players index) resolves current_club - a
+  // team-scoped fetch like getPlayersForTeam doesn't, since a roster page's
+  // Current/Former tabs already communicate a player's status at that team.
+  // Off by default so the column doesn't show a misleading dash for every
+  // row wherever it's left unresolved.
+  showCurrentClub?: boolean;
 }
 
-type SortColumn = 'squad_number' | 'name' | 'nationality' | 'position' | 'appearances' | 'goals' | 'assists' | 'yellow_cards' | 'red_cards' | 'legacy_number';
+type SortColumn = 'squad_number' | 'name' | 'nationality' | 'position' | 'current_club' | 'appearances' | 'goals' | 'assists' | 'yellow_cards' | 'red_cards' | 'legacy_number';
 type SortDirection = 'asc' | 'desc';
 
-export default function PlayerTable({ players }: PlayerTableProps) {
+export default function PlayerTable({ players, constrainHeight = true, showCurrentClub = false }: PlayerTableProps) {
   const [sortColumn, setSortColumn] = useState<SortColumn>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
@@ -45,6 +56,10 @@ export default function PlayerTable({ players }: PlayerTableProps) {
         case 'position':
           aValue = (a.position || '').toLowerCase();
           bValue = (b.position || '').toLowerCase();
+          break;
+        case 'current_club':
+          aValue = (a.current_club?.name || '').toLowerCase();
+          bValue = (b.current_club?.name || '').toLowerCase();
           break;
         case 'appearances':
           aValue = a.appearances;
@@ -99,7 +114,7 @@ export default function PlayerTable({ players }: PlayerTableProps) {
   }
 
   return (
-    <div className="overflow-x-auto max-h-96 overflow-y-auto">
+    <div className={constrainHeight ? 'overflow-x-auto max-h-96 overflow-y-auto' : 'overflow-x-auto'}>
       <table className="w-full">
         <thead className="sticky top-0 z-10" style={{ backgroundColor: 'var(--spurs-dark-bg-1)' }}>
           <tr className="border-b border-gray-200 dark:border-gray-700">
@@ -109,7 +124,13 @@ export default function PlayerTable({ players }: PlayerTableProps) {
             >
               #{getSortIndicator('squad_number')}
             </th>
-            <th 
+            <th
+              className="text-center py-3 px-4 spurs-text font-semibold cursor-pointer hover:opacity-80"
+              onClick={() => handleSort('legacy_number')}
+            >
+              Legacy #{getSortIndicator('legacy_number')}
+            </th>
+            <th
               className="text-left py-3 px-4 spurs-text font-semibold cursor-pointer hover:opacity-80"
               onClick={() => handleSort('name')}
             >
@@ -127,7 +148,15 @@ export default function PlayerTable({ players }: PlayerTableProps) {
             >
               Position{getSortIndicator('position')}
             </th>
-            <th 
+            {showCurrentClub && (
+              <th
+                className="text-left py-3 px-4 spurs-text font-semibold cursor-pointer hover:opacity-80"
+                onClick={() => handleSort('current_club')}
+              >
+                Current Club{getSortIndicator('current_club')}
+              </th>
+            )}
+            <th
               className="text-center py-3 px-4 spurs-text font-semibold cursor-pointer hover:opacity-80"
               onClick={() => handleSort('appearances')}
             >
@@ -157,12 +186,6 @@ export default function PlayerTable({ players }: PlayerTableProps) {
             >
               Reds{getSortIndicator('red_cards')}
             </th>
-            <th
-              className="text-center py-3 px-4 spurs-text font-semibold cursor-pointer hover:opacity-80"
-              onClick={() => handleSort('legacy_number')}
-            >
-              Legacy #{getSortIndicator('legacy_number')}
-            </th>
           </tr>
         </thead>
         <tbody>
@@ -171,19 +194,19 @@ export default function PlayerTable({ players }: PlayerTableProps) {
               <td className="py-3 px-4 text-center spurs-text font-bold">
                 {player.squad_number || '-'}
               </td>
+              <td className="py-3 px-4 text-center spurs-text">
+                {player.legacy_number != null ? (
+                  <LegacyNumberBadge number={player.legacy_number} size="sm" />
+                ) : '-'}
+              </td>
               <td className="py-3 px-4 spurs-text">
-                <div className="flex items-center gap-2">
-                  <Link
-                    href={`/spurs-women/players/${player.id}`}
-                    className="font-medium hover:underline transition-colors"
-                    style={{ color: 'var(--spurs-dark-text)' }}
-                  >
-                    {player.first_name && `${player.first_name} `}{player.last_name}
-                  </Link>
-                  {player.legacy_number != null && (
-                    <LegacyNumberBadge number={player.legacy_number} size="sm" />
-                  )}
-                </div>
+                <Link
+                  href={`/spurs-women/players/${player.id}`}
+                  className="font-medium hover:underline transition-colors"
+                  style={{ color: 'var(--spurs-dark-text)' }}
+                >
+                  {player.first_name && `${player.first_name} `}{player.last_name}
+                </Link>
               </td>
               <td className="py-3 px-4 spurs-text opacity-75">
                 {player.nationality || '-'}
@@ -191,6 +214,11 @@ export default function PlayerTable({ players }: PlayerTableProps) {
               <td className="py-3 px-4 spurs-text opacity-75">
                 {player.position || '-'}
               </td>
+              {showCurrentClub && (
+                <td className="py-3 px-4 spurs-text opacity-75">
+                  {player.current_club?.name || '-'}
+                </td>
+              )}
               <td className="py-3 px-4 text-center spurs-text">
                 {player.appearances}
               </td>
@@ -205,9 +233,6 @@ export default function PlayerTable({ players }: PlayerTableProps) {
               </td>
               <td className="py-3 px-4 text-center spurs-text">
                 {player.red_cards}
-              </td>
-              <td className="py-3 px-4 text-center spurs-text">
-                {player.legacy_number ?? '-'}
               </td>
             </tr>
           ))}

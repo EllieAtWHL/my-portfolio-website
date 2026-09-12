@@ -63,21 +63,19 @@ async function fetchMatchesForTeamFromDB(teamId: string): Promise<Match[]> {
   return data || [];
 }
 
-async function fetchPlayersForTeamFromDB(teamId: string): Promise<TeamPlayers> {
-  // Fetch player_history records for this team
-  const { data: playerHistory, error: historyError } = await supabase
-    .from('player_history')
-    .select(`
-      *,
-      player:players(*)
-    `)
-    .eq('team_id', teamId);
+export interface PlayerStatsAggregate {
+  appearances: number;
+  goals: number;
+  assists: number;
+  yellow_cards: number;
+  red_cards: number;
+}
 
-  if (historyError) {
-    console.error('Error fetching player history for team:', historyError);
-    return { current: [], former: [] };
-  }
-
+// Fetches and aggregates player_stats for a team, keyed by player_id - shared
+// by fetchPlayersForTeamFromDB and players.ts's all-players index (which
+// needs Tottenham's career stats for every player, not just this team's
+// current/former squad members).
+export async function fetchPlayerStatsAggregateForTeam(teamId: string): Promise<Map<string, PlayerStatsAggregate>> {
   // Fetch player_stats for all matches to aggregate stats. Paginated - PostgREST caps
   // a single request at 1000 rows, and Tottenham alone has more player_stats rows than
   // that, which was silently truncating (and undercounting) these aggregates.
@@ -103,9 +101,8 @@ async function fetchPlayersForTeamFromDB(teamId: string): Promise<TeamPlayers> {
     console.error('Error fetching player stats for team:', statsError);
   }
 
-  // Aggregate stats by player
-  const statsByPlayer = new Map<string, { appearances: number; goals: number; assists: number; yellow_cards: number; red_cards: number }>();
-  
+  const statsByPlayer = new Map<string, PlayerStatsAggregate>();
+
   playerStats.forEach((stat) => {
     const playerId = stat.player_id;
     if (!statsByPlayer.has(playerId)) {
@@ -122,6 +119,26 @@ async function fetchPlayersForTeamFromDB(teamId: string): Promise<TeamPlayers> {
     stats.yellow_cards += stat.yellow_cards || 0;
     stats.red_cards += stat.red_cards || 0;
   });
+
+  return statsByPlayer;
+}
+
+async function fetchPlayersForTeamFromDB(teamId: string): Promise<TeamPlayers> {
+  // Fetch player_history records for this team
+  const { data: playerHistory, error: historyError } = await supabase
+    .from('player_history')
+    .select(`
+      *,
+      player:players(*)
+    `)
+    .eq('team_id', teamId);
+
+  if (historyError) {
+    console.error('Error fetching player history for team:', historyError);
+    return { current: [], former: [] };
+  }
+
+  const statsByPlayer = await fetchPlayerStatsAggregateForTeam(teamId);
 
   // Group history records by player first, rather than bucketing each record
   // independently - a player who left and later re-signed (e.g. a squad-number

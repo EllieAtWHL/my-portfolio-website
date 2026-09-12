@@ -1,9 +1,9 @@
 import { supabase } from '@/utils/supabase';
 import { createCachedFunction, CACHE_TAGS } from './cache-utils';
 import { Match } from './matches';
-import { getPlayersForTeam, type PlayerWithStats as TeamPlayerWithStats } from './teams';
+import { fetchPlayerStatsAggregateForTeam, type PlayerWithStats as TeamPlayerWithStats } from './teams';
 
-// Tottenham Women's team_id (team_id 1, per getSquadNumberFromHistory above)
+// Tottenham Women's team_id (team_id 1, per getSquadNumberFromHistory below)
 const TOTTENHAM_TEAM_ID = '1';
 
 export interface PlayerHistoryEntry {
@@ -404,19 +404,40 @@ export const getPlayerMatchHistory = createCachedFunction(
   }
 );
 
-// Reuses getPlayersForTeam rather than re-querying, since Tottenham's current
-// squad (with career stats already aggregated) is exactly what an "all active
-// players" index needs - no separate DB round-trip or stats-aggregation logic
-// to maintain in parallel.
-async function fetchActivePlayersFromDB(): Promise<TeamPlayerWithStats[]> {
-  const { current } = await getPlayersForTeam(TOTTENHAM_TEAM_ID);
-  return current;
+// Every player in the players table, not just those with Tottenham history -
+// this is a general squad/roster reference, so a player added without ever
+// being linked to Tottenham (e.g. in error, or ahead of their history being
+// entered) should still show up rather than silently vanish from the index.
+// squad_number only resolves for a player currently on the books (reusing
+// getSquadNumberFromHistory - a former player shows a dash, not their old
+// number, since it may since have been reassigned); career stats come back
+// zero for anyone without a Tottenham stint; current_club still resolves via
+// their history with any team, reusing the same helper fetchPlayerByIdFromDB uses.
+async function fetchAllPlayersFromDB(): Promise<TeamPlayerWithStats[]> {
+  const { data, error } = await supabase
+    .from('players')
+    .select('*, player_history:player_history(*, team:teams(id, name))');
+
+  if (error) {
+    console.error('Error fetching all players:', error);
+    return [];
+  }
+
+  const statsByPlayer = await fetchPlayerStatsAggregateForTeam(TOTTENHAM_TEAM_ID);
+  const noStats = { appearances: 0, goals: 0, assists: 0, yellow_cards: 0, red_cards: 0 };
+
+  return (data || []).map((player) => ({
+    ...player,
+    squad_number: getSquadNumberFromHistory(player),
+    current_club: getCurrentClubFromHistory(player),
+    ...(statsByPlayer.get(player.id) ?? noStats),
+  }));
 }
 
-export const getActivePlayers = createCachedFunction(
-  fetchActivePlayersFromDB,
+export const getAllPlayers = createCachedFunction(
+  fetchAllPlayersFromDB,
   {
-    keyParts: ['players', 'active'],
+    keyParts: ['players', 'all'],
     tags: [CACHE_TAGS.PLAYERS, CACHE_TAGS.TEAMS],
     ttl: 'PLAYER_DATA'
   }

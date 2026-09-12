@@ -517,21 +517,68 @@ describe('players data layer', () => {
     });
   });
 
-  describe('getActivePlayers', () => {
-    it("delegates to getPlayersForTeam with Tottenham's team_id and returns only the current squad", async () => {
+  describe('getAllPlayers', () => {
+    it('returns every player in the players table, including those with no Tottenham history, with squad number/current club/stats resolved per player', async () => {
       jest.resetModules();
-      const current = [{ id: 'player-1', last_name: 'England', squad_number: 9 }];
-      const getPlayersForTeam = jest.fn(async () => ({
-        current,
-        former: [{ id: 'player-2', last_name: 'Retired' }],
-      }));
-      jest.doMock('@/lib/data/teams', () => ({ getPlayersForTeam }));
+      const spursPlayer = makePlayer({
+        id: 'player-1',
+        last_name: 'England',
+        player_history: [
+          { team_id: 1, squad_number: 9, left_on: null, team: { id: 1, name: 'Tottenham Hotspur' } },
+        ],
+      });
+      const formerSpursPlayer = makePlayer({
+        id: 'player-2',
+        last_name: 'Retired',
+        player_history: [
+          { team_id: 1, squad_number: 21, joined_on: '2020-01-01', left_on: '2023-06-30', team: { id: 1, name: 'Tottenham Hotspur' } },
+        ],
+      });
+      const neverSpursPlayer = makePlayer({
+        id: 'player-3',
+        last_name: 'Someone',
+        player_history: [],
+      });
+      const mockFrom = mockSupabaseFrom({
+        players: { data: [spursPlayer, formerSpursPlayer, neverSpursPlayer], error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const fetchPlayerStatsAggregateForTeam = jest.fn(async (_teamId: string) => new Map([
+        ['player-1', { appearances: 10, goals: 2, assists: 1, yellow_cards: 0, red_cards: 0 }],
+      ]));
+      jest.doMock('@/lib/data/teams', () => ({ fetchPlayerStatsAggregateForTeam }));
 
-      const { getActivePlayers } = await import('@/lib/data/players');
-      const result = await getActivePlayers();
+      const { getAllPlayers } = await import('@/lib/data/players');
+      const result = await getAllPlayers();
 
-      expect(getPlayersForTeam).toHaveBeenCalledWith('1');
-      expect(result).toEqual(current);
+      expect(fetchPlayerStatsAggregateForTeam).toHaveBeenCalledWith('1');
+      expect(result).toHaveLength(3);
+      expect(result[0]).toMatchObject({
+        id: 'player-1',
+        squad_number: 9,
+        current_club: { id: 1, name: 'Tottenham Hotspur' },
+        appearances: 10,
+        goals: 2,
+      });
+      // A departed player shows a dash, not the number they last wore -
+      // squad numbers only show for players currently on the books, since a
+      // former player's old number may since have been reassigned.
+      expect(result[1]).toMatchObject({
+        id: 'player-2',
+        squad_number: null,
+        current_club: null,
+      });
+      // A player with no Tottenham history at all still appears, rather than
+      // being filtered out - just with null squad number/current club and
+      // zeroed stats instead of an error or an omitted row.
+      expect(result[2]).toMatchObject({
+        id: 'player-3',
+        squad_number: null,
+        current_club: null,
+        appearances: 0,
+        goals: 0,
+      });
     });
   });
 });
