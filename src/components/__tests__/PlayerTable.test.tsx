@@ -120,6 +120,22 @@ describe('PlayerTable', () => {
     expect(screen.getByRole('columnheader', { name: /Goals ↓/ })).toBeInTheDocument()
   })
 
+  it('sorts by legacy number, with unset numbers sorted last', () => {
+    const players = [
+      makePlayer({ id: '1', first_name: 'Has', last_name: 'Legacy', legacy_number: 7 }),
+      makePlayer({ id: '2', first_name: 'No', last_name: 'Legacy', legacy_number: null }),
+      makePlayer({ id: '3', first_name: 'Also', last_name: 'Has', legacy_number: 101 }),
+    ]
+    render(<PlayerTable players={players} />)
+
+    fireEvent.click(screen.getByRole('columnheader', { name: /^Legacy #/ }))
+
+    const links = screen.getAllByRole('link')
+    expect(links[0]).toHaveTextContent('Has Legacy')
+    expect(links[1]).toHaveTextContent('Also Has')
+    expect(links[2]).toHaveTextContent('No Legacy')
+  })
+
   it('switching to a new sort column resets direction to ascending', () => {
     const players = [
       makePlayer({ id: '1', first_name: 'A', last_name: 'Aaronson', squad_number: 2, goals: 9 }),

@@ -2,7 +2,7 @@ import { supabase } from '@/utils/supabase';
 import { createCachedFunction, CACHE_TAGS, CACHE_TTL } from './cache-utils';
 import { Match } from './matches';
 import { Team } from './stadiums';
-import { Player } from './players';
+import type { Player } from './players';
 import { fetchAllFromDB, fetchByIdFromDB, fetchWithMatchCountFromDB } from './generic-fetchers';
 
 export interface TeamWithMatchCount extends Team {

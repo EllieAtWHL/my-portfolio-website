@@ -7,7 +7,7 @@ interface PlayerTableProps {
   players: PlayerWithStats[];
 }
 
-type SortColumn = 'squad_number' | 'name' | 'nationality' | 'position' | 'appearances' | 'goals' | 'assists' | 'yellow_cards' | 'red_cards';
+type SortColumn = 'squad_number' | 'name' | 'nationality' | 'position' | 'appearances' | 'goals' | 'assists' | 'yellow_cards' | 'red_cards' | 'legacy_number';
 type SortDirection = 'asc' | 'desc';
 
 export default function PlayerTable({ players }: PlayerTableProps) {
@@ -65,6 +65,12 @@ export default function PlayerTable({ players }: PlayerTableProps) {
         case 'red_cards':
           aValue = a.red_cards;
           bValue = b.red_cards;
+          break;
+        case 'legacy_number':
+          // Sorts unset legacy numbers last regardless of direction, rather than
+          // treating a missing number as 0/lowest.
+          aValue = a.legacy_number ?? Number.MAX_SAFE_INTEGER;
+          bValue = b.legacy_number ?? Number.MAX_SAFE_INTEGER;
           break;
         default:
           return 0;
@@ -151,6 +157,12 @@ export default function PlayerTable({ players }: PlayerTableProps) {
             >
               Reds{getSortIndicator('red_cards')}
             </th>
+            <th
+              className="text-center py-3 px-4 spurs-text font-semibold cursor-pointer hover:opacity-80"
+              onClick={() => handleSort('legacy_number')}
+            >
+              Legacy #{getSortIndicator('legacy_number')}
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -193,6 +205,9 @@ export default function PlayerTable({ players }: PlayerTableProps) {
               </td>
               <td className="py-3 px-4 text-center spurs-text">
                 {player.red_cards}
+              </td>
+              <td className="py-3 px-4 text-center spurs-text">
+                {player.legacy_number ?? '-'}
               </td>
             </tr>
           ))}
