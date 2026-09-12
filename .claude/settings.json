@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.skill // empty' | { read -r skill; if [ \"$skill\" = \"code-review\" ]; then git rev-parse HEAD > .git/last-code-review-sha; fi; } 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.command // empty' | { read -r cmd; if echo \"$cmd\" | grep -Eq '(^|[;&|]) *(git push|gh pr create)'; then current=$(git rev-parse HEAD 2>/dev/null); marker=$(cat .git/last-code-review-sha 2>/dev/null); if [ \"$current\" != \"$marker\" ]; then jq -cn --arg sha \"$current\" '{hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"allow\",permissionDecisionReason:(\"Reminder: /code-review has not been run for the current commit (\" + $sha + \"). Run /code-review and address findings before this push/PR (CLAUDE.md workflow step 6).\")}}'; fi; fi; } 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
+}
