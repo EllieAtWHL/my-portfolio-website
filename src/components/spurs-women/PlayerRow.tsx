@@ -20,11 +20,21 @@ export default function PlayerRow({ player }: PlayerRowProps) {
     if (!stats) return '';
     const goals = stats.goals || 0;
     const assists = stats.assists || 0;
+    const yellowCards = stats.yellow_cards || 0;
+    const redCards = stats.red_cards || 0;
     const rating = stats.player_rating ? stats.player_rating.toFixed(1) : '';
-    
+
     const parts = [];
     if (goals > 0) parts.push(`${goals} ⚽️`);
     if (assists > 0) parts.push(`${assists} 👟`);
+    // yellow_cards and red_cards are independently entered, so a player can have both
+    // (a second yellow leading to a red, or an earlier caution plus an unrelated straight
+    // red) - show both rather than letting the red silently swallow the yellow.
+    if (redCards > 0) {
+      parts.push(yellowCards > 0 ? '🟨🟥' : '🟥');
+    } else if (yellowCards > 0) {
+      parts.push('🟨');
+    }
     if (rating) parts.push(rating);
     
     // Add substitution minutes if player was subbed on or off
