@@ -60,7 +60,7 @@ export function ColorPicker({ value, onChange, label }: ColorPickerProps) {
           value={value || ''}
           onChange={(e) => onChange(e.target.value || null)}
           placeholder="e.g., blue-500"
-          className="flex-1 p-2 bg-gray-700 border border-gray-600 rounded text-white text-sm"
+          className="flex-1 p-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)] text-sm"
         />
       </div>
 

@@ -170,4 +170,12 @@
   --spurs-input-text: var(--color-white);
   --spurs-input-placeholder: var(--color-gray-400);
   --spurs-input-focus-ring: var(--color-blue-500);
+
+  /* Admin form fields (FormField.tsx's TextInput/NumberInput/SelectInput/
+     TextArea) use a shade lighter background than the search/select inputs
+     above - gray-700, not gray-800. Kept as its own variable rather than
+     reusing --spurs-input-hover-bg for a resting (non-hover) state, and
+     rather than consolidating into --spurs-input-bg, since either would
+     change these fields' actual rendered color - not intended here. */
+  --spurs-field-bg: var(--color-gray-700);
 }

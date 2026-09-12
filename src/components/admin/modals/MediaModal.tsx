@@ -25,7 +25,7 @@ export function MediaModal({ editingMediaId, form, onChange, onCancel, onDelete,
           id="media-type"
           value={form.type}
           onChange={(e) => onChange({ ...form, type: e.target.value as Media['type'] })}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+          className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
         >
           <option value="photo">Photo</option>
           <option value="photo album">Photo Album</option>
@@ -41,7 +41,7 @@ export function MediaModal({ editingMediaId, form, onChange, onCancel, onDelete,
           type="text"
           value={form.title || ''}
           onChange={(e) => onChange({ ...form, title: e.target.value })}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+          className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
         />
       </div>
       <div>
@@ -51,7 +51,7 @@ export function MediaModal({ editingMediaId, form, onChange, onCancel, onDelete,
           type="text"
           value={form.url || ''}
           onChange={(e) => onChange({ ...form, url: e.target.value })}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+          className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
         />
       </div>
       <div>
@@ -60,7 +60,7 @@ export function MediaModal({ editingMediaId, form, onChange, onCancel, onDelete,
           id="media-caption"
           value={form.caption || ''}
           onChange={(e) => onChange({ ...form, caption: e.target.value })}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+          className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
           rows={3}
         />
       </div>
@@ -71,7 +71,7 @@ export function MediaModal({ editingMediaId, form, onChange, onCancel, onDelete,
           type="number"
           value={form.sort_order}
           onChange={(e) => onChange({ ...form, sort_order: parseInt(e.target.value) || 0 })}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+          className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
         />
       </div>
     </FormModal>

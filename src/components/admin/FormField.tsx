@@ -54,7 +54,7 @@ export function TextInput({
       required={required}
       aria-required={required}
       placeholder={placeholder}
-      className={`w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text ${className}`}
+      className={`w-full p-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)] spurs-text ${className}`}
     />
   );
 }
@@ -90,7 +90,7 @@ export function NumberInput({
       step={step}
       value={value === null || value === undefined ? '' : value}
       onChange={(e) => onChange(e.target.value !== '' ? (step === 'any' ? parseFloat(e.target.value) : parseInt(e.target.value)) : null)}
-      className={`w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text ${className}`}
+      className={`w-full p-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)] spurs-text ${className}`}
     />
   );
 }
@@ -124,7 +124,7 @@ export function SelectInput({
       onChange={(e) => onChange(e.target.value)}
       required={required}
       aria-required={required}
-      className={`w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text ${className}`}
+      className={`w-full p-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)] spurs-text ${className}`}
     >
       <option value="">{placeholder}</option>
       {options.map((option) => (
@@ -222,7 +222,7 @@ export function TextArea({
       value={value || ''}
       onChange={(e) => onChange(e.target.value || null)}
       rows={rows}
-      className={`w-full p-2 bg-gray-700 border border-gray-600 rounded text-white spurs-text ${className}`}
+      className={`w-full p-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)] spurs-text ${className}`}
     />
   );
 }
