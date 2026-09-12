@@ -414,16 +414,20 @@ export const getPlayerMatchHistory = createCachedFunction(
 // zero for anyone without a Tottenham stint; current_club still resolves via
 // their history with any team, reusing the same helper fetchPlayerByIdFromDB uses.
 async function fetchAllPlayersFromDB(): Promise<TeamPlayerWithStats[]> {
-  const { data, error } = await supabase
-    .from('players')
-    .select('*, player_history:player_history(*, team:teams(id, name))');
+  // Independent reads (the players table and Tottenham's player_stats
+  // aggregate), so run them concurrently rather than one after the other.
+  const [{ data, error }, statsByPlayer] = await Promise.all([
+    supabase
+      .from('players')
+      .select('*, player_history:player_history(*, team:teams(id, name))'),
+    fetchPlayerStatsAggregateForTeam(TOTTENHAM_TEAM_ID),
+  ]);
 
   if (error) {
     console.error('Error fetching all players:', error);
     return [];
   }
 
-  const statsByPlayer = await fetchPlayerStatsAggregateForTeam(TOTTENHAM_TEAM_ID);
   const noStats = { appearances: 0, goals: 0, assists: 0, yellow_cards: 0, red_cards: 0 };
 
   return (data || []).map((player) => ({

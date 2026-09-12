@@ -42,8 +42,16 @@ export default function PlayerTable({ players, constrainHeight = true, showCurre
 
       switch (sortColumn) {
         case 'squad_number':
-          aValue = a.squad_number ?? 999;
-          bValue = b.squad_number ?? 999;
+          // Same "always last, in both directions" handling as legacy_number
+          // below - a placeholder value would flip which end unset numbers
+          // land on when direction reverses. Matters more now than when this
+          // table only ever showed a team's current squad (all numbered):
+          // the all-players index also lists players with no squad number.
+          if (a.squad_number == null && b.squad_number == null) return 0;
+          if (a.squad_number == null) return 1;
+          if (b.squad_number == null) return -1;
+          aValue = a.squad_number;
+          bValue = b.squad_number;
           break;
         case 'name':
           aValue = `${a.last_name}, ${a.first_name || ''}`.toLowerCase();

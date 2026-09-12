@@ -198,6 +198,30 @@ describe('PlayerTable', () => {
     expect(links[2]).toHaveTextContent('At Wolves')
   })
 
+  it('sorts by squad number, with unset numbers sorted last in both directions', () => {
+    const players = [
+      makePlayer({ id: '1', first_name: 'Has', last_name: 'Number', squad_number: 5 }),
+      makePlayer({ id: '2', first_name: 'No', last_name: 'Number', squad_number: null as unknown as number }),
+      makePlayer({ id: '3', first_name: 'Also', last_name: 'Has', squad_number: 10 }),
+    ]
+    render(<PlayerTable players={players} />)
+
+    const squadHeader = screen.getByRole('columnheader', { name: /^#/ })
+    fireEvent.click(squadHeader)
+
+    let links = screen.getAllByRole('link')
+    expect(links[0]).toHaveTextContent('Has Number')
+    expect(links[1]).toHaveTextContent('Also Has')
+    expect(links[2]).toHaveTextContent('No Number')
+
+    fireEvent.click(screen.getByRole('columnheader', { name: /# ↑/ }))
+
+    links = screen.getAllByRole('link')
+    expect(links[0]).toHaveTextContent('Also Has')
+    expect(links[1]).toHaveTextContent('Has Number')
+    expect(links[2]).toHaveTextContent('No Number')
+  })
+
   it('switching to a new sort column resets direction to ascending', () => {
     const players = [
       makePlayer({ id: '1', first_name: 'A', last_name: 'Aaronson', squad_number: 2, goals: 9 }),
