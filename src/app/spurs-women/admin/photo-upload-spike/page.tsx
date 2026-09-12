@@ -67,6 +67,17 @@ export default function PhotoUploadSpikePage() {
         method: 'POST',
         body: formData,
       });
+
+      // A non-JSON response means something failed before our route handler's
+      // own error handling ran (e.g. a platform-level crash page) - surface
+      // the raw status/text rather than an opaque JSON-parse error, so a
+      // failure like this is still diagnosable from the phone.
+      const contentType = response.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        const text = await response.text();
+        throw new Error(`Non-JSON response (${response.status}): ${text.slice(0, 300)}`);
+      }
+
       const body = await response.json();
 
       if (!response.ok) {
