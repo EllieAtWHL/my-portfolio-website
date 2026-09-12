@@ -319,6 +319,14 @@ export function useMatchesAdmin({ matches, setMatches, teams, stadiums, stadiumN
     setShowMediaModal(true);
   }, []);
 
+  const refreshRelatedMedia = useCallback(async () => {
+    const mediaRes = await callAdminApi('media', 'GET');
+    if (mediaRes.data) {
+      const allMedia = mediaRes.data as Media[];
+      setRelatedMedia(allMedia.filter(m => m.match_id === editingMatchId));
+    }
+  }, [editingMatchId]);
+
   const handleDeleteMedia = useCallback(async (mediaId: string) => {
     setLoading(true);
     try {
@@ -326,11 +334,7 @@ export function useMatchesAdmin({ matches, setMatches, teams, stadiums, stadiumN
       showMessage('Media deleted successfully', 'success');
 
       try {
-        const mediaResponse = await callAdminApi('media', 'GET');
-        if (mediaResponse.data) {
-          const allMedia = mediaResponse.data as Media[];
-          setRelatedMedia(allMedia.filter(m => m.match_id === editingMatchId));
-        }
+        await refreshRelatedMedia();
       } catch (error) {
         console.error('Error reloading media:', error);
       }
@@ -340,7 +344,7 @@ export function useMatchesAdmin({ matches, setMatches, teams, stadiums, stadiumN
     } finally {
       setLoading(false);
     }
-  }, [setLoading, showMessage, editingMatchId]);
+  }, [setLoading, showMessage, refreshRelatedMedia]);
 
   const handleMediaSubmit = useCallback(async () => {
     try {
@@ -353,11 +357,7 @@ export function useMatchesAdmin({ matches, setMatches, teams, stadiums, stadiumN
       } else {
         showMessage(editingMediaId ? 'Media updated successfully' : 'Media created successfully', 'success');
         closeMediaModal();
-        const mediaRes = await callAdminApi('media', 'GET');
-        if (mediaRes.data) {
-          const allMedia = mediaRes.data as Media[];
-          setRelatedMedia(allMedia.filter(m => m.match_id === editingMatchId));
-        }
+        await refreshRelatedMedia();
       }
     } catch (error) {
       showMessage(editingMediaId ? 'Error updating media' : 'Error creating media', 'error');
@@ -365,7 +365,7 @@ export function useMatchesAdmin({ matches, setMatches, teams, stadiums, stadiumN
     } finally {
       setLoading(false);
     }
-  }, [editingMediaId, newMediaForm, setLoading, showMessage, closeMediaModal, editingMatchId]);
+  }, [editingMediaId, newMediaForm, setLoading, showMessage, closeMediaModal, refreshRelatedMedia]);
 
   const resetTabState = useCallback(() => {
     setIsEditMode(false);
@@ -410,5 +410,6 @@ export function useMatchesAdmin({ matches, setMatches, teams, stadiums, stadiumN
     closeMediaModal,
     handleDeleteMedia,
     handleMediaSubmit,
+    refreshRelatedMedia,
   };
 }

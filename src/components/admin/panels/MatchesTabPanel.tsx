@@ -2,15 +2,18 @@
 
 import { MatchForm } from '@/components/admin/MatchForm';
 import { MediaModal } from '@/components/admin/modals/MediaModal';
+import { PhotoUploadModal } from '@/components/admin/modals/PhotoUploadModal';
 import { RelatedList } from '@/components/admin/RelatedList';
 import { TabNav } from '@/components/admin/TabNav';
 import { Pagination } from '@/components/admin/Pagination';
 import { MatchesTable } from '@/components/admin/tables/MatchesTable';
 import { useMatchesAdmin } from '@/hooks/admin/useMatchesAdmin';
+import { usePhotoUploadModal } from '@/hooks/admin/usePhotoUploadModal';
 import type { Competition, Media, Player, PlayerStats, Season, Stadium, Team } from '@/types/spurs-women-admin';
 
 interface MatchesTabPanelProps {
   matchesAdmin: ReturnType<typeof useMatchesAdmin>;
+  photoUpload: ReturnType<typeof usePhotoUploadModal>;
   seasons: Season[];
   competitions: Competition[];
   teams: Team[];
@@ -23,6 +26,7 @@ interface MatchesTabPanelProps {
 
 export function MatchesTabPanel({
   matchesAdmin,
+  photoUpload,
   seasons,
   competitions,
   teams,
@@ -116,7 +120,11 @@ export function MatchesTabPanel({
 
       {matchEditTab === 'related' && isEditMode && (
         <div id="match-related-panel" role="tabpanel" aria-labelledby="tab-related" className="space-y-4">
-          {/* Media related lists grouped by type */}
+          {/* Media related lists grouped by type. "Photo Album" routes to the
+              WEB-149 upload flow instead of the generic media form - there's
+              never a good reason to hand-type a gallery folder key, and at
+              most one photo-album row exists per match, so both "+ New" and
+              clicking the existing row open the same upload modal. */}
           {Object.entries(getMediaByType()).map(([mediaType, mediaRecords]) => (
             <RelatedList
               key={mediaType}
@@ -134,8 +142,8 @@ export function MatchesTabPanel({
                 }},
                 { key: 'sort_order', label: 'Sort Order' },
               ]}
-              onNew={() => openNewMedia(mediaType as Media['type'])}
-              onRecordClick={openEditMedia}
+              onNew={() => mediaType === 'photo album' ? photoUpload.openPhotoUploadModal() : openNewMedia(mediaType as Media['type'])}
+              onRecordClick={mediaType === 'photo album' ? () => photoUpload.openPhotoUploadModal() : openEditMedia}
               emptyMessage={`No ${mediaType} records found`}
             />
           ))}
@@ -207,6 +215,18 @@ export function MatchesTabPanel({
             }
           }}
           onSubmit={handleMediaSubmit}
+        />
+      )}
+
+      {photoUpload.showPhotoUploadModal && (
+        <PhotoUploadModal
+          photoQueue={photoUpload.photoQueue}
+          finalizeStatus={photoUpload.finalizeStatus}
+          finalizeError={photoUpload.finalizeError}
+          onFilesSelected={photoUpload.addFiles}
+          onRetry={photoUpload.retryItem}
+          onRetryFinalize={photoUpload.retryFinalize}
+          onClose={photoUpload.closePhotoUploadModal}
         />
       )}
     </>

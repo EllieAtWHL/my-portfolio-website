@@ -248,12 +248,63 @@ curl -H "Authorization: token $GITHUB_TOKEN" \
 curl -I "https://cdn.jsdelivr.net/gh/EllieAtWHL/spurs-women-photo-gallery@main/2025-26/folder/001.webp"
 ```
 
-## Mobile upload pipeline (in progress)
+## Adding photos from a phone (mobile upload)
 
-The core upload/resize/commit mechanism has been proven out for a future
-mobile upload feature (not yet built - see `MOBILE_UPLOAD_PIPELINE.md` in
-this folder for the technical write-up, or `MOBILE_UPLOAD_OVERVIEW.md` for
-a plain-English summary).
+From the admin panel, open the match, go to its **Related Records** tab, and
+use **Upload Photos** on the "Photo Album" row (this works whether or not an
+album already exists for that match - there's at most one photo-album row
+per match, so both "+ New" and clicking the existing row open the same
+upload flow). Pick one or more photos from the camera roll; each is
+uploaded, resized, and committed automatically:
+
+1. The browser compresses the photo client-side (capped at 2000px, JPEG)
+   before sending it, to keep the upload itself fast on a mobile connection.
+2. `POST /api/admin/photo-upload` (one request per photo - keeps each
+   request well clear of serverless duration limits and isolates a failure
+   to one photo) resizes/compresses it server-side with `sharp` (WebP, 82%
+   quality, ≤2000px - the same settings as the desktop ImageMagick step)
+   and creates a git **blob** for it via the GitHub Git Data API - this is
+   a pure data write, not a commit, so it doesn't touch `main` or trigger
+   anything yet.
+3. Once every picked photo has settled (uploaded or given up after a
+   retry), the browser sends the accumulated blobs to
+   `POST /api/admin/photo-upload/finalize` in a single request, which
+   builds one tree, one commit, and moves `spurs-women-photo-gallery`'s
+   `main` **once** - regardless of how many photos are in the album - then
+   creates/updates the match's `media` "photo album" row with the folder
+   key.
+4. The existing `update-manifest.yml` webhook fires off that one push
+   exactly as it does for desktop-published photos - no separate mobile
+   manifest step.
+
+**Why not commit each photo straight to `main`?** An earlier version of
+this feature did exactly that (one Contents API commit per photo), and a
+real ~14-photo test batch pushed 14 separate commits to the gallery repo's
+`main` - since `update-manifest.yml` fires on every push, that meant 14
+workflow runs each opening their own auto-merging PR against this repo,
+several of which piled up as near-duplicates and congested CI/Vercel badly
+enough to need manual cleanup. Splitting "process this photo" (blob-only,
+side-effect-free, safe to retry) from "publish the whole batch" (the one
+place that actually pushes) fixes this at the source rather than trying to
+throttle/serialize the webhook after the fact.
+
+**Retrying is safe at both levels.** A blob is content-addressed, so
+retrying a single photo's upload is a cheap no-op if it already succeeded.
+`finalize` is idempotent too: if the resulting tree wouldn't actually
+change (e.g. a retried finalize call for a batch that already published),
+it skips creating a commit rather than pushing an empty one and
+re-triggering the webhook for nothing.
+
+The folder-naming/competition-abbreviation logic
+(`src/lib/photo-gallery-folder.ts`) mirrors `scripts/publish-match-photos.js`
+below - both need the match's competition to be in their (separately
+maintained) abbreviation map, so add a new competition to both if one is
+ever missing. No new environment variables are needed beyond the ones this
+file already documents.
+
+Full background on why the upload is structured this way (per-photo
+requests, client-side pre-compression, the single-push batching, the
+`sharp`/Vercel config in `next.config.ts`): WEB-148 and WEB-149 on Jira.
 
 ## History
 
