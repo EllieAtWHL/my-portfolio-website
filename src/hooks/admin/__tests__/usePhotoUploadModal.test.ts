@@ -3,7 +3,7 @@ import { usePhotoUploadModal } from '../usePhotoUploadModal';
 import { compressImageForUpload } from '@/lib/image-compression';
 
 jest.mock('@/lib/image-compression', () => ({
-  compressImageForUpload: jest.fn(async (file: File) => file),
+  compressImageForUpload: jest.fn(async (file: File) => ({ file, compressed: true })),
 }));
 
 const mockCompress = compressImageForUpload as jest.Mock;
@@ -46,7 +46,7 @@ describe('usePhotoUploadModal', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockCompress.mockImplementation(async (file: File) => file);
+    mockCompress.mockImplementation(async (file: File) => ({ file, compressed: true }));
   });
 
   it('uploads a single photo, marks it done, and publishes it via finalize', async () => {
@@ -189,9 +189,34 @@ describe('usePhotoUploadModal', () => {
       expect(result.current.photoQueue[0].status).toBe('error');
     });
 
-    expect(result.current.photoQueue[0].error).toBe('boom again');
+    expect(result.current.photoQueue[0].error).toContain('boom again');
     // Nothing succeeded, so finalize should never have been called.
     expect(global.fetch).not.toHaveBeenCalledWith('/api/admin/photo-upload/finalize', expect.anything());
+  });
+
+  it('includes compression-fallback diagnostics in the error when a "Failed to fetch" never reaches the server', async () => {
+    // A "Failed to fetch" gives no server-side trace to diagnose from (see
+    // WEB-149 findings), so the error message itself needs to carry what
+    // was actually attempted - specifically, whether compression silently
+    // fell back to the uncompressed original.
+    mockCompress.mockImplementation(async (file: File) => ({ file, compressed: false, fallbackReason: 'decode failed' }));
+    global.fetch = jest.fn().mockRejectedValue(new TypeError('Failed to fetch'));
+
+    const { result } = renderHook(() =>
+      usePhotoUploadModal({ editingMatchId: 'match-1', refreshRelatedMedia, showMessage, autoRetryDelayMs: TEST_RETRY_DELAY_MS })
+    );
+
+    act(() => {
+      result.current.addFiles([makeFile('a.jpg')] as unknown as FileList);
+    });
+
+    await waitFor(() => {
+      expect(result.current.photoQueue[0].status).toBe('error');
+    });
+
+    expect(result.current.photoQueue[0].error).toContain('Failed to fetch');
+    expect(result.current.photoQueue[0].error).toContain('UNCOMPRESSED');
+    expect(result.current.photoQueue[0].error).toContain('decode failed');
   });
 
   it('lets a manual retry succeed after both automatic upload attempts failed', async () => {

@@ -25,8 +25,10 @@ describe('compressImageForUpload', () => {
     const file = makeFile('photo.jpg', 1024);
     const result = await compressImageForUpload(file);
 
-    expect(result.type).toBe('image/jpeg');
-    expect(result.name).toBe('photo.jpg');
+    expect(result.compressed).toBe(true);
+    expect(result.fallbackReason).toBeUndefined();
+    expect(result.file.type).toBe('image/jpeg');
+    expect(result.file.name).toBe('photo.jpg');
     expect(drawImage).toHaveBeenCalled();
     expect(close).toHaveBeenCalled();
   });
@@ -52,7 +54,9 @@ describe('compressImageForUpload', () => {
     const file = makeFile('photo.jpg', 1024);
     const result = await compressImageForUpload(file);
 
-    expect(result).toBe(file);
+    expect(result.file).toBe(file);
+    expect(result.compressed).toBe(false);
+    expect(result.fallbackReason).toBe('decode failed');
   });
 
   it('falls back to the original file if canvas 2d context is unavailable and the file is small enough', async () => {
@@ -62,7 +66,9 @@ describe('compressImageForUpload', () => {
     const file = makeFile('photo.jpg', 1024);
     const result = await compressImageForUpload(file);
 
-    expect(result).toBe(file);
+    expect(result.file).toBe(file);
+    expect(result.compressed).toBe(false);
+    expect(result.fallbackReason).toBe('2D canvas context unavailable');
   });
 
   it('throws ImageTooLargeError instead of falling back when compression fails and the original is too large to upload safely', async () => {

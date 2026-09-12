@@ -6,21 +6,15 @@
 // This is NOT just a speed optimisation: Vercel's Node.js serverless
 // functions hard-cap request bodies at ~4.5MB (a platform limit, not
 // something this app can raise), and real phone photos routinely exceed
-// that uncompressed - so unlike the original design, silently falling back
-// to the original file on failure is not safe here. A real-device WEB-149
-// test hit exactly this: after the first photo, every subsequent photo
-// failed instantly with a client-side "Failed to fetch" that never reached
-// the server at all (confirmed via Vercel's request logs - zero failed
-// invocations were logged for the route). The most likely cause: creating a
-// fresh <canvas> and decoding a full-resolution ImageBitmap per photo in a
-// tight loop exhausted some mobile-browser resource budget after the first
-// photo, silently falling back to the ~5-8MB original, which then got
-// rejected at Vercel's edge before the function ever ran.
+// that uncompressed - so unlike an earlier version of this function,
+// silently falling back to the original file on failure is not safe here.
 //
-// Fixed by reusing one canvas across calls instead of creating one per
-// photo, and by throwing a descriptive error (rather than silently
-// returning the original) whenever compression fails and the original is
-// too large to have any realistic chance of being accepted.
+// Whether compression actually ran (vs a fallback to the original file) is
+// returned to the caller rather than swallowed, specifically so a later
+// "Failed to fetch" (which never reaches the server, so nothing there can
+// explain it either) can be diagnosed from what was actually attempted:
+// e.g. a photo whose compression silently failed would otherwise look
+// identical to a normal successful case right up until the network error.
 const MAX_DIMENSION = 2000;
 const JPEG_QUALITY = 0.85;
 
@@ -29,6 +23,14 @@ const JPEG_QUALITY = 0.85;
 const MAX_SAFE_UPLOAD_BYTES = 4 * 1024 * 1024;
 
 export class ImageTooLargeError extends Error {}
+
+export interface CompressionResult {
+  file: File;
+  /** false if compression failed and `file` is the original, uncompressed input. */
+  compressed: boolean;
+  /** Present only when compressed is false - why the compression attempt failed. */
+  fallbackReason?: string;
+}
 
 let sharedCanvas: HTMLCanvasElement | null = null;
 
@@ -39,7 +41,7 @@ function getSharedCanvas(): HTMLCanvasElement {
   return sharedCanvas;
 }
 
-export async function compressImageForUpload(file: File): Promise<File> {
+export async function compressImageForUpload(file: File): Promise<CompressionResult> {
   let bitmap: ImageBitmap | null = null;
   try {
     bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
@@ -62,17 +64,18 @@ export async function compressImageForUpload(file: File): Promise<File> {
     if (!blob) {
       throw new Error('Canvas produced no image data');
     }
-    return new File([blob], file.name, { type: 'image/jpeg' });
+    return { file: new File([blob], file.name, { type: 'image/jpeg' }), compressed: true };
   } catch (error) {
+    const reason = (error as Error).message || 'unknown error';
     if (file.size > MAX_SAFE_UPLOAD_BYTES) {
       throw new ImageTooLargeError(
-        `Couldn't compress "${file.name}" (${(error as Error).message}), and its original size ` +
+        `Couldn't compress "${file.name}" (${reason}), and its original size ` +
         `(${Math.round(file.size / 1024)}KB) is too large to upload as-is.`
       );
     }
     // Small enough to upload uncompressed without hitting Vercel's body-size
     // limit - the server-side sharp resize is still the authoritative step.
-    return file;
+    return { file, compressed: false, fallbackReason: reason };
   } finally {
     bitmap?.close();
   }

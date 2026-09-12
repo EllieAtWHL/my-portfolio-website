@@ -15,6 +15,15 @@ export interface PhotoQueueItem {
   blobSha?: string;
   /** Set once this photo's blob has been included in a successful finalize call. */
   published?: boolean;
+  /**
+   * Diagnostics from the most recent upload attempt (kept even on failure -
+   * a "Failed to fetch" that never reaches the server gives no server-side
+   * trace to diagnose from, so what was actually attempted client-side is
+   * the only signal available).
+   */
+  lastAttemptCompressed?: boolean;
+  lastAttemptFallbackReason?: string;
+  lastAttemptSizeBytes?: number;
 }
 
 export type FinalizeStatus = 'idle' | 'publishing' | 'error';
@@ -127,9 +136,14 @@ export function usePhotoUploadModal({
     // falling back to a too-large original - a request over Vercel's
     // ~4.5MB body limit is rejected before this route ever runs, so
     // sending it anyway is not a safe fallback.
-    const compressed = await compressImageForUpload(item.file);
+    const { file: compressed, compressed: didCompress, fallbackReason } = await compressImageForUpload(item.file);
 
-    updateItem(item.id, { status: 'uploading' });
+    updateItem(item.id, {
+      status: 'uploading',
+      lastAttemptCompressed: didCompress,
+      lastAttemptFallbackReason: fallbackReason,
+      lastAttemptSizeBytes: compressed.size,
+    });
 
     const body = new FormData();
     body.append('photo', compressed, item.name);
@@ -157,7 +171,17 @@ export function usePhotoUploadModal({
       const { path, blobSha, optimisedSizeBytes } = await withOneAutoRetry(() => attemptUpload(item));
       updateItem(item.id, { status: 'done', path, blobSha, optimisedSizeBytes });
     } catch (error) {
-      updateItem(item.id, { status: 'error', error: (error as Error).message || 'Upload failed' });
+      // Append what was actually attempted client-side, since a "Failed to
+      // fetch" that never reaches the server (see WEB-149 findings) leaves
+      // no server-side trace to diagnose from otherwise.
+      const latest = queueRef.current.find((q) => q.id === item.id);
+      const diagnostics = latest
+        ? ` [sent ${latest.lastAttemptCompressed ? 'compressed' : 'UNCOMPRESSED'} ` +
+          `${Math.round((latest.lastAttemptSizeBytes ?? item.originalSizeBytes) / 1024)}KB` +
+          (latest.lastAttemptFallbackReason ? `, compression failed: ${latest.lastAttemptFallbackReason}` : '') +
+          `; browser online=${typeof navigator !== 'undefined' ? navigator.onLine : 'unknown'}]`
+        : '';
+      updateItem(item.id, { status: 'error', error: `${(error as Error).message || 'Upload failed'}${diagnostics}` });
     }
   }, [editingMatchId, updateItem, attemptUpload, withOneAutoRetry]);
 
