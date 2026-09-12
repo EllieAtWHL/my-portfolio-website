@@ -87,10 +87,17 @@ export function usePhotoUploadModal({ editingMatchId, refreshRelatedMedia, showM
     }
 
     updateItem(item.id, { status: 'compressing', error: undefined });
-    const compressed = await compressImageForUpload(item.file);
-
-    updateItem(item.id, { status: 'uploading' });
     try {
+      // Compression can throw (ImageTooLargeError) rather than silently
+      // falling back to a too-large original - a request over Vercel's
+      // ~4.5MB body limit is rejected before this route ever runs, so
+      // sending it anyway is not a safe fallback. Kept inside this same
+      // try/catch (not its own) so a failure here still lands as this
+      // item's error and doesn't stop the rest of the queue.
+      const compressed = await compressImageForUpload(item.file);
+
+      updateItem(item.id, { status: 'uploading' });
+
       const body = new FormData();
       body.append('photo', compressed, item.name);
       body.append('matchId', editingMatchId);
