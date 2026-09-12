@@ -248,12 +248,45 @@ curl -H "Authorization: token $GITHUB_TOKEN" \
 curl -I "https://cdn.jsdelivr.net/gh/EllieAtWHL/spurs-women-photo-gallery@main/2025-26/folder/001.webp"
 ```
 
-## Mobile upload pipeline (in progress)
+## Adding photos from a phone (mobile upload)
 
-The core upload/resize/commit mechanism has been proven out for a future
-mobile upload feature (not yet built - see `MOBILE_UPLOAD_PIPELINE.md` in
-this folder for the technical write-up, or `MOBILE_UPLOAD_OVERVIEW.md` for
-a plain-English summary).
+From the admin panel, open the match, go to its **Related Records** tab, and
+use **Upload Photos** on the "Photo Album" row (this works whether or not an
+album already exists for that match - there's at most one photo-album row
+per match, so both "+ New" and clicking the existing row open the same
+upload flow). Pick one or more photos from the camera roll; each is
+uploaded, resized, and committed automatically:
+
+1. The browser compresses the photo client-side (capped at 2000px, JPEG)
+   before sending it, to keep the upload itself fast on a mobile connection.
+2. `POST /api/admin/photo-upload` (one request per photo, not one batched
+   request per album) resizes/compresses it server-side with `sharp`
+   (WebP, 82% quality, ≤2000px - the same settings as the desktop
+   ImageMagick step) and commits it into `spurs-women-photo-gallery` via the
+   GitHub Contents API - there's no local git checkout on a serverless
+   route, unlike the desktop pipeline below.
+3. The match's `media` "photo album" row is created/updated with the
+   folder key automatically.
+4. The existing `update-manifest.yml` webhook picks up the push exactly as
+   it does for desktop-published photos - no separate mobile manifest step.
+
+**Retrying after a dropped connection is safe.** Each photo commits under a
+stable filename (its original name, in that match's folder); if a retry
+resends the same photo, the route finds it already committed and skips
+straight to the `media` row upsert instead of erroring or duplicating it -
+so re-uploading the whole album after a drop only actually re-sends the
+photos that didn't make it.
+
+The folder-naming/competition-abbreviation logic
+(`src/lib/photo-gallery-folder.ts`) mirrors `scripts/publish-match-photos.js`
+below - both need the match's competition to be in their (separately
+maintained) abbreviation map, so add a new competition to both if one is
+ever missing. No new environment variables are needed beyond the ones this
+file already documents.
+
+Full background on why the upload is structured this way (per-photo
+requests, client-side pre-compression, the `sharp`/Vercel config in
+`next.config.ts`): WEB-148 and WEB-149 on Jira.
 
 ## History
 
