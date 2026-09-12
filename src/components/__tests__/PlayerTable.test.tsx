@@ -156,7 +156,7 @@ describe('PlayerTable', () => {
     expect(screen.getByRole('columnheader', { name: /Goals ↓/ })).toBeInTheDocument()
   })
 
-  it('sorts by legacy number, with unset numbers sorted last', () => {
+  it('sorts by legacy number, with unset numbers sorted last in both directions', () => {
     const players = [
       makePlayer({ id: '1', first_name: 'Has', last_name: 'Legacy', legacy_number: 7 }),
       makePlayer({ id: '2', first_name: 'No', last_name: 'Legacy', legacy_number: null }),
@@ -164,11 +164,21 @@ describe('PlayerTable', () => {
     ]
     render(<PlayerTable players={players} />)
 
-    fireEvent.click(screen.getByRole('columnheader', { name: /^Legacy #/ }))
+    const legacyHeader = screen.getByRole('columnheader', { name: /^Legacy #/ })
+    fireEvent.click(legacyHeader)
 
-    const links = screen.getAllByRole('link')
+    let links = screen.getAllByRole('link')
     expect(links[0]).toHaveTextContent('Has Legacy')
     expect(links[1]).toHaveTextContent('Also Has')
+    expect(links[2]).toHaveTextContent('No Legacy')
+
+    // Reversing direction should flip the two set values, but the unset one
+    // should stay last rather than jumping to the front.
+    fireEvent.click(screen.getByRole('columnheader', { name: /Legacy #/ }))
+
+    links = screen.getAllByRole('link')
+    expect(links[0]).toHaveTextContent('Also Has')
+    expect(links[1]).toHaveTextContent('Has Legacy')
     expect(links[2]).toHaveTextContent('No Legacy')
   })
 

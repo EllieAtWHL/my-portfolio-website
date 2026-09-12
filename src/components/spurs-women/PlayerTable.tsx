@@ -82,10 +82,15 @@ export default function PlayerTable({ players, constrainHeight = true, showCurre
           bValue = b.red_cards;
           break;
         case 'legacy_number':
-          // Sorts unset legacy numbers last regardless of direction, rather than
-          // treating a missing number as 0/lowest.
-          aValue = a.legacy_number ?? Number.MAX_SAFE_INTEGER;
-          bValue = b.legacy_number ?? Number.MAX_SAFE_INTEGER;
+          // Keeps unset legacy numbers last regardless of sort direction - a
+          // placeholder value (e.g. Number.MAX_SAFE_INTEGER) would flip which
+          // end they land on when direction reverses, since it's still just
+          // an ordinary value to the asc/desc comparison below.
+          if (a.legacy_number == null && b.legacy_number == null) return 0;
+          if (a.legacy_number == null) return 1;
+          if (b.legacy_number == null) return -1;
+          aValue = a.legacy_number;
+          bValue = b.legacy_number;
           break;
         default:
           return 0;
