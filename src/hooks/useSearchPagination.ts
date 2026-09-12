@@ -4,10 +4,14 @@ import { useMemo, useState } from 'react';
  * Shared search + pagination behaviour, originally for the admin entity
  * lists (matches, teams, players, stadiums) but generic enough for any
  * client-rendered list - a public page that wants search without pagination
- * can pass `Infinity` for `perPage` (see the players index page). `filterFn`
- * is only invoked when `search` is non-empty, so it's safe to skip a
- * case-insensitivity check on `search` itself as long as `filterFn`
- * lower-cases the fields it compares.
+ * can pass `Number.MAX_SAFE_INTEGER` for `perPage` (see the players index
+ * page) to make the pagination a no-op. Don't pass `Infinity` for this:
+ * the page-offset math below is `(currentPage - 1) * perPage`, and
+ * `0 * Infinity` is `NaN`, which - since `Array.prototype.slice` coerces a
+ * NaN index to 0 - collapses `paginatedItems` to an always-empty array
+ * regardless of how many items there are. `filterFn` is only invoked when
+ * `search` is non-empty, so it's safe to skip a case-insensitivity check on
+ * `search` itself as long as `filterFn` lower-cases the fields it compares.
  */
 export function useSearchPagination<T>(
   items: T[],
