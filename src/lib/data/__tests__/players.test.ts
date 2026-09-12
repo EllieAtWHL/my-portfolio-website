@@ -516,4 +516,22 @@ describe('players data layer', () => {
       expect(result).toEqual([]);
     });
   });
+
+  describe('getActivePlayers', () => {
+    it("delegates to getPlayersForTeam with Tottenham's team_id and returns only the current squad", async () => {
+      jest.resetModules();
+      const current = [{ id: 'player-1', last_name: 'England', squad_number: 9 }];
+      const getPlayersForTeam = jest.fn(async () => ({
+        current,
+        former: [{ id: 'player-2', last_name: 'Retired' }],
+      }));
+      jest.doMock('@/lib/data/teams', () => ({ getPlayersForTeam }));
+
+      const { getActivePlayers } = await import('@/lib/data/players');
+      const result = await getActivePlayers();
+
+      expect(getPlayersForTeam).toHaveBeenCalledWith('1');
+      expect(result).toEqual(current);
+    });
+  });
 });

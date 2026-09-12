@@ -1,6 +1,10 @@
 import { supabase } from '@/utils/supabase';
 import { createCachedFunction, CACHE_TAGS } from './cache-utils';
 import { Match } from './matches';
+import { getPlayersForTeam, type PlayerWithStats as TeamPlayerWithStats } from './teams';
+
+// Tottenham Women's team_id (team_id 1, per getSquadNumberFromHistory above)
+const TOTTENHAM_TEAM_ID = '1';
 
 export interface PlayerHistoryEntry {
   team: { id: number; name: string } | null;
@@ -397,5 +401,23 @@ export const getPlayerMatchHistory = createCachedFunction(
     keyParts: ['player-match-history'],
     tags: [CACHE_TAGS.MATCHES, CACHE_TAGS.PLAYERS],
     ttl: 'PLAYER_STATS'
+  }
+);
+
+// Reuses getPlayersForTeam rather than re-querying, since Tottenham's current
+// squad (with career stats already aggregated) is exactly what an "all active
+// players" index needs - no separate DB round-trip or stats-aggregation logic
+// to maintain in parallel.
+async function fetchActivePlayersFromDB(): Promise<TeamPlayerWithStats[]> {
+  const { current } = await getPlayersForTeam(TOTTENHAM_TEAM_ID);
+  return current;
+}
+
+export const getActivePlayers = createCachedFunction(
+  fetchActivePlayersFromDB,
+  {
+    keyParts: ['players', 'active'],
+    tags: [CACHE_TAGS.PLAYERS, CACHE_TAGS.TEAMS],
+    ttl: 'PLAYER_DATA'
   }
 );
