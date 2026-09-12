@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import sharp from 'sharp';
 import { handleApiError } from '@/lib/admin-api';
 
 // WEB-148 spike: proves a single photo can go phone -> sharp -> committed into
@@ -91,6 +90,14 @@ export async function POST(request: NextRequest) {
     }
 
     const originalBuffer = Buffer.from(await photo.arrayBuffer());
+
+    // Dynamic import (rather than a top-level `import sharp from 'sharp'`) so
+    // that if sharp's native binary fails to load on this runtime, the error
+    // lands inside this try/catch and comes back as a real JSON error message
+    // instead of crashing the route module and falling through to Next's
+    // generic HTML error page - which is what we saw during WEB-148 phone
+    // testing before this change.
+    const sharp = (await import('sharp')).default;
 
     const resizeStart = Date.now();
     const optimisedBuffer = await sharp(originalBuffer)
