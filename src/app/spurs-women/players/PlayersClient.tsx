@@ -8,14 +8,6 @@ import { useSearchPagination } from '@/hooks/useSearchPagination';
 import { getAllPlayers } from '@/lib/data/players';
 import type { PlayerWithStats } from '@/lib/data/teams';
 
-// No pagination wanted on this page (the whole point of removing PlayerTable's
-// constrainHeight here was to let the full list flow) - a large finite perPage
-// makes useSearchPagination's slice a no-op, giving search without paging.
-// (Infinity would be more obviously "no limit", but the hook's page-offset
-// math does `(currentPage - 1) * perPage`, and `0 * Infinity` is NaN, which
-// breaks slice() into always returning an empty array.)
-const NO_PAGINATION = Number.MAX_SAFE_INTEGER;
-
 export default function PlayersClient() {
   const { data: players, loading, hasError, retry } = useRetryableAsync<PlayerWithStats[]>(
     () => getAllPlayers(),
@@ -33,10 +25,11 @@ export default function PlayersClient() {
       player.nationality?.toLowerCase().includes(searchTerm)
     );
   }, []);
+  // No perPage: the whole point of PlayerTable's constrainHeight={false}
+  // below is to let the full list flow, so pagination isn't wanted here.
   const { search, setSearch, filteredCount, paginatedItems: filteredPlayers } = useSearchPagination(
     players,
-    playerFilterFn,
-    NO_PAGINATION
+    playerFilterFn
   );
 
   if (loading) {
