@@ -17,6 +17,8 @@ interface UsePhotoUploadModalArgs {
   editingMatchId: string | null;
   refreshRelatedMedia: () => Promise<void>;
   showMessage: (text: string, type: 'success' | 'error') => void;
+  /** Overridable for tests only - production always uses the 2s default. */
+  autoRetryDelayMs?: number;
 }
 
 /**
@@ -38,7 +40,12 @@ interface UsePhotoUploadModalArgs {
  * read - reading a stale snapshot can un-advance an item back to 'queued'
  * and spin the loop forever reprocessing it.
  */
-export function usePhotoUploadModal({ editingMatchId, refreshRelatedMedia, showMessage }: UsePhotoUploadModalArgs) {
+export function usePhotoUploadModal({
+  editingMatchId,
+  refreshRelatedMedia,
+  showMessage,
+  autoRetryDelayMs = 2000,
+}: UsePhotoUploadModalArgs) {
   const [showPhotoUploadModal, setShowPhotoUploadModal] = useState(false);
   const [photoQueue, setPhotoQueue] = useState<PhotoQueueItem[]>([]);
 
@@ -78,6 +85,51 @@ export function usePhotoUploadModal({ editingMatchId, refreshRelatedMedia, showM
     }
   }, []);
 
+  // A real-device WEB-149 test batch hit two distinct transient failures in
+  // one run: a single mid-batch 401 (Supabase's cookie-based session-refresh
+  // race under a long sequence of same-session requests - the very next
+  // request succeeded immediately with no user action) and a couple of
+  // requests that never reached the server at all (consistent with a
+  // momentary mobile-connection drop, not a code defect - client-side
+  // compression was working fine for every photo either side of them).
+  // Both classes tend to clear within a couple of seconds, so one automatic
+  // retry recovers most of them without the admin needing to notice and tap
+  // Retry themselves; a manual retry (via the queue item's own Retry
+  // button) remains the fallback if both attempts fail.
+
+  const attemptUpload = useCallback(async (item: PhotoQueueItem): Promise<number | undefined> => {
+    updateItem(item.id, { status: 'compressing', error: undefined });
+    // Compression can throw (ImageTooLargeError) rather than silently
+    // falling back to a too-large original - a request over Vercel's
+    // ~4.5MB body limit is rejected before this route ever runs, so
+    // sending it anyway is not a safe fallback.
+    const compressed = await compressImageForUpload(item.file);
+
+    updateItem(item.id, { status: 'uploading' });
+
+    const body = new FormData();
+    body.append('photo', compressed, item.name);
+    body.append('matchId', editingMatchId as string);
+
+    const response = await fetch('/api/admin/photo-upload', { method: 'POST', body });
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Upload failed');
+    }
+
+    return result.data?.optimisedSizeBytes as number | undefined;
+  }, [editingMatchId, updateItem]);
+
+  const handleUploadSuccess = useCallback(async (item: PhotoQueueItem, optimisedSizeBytes: number | undefined) => {
+    updateItem(item.id, { status: 'done', optimisedSizeBytes });
+
+    if (!hasSucceededOnceRef.current) {
+      hasSucceededOnceRef.current = true;
+      await refreshRelatedMedia();
+    }
+  }, [updateItem, refreshRelatedMedia]);
+
   const uploadOne = useCallback(async (item: PhotoQueueItem) => {
     if (!editingMatchId) {
       // No match is being edited - move the item to a terminal state so
@@ -86,39 +138,19 @@ export function usePhotoUploadModal({ editingMatchId, refreshRelatedMedia, showM
       return;
     }
 
-    updateItem(item.id, { status: 'compressing', error: undefined });
     try {
-      // Compression can throw (ImageTooLargeError) rather than silently
-      // falling back to a too-large original - a request over Vercel's
-      // ~4.5MB body limit is rejected before this route ever runs, so
-      // sending it anyway is not a safe fallback. Kept inside this same
-      // try/catch (not its own) so a failure here still lands as this
-      // item's error and doesn't stop the rest of the queue.
-      const compressed = await compressImageForUpload(item.file);
-
-      updateItem(item.id, { status: 'uploading' });
-
-      const body = new FormData();
-      body.append('photo', compressed, item.name);
-      body.append('matchId', editingMatchId);
-
-      const response = await fetch('/api/admin/photo-upload', { method: 'POST', body });
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Upload failed');
+      const optimisedSizeBytes = await attemptUpload(item);
+      await handleUploadSuccess(item, optimisedSizeBytes);
+    } catch {
+      await new Promise((resolve) => setTimeout(resolve, autoRetryDelayMs));
+      try {
+        const optimisedSizeBytes = await attemptUpload(item);
+        await handleUploadSuccess(item, optimisedSizeBytes);
+      } catch (error) {
+        updateItem(item.id, { status: 'error', error: (error as Error).message || 'Upload failed' });
       }
-
-      updateItem(item.id, { status: 'done', optimisedSizeBytes: result.data?.optimisedSizeBytes });
-
-      if (!hasSucceededOnceRef.current) {
-        hasSucceededOnceRef.current = true;
-        await refreshRelatedMedia();
-      }
-    } catch (error) {
-      updateItem(item.id, { status: 'error', error: (error as Error).message || 'Upload failed' });
     }
-  }, [editingMatchId, updateItem, refreshRelatedMedia]);
+  }, [editingMatchId, updateItem, attemptUpload, handleUploadSuccess, autoRetryDelayMs]);
 
   const processQueue = useCallback(async () => {
     if (processingRef.current) return;
