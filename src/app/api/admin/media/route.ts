@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin, handleApiError, handleApiSuccess } from '@/lib/admin-api';
+import { invalidateMediaCache } from '@/lib/data/cache-invalidation';
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,6 +12,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(handleApiError(error, 'Failed to create media'), { status: 400 });
     }
 
+    invalidateMediaCache();
     return NextResponse.json(handleApiSuccess(data, 'Media created successfully'));
   } catch (error) {
     return NextResponse.json(handleApiError(error, 'Internal server error'), { status: 500 });
@@ -53,6 +55,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json(handleApiError(error, 'Failed to update media'), { status: 400 });
     }
 
+    invalidateMediaCache();
     return NextResponse.json(handleApiSuccess(data, 'Media updated successfully'));
   } catch (error) {
     return NextResponse.json(handleApiError(error, 'Internal server error'), { status: 500 });
@@ -74,6 +77,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json(handleApiError(error, 'Failed to delete media'), { status: 400 });
     }
 
+    invalidateMediaCache();
     return NextResponse.json({ success: true, message: 'Media deleted successfully' });
   } catch (error) {
     return NextResponse.json(handleApiError(error, 'Internal server error'), { status: 500 });

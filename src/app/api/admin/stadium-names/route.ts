@@ -1,16 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin, handleApiError, handleApiSuccess } from '@/lib/admin-api';
+import { invalidateStadiumNamesCache } from '@/lib/data/cache-invalidation';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     const { data, error } = await supabaseAdmin.from('stadium_names').insert(body).select();
-    
+
     if (error) {
       return NextResponse.json(handleApiError(error, 'Failed to create stadium name'), { status: 400 });
     }
-    
+
+    invalidateStadiumNamesCache();
     return NextResponse.json(handleApiSuccess(data, 'Stadium name created successfully'));
   } catch (error) {
     return NextResponse.json(handleApiError(error, 'Internal server error'), { status: 500 });
@@ -49,6 +51,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json(handleApiError(error, 'Failed to delete stadium name'), { status: 400 });
     }
 
+    invalidateStadiumNamesCache();
     return NextResponse.json({ success: true, message: 'Stadium name deleted successfully' });
   } catch (error) {
     return NextResponse.json(handleApiError(error, 'Internal server error'), { status: 500 });
