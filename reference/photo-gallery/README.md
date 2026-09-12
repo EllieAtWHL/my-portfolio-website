@@ -248,6 +248,13 @@ curl -H "Authorization: token $GITHUB_TOKEN" \
 curl -I "https://cdn.jsdelivr.net/gh/EllieAtWHL/spurs-women-photo-gallery@main/2025-26/folder/001.webp"
 ```
 
+## Mobile upload pipeline (in progress)
+
+The core upload/resize/commit mechanism has been proven out for a future
+mobile upload feature (not yet built - see `MOBILE_UPLOAD_PIPELINE.md` in
+this folder for the technical write-up, or `MOBILE_UPLOAD_OVERVIEW.md` for
+a plain-English summary).
+
 ## History
 
 This system replaced an earlier Supabase Storage-based approach (hitting

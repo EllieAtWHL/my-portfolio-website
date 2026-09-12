@@ -20,6 +20,8 @@ AI agents working in this codebase.
 | [`COOKIE_CONSENT.md`](./COOKIE_CONSENT.md) | Cookie consent banner - what it gates (FullStory, Vercel Analytics/Speed Insights, reCAPTCHA), storage/versioning, per-section theming |
 | [`fullstory/README.md`](./fullstory/README.md) | FullStory analytics integration |
 | [`photo-gallery/README.md`](./photo-gallery/README.md) | GitHub-hosted photo gallery system |
+| [`photo-gallery/MOBILE_UPLOAD_PIPELINE.md`](./photo-gallery/MOBILE_UPLOAD_PIPELINE.md) | Technical findings from the WEB-148 mobile-upload spike: required `sharp`/Vercel config, constraints for WEB-149 |
+| [`photo-gallery/MOBILE_UPLOAD_OVERVIEW.md`](./photo-gallery/MOBILE_UPLOAD_OVERVIEW.md) | Plain-English summary of the above |
 | [`regicide/README.md`](./regicide/README.md) | Regicide card game: engine, component map, card face/toast systems, known gaps |
 
 ## Spurs Women Section

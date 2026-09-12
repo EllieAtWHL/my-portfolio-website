@@ -56,6 +56,25 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
+  // sharp (src/app/api/admin/photo-upload-spike/route.ts, WEB-148) ships a
+  // platform-specific native binary. Without this, Next's serverless bundler
+  // can mis-trace/exclude that binary for the Vercel Lambda's target platform,
+  // so the function crashes at import time before our route handler's own
+  // try/catch ever runs - which surfaced client-side as an HTML error page
+  // (Vercel's generic crash page) instead of a JSON error response.
+  serverExternalPackages: ["sharp"],
+  // serverExternalPackages alone wasn't enough on Vercel: confirmed via a real
+  // phone test that the deployed function could load the sharp addon itself
+  // but not its libvips-cpp.so.* shared library (ERR_DLOPEN_FAILED) - Next's
+  // automatic output-file tracing follows require()/import() calls, but
+  // libvips is loaded dynamically via dlopen() at the native (C++) level,
+  // which static tracing can't see. sharp's actual native binaries live under
+  // the separate @img/sharp-<platform>-<arch> and
+  // @img/sharp-libvips-<platform>-<arch> packages (not inside node_modules/sharp
+  // itself), so both need to be force-included.
+  outputFileTracingIncludes: {
+    "/api/**/*": ["./node_modules/sharp/**/*", "./node_modules/@img/**/*"],
+  },
   images: {
     // Player profile photos (profile_image_url, admin-entered free text - see
     // WEB-83) are always jsDelivr-served URLs from the spurs-women-photo-gallery
