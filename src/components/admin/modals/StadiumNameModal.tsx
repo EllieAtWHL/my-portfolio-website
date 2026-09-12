@@ -36,7 +36,7 @@ export function StadiumNameModal({
           type="text"
           value={form.name}
           onChange={(e) => onChange({ ...form, name: e.target.value })}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+          className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
         />
       </div>
       <div>
@@ -46,7 +46,7 @@ export function StadiumNameModal({
           type="date"
           value={form.valid_from || ''}
           onChange={(e) => onChange({ ...form, valid_from: e.target.value })}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+          className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
           required
         />
       </div>
@@ -57,7 +57,7 @@ export function StadiumNameModal({
           type="date"
           value={form.valid_to || ''}
           onChange={(e) => onChange({ ...form, valid_to: e.target.value || null })}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+          className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
         />
       </div>
     </FormModal>

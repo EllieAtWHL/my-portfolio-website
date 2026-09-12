@@ -37,7 +37,7 @@ export function PlayerHistoryModal({
           id="player-history-team"
           value={form.team_id}
           onChange={(e) => onChange({ ...form, team_id: parseInt(e.target.value) })}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+          className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
         >
           <option value="">Select a team</option>
           {teams.map((team) => (
@@ -54,7 +54,7 @@ export function PlayerHistoryModal({
           type="date"
           value={form.joined_on || ''}
           onChange={(e) => onChange({ ...form, joined_on: e.target.value })}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+          className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
           required
         />
       </div>
@@ -65,7 +65,7 @@ export function PlayerHistoryModal({
           type="date"
           value={form.left_on || ''}
           onChange={(e) => onChange({ ...form, left_on: e.target.value })}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+          className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
         />
       </div>
       <div>
@@ -75,7 +75,7 @@ export function PlayerHistoryModal({
           type="number"
           value={form.squad_number || ''}
           onChange={(e) => onChange({ ...form, squad_number: e.target.value ? parseInt(e.target.value) : null })}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+          className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
         />
       </div>
     </FormModal>

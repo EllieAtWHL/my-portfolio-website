@@ -41,7 +41,7 @@ export function PlayerStatsModal({
           id="player-stats-player"
           value={form.player_id}
           onChange={(e) => onChange({ ...form, player_id: e.target.value })}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+          className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
         >
           <option value="">Select a player</option>
           {players.map((player) => (
@@ -57,7 +57,7 @@ export function PlayerStatsModal({
           id="player-stats-match"
           value={form.match_id}
           onChange={(e) => onChange({ ...form, match_id: e.target.value })}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+          className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
         >
           <option value="">Select a match</option>
           {matches.map((match) => {
@@ -78,7 +78,7 @@ export function PlayerStatsModal({
             id="player-stats-started"
             value={form.started ? 'true' : 'false'}
             onChange={(e) => onChange({ ...form, started: e.target.value === 'true' })}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+            className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
           >
             <option value="false">No</option>
             <option value="true">Yes</option>
@@ -90,7 +90,7 @@ export function PlayerStatsModal({
             id="player-stats-captain"
             value={form.captain ? 'true' : 'false'}
             onChange={(e) => onChange({ ...form, captain: e.target.value === 'true' })}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+            className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
           >
             <option value="false">No</option>
             <option value="true">Yes</option>
@@ -105,7 +105,7 @@ export function PlayerStatsModal({
             type="number"
             value={form.goals}
             onChange={(e) => onChange({ ...form, goals: parseInt(e.target.value) || 0 })}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+            className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
           />
         </div>
         <div>
@@ -115,7 +115,7 @@ export function PlayerStatsModal({
             type="number"
             value={form.assists}
             onChange={(e) => onChange({ ...form, assists: parseInt(e.target.value) || 0 })}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+            className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
           />
         </div>
       </div>
@@ -127,7 +127,7 @@ export function PlayerStatsModal({
             type="number"
             value={form.yellow_cards}
             onChange={(e) => onChange({ ...form, yellow_cards: parseInt(e.target.value) || 0 })}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+            className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
           />
         </div>
         <div>
@@ -137,7 +137,7 @@ export function PlayerStatsModal({
             type="number"
             value={form.red_cards}
             onChange={(e) => onChange({ ...form, red_cards: parseInt(e.target.value) || 0 })}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+            className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
           />
         </div>
       </div>
@@ -149,7 +149,7 @@ export function PlayerStatsModal({
             type="number"
             value={form.minute_on || ''}
             onChange={(e) => onChange({ ...form, minute_on: e.target.value ? parseInt(e.target.value) : null })}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+            className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
           />
         </div>
         <div>
@@ -159,7 +159,7 @@ export function PlayerStatsModal({
             type="number"
             value={form.minute_off || ''}
             onChange={(e) => onChange({ ...form, minute_off: e.target.value ? parseInt(e.target.value) : null })}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+            className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
           />
         </div>
       </div>
@@ -173,7 +173,7 @@ export function PlayerStatsModal({
           max="10"
           value={form.player_rating || ''}
           onChange={(e) => onChange({ ...form, player_rating: e.target.value ? parseFloat(e.target.value) : null })}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+          className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
         />
       </div>
     </FormModal>

@@ -69,7 +69,7 @@ export function CompetitionFilter({ matches, value, onChange }: CompetitionFilte
       <div className="relative">
         <div
           ref={triggerRef}
-          className="w-full px-2 py-1.5 text-sm bg-gray-800 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:bg-gray-700 transition-colors duration-200 cursor-pointer"
+          className="w-full px-2 py-1.5 text-sm bg-[var(--spurs-input-bg)] text-[var(--spurs-input-text)] border border-[var(--spurs-input-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--spurs-input-focus-ring)] focus:border-[var(--spurs-input-focus-ring)] hover:bg-[var(--spurs-input-hover-bg)] transition-colors duration-200 cursor-pointer"
           role="button"
           tabIndex={0}
           aria-haspopup="listbox"
@@ -106,7 +106,7 @@ export function CompetitionFilter({ matches, value, onChange }: CompetitionFilte
         </div>
         <div
           ref={dropdownRef}
-          className={`fixed bg-gray-800 border border-gray-600 rounded-md shadow-lg z-50 ${isDropdownOpen ? 'block' : 'hidden'}`}
+          className={`fixed bg-[var(--spurs-input-bg)] border border-[var(--spurs-input-border)] rounded-md shadow-lg z-50 ${isDropdownOpen ? 'block' : 'hidden'}`}
           style={{
             maxHeight: '200px',
             overflowY: 'auto',
@@ -124,7 +124,7 @@ export function CompetitionFilter({ matches, value, onChange }: CompetitionFilte
                     onChange([]);
                   }
                 }}
-                className="rounded text-blue-500 focus:ring-blue-500"
+                className="rounded text-[var(--spurs-input-focus-ring)] focus:ring-[var(--spurs-input-focus-ring)]"
               />
               <span className="text-sm text-white">All</span>
             </label>
@@ -142,7 +142,7 @@ export function CompetitionFilter({ matches, value, onChange }: CompetitionFilte
                       onChange(value.filter(c => c !== checkboxValue));
                     }
                   }}
-                  className="rounded text-blue-500 focus:ring-blue-500"
+                  className="rounded text-[var(--spurs-input-focus-ring)] focus:ring-[var(--spurs-input-focus-ring)]"
                 />
                 <span className="text-sm text-white">
                   {(competition && competition.length > 20) ? competition.substring(0, 17) + '...' : competition || 'Unknown'}

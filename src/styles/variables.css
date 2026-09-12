@@ -156,4 +156,26 @@
 
   /* Projects page dark mode */
   --dark-card-description: #a0d0a0;
+
+  /* Spurs Women form input colors (search boxes, selects, filter dropdowns).
+     Defined as direct references to Tailwind's own gray-800/gray-700/
+     gray-600/gray-400/blue-500/white theme variables, not hand-copied hex -
+     these inputs previously hardcoded those Tailwind utility classes
+     directly (bg-gray-800, border-gray-600, etc.), so referencing the same
+     underlying tokens guarantees this migration is an exact, zero-diff swap
+     rather than a redesign. See WEB-159. */
+  --spurs-input-bg: var(--color-gray-800);
+  --spurs-input-hover-bg: var(--color-gray-700);
+  --spurs-input-border: var(--color-gray-600);
+  --spurs-input-text: var(--color-white);
+  --spurs-input-placeholder: var(--color-gray-400);
+  --spurs-input-focus-ring: var(--color-blue-500);
+
+  /* Admin form fields (FormField.tsx's TextInput/NumberInput/SelectInput/
+     TextArea) use a shade lighter background than the search/select inputs
+     above - gray-700, not gray-800. Kept as its own variable rather than
+     reusing --spurs-input-hover-bg for a resting (non-hover) state, and
+     rather than consolidating into --spurs-input-bg, since either would
+     change these fields' actual rendered color - not intended here. */
+  --spurs-field-bg: var(--color-gray-700);
 }
