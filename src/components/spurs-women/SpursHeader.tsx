@@ -17,6 +17,7 @@ export default function Header() {
     { href: "/spurs-women/seasons", label: "Seasons" },
     { href: "/spurs-women/matches", label: "Matches" },
     { href: "/spurs-women/teams", label: "Teams" },
+    { href: "/spurs-women/players", label: "Players" },
     { href: "/spurs-women/stadiums", label: "Stadiums" }
   ];
 
@@ -28,12 +29,13 @@ export default function Header() {
     <header className="spurs navbar">
       <div className="brand-title">
         <Link href="/">
-          <Image 
-            src="/logo.png" 
-            alt={"EllieAtWHL"} 
+          <Image
+            src="/logo.png"
+            alt={"EllieAtWHL"}
             width={50}
             height={35}
             className="logo"
+            priority
           />
         </Link>
       </div>

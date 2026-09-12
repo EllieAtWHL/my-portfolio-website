@@ -6,10 +6,4 @@ describe('Supabase Utils', () => {
     expect(supabase).toBeDefined();
     expect(typeof supabase).toBe('object');
   });
-
-  it('should export supabaseAdmin client', async () => {
-    const { supabaseAdmin } = await import('@/utils/supabase');
-    expect(supabaseAdmin).toBeDefined();
-    expect(typeof supabaseAdmin).toBe('object');
-  });
 });

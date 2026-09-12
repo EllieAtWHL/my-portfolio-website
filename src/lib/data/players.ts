@@ -1,6 +1,13 @@
 import { supabase } from '@/utils/supabase';
 import { createCachedFunction, CACHE_TAGS } from './cache-utils';
 import { Match } from './matches';
+import { fetchPlayerStatsAggregateForTeam, type PlayerWithStats as TeamPlayerWithStats } from './teams';
+
+// Tottenham Women's team_id - the single source of truth for this fact in
+// this file (getSquadNumberFromHistory below compares against it directly;
+// call sites that need a string, e.g. fetchPlayerStatsAggregateForTeam's
+// teamId param, convert with String()).
+const TOTTENHAM_TEAM_ID = 1;
 
 export interface PlayerHistoryEntry {
   team: { id: number; name: string } | null;
@@ -76,14 +83,20 @@ export interface TeamLineup {
 // active at match time may since have changed or lapsed.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getSquadNumberFromHistory(player: any, referenceDate: Date = new Date()): number | null {
-  // Find the correct player_history record for this team (team_id = 1 for Tottenham)
+  // Find the correct player_history record for this team
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const relevantHistory = player?.player_history?.find((history: any) =>
-    history.team_id === 1 &&
+    history.team_id === TOTTENHAM_TEAM_ID &&
     (!history.joined_on || new Date(history.joined_on) <= referenceDate) &&
     (!history.left_on || new Date(history.left_on) > referenceDate)
   );
 
+  // `|| null` (rather than `??`) means a genuine squad_number of 0 would also
+  // resolve to null here, and PlayerTable's squad-number cell has the same
+  // `|| '-'` behaviour - known, deliberately left as-is: no Spurs Women
+  // player has ever worn 0, and fixing it touches this shared helper's other
+  // callers (match lineups, the single-player profile page) beyond what any
+  // current ticket covers.
   return relevantHistory?.squad_number || null;
 }
 
@@ -397,5 +410,53 @@ export const getPlayerMatchHistory = createCachedFunction(
     keyParts: ['player-match-history'],
     tags: [CACHE_TAGS.MATCHES, CACHE_TAGS.PLAYERS],
     ttl: 'PLAYER_STATS'
+  }
+);
+
+// Every player in the players table, not just those with Tottenham history -
+// this is a general squad/roster reference, so a player added without ever
+// being linked to Tottenham (e.g. in error, or ahead of their history being
+// entered) should still show up rather than silently vanish from the index.
+// squad_number only resolves for a player currently on the books (reusing
+// getSquadNumberFromHistory - a former player shows a dash, not their old
+// number, since it may since have been reassigned); career stats come back
+// zero for anyone without a Tottenham stint; current_club still resolves via
+// their history with any team, reusing the same helper fetchPlayerByIdFromDB uses.
+// Unlike the player_stats fetch below, this query has no pagination - fine
+// while the whole players table is well under PostgREST's 1000-row page cap
+// (192 at last count), but the same silent-truncation bug fetchPlayerStatsAggregateForTeam's
+// comment describes fixing could recur here if that ever changes.
+async function fetchAllPlayersFromDB(): Promise<TeamPlayerWithStats[]> {
+  // Independent reads (the players table and Tottenham's player_stats
+  // aggregate), so run them concurrently rather than one after the other.
+  const [{ data, error }, statsByPlayer] = await Promise.all([
+    supabase
+      .from('players')
+      .select('*, player_history:player_history(*, team:teams(id, name))'),
+    fetchPlayerStatsAggregateForTeam(String(TOTTENHAM_TEAM_ID)),
+  ]);
+
+  if (error) {
+    console.error('Error fetching all players:', error);
+    return [];
+  }
+
+  const noStats = { appearances: 0, goals: 0, assists: 0, yellow_cards: 0, red_cards: 0 };
+
+  return (data || []).map((player) => ({
+    ...player,
+    squad_number: getSquadNumberFromHistory(player),
+    current_club: getCurrentClubFromHistory(player),
+    history: getHistoryFromRecord(player),
+    ...(statsByPlayer.get(player.id) ?? noStats),
+  }));
+}
+
+export const getAllPlayers = createCachedFunction(
+  fetchAllPlayersFromDB,
+  {
+    keyParts: ['players', 'all'],
+    tags: [CACHE_TAGS.PLAYERS, CACHE_TAGS.TEAMS],
+    ttl: 'PLAYER_DATA'
   }
 );

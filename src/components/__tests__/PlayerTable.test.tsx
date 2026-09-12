@@ -14,6 +14,7 @@ const makePlayer = (overrides: Partial<PlayerWithStats>): PlayerWithStats => ({
   profile_image_url: null,
   squad_number: 10,
   legacy_number: null,
+  current_club: null,
   created_at: '2026-01-01T00:00:00Z',
   updated_at: '2026-01-01T00:00:00Z',
   appearances: 1,
@@ -48,6 +49,17 @@ describe('PlayerTable', () => {
     expect(row).toHaveTextContent('1')
   })
 
+  it('constrains the table to a fixed scrollable height by default, but not when constrainHeight is false', () => {
+    const players = [makePlayer({})]
+    const { container, rerender } = render(<PlayerTable players={players} />)
+
+    expect(container.querySelector('.max-h-96')).toBeInTheDocument()
+
+    rerender(<PlayerTable players={players} constrainHeight={false} />)
+
+    expect(container.querySelector('.max-h-96')).not.toBeInTheDocument()
+  })
+
   it('links each player to their profile page', () => {
     render(<PlayerTable players={[makePlayer({ id: 'p42', first_name: 'Ann', last_name: 'Onym' })]} />)
 
@@ -61,19 +73,43 @@ describe('PlayerTable', () => {
     const row = screen.getByRole('link', { name: /Last/ }).closest('tr')!
     const cells = row.querySelectorAll('td')
     expect(cells[0]).toHaveTextContent('-')
-    expect(cells[2]).toHaveTextContent('-')
     expect(cells[3]).toHaveTextContent('-')
+    expect(cells[4]).toHaveTextContent('-')
   })
 
-  it('shows a legacy number badge next to the name when set, and omits it when unset', () => {
+  it('omits the Current Club column unless showCurrentClub is set, since a team-scoped fetch never resolves it', () => {
+    const players = [makePlayer({ current_club: { id: 5, name: 'Chelsea' } })]
+    render(<PlayerTable players={players} />)
+
+    expect(screen.queryByRole('columnheader', { name: /Current Club/ })).not.toBeInTheDocument()
+    expect(screen.queryByText('Chelsea')).not.toBeInTheDocument()
+  })
+
+  it("shows a player's current club when showCurrentClub is set, e.g. where a former Spurs player has gone on to, and a dash when unknown", () => {
+    const players = [
+      makePlayer({ first_name: 'Left', last_name: 'Player', current_club: { id: 5, name: 'Chelsea' } }),
+      makePlayer({ id: '2', first_name: 'Unknown', last_name: 'Whereabouts', current_club: null }),
+    ]
+    render(<PlayerTable players={players} showCurrentClub />)
+
+    expect(screen.getByRole('link', { name: 'Left Player' }).closest('tr')).toHaveTextContent('Chelsea')
+    expect(screen.getByRole('link', { name: 'Unknown Whereabouts' }).closest('tr')).toHaveTextContent('-')
+  })
+
+  it('shows a legacy number badge in the Legacy # column (not next to the name), and a dash when unset', () => {
     const players = [
       makePlayer({ id: '1', first_name: 'Has', last_name: 'Legacy', legacy_number: 7 }),
       makePlayer({ id: '2', first_name: 'No', last_name: 'Legacy', legacy_number: null }),
     ]
     render(<PlayerTable players={players} />)
 
-    expect(screen.getByRole('img', { name: 'Legacy number 7' })).toBeInTheDocument()
-    expect(screen.queryByRole('img', { name: /Legacy number/ })).toHaveAccessibleName('Legacy number 7')
+    const badge = screen.getByRole('img', { name: 'Legacy number 7' })
+    expect(badge).toBeInTheDocument()
+    expect(badge.closest('tr')).toBe(screen.getByRole('link', { name: 'Has Legacy' }).closest('tr'))
+    expect(screen.getByRole('link', { name: 'Has Legacy' }).parentElement).not.toContainElement(badge)
+
+    const noLegacyRow = screen.getByRole('link', { name: 'No Legacy' }).closest('tr')!
+    expect(noLegacyRow.querySelectorAll('td')[1]).toHaveTextContent('-')
   })
 
   it('defaults to sorting by name ascending', () => {
@@ -118,6 +154,104 @@ describe('PlayerTable', () => {
     expect(links[0]).toHaveTextContent('High Scorer')
     expect(links[1]).toHaveTextContent('Low Scorer')
     expect(screen.getByRole('columnheader', { name: /Goals ↓/ })).toBeInTheDocument()
+  })
+
+  it('sorts by legacy number, with unset numbers sorted last in both directions', () => {
+    const players = [
+      makePlayer({ id: '1', first_name: 'Has', last_name: 'Legacy', legacy_number: 7 }),
+      makePlayer({ id: '2', first_name: 'No', last_name: 'Legacy', legacy_number: null }),
+      makePlayer({ id: '3', first_name: 'Also', last_name: 'Has', legacy_number: 101 }),
+    ]
+    render(<PlayerTable players={players} />)
+
+    const legacyHeader = screen.getByRole('columnheader', { name: /^Legacy #/ })
+    fireEvent.click(legacyHeader)
+
+    let links = screen.getAllByRole('link')
+    expect(links[0]).toHaveTextContent('Has Legacy')
+    expect(links[1]).toHaveTextContent('Also Has')
+    expect(links[2]).toHaveTextContent('No Legacy')
+
+    // Reversing direction should flip the two set values, but the unset one
+    // should stay last rather than jumping to the front.
+    fireEvent.click(screen.getByRole('columnheader', { name: /Legacy #/ }))
+
+    links = screen.getAllByRole('link')
+    expect(links[0]).toHaveTextContent('Also Has')
+    expect(links[1]).toHaveTextContent('Has Legacy')
+    expect(links[2]).toHaveTextContent('No Legacy')
+  })
+
+  it('sorts by current club alphabetically, with unset clubs sorted first', () => {
+    const players = [
+      makePlayer({ id: '1', first_name: 'At', last_name: 'Wolves', current_club: { id: 9, name: 'Wolves' } }),
+      makePlayer({ id: '2', first_name: 'No', last_name: 'Club', current_club: null }),
+      makePlayer({ id: '3', first_name: 'At', last_name: 'Chelsea', current_club: { id: 5, name: 'Chelsea' } }),
+    ]
+    render(<PlayerTable players={players} showCurrentClub />)
+
+    fireEvent.click(screen.getByRole('columnheader', { name: /^Current Club/ }))
+
+    const links = screen.getAllByRole('link')
+    expect(links[0]).toHaveTextContent('No Club')
+    expect(links[1]).toHaveTextContent('At Chelsea')
+    expect(links[2]).toHaveTextContent('At Wolves')
+  })
+
+  it('sorts by position in on-pitch order (GK, DEF, MID, FWD), not alphabetically, with unset/unrecognised sorted last in both directions', () => {
+    const players = [
+      makePlayer({ id: '1', first_name: 'Is', last_name: 'Forward', position: 'Forward' }),
+      makePlayer({ id: '2', first_name: 'Is', last_name: 'Goalkeeper', position: 'Goalkeeper' }),
+      makePlayer({ id: '3', first_name: 'No', last_name: 'Position', position: '' }),
+      makePlayer({ id: '4', first_name: 'Is', last_name: 'Defender', position: 'Defender' }),
+      makePlayer({ id: '5', first_name: 'Is', last_name: 'Midfielder', position: 'Midfielder' }),
+    ]
+    render(<PlayerTable players={players} />)
+
+    const positionHeader = screen.getByRole('columnheader', { name: /^Position/ })
+    fireEvent.click(positionHeader)
+
+    let links = screen.getAllByRole('link')
+    expect(links[0]).toHaveTextContent('Is Goalkeeper')
+    expect(links[1]).toHaveTextContent('Is Defender')
+    expect(links[2]).toHaveTextContent('Is Midfielder')
+    expect(links[3]).toHaveTextContent('Is Forward')
+    expect(links[4]).toHaveTextContent('No Position')
+
+    // Alphabetically, "Forward" would sort before "Goalkeeper" - confirms
+    // this isn't a plain string comparison.
+    fireEvent.click(screen.getByRole('columnheader', { name: /Position ↑/ }))
+
+    links = screen.getAllByRole('link')
+    expect(links[0]).toHaveTextContent('Is Forward')
+    expect(links[1]).toHaveTextContent('Is Midfielder')
+    expect(links[2]).toHaveTextContent('Is Defender')
+    expect(links[3]).toHaveTextContent('Is Goalkeeper')
+    expect(links[4]).toHaveTextContent('No Position')
+  })
+
+  it('sorts by squad number, with unset numbers sorted last in both directions', () => {
+    const players = [
+      makePlayer({ id: '1', first_name: 'Has', last_name: 'Number', squad_number: 5 }),
+      makePlayer({ id: '2', first_name: 'No', last_name: 'Number', squad_number: null as unknown as number }),
+      makePlayer({ id: '3', first_name: 'Also', last_name: 'Has', squad_number: 10 }),
+    ]
+    render(<PlayerTable players={players} />)
+
+    const squadHeader = screen.getByRole('columnheader', { name: /^#/ })
+    fireEvent.click(squadHeader)
+
+    let links = screen.getAllByRole('link')
+    expect(links[0]).toHaveTextContent('Has Number')
+    expect(links[1]).toHaveTextContent('Also Has')
+    expect(links[2]).toHaveTextContent('No Number')
+
+    fireEvent.click(screen.getByRole('columnheader', { name: /# ↑/ }))
+
+    links = screen.getAllByRole('link')
+    expect(links[0]).toHaveTextContent('Also Has')
+    expect(links[1]).toHaveTextContent('Has Number')
+    expect(links[2]).toHaveTextContent('No Number')
   })
 
   it('switching to a new sort column resets direction to ascending', () => {

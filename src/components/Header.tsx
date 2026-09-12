@@ -38,6 +38,7 @@ export default function Header() {
             width={50}
             height={35}
             className="logo"
+            priority
           />
         </Link>
       </div>

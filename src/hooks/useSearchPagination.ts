@@ -1,15 +1,20 @@
 import { useMemo, useState } from 'react';
 
 /**
- * Shared search + pagination behaviour for the admin entity lists (matches,
- * teams, players, stadiums). `filterFn` is only invoked when `search` is
- * non-empty, so it's safe to skip a case-insensitivity check on `search`
- * itself as long as `filterFn` lower-cases the fields it compares.
+ * Shared search + pagination behaviour, originally for the admin entity
+ * lists (matches, teams, players, stadiums) but generic enough for any
+ * client-rendered list. Omit `perPage` for search without pagination (see
+ * the players index page) - the pagination math is skipped entirely rather
+ * than run against a large sentinel value, so there's no page-offset
+ * arithmetic for a future edit to silently break.
+ * `filterFn` is only invoked when `search` is non-empty, so it's safe to
+ * skip a case-insensitivity check on `search` itself as long as `filterFn`
+ * lower-cases the fields it compares.
  */
 export function useSearchPagination<T>(
   items: T[],
   filterFn: (item: T, search: string) => unknown,
-  perPage: number
+  perPage?: number
 ) {
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -19,7 +24,7 @@ export function useSearchPagination<T>(
     [items, search, filterFn]
   );
 
-  const totalPages = Math.max(1, Math.ceil(filteredItems.length / perPage));
+  const totalPages = perPage ? Math.max(1, Math.ceil(filteredItems.length / perPage)) : 1;
   // Adjusting state during render, per
   // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
   if (currentPage > totalPages) {
@@ -28,6 +33,7 @@ export function useSearchPagination<T>(
   const safeCurrentPage = Math.min(currentPage, totalPages);
 
   const paginatedItems = useMemo(() => {
+    if (!perPage) return filteredItems;
     const start = (safeCurrentPage - 1) * perPage;
     return filteredItems.slice(start, start + perPage);
   }, [filteredItems, safeCurrentPage, perPage]);

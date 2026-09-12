@@ -76,4 +76,18 @@ describe('useSearchPagination', () => {
     expect(result.current.totalPages).toBe(1);
     expect(result.current.paginatedItems).toHaveLength(0);
   });
+
+  it('returns every filtered item with no pagination when perPage is omitted', () => {
+    const { result } = renderHook(() => useSearchPagination(items, filterByName));
+
+    expect(result.current.paginatedItems).toHaveLength(25);
+    expect(result.current.totalPages).toBe(1);
+
+    act(() => result.current.setSearch('Item 1'));
+
+    // Matches "Item 1", "Item 10".."Item 19" = 11 items, all returned at once
+    expect(result.current.paginatedItems).toHaveLength(11);
+    expect(result.current.filteredCount).toBe(11);
+    expect(result.current.totalPages).toBe(1);
+  });
 });
