@@ -22,10 +22,10 @@ export function DateRangeFilter({ fromValue, toValue, onFromChange, onToChange }
             type="date"
             value={fromValue}
             onChange={(e) => onFromChange(e.target.value)}
-            className="w-full px-2 py-1.5 text-sm bg-gray-800 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:bg-gray-700 transition-colors duration-200"
+            className="w-full px-2 py-1.5 text-sm bg-[var(--spurs-input-bg)] text-[var(--spurs-input-text)] border border-[var(--spurs-input-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--spurs-input-focus-ring)] focus:border-[var(--spurs-input-focus-ring)] hover:bg-[var(--spurs-input-hover-bg)] transition-colors duration-200"
             style={{
-              WebkitTextFillColor: 'white',
-              color: 'white'
+              WebkitTextFillColor: 'var(--spurs-input-text)',
+              color: 'var(--spurs-input-text)'
             }}
           />
         </div>
@@ -38,10 +38,10 @@ export function DateRangeFilter({ fromValue, toValue, onFromChange, onToChange }
             type="date"
             value={toValue}
             onChange={(e) => onToChange(e.target.value)}
-            className="w-full px-2 py-1.5 text-sm bg-gray-800 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:bg-gray-700 transition-colors duration-200"
+            className="w-full px-2 py-1.5 text-sm bg-[var(--spurs-input-bg)] text-[var(--spurs-input-text)] border border-[var(--spurs-input-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--spurs-input-focus-ring)] focus:border-[var(--spurs-input-focus-ring)] hover:bg-[var(--spurs-input-hover-bg)] transition-colors duration-200"
             style={{
-              WebkitTextFillColor: 'white',
-              color: 'white'
+              WebkitTextFillColor: 'var(--spurs-input-text)',
+              color: 'var(--spurs-input-text)'
             }}
           />
         </div>

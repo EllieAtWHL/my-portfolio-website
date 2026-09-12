@@ -63,7 +63,7 @@ export function TeamsTabPanel({ teamsAdmin, loading }: TeamsTabPanelProps) {
             placeholder="Search teams by name or short name..."
             value={teamSearch}
             onChange={(e) => setTeamSearch(e.target.value)}
-            className="w-full px-4 py-2 rounded border border-gray-600 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 rounded border border-[var(--spurs-input-border)] bg-[var(--spurs-input-bg)] text-[var(--spurs-input-text)] placeholder-[var(--spurs-input-placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--spurs-input-focus-ring)]"
           />
         </div>
         <TeamsTable teams={paginatedTeams} onSelect={handleEditTeam} />
