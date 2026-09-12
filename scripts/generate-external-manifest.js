@@ -38,9 +38,7 @@ const CONFIG = {
 // Top-level folders that hold images but aren't match-photo galleries, so
 // they must never end up as manifest entries - e.g. player-photos/ (WEB-29),
 // which is looked up by a direct CDN URL per player, not via this manifest.
-// _spike-test/ (WEB-148) holds throwaway commits from the photo-upload-spike
-// API route/test page and is excluded for the same reason.
-const NON_GALLERY_FOLDERS = new Set(['player-photos', '_spike-test']);
+const NON_GALLERY_FOLDERS = new Set(['player-photos']);
 
 /**
  * GitHub API client for fetching repository contents
