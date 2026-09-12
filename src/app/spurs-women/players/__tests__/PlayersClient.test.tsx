@@ -86,4 +86,39 @@ describe('PlayersClient', () => {
     });
     expect(mockGetAllPlayers).toHaveBeenCalledTimes(2);
   });
+
+  it('filters the table by name, position, or nationality as the user types, without paging results away', async () => {
+    mockGetAllPlayers.mockResolvedValue([
+      makePlayer({ id: '1', first_name: 'Bethany', last_name: 'England', position: 'Forward', nationality: 'England' }),
+      makePlayer({ id: '2', first_name: 'Lize', last_name: 'Kop', position: 'Goalkeeper', nationality: 'Netherlands' }),
+    ]);
+
+    render(<PlayersClient />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: 'Bethany England' })).toBeInTheDocument();
+    });
+    expect(screen.getByRole('link', { name: 'Lize Kop' })).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('Search players'), { target: { value: 'goalkeeper' } });
+
+    expect(screen.queryByRole('link', { name: 'Bethany England' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Lize Kop' })).toBeInTheDocument();
+    expect(screen.getByText('1 of 2 players')).toBeInTheDocument();
+  });
+
+  it('shows the empty state, not an error, when a search matches no one', async () => {
+    mockGetAllPlayers.mockResolvedValue([makePlayer()]);
+
+    render(<PlayersClient />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: 'Bethany England' })).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByLabelText('Search players'), { target: { value: 'nobody matches this' } });
+
+    expect(screen.getByText('No players to display')).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
 });

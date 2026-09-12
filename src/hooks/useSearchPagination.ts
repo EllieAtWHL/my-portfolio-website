@@ -1,10 +1,13 @@
 import { useMemo, useState } from 'react';
 
 /**
- * Shared search + pagination behaviour for the admin entity lists (matches,
- * teams, players, stadiums). `filterFn` is only invoked when `search` is
- * non-empty, so it's safe to skip a case-insensitivity check on `search`
- * itself as long as `filterFn` lower-cases the fields it compares.
+ * Shared search + pagination behaviour, originally for the admin entity
+ * lists (matches, teams, players, stadiums) but generic enough for any
+ * client-rendered list - a public page that wants search without pagination
+ * can pass `Infinity` for `perPage` (see the players index page). `filterFn`
+ * is only invoked when `search` is non-empty, so it's safe to skip a
+ * case-insensitivity check on `search` itself as long as `filterFn`
+ * lower-cases the fields it compares.
  */
 export function useSearchPagination<T>(
   items: T[],
