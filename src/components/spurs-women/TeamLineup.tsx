@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { TeamLineup } from '@/lib/data/players';
 import { getPositionSortOrder } from '@/lib/utils/player-position';
+import { compareNullableNumbers } from '@/lib/utils/sort';
 import PlayerRow from './PlayerRow';
 import SpursTabButton from './SpursTabButton';
 
@@ -12,18 +13,16 @@ interface TeamLineupProps {
 
 type LineupTab = 'starters' | 'substitutes' | 'unused';
 
-// Positions with no recognisable GK/DEF/MID/FWD keyword sort last.
-const UNKNOWN_POSITION_ORDER = 999;
-
 export default function TeamLineup({ lineup }: TeamLineupProps) {
   const [activeTab, setActiveTab] = useState<LineupTab>('starters');
 
+  // A position with no recognisable GK/DEF/MID/FWD keyword sorts last - same
+  // compareNullableNumbers PlayerTable uses for its own position sort, so
+  // both places share one "unknown sorts last" rule rather than two.
   const sortByPosition = (players: typeof lineup.players) => {
-    return players.sort((a, b) => {
-      const aOrder = getPositionSortOrder(a.position) ?? UNKNOWN_POSITION_ORDER;
-      const bOrder = getPositionSortOrder(b.position) ?? UNKNOWN_POSITION_ORDER;
-      return aOrder - bOrder;
-    });
+    return players.sort((a, b) =>
+      compareNullableNumbers(getPositionSortOrder(a.position), getPositionSortOrder(b.position))
+    );
   };
 
   const sortedStarters = sortByPosition(lineup.players.filter(p => p.player_stats?.started));

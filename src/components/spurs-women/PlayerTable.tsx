@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import LegacyNumberBadge from '@/components/spurs-women/LegacyNumberBadge';
 import { getPositionSortOrder } from '@/lib/utils/player-position';
+import { compareNullableNumbers } from '@/lib/utils/sort';
 import { PlayerWithStats } from '@/lib/data/teams';
 
 interface PlayerTableProps {
@@ -21,19 +22,6 @@ interface PlayerTableProps {
 
 type SortColumn = 'squad_number' | 'name' | 'nationality' | 'position' | 'current_club' | 'appearances' | 'goals' | 'assists' | 'yellow_cards' | 'red_cards' | 'legacy_number';
 type SortDirection = 'asc' | 'desc';
-
-// A definitive sort-compare result when either value is unset (so it always
-// sorts last, regardless of ascending/descending direction - a placeholder
-// value like Number.MAX_SAFE_INTEGER would instead flip which end it lands
-// on when direction reverses, since it's still just an ordinary value to an
-// asc/desc comparison), or null when both are present, meaning "fall through
-// to a normal value comparison".
-function compareNullableLast(a: number | null | undefined, b: number | null | undefined): number | null {
-  if (a == null && b == null) return 0;
-  if (a == null) return 1;
-  if (b == null) return -1;
-  return null;
-}
 
 export default function PlayerTable({ players, constrainHeight = true, showCurrentClub = false }: PlayerTableProps) {
   const [sortColumn, setSortColumn] = useState<SortColumn>('name');
@@ -55,16 +43,11 @@ export default function PlayerTable({ players, constrainHeight = true, showCurre
       let bValue: string | number;
 
       switch (sortColumn) {
-        case 'squad_number': {
-          // Matters more now than when this table only ever showed a team's
-          // current squad (all numbered): the all-players index also lists
-          // players with no squad number.
-          const nullResult = compareNullableLast(a.squad_number, b.squad_number);
-          if (nullResult !== null) return nullResult;
-          aValue = a.squad_number!;
-          bValue = b.squad_number!;
-          break;
-        }
+        // Matters more now than when this table only ever showed a team's
+        // current squad (all numbered): the all-players index also lists
+        // players with no squad number.
+        case 'squad_number':
+          return compareNullableNumbers(a.squad_number, b.squad_number, sortDirection);
         case 'name':
           aValue = `${a.last_name}, ${a.first_name || ''}`.toLowerCase();
           bValue = `${b.last_name}, ${b.first_name || ''}`.toLowerCase();
@@ -73,17 +56,10 @@ export default function PlayerTable({ players, constrainHeight = true, showCurre
           aValue = (a.nationality || '').toLowerCase();
           bValue = (b.nationality || '').toLowerCase();
           break;
-        case 'position': {
-          // On-pitch order (Goalkeeper, Defender, Midfielder, Forward),
-          // not alphabetical - see getPositionSortOrder.
-          const aOrder = getPositionSortOrder(a.position);
-          const bOrder = getPositionSortOrder(b.position);
-          const nullResult = compareNullableLast(aOrder, bOrder);
-          if (nullResult !== null) return nullResult;
-          aValue = aOrder!;
-          bValue = bOrder!;
-          break;
-        }
+        // On-pitch order (Goalkeeper, Defender, Midfielder, Forward), not
+        // alphabetical - see getPositionSortOrder.
+        case 'position':
+          return compareNullableNumbers(getPositionSortOrder(a.position), getPositionSortOrder(b.position), sortDirection);
         case 'current_club':
           aValue = (a.current_club?.name || '').toLowerCase();
           bValue = (b.current_club?.name || '').toLowerCase();
@@ -108,13 +84,8 @@ export default function PlayerTable({ players, constrainHeight = true, showCurre
           aValue = a.red_cards;
           bValue = b.red_cards;
           break;
-        case 'legacy_number': {
-          const nullResult = compareNullableLast(a.legacy_number, b.legacy_number);
-          if (nullResult !== null) return nullResult;
-          aValue = a.legacy_number!;
-          bValue = b.legacy_number!;
-          break;
-        }
+        case 'legacy_number':
+          return compareNullableNumbers(a.legacy_number, b.legacy_number, sortDirection);
         default:
           return 0;
       }
