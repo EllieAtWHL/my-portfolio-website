@@ -212,6 +212,8 @@ export default function PlayerTable({ players, constrainHeight = true, showCurre
           {sortedPlayers.map((player) => (
             <tr key={player.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-[var(--spurs-opacity-20)]">
               <td className="py-3 px-4 text-center spurs-text font-bold">
+                {/* `||` rather than `!= null`: a genuine squad_number of 0 would show '-' too -
+                    known limitation, see the matching note in getSquadNumberFromHistory */}
                 {player.squad_number || '-'}
               </td>
               <td className="py-3 px-4 text-center spurs-text">

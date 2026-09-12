@@ -91,6 +91,12 @@ function getSquadNumberFromHistory(player: any, referenceDate: Date = new Date()
     (!history.left_on || new Date(history.left_on) > referenceDate)
   );
 
+  // `|| null` (rather than `??`) means a genuine squad_number of 0 would also
+  // resolve to null here, and PlayerTable's squad-number cell has the same
+  // `|| '-'` behaviour - known, deliberately left as-is: no Spurs Women
+  // player has ever worn 0, and fixing it touches this shared helper's other
+  // callers (match lineups, the single-player profile page) beyond what any
+  // current ticket covers.
   return relevantHistory?.squad_number || null;
 }
 
