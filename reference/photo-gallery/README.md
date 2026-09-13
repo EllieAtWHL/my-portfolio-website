@@ -172,6 +172,12 @@ commits to a throwaway `auto/update-manifest-<sha>` branch, opens a PR via
 `gh pr create`, and enables auto-merge (`gh pr merge --auto --merge
 --delete-branch`, a regular merge commit matching this repo's convention) -
 the PR merges itself once all 7 required checks pass, no manual step needed.
+Since a manifest-only diff can't affect lint/typecheck/test/build/e2e
+outcomes, `ci.yml`/`playwright.yml`'s `changes` job treats a PR that only
+touches the manifest file the same as a doc-only PR (see "CI" above) - those
+`lint`/`typecheck`/`test`/`build`/`playwright (chromium/firefox/webkit)`
+checks report "skipped" rather than actually running, so the PR reaches
+green (and auto-merges) faster. Only `validate-manifest.yml` runs for real.
 `player-photos/` (WEB-29) is excluded from this pipeline at two independent
 layers, since those photos are referenced via a direct CDN URL pasted into a
 player's `profile_image_url`, not the manifest:

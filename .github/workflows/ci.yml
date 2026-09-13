@@ -39,7 +39,7 @@ jobs:
         echo "Changed files:"
         echo "$FILES"
 
-        if echo "$FILES" | grep -vE '\.md$|\.MD$|^reference/' | grep -q .; then
+        if echo "$FILES" | grep -vE '\.md$|\.MD$|^reference/|^public/spurs-women/photo-gallery\.manifest\.json$' | grep -q .; then
           echo "code=true" >> "$GITHUB_OUTPUT"
         else
           echo "code=false" >> "$GITHUB_OUTPUT"
