@@ -14,7 +14,7 @@ export interface PlayerHistoryEntry {
   joined_on: string | null;
   left_on: string | null;
   squad_number: number | null;
-  is_loan: boolean;
+  on_loan_from_team: { id: number; name: string } | null;
 }
 
 export interface Player {
@@ -29,7 +29,7 @@ export interface Player {
   profile_image_url: string | null;
   squad_number: number | null;
   legacy_number: number | null;
-  current_club?: { id: number; name: string } | null;
+  current_club?: { id: number; name: string; onLoanFrom: { id: number; name: string } | null } | null;
   history?: PlayerHistoryEntry[];
   created_at: string;
   updated_at: string;
@@ -100,15 +100,37 @@ function getSquadNumberFromHistory(player: any, referenceDate: Date = new Date()
   return relevantHistory?.squad_number || null;
 }
 
-// Helper function to find a player's current club (any team, not just Tottenham) from player_history
+// Helper function to find a player's current club (any team, not just Tottenham) from
+// player_history. A player can have two records open at once - e.g. an outbound loan
+// away from Tottenham while the Tottenham contract itself stays open with no left_on -
+// in which case the loan record wins (it's the club they're actually turning out for)
+// and its parent club is surfaced via onLoanFrom rather than the ambiguity being
+// resolved arbitrarily. Open records are sorted by joined_on (most recent first) before
+// picking, so the result stays deterministic even in the residual case of multiple open
+// non-loan records, which would be a data-integrity issue this function can't fix on its own.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getCurrentClubFromHistory(player: any): { id: number; name: string } | null {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const currentHistory = player?.player_history?.find((history: any) =>
-    !history.left_on || new Date(history.left_on) > new Date()
-  );
+function getCurrentClubFromHistory(player: any): { id: number; name: string; onLoanFrom: { id: number; name: string } | null } | null {
+  const openRecords = (player?.player_history ?? [])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .filter((history: any) => !history.left_on || new Date(history.left_on) > new Date())
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .sort((a: any, b: any) => (b.joined_on ?? '').localeCompare(a.joined_on ?? ''));
 
-  return currentHistory?.team ? { id: currentHistory.team.id, name: currentHistory.team.name } : null;
+  if (openRecords.length === 0) return null;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const loanRecord = openRecords.find((history: any) => history.on_loan_from_team);
+  const record = loanRecord ?? openRecords[0];
+
+  if (!record.team) return null;
+
+  return {
+    id: record.team.id,
+    name: record.team.name,
+    onLoanFrom: loanRecord?.on_loan_from_team
+      ? { id: loanRecord.on_loan_from_team.id, name: loanRecord.on_loan_from_team.name }
+      : null,
+  };
 }
 
 // Helper function to build a player's full club history (all teams, ongoing stint first,
@@ -124,7 +146,7 @@ function getHistoryFromRecord(player: any): PlayerHistoryEntry[] {
       joined_on: entry.joined_on ?? null,
       left_on: entry.left_on ?? null,
       squad_number: entry.squad_number ?? null,
-      is_loan: !!entry.is_loan,
+      on_loan_from_team: entry.on_loan_from_team ? { id: entry.on_loan_from_team.id, name: entry.on_loan_from_team.name } : null,
     }))
     .sort((a, b) => {
       const aOngoing = !a.left_on;
@@ -317,7 +339,7 @@ export const getTeamLineupsByMatch = createCachedFunction(
 async function fetchPlayerByIdFromDB(playerId: string): Promise<Player | null> {
   const { data, error } = await supabase
     .from('players')
-    .select('*, player_history:player_history(*, team:teams(id, name))')
+    .select('*, player_history:player_history(*, team:teams!player_history_team_id_fkey(id, name), on_loan_from_team:teams!player_history_on_loan_from_team_id_fkey(id, name))')
     .eq('id', playerId)
     .single();
 
@@ -432,7 +454,7 @@ async function fetchAllPlayersFromDB(): Promise<TeamPlayerWithStats[]> {
   const [{ data, error }, statsByPlayer] = await Promise.all([
     supabase
       .from('players')
-      .select('*, player_history:player_history(*, team:teams(id, name))'),
+      .select('*, player_history:player_history(*, team:teams!player_history_team_id_fkey(id, name), on_loan_from_team:teams!player_history_on_loan_from_team_id_fkey(id, name))'),
     fetchPlayerStatsAggregateForTeam(String(TOTTENHAM_TEAM_ID)),
   ]);
 

@@ -150,6 +150,16 @@ export function PlayersTabPanel({
               { key: 'joined_on', label: 'Joined On' },
               { key: 'left_on', label: 'Left On' },
               { key: 'squad_number', label: 'Squad Number' },
+              {
+                key: 'on_loan_from_team_id',
+                label: 'Loan From',
+                render: (value: unknown) => {
+                  const teamId = value as number | null;
+                  if (!teamId) return '-';
+                  const team = teams.find(t => t.id === teamId);
+                  return team ? team.name : teamId.toString();
+                }
+              },
             ]}
             onNew={openNewPlayerHistory}
             onRecordClick={openEditPlayerHistory}

@@ -23,6 +23,7 @@ const emptyPlayerHistoryForm: Partial<PlayerHistory> = {
   joined_on: null,
   left_on: null,
   squad_number: null,
+  on_loan_from_team_id: null,
 };
 
 interface UsePlayersAdminArgs {
@@ -198,11 +199,11 @@ export function usePlayersAdmin({ players, setPlayers, setLoading, showMessage }
     setShowPlayerHistoryModal(false);
     setEditingPlayerHistoryId(null);
     setPlayerHistoryFormError(null);
-    setPlayerHistoryForm({ player_id: '', team_id: 1, joined_on: '', left_on: '', squad_number: null });
+    setPlayerHistoryForm({ player_id: '', team_id: 1, joined_on: '', left_on: '', squad_number: null, on_loan_from_team_id: null });
   }, []);
 
   const openNewPlayerHistory = useCallback(() => {
-    setPlayerHistoryForm({ player_id: editingPlayerId!, team_id: 1, joined_on: '', left_on: '', squad_number: null });
+    setPlayerHistoryForm({ player_id: editingPlayerId!, team_id: 1, joined_on: '', left_on: '', squad_number: null, on_loan_from_team_id: null });
     setEditingPlayerHistoryId(null);
     setPlayerHistoryFormError(null);
     setShowPlayerHistoryModal(true);
@@ -216,6 +217,7 @@ export function usePlayersAdmin({ players, setPlayers, setLoading, showMessage }
       joined_on: history.joined_on,
       left_on: history.left_on,
       squad_number: history.squad_number,
+      on_loan_from_team_id: history.on_loan_from_team_id,
     });
     setPlayerHistoryFormError(null);
     setShowPlayerHistoryModal(true);
@@ -255,6 +257,7 @@ export function usePlayersAdmin({ players, setPlayers, setLoading, showMessage }
       const payload = {
         ...playerHistoryForm,
         left_on: playerHistoryForm.left_on || null,
+        on_loan_from_team_id: playerHistoryForm.on_loan_from_team_id || null,
       };
       const response = editingPlayerHistoryId
         ? await callAdminApi('player-history', 'PUT', { id: editingPlayerHistoryId, ...payload })

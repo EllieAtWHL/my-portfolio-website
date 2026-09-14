@@ -3,6 +3,7 @@ import { PlayerHistoryModal } from '../PlayerHistoryModal';
 import type { PlayerHistory, Team } from '@/types/spurs-women-admin';
 
 const spurs: Team = { id: 1, name: 'Tottenham Hotspur', short_name: 'Spurs', is_tottenham: true, primary_color: null, secondary_color: null };
+const reading: Team = { id: 20, name: 'Reading', short_name: 'Reading', is_tottenham: false, primary_color: null, secondary_color: null };
 
 const baseForm: Partial<PlayerHistory> = {
   player_id: 'player-1',
@@ -10,13 +11,14 @@ const baseForm: Partial<PlayerHistory> = {
   joined_on: '',
   left_on: '',
   squad_number: null,
+  on_loan_from_team_id: null,
 };
 
 const baseProps = {
   form: baseForm,
   onChange: () => {},
   error: null,
-  teams: [spurs],
+  teams: [spurs, reading],
   onCancel: () => {},
   onDelete: () => {},
   onSubmit: () => {},
@@ -52,6 +54,49 @@ describe('PlayerHistoryModal', () => {
     fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '9' } });
 
     expect(onChange).toHaveBeenCalledWith({ ...baseForm, squad_number: 9 });
+  });
+
+  it('defaults the Loan From select to "Not a loan"', () => {
+    render(<PlayerHistoryModal {...baseProps} editingPlayerHistoryId={null} />);
+
+    expect(screen.getByLabelText('Loan From')).toHaveValue('');
+  });
+
+  it('pre-selects the parent club when editing a loan record', () => {
+    render(
+      <PlayerHistoryModal
+        {...baseProps}
+        form={{ ...baseForm, on_loan_from_team_id: 20 }}
+        editingPlayerHistoryId="history-1"
+      />
+    );
+
+    expect(screen.getByLabelText('Loan From')).toHaveValue('20');
+  });
+
+  it('calls onChange with the selected team id when Loan From changes', () => {
+    const onChange = jest.fn();
+    render(<PlayerHistoryModal {...baseProps} editingPlayerHistoryId={null} onChange={onChange} />);
+
+    fireEvent.change(screen.getByLabelText('Loan From'), { target: { value: '20' } });
+
+    expect(onChange).toHaveBeenCalledWith({ ...baseForm, on_loan_from_team_id: 20 });
+  });
+
+  it('calls onChange with null when Loan From is reset to "Not a loan"', () => {
+    const onChange = jest.fn();
+    render(
+      <PlayerHistoryModal
+        {...baseProps}
+        form={{ ...baseForm, on_loan_from_team_id: 20 }}
+        editingPlayerHistoryId="history-1"
+        onChange={onChange}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText('Loan From'), { target: { value: '' } });
+
+    expect(onChange).toHaveBeenCalledWith({ ...baseForm, on_loan_from_team_id: null });
   });
 
   it('calls onSubmit, onCancel, and onDelete', () => {

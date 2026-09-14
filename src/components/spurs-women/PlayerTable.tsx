@@ -217,7 +217,11 @@ export default function PlayerTable({ players, constrainHeight = true, showCurre
               </td>
               {showCurrentClub && (
                 <td className="py-3 px-4 spurs-text opacity-75">
-                  {player.current_club?.name || '-'}
+                  {player.current_club
+                    ? player.current_club.onLoanFrom
+                      ? `${player.current_club.name} (on loan from ${player.current_club.onLoanFrom.name})`
+                      : player.current_club.name
+                    : '-'}
                 </td>
               )}
               <td className="py-3 px-4 text-center spurs-text">

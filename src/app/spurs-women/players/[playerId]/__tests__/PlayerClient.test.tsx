@@ -118,10 +118,25 @@ describe('PlayerClient', () => {
   });
 
   it('links Current Club to the team page when the player has a current club', () => {
-    render(<PlayerClient player={{ ...basePlayer, current_club: { id: 1, name: 'Tottenham Hotspur' } }} />);
+    render(<PlayerClient player={{ ...basePlayer, current_club: { id: 1, name: 'Tottenham Hotspur', onLoanFrom: null } }} />);
 
     const link = screen.getByRole('link', { name: 'Tottenham Hotspur' });
     expect(link).toHaveAttribute('href', '/spurs-women/teams/1');
+  });
+
+  it('shows the parent club when the current club is an active loan', () => {
+    render(
+      <PlayerClient
+        player={{
+          ...basePlayer,
+          current_club: { id: 20, name: 'Reading', onLoanFrom: { id: 1, name: 'Tottenham Hotspur' } },
+        }}
+      />
+    );
+
+    const link = screen.getByRole('link', { name: 'Reading' });
+    expect(link).toHaveAttribute('href', '/spurs-women/teams/20');
+    expect(screen.getByText('(on loan from Tottenham Hotspur)')).toBeInTheDocument();
   });
 
   it('shows "No club found" instead of a link when the player has no current club', () => {
@@ -148,7 +163,7 @@ describe('PlayerClient', () => {
               joined_on: '2020-07-01',
               left_on: '2023-01-04',
               squad_number: 10,
-              is_loan: true,
+              on_loan_from_team: { id: 1, name: 'Tottenham Hotspur' },
             },
           ],
         }}
@@ -159,7 +174,7 @@ describe('PlayerClient', () => {
     const link = screen.getByRole('link', { name: 'Chelsea' });
     expect(link).toHaveAttribute('href', '/spurs-women/teams/5');
     expect(screen.getByText('· #10')).toBeInTheDocument();
-    expect(screen.getByText('· Loan')).toBeInTheDocument();
+    expect(screen.getByText('· Loan from Tottenham Hotspur')).toBeInTheDocument();
     expect(screen.getByText('01/07/2020 – 04/01/2023')).toBeInTheDocument();
   });
 
@@ -169,7 +184,7 @@ describe('PlayerClient', () => {
         player={{
           ...basePlayer,
           history: [
-            { team: { id: 1, name: 'Tottenham Hotspur' }, joined_on: '2023-01-05', left_on: null, squad_number: 7, is_loan: false },
+            { team: { id: 1, name: 'Tottenham Hotspur' }, joined_on: '2023-01-05', left_on: null, squad_number: 7, on_loan_from_team: null },
           ],
         }}
       />

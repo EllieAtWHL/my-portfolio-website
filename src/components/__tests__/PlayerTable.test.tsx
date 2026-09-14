@@ -78,7 +78,7 @@ describe('PlayerTable', () => {
   })
 
   it('omits the Current Club column unless showCurrentClub is set, since a team-scoped fetch never resolves it', () => {
-    const players = [makePlayer({ current_club: { id: 5, name: 'Chelsea' } })]
+    const players = [makePlayer({ current_club: { id: 5, name: 'Chelsea', onLoanFrom: null } })]
     render(<PlayerTable players={players} />)
 
     expect(screen.queryByRole('columnheader', { name: /Current Club/ })).not.toBeInTheDocument()
@@ -87,13 +87,22 @@ describe('PlayerTable', () => {
 
   it("shows a player's current club when showCurrentClub is set, e.g. where a former Spurs player has gone on to, and a dash when unknown", () => {
     const players = [
-      makePlayer({ first_name: 'Left', last_name: 'Player', current_club: { id: 5, name: 'Chelsea' } }),
+      makePlayer({ first_name: 'Left', last_name: 'Player', current_club: { id: 5, name: 'Chelsea', onLoanFrom: null } }),
       makePlayer({ id: '2', first_name: 'Unknown', last_name: 'Whereabouts', current_club: null }),
     ]
     render(<PlayerTable players={players} showCurrentClub />)
 
     expect(screen.getByRole('link', { name: 'Left Player' }).closest('tr')).toHaveTextContent('Chelsea')
     expect(screen.getByRole('link', { name: 'Unknown Whereabouts' }).closest('tr')).toHaveTextContent('-')
+  })
+
+  it("shows the parent club when a player's current club is an active loan", () => {
+    const players = [
+      makePlayer({ first_name: 'On', last_name: 'Loan', current_club: { id: 20, name: 'Reading', onLoanFrom: { id: 1, name: 'Tottenham Hotspur' } } }),
+    ]
+    render(<PlayerTable players={players} showCurrentClub />)
+
+    expect(screen.getByRole('link', { name: 'On Loan' }).closest('tr')).toHaveTextContent('Reading (on loan from Tottenham Hotspur)')
   })
 
   it('shows a legacy number badge in the Legacy # column (not next to the name), and a dash when unset', () => {
@@ -184,9 +193,9 @@ describe('PlayerTable', () => {
 
   it('sorts by current club alphabetically, with unset clubs sorted first', () => {
     const players = [
-      makePlayer({ id: '1', first_name: 'At', last_name: 'Wolves', current_club: { id: 9, name: 'Wolves' } }),
+      makePlayer({ id: '1', first_name: 'At', last_name: 'Wolves', current_club: { id: 9, name: 'Wolves', onLoanFrom: null } }),
       makePlayer({ id: '2', first_name: 'No', last_name: 'Club', current_club: null }),
-      makePlayer({ id: '3', first_name: 'At', last_name: 'Chelsea', current_club: { id: 5, name: 'Chelsea' } }),
+      makePlayer({ id: '3', first_name: 'At', last_name: 'Chelsea', current_club: { id: 5, name: 'Chelsea', onLoanFrom: null } }),
     ]
     render(<PlayerTable players={players} showCurrentClub />)
 
