@@ -8,6 +8,12 @@ import { useSearchPagination } from '@/hooks/useSearchPagination';
 import { getAllPlayers } from '@/lib/data/players';
 import type { PlayerWithStats } from '@/lib/data/teams';
 
+// Single source of truth: shown both as AsyncPageShell's error-state heading
+// and, verbatim, as this page's own success-state <h1> below - keeping these
+// as one constant instead of two string literals prevents them silently
+// drifting apart if either is edited later.
+const HEADING = 'Tottenham Hotspur Women Players';
+
 export default function PlayersClient() {
   const { data: players, loading, hasError, retry } = useRetryableAsync<PlayerWithStats[]>(
     () => getAllPlayers(),
@@ -38,10 +44,10 @@ export default function PlayersClient() {
       hasError={hasError}
       onRetry={retry}
       loadingLabel="players"
-      heading="Tottenham Hotspur Women Players"
+      heading={HEADING}
       errorMessage="Couldn't load players. Please try again."
     >
-      <h1 className="spurs-text font-bold mb-8 text-center">Tottenham Hotspur Women Players</h1>
+      <h1 className="spurs-text font-bold mb-8 text-center">{HEADING}</h1>
       <div className="mb-4">
         <label htmlFor="players-search" className="block spurs-text text-xs font-medium mb-1">
           Search players
