@@ -10,7 +10,7 @@ The related lists feature displays child records (media and player_stats) associ
 
 The related lists are implemented in:
 - Component: `/src/components/admin/RelatedList.tsx`
-- Usage: `/src/app/spurs-women/admin/page.tsx` - there are 5 `<RelatedList>` instances: Media (grouped by `media_type`, shown under a match), Player Stats (shown under a match), Player Stats (shown under a player - this one has the extra Opponent column, see below), Player History (shown under a player), and Stadium Names (shown under a stadium). Line numbers shift as the file changes; search for `<RelatedList` to find current locations.
+- Usage: the per-entity tab panels under `/src/components/admin/panels/` (not `/src/app/spurs-women/admin/page.tsx` directly - that file no longer renders `<RelatedList>` itself, following the admin page's decomposition into tab panels) - there are 5 `<RelatedList>` instances: Media (grouped by `media_type`, shown under a match) and Player Stats (shown under a match) in `MatchesTabPanel.tsx`; Player Stats (shown under a player - this one has the extra Opponent column, see below) and Player History (shown under a player) in `PlayersTabPanel.tsx`; and Stadium Names (shown under a stadium) in `StadiumsTabPanel.tsx`. Line numbers shift as the files change; search for `<RelatedList` to find current locations.
 
 ## Configuring Media Related Lists
 
@@ -210,12 +210,12 @@ Custom render functions allow you to format data in specific ways:
 
 To add a new related list for a different entity type:
 
-1. Add state for the related records in the admin page:
+1. Add state for the related records in the relevant entity hook under `src/hooks/admin/` (e.g. `useMatchesAdmin.ts` for a match-scoped related list):
 ```typescript
 const [relatedNewEntity, setRelatedNewEntity] = useState<NewEntity[]>([]);
 ```
 
-2. Fetch the related records in `handleEditMatch`:
+2. Fetch the related records in that hook's `handleEditMatch` (or the equivalent edit handler for the entity the list is scoped to):
 ```typescript
 const newEntityRes = await callAdminApi('new-entity', 'GET');
 if (newEntityRes.data) {
@@ -224,7 +224,7 @@ if (newEntityRes.data) {
 }
 ```
 
-3. Add the RelatedList component in the related tab:
+3. Add the RelatedList component in the relevant tab panel under `src/components/admin/panels/`:
 ```typescript
 <RelatedList
   title="New Entity"

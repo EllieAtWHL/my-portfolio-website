@@ -57,23 +57,25 @@ require templating that file at build time or reading
 
 ### TypeScript types
 
+The actual declaration, in `src/lib/fullstory.ts` - narrower than the full
+`window.FS` API (no `identify`, since this site has no logins and never
+calls it; `_fs_host`/`_fs_script`/`_fs_org`/`_fs_namespace` aren't typed at
+all, since they're only ever set from the untyped `public/fullstory-init.js`):
+
 ```typescript
+interface FullStoryAPI {
+  event: (name: string, properties?: Record<string, unknown>) => void;
+  setUserVars: (vars: Record<string, unknown>) => void;
+  anonymize: () => void;
+  shutdown: () => void;
+  restart: () => void;
+  log: (level: string, message: string) => void;
+  consent: (granted: boolean) => void;
+}
+
 declare global {
   interface Window {
-    _fs_host?: string;
-    _fs_script?: string;
-    _fs_org?: string;
-    _fs_namespace?: string;
-    FS?: {
-      event: (name: string, properties?: Record<string, any>) => void;
-      identify: (uid: string, vars?: Record<string, any>) => void;
-      setUserVars: (vars: Record<string, any>) => void;
-      anonymize: () => void;
-      shutdown: () => void;
-      restart: () => void;
-      log: (level: string, message: string) => void;
-      consent: (granted: boolean) => void;
-    };
+    FS?: FullStoryAPI;
   }
 }
 ```
@@ -94,7 +96,7 @@ const isProduction = window.location.hostname !== 'localhost';
 - **Page views**: Home (`/`), Contact (`/contact-me`), Thank You (`/contact-me/thank-you`)
 - **Form interactions**: Contact form start → success → thank-you page visit
 - **Button clicks**: Contact Me button on the home page hero
-- **Errors**: `trackError()` is called from `src/app/spurs-women/error.tsx`'s error boundary (WEB-97). This is the only error-tracking call site - `trackError()` (like the rest of this file) only works from client-rendered code (`window.FS`), so it's not called from API route handlers or `src/lib/data/cache-utils.ts`'s `CacheError` path, both of which run server-side and would make it a silent no-op. Server-side errors remain `console.error`-only; a real server-side error-tracking integration is separate, larger scope than this helper.
+- **Errors**: `trackError()` is called from every client-rendered error boundary in the app - originally just `src/app/spurs-women/error.tsx` (WEB-97), and since WEB-125 also `src/app/error.tsx`, `src/app/global-error.tsx`, `src/app/spurs-women/admin/error.tsx`, and the reusable `src/components/ErrorBoundary.tsx`. `trackError()` (like the rest of this file) only works from client-rendered code (`window.FS`), so it's not called from API route handlers or `src/lib/data/cache-utils.ts`'s `CacheError` path, both of which run server-side and would make it a silent no-op. Server-side errors remain `console.error`-only; a real server-side error-tracking integration is separate, larger scope than this helper.
 - **Session-level data**: No user identification (appropriate for a portfolio site where users don't log in)
 
 ### Usage examples
@@ -144,9 +146,10 @@ FS.restart();
 ```
 
 - Never expose sensitive personal data in recordings; regularly audit recorded data and limit FullStory dashboard access to authorized people.
-- If using a CSP, allow the FullStory hosts:
+- The site-wide CSP in `next.config.ts` already allows the FullStory hosts this integration needs:
   ```
-  script-src 'self' https://edge.fullstory.com https://www.fullstory.com;
+  script-src ... https://edge.fullstory.com ...;
+  connect-src 'self' ... https://*.fullstory.com;
   ```
 
 ## Troubleshooting
