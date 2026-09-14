@@ -3,6 +3,7 @@
 import { useCallback } from 'react';
 import AsyncPageShell from '@/components/spurs-women/AsyncPageShell';
 import PlayerTable from '@/components/spurs-women/PlayerTable';
+import SearchInput from '@/components/spurs-women/SearchInput';
 import { useRetryableAsync } from '@/hooks/useRetryableAsync';
 import { useSearchPagination } from '@/hooks/useSearchPagination';
 import { getAllPlayers } from '@/lib/data/players';
@@ -49,16 +50,12 @@ export default function PlayersClient() {
     >
       <h1 className="spurs-text font-bold mb-8 text-center">{HEADING}</h1>
       <div className="mb-4">
-        <label htmlFor="players-search" className="block spurs-text text-xs font-medium mb-1">
-          Search players
-        </label>
-        <input
+        <SearchInput
           id="players-search"
-          type="text"
+          label="Search players"
           placeholder="Search by name, position, or nationality..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full px-4 py-2 rounded border border-[var(--spurs-input-border)] bg-[var(--spurs-input-bg)] text-[var(--spurs-input-text)] placeholder-[var(--spurs-input-placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--spurs-input-focus-ring)]"
+          onChange={setSearch}
         />
         {search && (
           <p className="spurs-text text-xs opacity-75 mt-1">

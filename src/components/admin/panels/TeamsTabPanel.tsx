@@ -3,6 +3,7 @@
 import { TeamForm } from '@/components/admin/TeamForm';
 import { Pagination } from '@/components/admin/Pagination';
 import { TeamsTable } from '@/components/admin/tables/TeamsTable';
+import SearchInput from '@/components/spurs-women/SearchInput';
 import { useTeamsAdmin } from '@/hooks/admin/useTeamsAdmin';
 
 interface TeamsTabPanelProps {
@@ -58,12 +59,13 @@ export function TeamsTabPanel({ teamsAdmin, loading }: TeamsTabPanelProps) {
           </h3>
         </div>
         <div className="mb-4">
-          <input
-            type="text"
+          <SearchInput
+            id="admin-teams-search"
+            label="Search teams"
+            srOnlyLabel
             placeholder="Search teams by name or short name..."
             value={teamSearch}
-            onChange={(e) => setTeamSearch(e.target.value)}
-            className="w-full px-4 py-2 rounded border border-[var(--spurs-input-border)] bg-[var(--spurs-input-bg)] text-[var(--spurs-input-text)] placeholder-[var(--spurs-input-placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--spurs-input-focus-ring)]"
+            onChange={setTeamSearch}
           />
         </div>
         <TeamsTable teams={paginatedTeams} onSelect={handleEditTeam} />

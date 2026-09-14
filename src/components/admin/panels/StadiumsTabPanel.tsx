@@ -6,6 +6,7 @@ import { RelatedList } from '@/components/admin/RelatedList';
 import { TabNav } from '@/components/admin/TabNav';
 import { Pagination } from '@/components/admin/Pagination';
 import { StadiumsTable } from '@/components/admin/tables/StadiumsTable';
+import SearchInput from '@/components/spurs-women/SearchInput';
 import { useStadiumsAdmin } from '@/hooks/admin/useStadiumsAdmin';
 import type { Team } from '@/types/spurs-women-admin';
 
@@ -109,12 +110,13 @@ export function StadiumsTabPanel({ stadiumsAdmin, teams, loading }: StadiumsTabP
           </h3>
         </div>
         <div className="mb-4">
-          <input
-            type="text"
+          <SearchInput
+            id="admin-stadiums-search"
+            label="Search stadiums"
+            srOnlyLabel
             placeholder="Search stadiums by name, slug, city, or country..."
             value={stadiumSearch}
-            onChange={(e) => setStadiumSearch(e.target.value)}
-            className="w-full px-4 py-2 rounded border border-[var(--spurs-input-border)] bg-[var(--spurs-input-bg)] text-[var(--spurs-input-text)] placeholder-[var(--spurs-input-placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--spurs-input-focus-ring)]"
+            onChange={setStadiumSearch}
           />
         </div>
         <StadiumsTable stadiums={paginatedStadiums} onSelect={handleEditStadium} />

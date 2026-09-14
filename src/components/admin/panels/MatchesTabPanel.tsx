@@ -7,6 +7,7 @@ import { RelatedList } from '@/components/admin/RelatedList';
 import { TabNav } from '@/components/admin/TabNav';
 import { Pagination } from '@/components/admin/Pagination';
 import { MatchesTable } from '@/components/admin/tables/MatchesTable';
+import SearchInput from '@/components/spurs-women/SearchInput';
 import { useMatchesAdmin } from '@/hooks/admin/useMatchesAdmin';
 import { usePhotoUploadModal } from '@/hooks/admin/usePhotoUploadModal';
 import type { Competition, Media, Player, PlayerStats, Season, Stadium, Team } from '@/types/spurs-women-admin';
@@ -182,12 +183,13 @@ export function MatchesTabPanel({
           </h3>
         </div>
         <div className="mb-4">
-          <input
-            type="text"
+          <SearchInput
+            id="admin-matches-search"
+            label="Search matches"
+            srOnlyLabel
             placeholder="Search matches by date, opponent, or stadium..."
             value={matchSearch}
-            onChange={(e) => setMatchSearch(e.target.value)}
-            className="w-full px-4 py-2 rounded border border-[var(--spurs-input-border)] bg-[var(--spurs-input-bg)] text-[var(--spurs-input-text)] placeholder-[var(--spurs-input-placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--spurs-input-focus-ring)]"
+            onChange={setMatchSearch}
           />
         </div>
         <MatchesTable matches={paginatedMatches} teams={teams} competitions={competitions} onSelect={handleEditMatch} />

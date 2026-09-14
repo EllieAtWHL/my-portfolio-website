@@ -6,6 +6,7 @@ import { RelatedList } from '@/components/admin/RelatedList';
 import { TabNav } from '@/components/admin/TabNav';
 import { Pagination } from '@/components/admin/Pagination';
 import { PlayersTable } from '@/components/admin/tables/PlayersTable';
+import SearchInput from '@/components/spurs-women/SearchInput';
 import { usePlayersAdmin } from '@/hooks/admin/usePlayersAdmin';
 import type { Match, PlayerStats, Team } from '@/types/spurs-women-admin';
 
@@ -165,12 +166,13 @@ export function PlayersTabPanel({
           </h3>
         </div>
         <div className="mb-4">
-          <input
-            type="text"
+          <SearchInput
+            id="admin-players-search"
+            label="Search players"
+            srOnlyLabel
             placeholder="Search players by name, position, or nationality..."
             value={playerSearch}
-            onChange={(e) => setPlayerSearch(e.target.value)}
-            className="w-full px-4 py-2 rounded border border-[var(--spurs-input-border)] bg-[var(--spurs-input-bg)] text-[var(--spurs-input-text)] placeholder-[var(--spurs-input-placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--spurs-input-focus-ring)]"
+            onChange={setPlayerSearch}
           />
         </div>
         <PlayersTable players={paginatedPlayers} onSelect={handleEditPlayer} />
