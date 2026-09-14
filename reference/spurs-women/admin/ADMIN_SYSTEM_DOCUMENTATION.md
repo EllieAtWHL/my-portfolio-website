@@ -9,9 +9,9 @@ The admin system provides a web-based interface for managing Spurs Women's footb
 ### Components
 
 1. **Admin UI** (`src/app/spurs-women/admin/page.tsx`)
-   - Tabbed single-page interface; `page.tsx` itself is a composition root (~870 lines) that wires hooks to components, not where the logic lives
-   - Per-entity state and CRUD logic live in hooks under `src/hooks/admin/` (`useMatchesAdmin`, `useTeamsAdmin`, `usePlayersAdmin`, `useStadiumsAdmin`, plus `usePlayerStatsModal` for the player-stats modal shared between the matches and players tabs)
-   - Presentational pieces live under `src/components/admin/`: `TabNav`, `Pagination`, entity tables in `tables/` (built on a shared `DataTable`), and related-record modals in `modals/` (built on a shared `FormModal`) — see "Frontend Component Architecture" below
+   - Tabbed single-page interface; `page.tsx` itself is a composition root (~400 lines) that wires hooks to per-tab panel components, not where the logic lives
+   - Per-entity state and CRUD logic live in hooks under `src/hooks/admin/` (`useMatchesAdmin`, `useTeamsAdmin`, `usePlayersAdmin`, `useStadiumsAdmin`, plus `usePlayerStatsModal` for the player-stats modal shared between the matches and players tabs, and `usePhotoUploadModal` for the mobile photo-upload flow, WEB-149 - see `reference/photo-gallery/README.md`)
+   - Presentational pieces live under `src/components/admin/`: `TabNav`, `Pagination`, per-tab panels in `panels/` (`MatchesTabPanel`, `TeamsTabPanel`, `PlayersTabPanel`, `StadiumsTabPanel` - each composes that tab's form, table, pagination, and related-record modals/lists), entity tables in `tables/` (built on a shared `DataTable`), and related-record modals in `modals/` (built on a shared `FormModal`, plus `PhotoUploadModal` for WEB-149) — see "Frontend Component Architecture" below
    - Authentication via Supabase Auth
    - Pagination for data tables, via the generic `useSearchPagination` hook
 
@@ -30,13 +30,14 @@ The admin system provides a web-based interface for managing Spurs Women's footb
 
 - **Types** — `src/types/spurs-women-admin.ts` (shared entity interfaces)
 - **Generic hooks** — `src/hooks/useSearchPagination.ts` (search + pagination over any list)
-- **Per-entity hooks** — `src/hooks/admin/{useMatchesAdmin,useTeamsAdmin,usePlayersAdmin,useStadiumsAdmin}.ts`, each owning that entity's list state, edit-mode state, and CRUD handlers. `usePlayerStatsModal.ts` is a separate hook because the player-stats modal is opened from *both* the matches and players tabs — it's wired in `page.tsx` with setters from both `useMatchesAdmin` and `usePlayersAdmin`, which is the trickiest piece of cross-hook wiring on the page (see the "adds player stats to a player" test in `page.test.tsx`, which specifically exercises this wiring).
+- **Per-entity hooks** — `src/hooks/admin/{useMatchesAdmin,useTeamsAdmin,usePlayersAdmin,useStadiumsAdmin}.ts`, each owning that entity's list state, edit-mode state, and CRUD handlers. `usePlayerStatsModal.ts` is a separate hook because the player-stats modal is opened from *both* the matches and players tabs — it's wired in `page.tsx` with setters from both `useMatchesAdmin` and `usePlayersAdmin`, which is the trickiest piece of cross-hook wiring on the page (see the "adds player stats to a player" test in `page.test.tsx`, which specifically exercises this wiring). `usePhotoUploadModal.ts` similarly owns the WEB-149 mobile photo-upload flow's state.
+- **Per-tab panels** — `src/components/admin/panels/{MatchesTabPanel,TeamsTabPanel,PlayersTabPanel,StadiumsTabPanel}.tsx`, one further decomposition step beyond the original split above: each panel composes that tab's form, entity table, pagination, and related-record modals/lists (e.g. `MatchesTabPanel` renders `MatchForm`, `MatchesTable`, `MediaModal`, `PhotoUploadModal`, and the Media/Player Stats `RelatedList`s), so `page.tsx` itself no longer renders any of these directly — it just picks which panel to show based on `activeTab` and passes each panel its corresponding per-entity hook's return value.
 - **Entity tables** — `src/components/admin/tables/{MatchesTable,TeamsTable,PlayersTable,StadiumsTable}.tsx`, each a thin column-definition wrapper around a shared `DataTable.tsx`.
-- **Related-record modals** — `src/components/admin/modals/{MediaModal,PlayerStatsModal,PlayerHistoryModal,StadiumNameModal}.tsx`, each a thin fields-only wrapper around a shared `FormModal.tsx` (handles the overlay/card/title/error-banner/footer-buttons chrome).
+- **Related-record modals** — `src/components/admin/modals/{MediaModal,PlayerStatsModal,PlayerHistoryModal,StadiumNameModal,PhotoUploadModal}.tsx`, each a thin fields-only wrapper around a shared `FormModal.tsx` (handles the overlay/card/title/error-banner/footer-buttons chrome) - except `PhotoUploadModal`, which has its own bespoke UI (progress per photo, retry) rather than reusing `FormModal`'s form-field chrome.
 - **Nav/pagination** — `TabNav.tsx`, `Pagination.tsx`.
 
 **Why `RelatedList.tsx` was *not* merged onto `DataTable`**: `RelatedList` renders the Media/Player Stats/Player History/Stadium Name lists shown inside a match/player/stadium's "Related Records" tab, and looks superficially like the same table-rendering job as the four entity tables. It was deliberately left as its own component rather than rebuilt on `DataTable`, because:
-1. `DataTable`'s `render` is mandatory by design, so it never needs to touch a record field via an unsafe cast. `RelatedList` relies on an *optional* `render` with a `record[key] ?? '-'` fallback (used by roughly a dozen column definitions in `page.tsx`) — supporting that would mean reintroducing that unsafe cast into `DataTable`, i.e. moving complexity into the component that's currently simplest.
+1. `DataTable`'s `render` is mandatory by design, so it never needs to touch a record field via an unsafe cast. `RelatedList` relies on an *optional* `render` with a `record[key] ?? '-'` fallback (used by roughly a dozen column definitions, now spread across the `panels/` files rather than in `page.tsx` itself) — supporting that would mean reintroducing that unsafe cast into `DataTable`, i.e. moving complexity into the component that's currently simplest.
 2. `RelatedList` also renders its own title/count/"New" button header and hides the table entirely (not just the rows) when there are no records — different chrome from the bare entity tables.
 3. `RelatedList` has no dedicated unit test file (only indirect coverage via `page.test.tsx`), and is wired into the riskiest part of the page (the shared player-stats modal, `usePlayerStatsModal`). A regression there is less likely to be caught immediately than one in the entity tables, which each have their own test file.
 
@@ -45,9 +46,13 @@ Net: the two components serve different-enough call shapes that forcing them thr
 ## Authentication & Authorization
 
 ### Authentication
-- Uses Supabase Auth for user authentication
+- Uses Supabase Auth for user authentication, via Google OAuth
 - User must be logged in to access admin features
 - Session managed via cookies
+- Three supporting routes under `src/app/spurs-women/` implement the flow (none are in the public Pages/Routes table in `reference/spurs-women/README.md`, since they're admin-auth plumbing rather than content pages):
+  - `/spurs-women/login` (`login/page.tsx`) - "Sign in with Google" button, redirects to `/spurs-women/profile` on success
+  - `/spurs-women/profile` (`profile/page.tsx`) - shows the signed-in user's email and whether it matches `ADMIN_EMAIL`
+  - `/spurs-women/unauthorised` (`unauthorised/page.tsx`) - shown to an authenticated-but-non-admin user, with a sign-out button that redirects back to `/spurs-women/login`
 
 ### Authorization
 - Admin access restricted to a single email address
@@ -366,6 +371,37 @@ All entity routes below also implement `PUT` (update by `id`) and `DELETE` (dele
 **GET** - Fetch all competitions (used for dropdowns)
 - Requires authentication and admin authorization
 
+### Cache API
+**Endpoint**: `/api/admin/cache/revalidate`
+**Methods**: POST only
+
+**POST** - Invalidate all `unstable_cache` tags via `revalidateAllCache()` (see `reference/spurs-women/cache/README.md`)
+- Requires authentication and admin authorization
+- Returns the list of revalidated cache tags
+
+### Photo Upload API (WEB-148/WEB-149)
+**Endpoints**: `/api/admin/photo-upload`, `/api/admin/photo-upload/finalize`
+**Methods**: POST only
+
+Backs the mobile photo-upload flow described in full in
+`reference/photo-gallery/README.md` ("Adding photos from a phone"). Requires
+authentication and admin authorization like every other `/api/admin/*`
+route; runs on the Node.js runtime (not Edge), since `sharp`'s native
+bindings need it, with `maxDuration = 60`.
+
+**POST `/api/admin/photo-upload`** - Resizes/compresses one photo (WebP,
+82% quality, ≤2000px, via `sharp`) and creates a git blob for it via the
+GitHub Git Data API. One request per photo; does **not** push to the
+gallery repo's `main` or touch the `media` table - that happens once per
+batch in `finalize` below.
+
+**POST `/api/admin/photo-upload/finalize`** - Takes the accumulated blobs
+for a match's batch, builds one tree and one commit, pushes
+`spurs-women-photo-gallery`'s `main` once, and creates/updates the match's
+`media` "photo album" row with the folder key. Idempotent: a retried
+finalize call for an already-published batch skips creating a commit
+rather than pushing an empty one.
+
 ## Admin UI Features
 
 ### Tabbed Interface
@@ -380,17 +416,20 @@ The admin page has four top-level tabs - Matches, Teams, Players, Stadiums - eac
 - **Stadium Name** - Add/edit/delete stadium name history (related list under a stadium)
 
 ### Match Form
-The match form includes:
+The match form (`src/components/admin/MatchForm.tsx`) includes:
 - Season dropdown (populated from seasons table)
 - Competition dropdown (populated from competitions table)
 - Date picker
 - Kickoff time picker
-- Home/Away match toggle
+- Home/Away match type radio
 - Opponent team dropdown (excludes Tottenham)
 - Stadium dropdown
 - Score inputs (Spurs and opponent)
 - Attended checkbox
+- Attendance number input
 - Notes textarea
+- **Match Stats** collapsible section (`MatchStatsFields.tsx`, via `CollapsibleFormSection`): home/away possession (%), total shots, shots on target, and corners
+- **Extra Time** collapsible section (`MatchExtraTimeFields.tsx`, via `CollapsibleFormSection`): Spurs/opponent score after extra time and on penalties
 
 ### Media Form
 The media form includes:
@@ -487,4 +526,8 @@ Potential improvements to the admin system:
 - Add data validation on the server side
 - Add audit logging for admin operations
 - Implement role-based access control for multiple admin users
-- Add file upload for media instead of URL input
+
+Done since this list was originally written: file upload for media - the
+WEB-148/WEB-149 mobile photo-upload flow (see "Photo Upload API" above)
+covers the photo-album case directly from the admin UI, though other media
+types (article/social/video links) still take a URL input.

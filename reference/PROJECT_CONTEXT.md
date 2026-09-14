@@ -55,7 +55,7 @@ These considerations may influence design, styling, and content decisions and sh
   - ✅ RSS parser integration for content feeds
 
 **Technical Implementation:**
-  - ✅ Feature-based organization implemented
+  - ✅ Section separation implemented via the App Router (`app/` vs `app/spurs-women/`), not via a top-level `features/` folder - see "High-Level Structure" below for what actually shipped
   - ✅ Server components used by default
   - ✅ Proper TypeScript typing throughout
   - ✅ Tailwind design tokens and CSS variables established
@@ -76,37 +76,54 @@ These considerations may influence design, styling, and content decisions and sh
 ### High-Level Structure
 
   - A single Next.js application.
-  - Feature-based organisation rather than page-based sprawl.
+  - Section separation lives at the App Router level (`app/` for the personal
+    site, `app/spurs-women/` for the fan site), not in a top-level `features/`
+    folder - the originally planned `features/personal/` and
+    `features/spurs-women/` split (see the earlier conceptual structure below)
+    was superseded by this approach and was never built.
   - Clear separation between:
-    - Shared, global components and styles.
-    - Personal site features.
-    - Spurs Women–specific features.
+    - Shared, global components and styles (`components/`, `styles/main-theme.css`, `styles/variables.css`).
+    - Personal site pages and components (`app/about-me`, `app/experience`, `app/projects`, etc.; `components/experience/`, `components/lightning-rollout/`, `components/regicide/`).
+    - Spurs Women–specific pages, components, and data layer (`app/spurs-women/`, `components/spurs-women/`, `components/admin/`, `hooks/admin/`, `lib/data/` organised per entity, `styles/spurs-theme.css`).
 
-Example (conceptual) structure:
+Actual structure (as implemented):
 
 ```
-app/
-  layout.tsx
-  page.tsx
-  spurs-women/
+src/
+  app/
     layout.tsx
     page.tsx
+    about-me/ experience/ projects/ contact-me/ london-2012/ regicide/ lightning-rollout/ ...
+    spurs-women/
+      layout.tsx
+      page.tsx
+      admin/
+      matches/ players/ teams/ stadiums/ seasons/ ...
 
-components/
-  ui/
-  layout/
-  navigation/
+  components/
+    Button.tsx, Card.tsx, Modal.tsx, ... (shared, type-first)
+    spurs-women/
+    admin/
+    experience/
+    lightning-rollout/
+    regicide/
 
-features/
-  personal/
-  spurs-women/
+  hooks/
+    admin/
 
-lib/
-  constants/
-  utils/
+  lib/
+    data/        # matches.ts, seasons.ts, teams.ts, stadiums.ts, players.ts, news.ts, cache-*.ts
+    supabase/
+    utils/
 
-styles/
-  globals.css
+  styles/
+    globals.css
+    variables.css
+    main-theme.css
+    spurs-theme.css
+    about-me.css, experience.css, projects.css, blog.css, not-found.css
+
+  types/
 ```
 
 ## Requirements
@@ -256,16 +273,17 @@ Approach:
   - Avoid try/catch in components unless handling a known failure case; prefer clear error states over silent fallbacks.
 
 Current state:
-  - `src/app/not-found.tsx` exists and is in use. `src/app/spurs-women/error.tsx` (WEB-96) is the first `error.tsx` boundary in the codebase - it sits above every `/spurs-women` route (matches, players, teams, stadiums, seasons, admin, etc.), so a single file catches thrown errors anywhere in that subtree via Next.js's nested-boundary behaviour. No `error.tsx` exists at the root or under core-site routes yet, since none of them have a data dependency that would throw.
-  - `trackError()` (WEB-97) is now called from `src/app/spurs-women/error.tsx`, the one place it can actually reach FullStory (client-rendered). It's deliberately not called from API routes or `cache-utils.ts`'s `CacheError` path, since both run server-side where `trackError()` no-ops - server-side errors are still `console.error`-only.
+  - `src/app/not-found.tsx` exists and is in use. `src/app/spurs-women/error.tsx` (WEB-96) was the first `error.tsx` boundary in the codebase - it sits above every `/spurs-women` route (matches, players, teams, stadiums, seasons, admin, etc.), so a single file catches thrown errors anywhere in that subtree via Next.js's nested-boundary behaviour.
+  - WEB-125 ("add missing error boundary coverage") closed the remaining gaps: `src/app/error.tsx` now covers the core site (root-level, sibling to `src/app/spurs-women/error.tsx`), `src/app/global-error.tsx` is the last-resort boundary that only fires if the root layout itself throws (kept deliberately minimal - its own `<html>`/`<body>`, no `ThemeProvider`/`CookieConsentProvider`), and `src/app/spurs-women/admin/error.tsx` gives the admin dashboard its own error copy ("Your unsaved changes may be lost") nested inside the section-wide `spurs-women/error.tsx`. WEB-125 also added `src/components/ErrorBoundary.tsx`, a bespoke React class-based error boundary - reversing the earlier "no bespoke error-boundary abstraction" decision above - for subtrees a route-level `error.tsx` can't reach on its own (e.g. inside a modal). As of this writing it has no consumers outside its own test file; it exists as available infrastructure rather than being mounted anywhere yet.
+  - `trackError()` (WEB-97) is called from every client-rendered error boundary added above: `src/app/error.tsx`, `src/app/global-error.tsx`, `src/app/spurs-women/error.tsx`, `src/app/spurs-women/admin/error.tsx`, and `src/components/ErrorBoundary.tsx`. It's deliberately not called from API routes or `cache-utils.ts`'s `CacheError` path, since both run server-side where `trackError()` no-ops - server-side errors are still `console.error`-only.
   - `src/components/ErrorState.tsx` (WEB-98) is the shared error-state component; `MatchesClient`, `MediaGallery`, `TeamClient`, and `StadiumClient` use it instead of silently rendering an empty/no-data state on fetch failure. `src/lib/data/client.ts` - the client-side fetcher module the original WEB-63 audit flagged - turned out to be dead code (zero callers besides its own test) once investigated, so it was deleted rather than "fixed."
   - `src/lib/retry.ts` (WEB-99) provides `retryWithBackoff()`, wrapping the outbound RSS/YouTube fetches in `src/lib/rss.ts` and the podcast RSS fetch in `src/lib/data/news.ts` - the external proxy routes (`spurs-women-news`, `spurs-women-videos`, `podcasts`) inherit it automatically since they call these same data-layer functions rather than fetching directly. Bounded at 3 attempts with exponential backoff by default; doesn't touch `src/lib/rate-limit.ts` (inbound) at all.
   - `public/sw.js` (WEB-100) is a minimal service worker that precaches exactly one file, `public/offline.html` (a self-contained static page, no JS/CSS dependencies), and serves it only for failed navigation requests - everything else (assets, API calls) passes straight through, untouched. Registered client-side by `src/components/ServiceWorkerRegistration.tsx`, production builds only (a dev-registered SW fights Next's own hot-reloading). `src/components/OfflineBanner.tsx` shows a fixed, site-wide banner via `useSyncExternalStore` subscribed to the browser's `online`/`offline` events - fixed positioning (`z-[200]`, matching `SkipLink`'s convention) is required because the core site's navbar is itself `position: fixed` (`z-index: 100` in `main-theme.css`), so a normal in-flow banner would render correctly in the DOM but sit invisibly behind it.
 
 Why this fits the project:
-  - Next.js primitives remain the foundation; this adds the logging/UX/resilience layer on top rather than replacing them.
+  - Next.js primitives remain the foundation; this adds the logging/UX/resilience layer on top rather than replacing them. `ErrorBoundary.tsx` (WEB-125) is scoped narrowly - for subtrees a route-level `error.tsx` can't reach - rather than becoming a general replacement for Next's own convention.
   - Splitting into smaller issues keeps each change reviewable despite the combined scope being larger than the original "keep complexity low" stance assumed.
-  - Still deliberately excludes a custom error-boundary abstraction and full offline-first/installable PWA behaviour - out of proportion for a personal site without SLAs.
+  - Still deliberately excludes full offline-first/installable PWA behaviour - out of proportion for a personal site without SLAs.
 
 ### Internationalisation / Localisation (i18n)
 
@@ -489,6 +507,17 @@ Current state:
     above. Treat this as a point-in-time baseline, not a live mirror - it
     will drift from the real schema as new migrations are added on top, the
     same way any snapshot does.
+  - `supabase/migrations/20260826180844_drop_unused_stoarge_source_type.sql`
+    (WEB-136) - drops the leftover `stoarge_source` (sic) enum type from the
+    completed Supabase-to-GitHub image migration; no column used it.
+  - `supabase/migrations/20260901180607_document_is_neutral_venue_column.sql`
+    (WEB-137) - a comment-only migration documenting `matches.is_neutral_venue`,
+    also used to verify the GitHub integration below applied a migration to
+    production automatically.
+  - `supabase/migrations/20260902180000_add_player_legacy_number.sql`
+    (WEB-142) - adds `players.legacy_number`, the permanent sequential number
+    the club assigns a player on their Women's-team competitive debut;
+    populated manually via the admin form (WEB-144).
   - For field-level documentation of what each table/column means (not just
     its DDL), see `reference/spurs-women/admin/ADMIN_SYSTEM_DOCUMENTATION.md`'s
     "Data Entities" section - that doc explains purpose and usage, the
@@ -772,7 +801,7 @@ For implementation detail on specific systems, see:
 
 The backlog/TODO list lives in Jira, not in this repo - see the "Jira is the source of truth" section in CLAUDE.md. The `WEB` project covers both the core site (`core-site` label) and Spurs Women (`spurs-women` label), with epics labeled both where work spans the whole site.
 
-Known open tech debt at time of writing: Button migration is incomplete (13
+Known open tech debt at time of writing: Button migration is incomplete (14
 files still render raw `<button>` elements outside the shared component - see
 BUTTON_MIGRATION.md for the current list), and cache hit-rate monitoring/
 metrics collection has not been implemented (see the Technical Debt & Performance epic in Jira).
