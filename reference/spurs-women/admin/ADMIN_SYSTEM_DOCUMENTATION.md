@@ -146,6 +146,7 @@ constraint, and index, not just the ones the admin UI touches - see
   - `created_at` (string, timestamp)
   - `updated_at` (string, timestamp)
   - Note: `squad_number` is **not** a column here - it lives on `player_history` (per team_id stint, since it can change) and is resolved via the `getSquadNumberFromHistory` helper in `src/lib/data/players.ts`. The `Player`/`PlayerWithStats` TypeScript types include `squad_number` because it's merged on after the fetch, not because the underlying table has it.
+  - Note: there is no `active` column on this table (investigated as part of `WEB-156`) - "is this player on Tottenham's current squad" is entirely derived from `player_history.left_on` via `getCurrentClubFromHistory`/`getSquadNumberFromHistory`/`fetchPlayersForTeamFromDB`, the same way `squad_number` is.
 
 ### Player Stats
 - **Table**: `player_stats`
@@ -189,6 +190,7 @@ constraint, and index, not just the ones the admin UI touches - see
   - `joined_on` (string, nullable)
   - `left_on` (string, nullable)
   - `squad_number` (number, nullable)
+  - `on_loan_from_team_id` (number, nullable) - the parent club this stint was loaned from, if any (`WEB-156`). A row is a loan iff this is non-null; loan direction relative to Tottenham is derived from this plus `team_id` rather than stored as a separate column (`team_id` = Tottenham → inbound loan to Spurs; `on_loan_from_team_id` = Tottenham with a different `team_id` → outbound loan from Spurs). Replaces the previous plain `is_loan` boolean, which had no direction info.
 
 ### Stadium
 - **Table**: `stadia` (note: plural table name)
