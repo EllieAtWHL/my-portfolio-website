@@ -378,8 +378,9 @@ describe('players data layer', () => {
       // The bug this guards against: a player can have two simultaneously-open
       // player_history rows (an outbound loan while their Tottenham contract
       // stays open with no left_on). Picking one via plain .find() with no
-      // ordering was previously arbitrary/DB-order-dependent - the loan record
-      // must win deterministically, with the parent club surfaced via onLoanFrom.
+      // ordering was previously arbitrary/DB-order-dependent - the most
+      // recently joined open record wins deterministically, which here is the
+      // loan (its parent club is surfaced via onLoanFrom).
       jest.resetModules();
       const player = makePlayer({
         id: 'player-42',
@@ -400,6 +401,34 @@ describe('players data layer', () => {
         id: 20,
         name: 'Reading',
         onLoanFrom: { id: 1, name: 'Tottenham Hotspur' },
+      });
+    });
+
+    it('prefers a newer non-loan record over a stale loan record left open by mistake', async () => {
+      // Picking "the most recent open record" rather than "any open loan record"
+      // matters here: if an admin forgets to close out an old loan row's left_on
+      // when the player returns and a fresh Tottenham record is opened, the newer
+      // non-loan record must win - not the stale loan, even though it's also open.
+      jest.resetModules();
+      const player = makePlayer({
+        id: 'player-42',
+        player_history: [
+          { team_id: 20, joined_on: '2024-01-04', left_on: null, team: { id: 20, name: 'Reading' }, on_loan_from_team: { id: 1, name: 'Tottenham Hotspur' } },
+          { team_id: 1, joined_on: '2025-07-01', left_on: null, team: { id: 1, name: 'Tottenham Hotspur' }, on_loan_from_team: null },
+        ],
+      });
+      const mockFrom = mockSupabaseFrom({
+        players: { data: player, error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayerById } = await import('@/lib/data/players');
+      const result = await getPlayerById('player-42');
+
+      expect(result?.current_club).toEqual({
+        id: 1,
+        name: 'Tottenham Hotspur',
+        onLoanFrom: null,
       });
     });
 

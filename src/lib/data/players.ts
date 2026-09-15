@@ -102,12 +102,14 @@ function getSquadNumberFromHistory(player: any, referenceDate: Date = new Date()
 
 // Helper function to find a player's current club (any team, not just Tottenham) from
 // player_history. A player can have two records open at once - e.g. an outbound loan
-// away from Tottenham while the Tottenham contract itself stays open with no left_on -
-// in which case the loan record wins (it's the club they're actually turning out for)
-// and its parent club is surfaced via onLoanFrom rather than the ambiguity being
-// resolved arbitrarily. Open records are sorted by joined_on (most recent first) before
-// picking, so the result stays deterministic even in the residual case of multiple open
-// non-loan records, which would be a data-integrity issue this function can't fix on its own.
+// away from Tottenham while the Tottenham contract itself stays open with no left_on.
+// Picking the most recently joined open record (rather than an unordered .find())
+// resolves this correctly on its own: a loan's joined_on is always later than the
+// still-open parent-club record it overlaps, so it naturally sorts first - no separate
+// "prefer loan records" rule needed, which would otherwise risk surfacing a stale loan
+// row over a genuinely newer non-loan record (e.g. an admin forgetting to close the old
+// loan row when the player returns). The chosen record's own on_loan_from_team (if any)
+// is what's surfaced via onLoanFrom.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getCurrentClubFromHistory(player: any): { id: number; name: string; onLoanFrom: { id: number; name: string } | null } | null {
   const openRecords = (player?.player_history ?? [])
@@ -116,19 +118,14 @@ function getCurrentClubFromHistory(player: any): { id: number; name: string; onL
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .sort((a: any, b: any) => (b.joined_on ?? '').localeCompare(a.joined_on ?? ''));
 
-  if (openRecords.length === 0) return null;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const loanRecord = openRecords.find((history: any) => history.on_loan_from_team);
-  const record = loanRecord ?? openRecords[0];
-
-  if (!record.team) return null;
+  const record = openRecords[0];
+  if (!record?.team) return null;
 
   return {
     id: record.team.id,
     name: record.team.name,
-    onLoanFrom: loanRecord?.on_loan_from_team
-      ? { id: loanRecord.on_loan_from_team.id, name: loanRecord.on_loan_from_team.name }
+    onLoanFrom: record.on_loan_from_team
+      ? { id: record.on_loan_from_team.id, name: record.on_loan_from_team.name }
       : null,
   };
 }
