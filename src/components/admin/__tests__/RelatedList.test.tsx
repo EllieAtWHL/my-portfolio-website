@@ -60,11 +60,16 @@ describe('RelatedList', () => {
       />
     );
 
+    expect(screen.getByText('Widgets (3)')).toBeInTheDocument();
+
     fireEvent.change(screen.getByPlaceholderText('Search widgets...'), { target: { value: 'bet' } });
 
     expect(screen.getByText('Beta')).toBeInTheDocument();
     expect(screen.queryByText('Alpha')).not.toBeInTheDocument();
     expect(screen.queryByText('Gamma')).not.toBeInTheDocument();
+    // The header count must track the filtered result, not the unfiltered total -
+    // otherwise it visibly contradicts the Pagination footer's own count below it.
+    expect(screen.getByText('Widgets (1)')).toBeInTheDocument();
   });
 
   it('shows a "no match" message distinct from the empty-list message when a search matches nothing', () => {

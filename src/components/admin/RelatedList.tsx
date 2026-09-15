@@ -54,12 +54,10 @@ export function RelatedList<T extends Record<string, unknown> | { id?: string }>
     paginatedItems,
   } = useSearchPagination(records, search?.filterFn ?? (() => true), search?.perPage);
 
-  const visibleRecords = search ? paginatedItems : records;
-
   return (
     <div className="mb-6 border border-gray-600 rounded-lg overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 bg-gray-800">
-        <h3 className="font-semibold text-white">{title} ({records.length})</h3>
+        <h3 className="font-semibold text-white">{title} ({search ? filteredCount : records.length})</h3>
         {onNew && (
           <Button variant="spurs" size="sm" onClick={onNew}>
             New
@@ -80,7 +78,7 @@ export function RelatedList<T extends Record<string, unknown> | { id?: string }>
       )}
       {records.length === 0 ? (
         <div className="p-4 text-center text-gray-400">{emptyMessage}</div>
-      ) : visibleRecords.length === 0 ? (
+      ) : paginatedItems.length === 0 ? (
         <div className="p-4 text-center text-gray-400">No {title.toLowerCase()} match your search</div>
       ) : (
         <div className="overflow-x-auto">
@@ -95,7 +93,7 @@ export function RelatedList<T extends Record<string, unknown> | { id?: string }>
               </tr>
             </thead>
             <tbody>
-              {visibleRecords.map((record, index) => (
+              {paginatedItems.map((record, index) => (
                 <tr
                   key={(record.id as string) || index}
                   className={`border-b border-gray-600 ${

@@ -1,5 +1,6 @@
 'use client';
 
+import { useCallback } from 'react';
 import { PlayerForm } from '@/components/admin/PlayerForm';
 import { PlayerHistoryModal } from '@/components/admin/modals/PlayerHistoryModal';
 import { RelatedList } from '@/components/admin/RelatedList';
@@ -74,6 +75,13 @@ export function PlayersTabPanel({
     handlePlayerHistorySubmit,
   } = playersAdmin;
 
+  const playerStatsFilterFn = useCallback((stat: PlayerStats, searchTerm: string) => {
+    const term = searchTerm.toLowerCase();
+    const match = matches.find(m => m.id === stat.match_id);
+    const opponentName = resolveOpponentName(stat, match, teams);
+    return (match?.date ?? '').toLowerCase().includes(term) || opponentName.toLowerCase().includes(term);
+  }, [matches, teams]);
+
   return (
     <>
       {isPlayerEditMode && (
@@ -146,12 +154,7 @@ export function PlayersTabPanel({
               id: 'player-stats',
               placeholder: 'Search by match date or opponent...',
               perPage: 10,
-              filterFn: (stat, searchTerm) => {
-                const term = searchTerm.toLowerCase();
-                const match = matches.find(m => m.id === stat.match_id);
-                const opponentName = resolveOpponentName(stat, match, teams);
-                return (match?.date ?? '').toLowerCase().includes(term) || opponentName.toLowerCase().includes(term);
-              },
+              filterFn: playerStatsFilterFn,
             }}
           />
 
