@@ -22,17 +22,31 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// PostgREST caps a single response at 1000 rows. player_stats already exceeds that
+// (WEB-167 - it was silently truncating this GET to the 1000 most-recently-created
+// rows, hiding older records from every admin related-stats list), so page through
+// with .range() the same way fetchPlayerStatsAggregateForTeam (src/lib/data/teams.ts)
+// already does for the public-facing career-stats aggregate.
+const PLAYER_STATS_PAGE_SIZE = 1000;
+
 export async function GET() {
   try {
-    const { data, error } = await supabaseAdmin
-      .from('player_stats')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    if (error) {
-      return NextResponse.json(handleApiError(error, 'Failed to fetch player stats'), { status: 400 });
+    const data: unknown[] = [];
+    for (let from = 0; ; from += PLAYER_STATS_PAGE_SIZE) {
+      const { data: page, error } = await supabaseAdmin
+        .from('player_stats')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .range(from, from + PLAYER_STATS_PAGE_SIZE - 1);
+
+      if (error) {
+        return NextResponse.json(handleApiError(error, 'Failed to fetch player stats'), { status: 400 });
+      }
+
+      data.push(...(page ?? []));
+      if (!page || page.length < PLAYER_STATS_PAGE_SIZE) break;
     }
-    
+
     return NextResponse.json({ data });
   } catch (error) {
     return NextResponse.json(handleApiError(error, 'Internal server error'), { status: 500 });
