@@ -113,6 +113,20 @@ function getSquadNumberFromHistory(player: any, referenceDate: Date = new Date()
   return relevantHistory?.squad_number || null;
 }
 
+// Shared by getCurrentClubFromHistory and getHistoryFromRecord: orders raw player_history
+// rows by joined_on descending, breaking ties on created_at. The created_at tiebreak
+// matters because Array.sort is only stable relative to input order, and PostgREST does
+// not guarantee row order for an embedded relation without an explicit .order() - so two
+// rows sharing a joined_on (a same-day transfer, or a data-entry duplicate) would
+// otherwise fall back to unordered DB return order, silently reintroducing the same
+// DB-order-dependent ambiguity these functions exist to avoid.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function compareByJoinedOnDesc(a: any, b: any): number {
+  const joinedDiff = (b.joined_on ?? '').localeCompare(a.joined_on ?? '');
+  if (joinedDiff !== 0) return joinedDiff;
+  return (b.created_at ?? '').localeCompare(a.created_at ?? '');
+}
+
 // Helper function to find a player's current club (any team, not just Tottenham) from
 // player_history. A player can have two records open at once - e.g. an outbound loan
 // away from Tottenham while the Tottenham contract itself stays open with no left_on.
@@ -123,22 +137,12 @@ function getSquadNumberFromHistory(player: any, referenceDate: Date = new Date()
 // row over a genuinely newer non-loan record (e.g. an admin forgetting to close the old
 // loan row when the player returns). The chosen record's own on_loan_from_team (if any)
 // is what's surfaced via onLoanFrom.
-// Ties on joined_on (e.g. a same-day transfer, or a data-entry duplicate) fall back to
-// created_at, since Array.sort is only stable relative to the input order - which
-// PostgREST does not guarantee for an embedded relation without an explicit .order(),
-// so an unbroken joined_on tie would silently reintroduce the same DB-order-dependent
-// ambiguity this function exists to avoid.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getCurrentClubFromHistory(player: any): { id: number; name: string; onLoanFrom: { id: number; name: string } | null } | null {
   const openRecords = (player?.player_history ?? [])
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .filter((history: any) => !history.left_on || new Date(history.left_on) > new Date())
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .sort((a: any, b: any) => {
-      const joinedDiff = (b.joined_on ?? '').localeCompare(a.joined_on ?? '');
-      if (joinedDiff !== 0) return joinedDiff;
-      return (b.created_at ?? '').localeCompare(a.created_at ?? '');
-    });
+    .sort(compareByJoinedOnDesc);
 
   const record = openRecords[0];
   if (!record?.team) return null;
@@ -151,12 +155,21 @@ function getCurrentClubFromHistory(player: any): { id: number; name: string; onL
 }
 
 // Helper function to build a player's full club history (all teams, ongoing stint first,
-// then most recently joined first) from their raw player_history rows.
+// then most recently joined first, ties broken by created_at) from their raw
+// player_history rows. Sorts the raw rows (while created_at is still present) before
+// mapping down to PlayerHistoryEntry's public shape, which doesn't expose it.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getHistoryFromRecord(player: any): PlayerHistoryEntry[] {
   const history = player?.player_history ?? [];
 
   return [...history]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .sort((a: any, b: any) => {
+      const aOngoing = !a.left_on;
+      const bOngoing = !b.left_on;
+      if (aOngoing !== bOngoing) return aOngoing ? -1 : 1;
+      return compareByJoinedOnDesc(a, b);
+    })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .map((entry: any) => ({
       team: toTeamRef(entry.team),
@@ -164,13 +177,7 @@ function getHistoryFromRecord(player: any): PlayerHistoryEntry[] {
       left_on: entry.left_on ?? null,
       squad_number: entry.squad_number ?? null,
       on_loan_from_team: toTeamRef(entry.on_loan_from_team),
-    }))
-    .sort((a, b) => {
-      const aOngoing = !a.left_on;
-      const bOngoing = !b.left_on;
-      if (aOngoing !== bOngoing) return aOngoing ? -1 : 1;
-      return (b.joined_on ?? '').localeCompare(a.joined_on ?? '');
-    });
+    }));
 }
 
 async function fetchPlayersByMatchFromDB(matchId: string): Promise<PlayerWithStats[]> {

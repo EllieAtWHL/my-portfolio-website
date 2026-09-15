@@ -22,11 +22,17 @@ export function PlayerHistoryModal({
   onDelete,
   onSubmit,
 }: PlayerHistoryModalProps) {
-  const teamOptions = teams.map((team) => (
-    <option key={team.id} value={team.id}>
-      {team.name}
-    </option>
-  ));
+  const renderTeamOptions = (teamList: Team[]) =>
+    teamList.map((team) => (
+      <option key={team.id} value={team.id}>
+        {team.name}
+      </option>
+    ));
+  const teamOptions = renderTeamOptions(teams);
+  // Excludes the currently selected Team - "loaned from itself" is never a
+  // meaningful state, and nothing downstream (this route's PUT/POST, the DB) rejects
+  // it otherwise (WEB-83's known lack of admin write-payload validation).
+  const loanFromOptions = renderTeamOptions(teams.filter((team) => team.id !== form.team_id));
 
   return (
     <FormModal
@@ -58,7 +64,7 @@ export function PlayerHistoryModal({
           className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
         >
           <option value="">Not a loan</option>
-          {teamOptions}
+          {loanFromOptions}
         </select>
       </div>
       <div>

@@ -505,6 +505,32 @@ describe('players data layer', () => {
       ]);
     });
 
+    it('breaks a history-ordering tie on identical joined_on dates using created_at', async () => {
+      // Same rationale as the current_club tie-break test above: two closed
+      // records sharing a joined_on must not fall back to unguaranteed DB
+      // return order in the rendered Club History list either.
+      jest.resetModules();
+      const player = makePlayer({
+        id: 'player-42',
+        player_history: [
+          { team_id: 5, joined_on: '2020-07-01', left_on: '2023-01-04', squad_number: 10, created_at: '2020-07-01T09:00:00.000Z', on_loan_from_team: null, team: { id: 5, name: 'Chelsea' } },
+          { team_id: 8, joined_on: '2020-07-01', left_on: '2023-01-04', squad_number: 4, created_at: '2020-07-01T10:30:00.000Z', on_loan_from_team: null, team: { id: 8, name: 'Leicester City' } },
+        ],
+      });
+      const mockFrom = mockSupabaseFrom({
+        players: { data: player, error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayerById } = await import('@/lib/data/players');
+      const result = await getPlayerById('player-42');
+
+      expect(result?.history).toEqual([
+        { team: { id: 8, name: 'Leicester City' }, joined_on: '2020-07-01', left_on: '2023-01-04', squad_number: 4, on_loan_from_team: null },
+        { team: { id: 5, name: 'Chelsea' }, joined_on: '2020-07-01', left_on: '2023-01-04', squad_number: 10, on_loan_from_team: null },
+      ]);
+    });
+
     it('returns an empty history array when the player has no player_history rows', async () => {
       jest.resetModules();
       const player = makePlayer({ id: 'player-42', player_history: [] });

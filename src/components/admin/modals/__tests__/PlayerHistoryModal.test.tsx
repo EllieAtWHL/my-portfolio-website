@@ -56,6 +56,15 @@ describe('PlayerHistoryModal', () => {
     expect(onChange).toHaveBeenCalledWith({ ...baseForm, squad_number: 9 });
   });
 
+  it('excludes the currently selected Team from the Loan From options, since a team cannot loan a player to itself', () => {
+    render(<PlayerHistoryModal {...baseProps} form={{ ...baseForm, team_id: 1 }} editingPlayerHistoryId={null} />);
+
+    const loanFromSelect = screen.getByLabelText('Loan From') as HTMLSelectElement;
+    const optionLabels = Array.from(loanFromSelect.options).map((o) => o.textContent);
+    expect(optionLabels).not.toContain('Tottenham Hotspur');
+    expect(optionLabels).toContain('Reading');
+  });
+
   it('defaults the Loan From select to "Not a loan"', () => {
     render(<PlayerHistoryModal {...baseProps} editingPlayerHistoryId={null} />);
 
