@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin, handleApiError, handleApiSuccess } from '@/lib/admin-api';
 import { invalidatePlayerStatsCache } from '@/lib/data/cache-invalidation';
+import { fetchAllPaginated } from '@/lib/utils/paginate';
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,29 +23,29 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PostgREST caps a single response at 1000 rows. player_stats already exceeds that
-// (WEB-167 - it was silently truncating this GET to the 1000 most-recently-created
-// rows, hiding older records from every admin related-stats list), so page through
-// with .range() the same way fetchPlayerStatsAggregateForTeam (src/lib/data/teams.ts)
-// already does for the public-facing career-stats aggregate.
-const PLAYER_STATS_PAGE_SIZE = 1000;
-
 export async function GET() {
   try {
-    const data: unknown[] = [];
-    for (let from = 0; ; from += PLAYER_STATS_PAGE_SIZE) {
-      const { data: page, error } = await supabaseAdmin
+    // PostgREST caps a single response at 1000 rows. player_stats already exceeds
+    // that (WEB-167 - it was silently truncating this GET to the 1000
+    // most-recently-created rows, hiding older records from every admin
+    // related-stats list), so page past it with fetchAllPaginated - the same
+    // helper fetchPlayerStatsAggregateForTeam (src/lib/data/teams.ts) uses for the
+    // public-facing career-stats aggregate on this same table.
+    // Ordered by created_at then id (not created_at alone): POST above can upsert
+    // an entire match's rows in one call, giving them an identical created_at, and
+    // an unbroken tie at a page boundary could otherwise skip or duplicate a row
+    // across two .range() pages.
+    const { data, error } = await fetchAllPaginated((from, to) =>
+      supabaseAdmin
         .from('player_stats')
         .select('*')
         .order('created_at', { ascending: false })
-        .range(from, from + PLAYER_STATS_PAGE_SIZE - 1);
+        .order('id', { ascending: true })
+        .range(from, to)
+    );
 
-      if (error) {
-        return NextResponse.json(handleApiError(error, 'Failed to fetch player stats'), { status: 400 });
-      }
-
-      data.push(...(page ?? []));
-      if (!page || page.length < PLAYER_STATS_PAGE_SIZE) break;
+    if (error) {
+      return NextResponse.json(handleApiError(error, 'Failed to fetch player stats'), { status: 400 });
     }
 
     return NextResponse.json({ data });

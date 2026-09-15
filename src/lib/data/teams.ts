@@ -4,6 +4,7 @@ import { Match } from './matches';
 import { Team } from './stadiums';
 import type { Player } from './players';
 import { fetchAllFromDB, fetchByIdFromDB, fetchWithMatchCountFromDB } from './generic-fetchers';
+import { fetchAllPaginated } from '@/lib/utils/paginate';
 
 export interface TeamWithMatchCount extends Team {
   match_count?: number;
@@ -76,26 +77,21 @@ export interface PlayerStatsAggregate {
 // needs Tottenham's career stats for every player, not just this team's
 // current/former squad members).
 export async function fetchPlayerStatsAggregateForTeam(teamId: string): Promise<Map<string, PlayerStatsAggregate>> {
-  // Fetch player_stats for all matches to aggregate stats. Paginated - PostgREST caps
-  // a single request at 1000 rows, and Tottenham alone has more player_stats rows than
-  // that, which was silently truncating (and undercounting) these aggregates.
-  const playerStats: { player_id: string; goals: number | null; assists: number | null; yellow_cards: number | null; red_cards: number | null; was_unused_substitute: boolean | null }[] = [];
-  let statsError: { message: string } | null = null;
-  const PLAYER_STATS_PAGE_SIZE = 1000;
-  for (let from = 0; ; from += PLAYER_STATS_PAGE_SIZE) {
-    const { data: page, error } = await supabase
+  // Fetch player_stats for all matches to aggregate stats, paginated via
+  // fetchAllPaginated - PostgREST caps a single request at 1000 rows, and Tottenham
+  // alone has more player_stats rows than that, which was silently truncating (and
+  // undercounting) these aggregates. Ordered by id (a stable, unique tiebreaker) so a
+  // batch of rows sharing the same created_at - e.g. a whole match upserted in one
+  // POST - can't be skipped or duplicated across a .range() page boundary.
+  type PlayerStatRow = { player_id: string; goals: number | null; assists: number | null; yellow_cards: number | null; red_cards: number | null; was_unused_substitute: boolean | null };
+  const { data: playerStats, error: statsError } = await fetchAllPaginated<PlayerStatRow>((from, to) =>
+    supabase
       .from('player_stats')
       .select('*')
       .eq('team_id', teamId)
-      .range(from, from + PLAYER_STATS_PAGE_SIZE - 1);
-
-    if (error) {
-      statsError = error;
-      break;
-    }
-    playerStats.push(...(page ?? []));
-    if (!page || page.length < PLAYER_STATS_PAGE_SIZE) break;
-  }
+      .order('id', { ascending: true })
+      .range(from, to)
+  );
 
   if (statsError) {
     console.error('Error fetching player stats for team:', statsError);
