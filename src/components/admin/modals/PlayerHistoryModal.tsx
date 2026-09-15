@@ -22,6 +22,12 @@ export function PlayerHistoryModal({
   onDelete,
   onSubmit,
 }: PlayerHistoryModalProps) {
+  const teamOptions = teams.map((team) => (
+    <option key={team.id} value={team.id}>
+      {team.name}
+    </option>
+  ));
+
   return (
     <FormModal
       title={editingPlayerHistoryId ? 'Edit Player History' : 'Add Player History'}
@@ -40,11 +46,7 @@ export function PlayerHistoryModal({
           className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
         >
           <option value="">Select a team</option>
-          {teams.map((team) => (
-            <option key={team.id} value={team.id}>
-              {team.name}
-            </option>
-          ))}
+          {teamOptions}
         </select>
       </div>
       <div>
@@ -56,11 +58,7 @@ export function PlayerHistoryModal({
           className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
         >
           <option value="">Not a loan</option>
-          {teams.map((team) => (
-            <option key={team.id} value={team.id}>
-              {team.name}
-            </option>
-          ))}
+          {teamOptions}
         </select>
       </div>
       <div>

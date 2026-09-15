@@ -432,6 +432,35 @@ describe('players data layer', () => {
       });
     });
 
+    it('breaks a tie on identical joined_on dates using created_at, rather than DB return order', async () => {
+      // Array.sort is only stable relative to input order, and PostgREST doesn't
+      // guarantee embedded-relation row order without an explicit .order() - so an
+      // unbroken joined_on tie would silently reintroduce the same DB-order-dependent
+      // ambiguity getCurrentClubFromHistory exists to avoid. created_at (always
+      // effectively unique) breaks the tie deterministically instead.
+      jest.resetModules();
+      const player = makePlayer({
+        id: 'player-42',
+        player_history: [
+          { team_id: 1, joined_on: '2026-01-04', left_on: null, created_at: '2026-01-04T09:00:00.000Z', team: { id: 1, name: 'Tottenham Hotspur' }, on_loan_from_team: null },
+          { team_id: 20, joined_on: '2026-01-04', left_on: null, created_at: '2026-01-04T10:30:00.000Z', team: { id: 20, name: 'Reading' }, on_loan_from_team: { id: 1, name: 'Tottenham Hotspur' } },
+        ],
+      });
+      const mockFrom = mockSupabaseFrom({
+        players: { data: player, error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayerById } = await import('@/lib/data/players');
+      const result = await getPlayerById('player-42');
+
+      expect(result?.current_club).toEqual({
+        id: 20,
+        name: 'Reading',
+        onLoanFrom: { id: 1, name: 'Tottenham Hotspur' },
+      });
+    });
+
     it('returns current_club null when the player has no ongoing history entry', async () => {
       jest.resetModules();
       const player = makePlayer({

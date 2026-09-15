@@ -9,6 +9,13 @@ import { fetchPlayerStatsAggregateForTeam, type PlayerWithStats as TeamPlayerWit
 // teamId param, convert with String()).
 const TOTTENHAM_TEAM_ID = 1;
 
+// Shared Supabase select fragment for player_history joined to both of its team
+// relations. Needs explicit FK hints (team:teams!<fk_name>) because player_history
+// now has two FKs to teams (team_id, on_loan_from_team_id) - PostgREST can't
+// disambiguate an embed on "teams" without one.
+const PLAYER_HISTORY_WITH_TEAMS_SELECT =
+  'player_history:player_history(*, team:teams!player_history_team_id_fkey(id, name), on_loan_from_team:teams!player_history_on_loan_from_team_id_fkey(id, name))';
+
 export interface PlayerHistoryEntry {
   team: { id: number; name: string } | null;
   joined_on: string | null;
@@ -77,6 +84,12 @@ export interface TeamLineup {
   players: PlayerWithStats[];
 }
 
+// Projects a joined team/on_loan_from_team relation (as returned by Supabase's
+// embedded-resource select) down to the {id, name} shape exposed on Player/PlayerHistoryEntry.
+function toTeamRef(team: { id: number; name: string } | null | undefined): { id: number; name: string } | null {
+  return team ? { id: team.id, name: team.name } : null;
+}
+
 // Helper function to find the correct squad number from player_history as of a
 // given reference date (the match date for match lineups, or today for a
 // player's current squad number) - not always "today", since a squad number
@@ -110,13 +123,22 @@ function getSquadNumberFromHistory(player: any, referenceDate: Date = new Date()
 // row over a genuinely newer non-loan record (e.g. an admin forgetting to close the old
 // loan row when the player returns). The chosen record's own on_loan_from_team (if any)
 // is what's surfaced via onLoanFrom.
+// Ties on joined_on (e.g. a same-day transfer, or a data-entry duplicate) fall back to
+// created_at, since Array.sort is only stable relative to the input order - which
+// PostgREST does not guarantee for an embedded relation without an explicit .order(),
+// so an unbroken joined_on tie would silently reintroduce the same DB-order-dependent
+// ambiguity this function exists to avoid.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getCurrentClubFromHistory(player: any): { id: number; name: string; onLoanFrom: { id: number; name: string } | null } | null {
   const openRecords = (player?.player_history ?? [])
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .filter((history: any) => !history.left_on || new Date(history.left_on) > new Date())
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .sort((a: any, b: any) => (b.joined_on ?? '').localeCompare(a.joined_on ?? ''));
+    .sort((a: any, b: any) => {
+      const joinedDiff = (b.joined_on ?? '').localeCompare(a.joined_on ?? '');
+      if (joinedDiff !== 0) return joinedDiff;
+      return (b.created_at ?? '').localeCompare(a.created_at ?? '');
+    });
 
   const record = openRecords[0];
   if (!record?.team) return null;
@@ -124,9 +146,7 @@ function getCurrentClubFromHistory(player: any): { id: number; name: string; onL
   return {
     id: record.team.id,
     name: record.team.name,
-    onLoanFrom: record.on_loan_from_team
-      ? { id: record.on_loan_from_team.id, name: record.on_loan_from_team.name }
-      : null,
+    onLoanFrom: toTeamRef(record.on_loan_from_team),
   };
 }
 
@@ -139,11 +159,11 @@ function getHistoryFromRecord(player: any): PlayerHistoryEntry[] {
   return [...history]
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .map((entry: any) => ({
-      team: entry.team ? { id: entry.team.id, name: entry.team.name } : null,
+      team: toTeamRef(entry.team),
       joined_on: entry.joined_on ?? null,
       left_on: entry.left_on ?? null,
       squad_number: entry.squad_number ?? null,
-      on_loan_from_team: entry.on_loan_from_team ? { id: entry.on_loan_from_team.id, name: entry.on_loan_from_team.name } : null,
+      on_loan_from_team: toTeamRef(entry.on_loan_from_team),
     }))
     .sort((a, b) => {
       const aOngoing = !a.left_on;
@@ -336,7 +356,7 @@ export const getTeamLineupsByMatch = createCachedFunction(
 async function fetchPlayerByIdFromDB(playerId: string): Promise<Player | null> {
   const { data, error } = await supabase
     .from('players')
-    .select('*, player_history:player_history(*, team:teams!player_history_team_id_fkey(id, name), on_loan_from_team:teams!player_history_on_loan_from_team_id_fkey(id, name))')
+    .select(`*, ${PLAYER_HISTORY_WITH_TEAMS_SELECT}`)
     .eq('id', playerId)
     .single();
 
@@ -451,7 +471,7 @@ async function fetchAllPlayersFromDB(): Promise<TeamPlayerWithStats[]> {
   const [{ data, error }, statsByPlayer] = await Promise.all([
     supabase
       .from('players')
-      .select('*, player_history:player_history(*, team:teams!player_history_team_id_fkey(id, name), on_loan_from_team:teams!player_history_on_loan_from_team_id_fkey(id, name))'),
+      .select(`*, ${PLAYER_HISTORY_WITH_TEAMS_SELECT}`),
     fetchPlayerStatsAggregateForTeam(String(TOTTENHAM_TEAM_ID)),
   ]);
 

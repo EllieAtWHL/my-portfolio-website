@@ -256,8 +256,10 @@ export function usePlayersAdmin({ players, setPlayers, setLoading, showMessage }
       setPlayerHistoryFormError(null);
       const payload = {
         ...playerHistoryForm,
+        // Only left_on needs a fallback here: it comes from a date <input> and can be
+        // '', whereas on_loan_from_team_id is only ever set to number | null (its
+        // <select>'s onChange already normalizes '' to null - see PlayerHistoryModal).
         left_on: playerHistoryForm.left_on || null,
-        on_loan_from_team_id: playerHistoryForm.on_loan_from_team_id || null,
       };
       const response = editingPlayerHistoryId
         ? await callAdminApi('player-history', 'PUT', { id: editingPlayerHistoryId, ...payload })
