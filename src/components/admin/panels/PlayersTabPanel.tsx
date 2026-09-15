@@ -14,6 +14,15 @@ function teamNameById(teams: Team[], teamId: number): string {
   return teams.find(t => t.id === teamId)?.name ?? teamId.toString();
 }
 
+// Shared by the Player Stats related list's Opponent column and its search filter
+// (WEB-169), so the two stay in sync rather than re-deriving this independently.
+function resolveOpponentName(stat: PlayerStats, match: Match | undefined, teams: Team[]): string {
+  if (!match) return '';
+  const opponentTeamId = match.home_team_id === stat.team_id ? match.away_team_id : match.home_team_id;
+  const opponentTeam = teams.find(t => t.id === opponentTeamId);
+  return opponentTeam?.short_name || opponentTeam?.name || '';
+}
+
 interface PlayersTabPanelProps {
   playersAdmin: ReturnType<typeof usePlayersAdmin>;
   teams: Team[];
@@ -100,7 +109,10 @@ export function PlayersTabPanel({
 
       {playerEditTab === 'related' && isPlayerEditMode && (
         <div id="player-related-panel" role="tabpanel" aria-labelledby="tab-related" className="space-y-4">
-          {/* Player Stats related list */}
+          {/* Player Stats related list - a player's whole career, which can grow long
+              (unlike the Match tab's version of this list, capped at one squad), so
+              this is the one RelatedList consumer that opts into search + pagination
+              (WEB-169). */}
           <RelatedList
             title="Player Stats"
             records={relatedPlayerStatsForPlayer}
@@ -120,12 +132,7 @@ export function PlayersTabPanel({
                 label: 'Opponent',
                 render: (value: unknown, stat: PlayerStats) => {
                   const match = matches.find(m => m.id === (value as string));
-                  if (!match) return '-';
-                  const opponentTeamId = match.home_team_id === stat.team_id
-                    ? match.away_team_id
-                    : match.home_team_id;
-                  const opponentTeam = teams.find(t => t.id === opponentTeamId);
-                  return opponentTeam?.short_name || opponentTeam?.name || '-';
+                  return resolveOpponentName(stat, match, teams) || '-';
                 }
               },
               { key: 'started', label: 'Started', render: (value: unknown) => (value as boolean) ? 'Yes' : 'No' },
@@ -135,6 +142,17 @@ export function PlayersTabPanel({
             onNew={() => openNewPlayerStats('player')}
             onRecordClick={(stat) => openEditPlayerStats(stat, 'player')}
             emptyMessage="No player stats records found"
+            search={{
+              id: 'player-stats',
+              placeholder: 'Search by match date or opponent...',
+              perPage: 10,
+              filterFn: (stat, searchTerm) => {
+                const term = searchTerm.toLowerCase();
+                const match = matches.find(m => m.id === stat.match_id);
+                const opponentName = resolveOpponentName(stat, match, teams);
+                return (match?.date ?? '').toLowerCase().includes(term) || opponentName.toLowerCase().includes(term);
+              },
+            }}
           />
 
           {/* Player History related list */}
