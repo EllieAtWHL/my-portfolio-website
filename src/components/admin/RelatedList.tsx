@@ -3,6 +3,12 @@ import { Pagination } from '@/components/admin/Pagination';
 import SearchInput from '@/components/spurs-women/SearchInput';
 import { useSearchPagination } from '@/hooks/useSearchPagination';
 
+// Stable fallback for callers that don't pass `search` (most RelatedList usages).
+// Module-level, not inline, so it's the same function reference across renders -
+// an inline `() => true` would be a fresh reference every render, defeating
+// useSearchPagination's own useMemo for every one of those non-search usages.
+const alwaysMatch = () => true;
+
 interface ColumnConfig<T> {
   key: keyof T;
   label: string;
@@ -12,7 +18,7 @@ interface ColumnConfig<T> {
 }
 
 interface RelatedListSearchConfig<T> {
-  /** Used to build the SearchInput's id/label and, combined with `title`, the Pagination's item label. */
+  /** Used to build the SearchInput's id/label. */
   id: string;
   placeholder: string;
   filterFn: (record: T, search: string) => unknown;
@@ -52,7 +58,7 @@ export function RelatedList<T extends Record<string, unknown> | { id?: string }>
     totalPages,
     filteredCount,
     paginatedItems,
-  } = useSearchPagination(records, search?.filterFn ?? (() => true), search?.perPage);
+  } = useSearchPagination(records, search?.filterFn ?? alwaysMatch, search?.perPage);
 
   return (
     <div className="mb-6 border border-gray-600 rounded-lg overflow-hidden">

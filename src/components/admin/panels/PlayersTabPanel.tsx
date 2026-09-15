@@ -17,11 +17,23 @@ function teamNameById(teams: Team[], teamId: number): string {
 
 // Shared by the Player Stats related list's Opponent column and its search filter
 // (WEB-169), so the two stay in sync rather than re-deriving this independently.
-function resolveOpponentName(stat: PlayerStats, match: Match | undefined, teams: Team[]): string {
+// Exported (with matchesPlayerStatsSearch below) so this non-trivial logic gets its
+// own direct unit tests rather than only indirect coverage through the rendered panel.
+export function resolveOpponentName(stat: PlayerStats, match: Match | undefined, teams: Team[]): string {
   if (!match) return '';
   const opponentTeamId = match.home_team_id === stat.team_id ? match.away_team_id : match.home_team_id;
   const opponentTeam = teams.find(t => t.id === opponentTeamId);
   return opponentTeam?.short_name || opponentTeam?.name || '';
+}
+
+// The Player Stats related list's search predicate (WEB-169) - a plain function so it
+// can be unit tested directly, wrapped in a useCallback below only where it needs to be
+// a stable reference for useSearchPagination's memoization.
+export function matchesPlayerStatsSearch(stat: PlayerStats, searchTerm: string, matches: Match[], teams: Team[]): boolean {
+  const term = searchTerm.toLowerCase();
+  const match = matches.find(m => m.id === stat.match_id);
+  const opponentName = resolveOpponentName(stat, match, teams);
+  return (match?.date ?? '').toLowerCase().includes(term) || opponentName.toLowerCase().includes(term);
 }
 
 interface PlayersTabPanelProps {
@@ -75,12 +87,10 @@ export function PlayersTabPanel({
     handlePlayerHistorySubmit,
   } = playersAdmin;
 
-  const playerStatsFilterFn = useCallback((stat: PlayerStats, searchTerm: string) => {
-    const term = searchTerm.toLowerCase();
-    const match = matches.find(m => m.id === stat.match_id);
-    const opponentName = resolveOpponentName(stat, match, teams);
-    return (match?.date ?? '').toLowerCase().includes(term) || opponentName.toLowerCase().includes(term);
-  }, [matches, teams]);
+  const playerStatsFilterFn = useCallback(
+    (stat: PlayerStats, searchTerm: string) => matchesPlayerStatsSearch(stat, searchTerm, matches, teams),
+    [matches, teams]
+  );
 
   return (
     <>
