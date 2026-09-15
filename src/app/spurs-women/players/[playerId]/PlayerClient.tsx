@@ -119,9 +119,14 @@ export default function PlayerClient({ player, matchHistory = [] }: PlayerClient
               <div>
                 <span className="font-semibold">Current Club:</span>{' '}
                 {player.current_club ? (
-                  <Link href={`/spurs-women/teams/${player.current_club.id}`} className="spurs-text hover:underline">
-                    {player.current_club.name}
-                  </Link>
+                  <>
+                    <Link href={`/spurs-women/teams/${player.current_club.id}`} className="spurs-text hover:underline">
+                      {player.current_club.name}
+                    </Link>
+                    {player.current_club.onLoanFrom && (
+                      <span className="opacity-75"> (on loan from {player.current_club.onLoanFrom.name})</span>
+                    )}
+                  </>
                 ) : (
                   'No club found'
                 )}
@@ -148,7 +153,7 @@ export default function PlayerClient({ player, matchHistory = [] }: PlayerClient
                       <span className="font-semibold">Unknown club</span>
                     )}
                     {entry.squad_number && <span className="opacity-75"> · #{entry.squad_number}</span>}
-                    {entry.is_loan && <span className="opacity-75"> · Loan</span>}
+                    {entry.on_loan_from_team && <span className="opacity-75"> · Loan from {entry.on_loan_from_team.name}</span>}
                   </div>
                   <div className="opacity-75 text-sm">
                     {entry.joined_on ? formatDateConsistent(entry.joined_on) : 'Unknown'} – {entry.left_on ? formatDateConsistent(entry.left_on) : 'Present'}

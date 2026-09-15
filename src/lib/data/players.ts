@@ -9,12 +9,19 @@ import { fetchPlayerStatsAggregateForTeam, type PlayerWithStats as TeamPlayerWit
 // teamId param, convert with String()).
 const TOTTENHAM_TEAM_ID = 1;
 
+// Shared Supabase select fragment for player_history joined to both of its team
+// relations. Needs explicit FK hints (team:teams!<fk_name>) because player_history
+// now has two FKs to teams (team_id, on_loan_from_team_id) - PostgREST can't
+// disambiguate an embed on "teams" without one.
+const PLAYER_HISTORY_WITH_TEAMS_SELECT =
+  'player_history:player_history(*, team:teams!player_history_team_id_fkey(id, name), on_loan_from_team:teams!player_history_on_loan_from_team_id_fkey(id, name))';
+
 export interface PlayerHistoryEntry {
   team: { id: number; name: string } | null;
   joined_on: string | null;
   left_on: string | null;
   squad_number: number | null;
-  is_loan: boolean;
+  on_loan_from_team: { id: number; name: string } | null;
 }
 
 export interface Player {
@@ -29,7 +36,7 @@ export interface Player {
   profile_image_url: string | null;
   squad_number: number | null;
   legacy_number: number | null;
-  current_club?: { id: number; name: string } | null;
+  current_club?: { id: number; name: string; onLoanFrom: { id: number; name: string } | null } | null;
   history?: PlayerHistoryEntry[];
   created_at: string;
   updated_at: string;
@@ -77,6 +84,12 @@ export interface TeamLineup {
   players: PlayerWithStats[];
 }
 
+// Projects a joined team/on_loan_from_team relation (as returned by Supabase's
+// embedded-resource select) down to the {id, name} shape exposed on Player/PlayerHistoryEntry.
+function toTeamRef(team: { id: number; name: string } | null | undefined): { id: number; name: string } | null {
+  return team ? { id: team.id, name: team.name } : null;
+}
+
 // Helper function to find the correct squad number from player_history as of a
 // given reference date (the match date for match lineups, or today for a
 // player's current squad number) - not always "today", since a squad number
@@ -100,38 +113,71 @@ function getSquadNumberFromHistory(player: any, referenceDate: Date = new Date()
   return relevantHistory?.squad_number || null;
 }
 
-// Helper function to find a player's current club (any team, not just Tottenham) from player_history
+// Shared by getCurrentClubFromHistory and getHistoryFromRecord: orders raw player_history
+// rows by joined_on descending, breaking ties on created_at. The created_at tiebreak
+// matters because Array.sort is only stable relative to input order, and PostgREST does
+// not guarantee row order for an embedded relation without an explicit .order() - so two
+// rows sharing a joined_on (a same-day transfer, or a data-entry duplicate) would
+// otherwise fall back to unordered DB return order, silently reintroducing the same
+// DB-order-dependent ambiguity these functions exist to avoid.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getCurrentClubFromHistory(player: any): { id: number; name: string } | null {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const currentHistory = player?.player_history?.find((history: any) =>
-    !history.left_on || new Date(history.left_on) > new Date()
-  );
+function compareByJoinedOnDesc(a: any, b: any): number {
+  const joinedDiff = (b.joined_on ?? '').localeCompare(a.joined_on ?? '');
+  if (joinedDiff !== 0) return joinedDiff;
+  return (b.created_at ?? '').localeCompare(a.created_at ?? '');
+}
 
-  return currentHistory?.team ? { id: currentHistory.team.id, name: currentHistory.team.name } : null;
+// Helper function to find a player's current club (any team, not just Tottenham) from
+// player_history. A player can have two records open at once - e.g. an outbound loan
+// away from Tottenham while the Tottenham contract itself stays open with no left_on.
+// Picking the most recently joined open record (rather than an unordered .find())
+// resolves this correctly on its own: a loan's joined_on is always later than the
+// still-open parent-club record it overlaps, so it naturally sorts first - no separate
+// "prefer loan records" rule needed, which would otherwise risk surfacing a stale loan
+// row over a genuinely newer non-loan record (e.g. an admin forgetting to close the old
+// loan row when the player returns). The chosen record's own on_loan_from_team (if any)
+// is what's surfaced via onLoanFrom.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getCurrentClubFromHistory(player: any): { id: number; name: string; onLoanFrom: { id: number; name: string } | null } | null {
+  const openRecords = (player?.player_history ?? [])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .filter((history: any) => !history.left_on || new Date(history.left_on) > new Date())
+    .sort(compareByJoinedOnDesc);
+
+  const record = openRecords[0];
+  if (!record?.team) return null;
+
+  return {
+    id: record.team.id,
+    name: record.team.name,
+    onLoanFrom: toTeamRef(record.on_loan_from_team),
+  };
 }
 
 // Helper function to build a player's full club history (all teams, ongoing stint first,
-// then most recently joined first) from their raw player_history rows.
+// then most recently joined first, ties broken by created_at) from their raw
+// player_history rows. Sorts the raw rows (while created_at is still present) before
+// mapping down to PlayerHistoryEntry's public shape, which doesn't expose it.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getHistoryFromRecord(player: any): PlayerHistoryEntry[] {
   const history = player?.player_history ?? [];
 
   return [...history]
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .map((entry: any) => ({
-      team: entry.team ? { id: entry.team.id, name: entry.team.name } : null,
-      joined_on: entry.joined_on ?? null,
-      left_on: entry.left_on ?? null,
-      squad_number: entry.squad_number ?? null,
-      is_loan: !!entry.is_loan,
-    }))
-    .sort((a, b) => {
+    .sort((a: any, b: any) => {
       const aOngoing = !a.left_on;
       const bOngoing = !b.left_on;
       if (aOngoing !== bOngoing) return aOngoing ? -1 : 1;
-      return (b.joined_on ?? '').localeCompare(a.joined_on ?? '');
-    });
+      return compareByJoinedOnDesc(a, b);
+    })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .map((entry: any) => ({
+      team: toTeamRef(entry.team),
+      joined_on: entry.joined_on ?? null,
+      left_on: entry.left_on ?? null,
+      squad_number: entry.squad_number ?? null,
+      on_loan_from_team: toTeamRef(entry.on_loan_from_team),
+    }));
 }
 
 async function fetchPlayersByMatchFromDB(matchId: string): Promise<PlayerWithStats[]> {
@@ -317,7 +363,7 @@ export const getTeamLineupsByMatch = createCachedFunction(
 async function fetchPlayerByIdFromDB(playerId: string): Promise<Player | null> {
   const { data, error } = await supabase
     .from('players')
-    .select('*, player_history:player_history(*, team:teams(id, name))')
+    .select(`*, ${PLAYER_HISTORY_WITH_TEAMS_SELECT}`)
     .eq('id', playerId)
     .single();
 
@@ -432,7 +478,7 @@ async function fetchAllPlayersFromDB(): Promise<TeamPlayerWithStats[]> {
   const [{ data, error }, statsByPlayer] = await Promise.all([
     supabase
       .from('players')
-      .select('*, player_history:player_history(*, team:teams(id, name))'),
+      .select(`*, ${PLAYER_HISTORY_WITH_TEAMS_SELECT}`),
     fetchPlayerStatsAggregateForTeam(String(TOTTENHAM_TEAM_ID)),
   ]);
 

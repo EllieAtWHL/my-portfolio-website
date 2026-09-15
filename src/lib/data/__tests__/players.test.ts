@@ -371,7 +371,94 @@ describe('players data layer', () => {
       const { getPlayerById } = await import('@/lib/data/players');
       const result = await getPlayerById('player-42');
 
-      expect(result?.current_club).toEqual({ id: 5, name: 'Chelsea' });
+      expect(result?.current_club).toEqual({ id: 5, name: 'Chelsea', onLoanFrom: null });
+    });
+
+    it('prefers the loan record when an active loan overlaps an open parent-club record', async () => {
+      // The bug this guards against: a player can have two simultaneously-open
+      // player_history rows (an outbound loan while their Tottenham contract
+      // stays open with no left_on). Picking one via plain .find() with no
+      // ordering was previously arbitrary/DB-order-dependent - the most
+      // recently joined open record wins deterministically, which here is the
+      // loan (its parent club is surfaced via onLoanFrom).
+      jest.resetModules();
+      const player = makePlayer({
+        id: 'player-42',
+        player_history: [
+          { team_id: 1, joined_on: '2022-01-01', left_on: null, team: { id: 1, name: 'Tottenham Hotspur' }, on_loan_from_team: null },
+          { team_id: 20, joined_on: '2026-01-04', left_on: null, team: { id: 20, name: 'Reading' }, on_loan_from_team: { id: 1, name: 'Tottenham Hotspur' } },
+        ],
+      });
+      const mockFrom = mockSupabaseFrom({
+        players: { data: player, error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayerById } = await import('@/lib/data/players');
+      const result = await getPlayerById('player-42');
+
+      expect(result?.current_club).toEqual({
+        id: 20,
+        name: 'Reading',
+        onLoanFrom: { id: 1, name: 'Tottenham Hotspur' },
+      });
+    });
+
+    it('prefers a newer non-loan record over a stale loan record left open by mistake', async () => {
+      // Picking "the most recent open record" rather than "any open loan record"
+      // matters here: if an admin forgets to close out an old loan row's left_on
+      // when the player returns and a fresh Tottenham record is opened, the newer
+      // non-loan record must win - not the stale loan, even though it's also open.
+      jest.resetModules();
+      const player = makePlayer({
+        id: 'player-42',
+        player_history: [
+          { team_id: 20, joined_on: '2024-01-04', left_on: null, team: { id: 20, name: 'Reading' }, on_loan_from_team: { id: 1, name: 'Tottenham Hotspur' } },
+          { team_id: 1, joined_on: '2025-07-01', left_on: null, team: { id: 1, name: 'Tottenham Hotspur' }, on_loan_from_team: null },
+        ],
+      });
+      const mockFrom = mockSupabaseFrom({
+        players: { data: player, error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayerById } = await import('@/lib/data/players');
+      const result = await getPlayerById('player-42');
+
+      expect(result?.current_club).toEqual({
+        id: 1,
+        name: 'Tottenham Hotspur',
+        onLoanFrom: null,
+      });
+    });
+
+    it('breaks a tie on identical joined_on dates using created_at, rather than DB return order', async () => {
+      // Array.sort is only stable relative to input order, and PostgREST doesn't
+      // guarantee embedded-relation row order without an explicit .order() - so an
+      // unbroken joined_on tie would silently reintroduce the same DB-order-dependent
+      // ambiguity getCurrentClubFromHistory exists to avoid. created_at (always
+      // effectively unique) breaks the tie deterministically instead.
+      jest.resetModules();
+      const player = makePlayer({
+        id: 'player-42',
+        player_history: [
+          { team_id: 1, joined_on: '2026-01-04', left_on: null, created_at: '2026-01-04T09:00:00.000Z', team: { id: 1, name: 'Tottenham Hotspur' }, on_loan_from_team: null },
+          { team_id: 20, joined_on: '2026-01-04', left_on: null, created_at: '2026-01-04T10:30:00.000Z', team: { id: 20, name: 'Reading' }, on_loan_from_team: { id: 1, name: 'Tottenham Hotspur' } },
+        ],
+      });
+      const mockFrom = mockSupabaseFrom({
+        players: { data: player, error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayerById } = await import('@/lib/data/players');
+      const result = await getPlayerById('player-42');
+
+      expect(result?.current_club).toEqual({
+        id: 20,
+        name: 'Reading',
+        onLoanFrom: { id: 1, name: 'Tottenham Hotspur' },
+      });
     });
 
     it('returns current_club null when the player has no ongoing history entry', async () => {
@@ -398,9 +485,9 @@ describe('players data layer', () => {
       const player = makePlayer({
         id: 'player-42',
         player_history: [
-          { team_id: 1, joined_on: '2018-08-01', left_on: '2020-06-30', squad_number: 22, is_loan: false, team: { id: 1, name: 'Tottenham Hotspur' } },
-          { team_id: 5, joined_on: '2020-07-01', left_on: '2023-01-04', squad_number: 10, is_loan: true, team: { id: 5, name: 'Chelsea' } },
-          { team_id: 1, joined_on: '2023-01-05', left_on: null, squad_number: 7, is_loan: false, team: { id: 1, name: 'Tottenham Hotspur' } },
+          { team_id: 1, joined_on: '2018-08-01', left_on: '2020-06-30', squad_number: 22, on_loan_from_team: null, team: { id: 1, name: 'Tottenham Hotspur' } },
+          { team_id: 5, joined_on: '2020-07-01', left_on: '2023-01-04', squad_number: 10, on_loan_from_team: { id: 1, name: 'Tottenham Hotspur' }, team: { id: 5, name: 'Chelsea' } },
+          { team_id: 1, joined_on: '2023-01-05', left_on: null, squad_number: 7, on_loan_from_team: null, team: { id: 1, name: 'Tottenham Hotspur' } },
         ],
       });
       const mockFrom = mockSupabaseFrom({
@@ -412,9 +499,35 @@ describe('players data layer', () => {
       const result = await getPlayerById('player-42');
 
       expect(result?.history).toEqual([
-        { team: { id: 1, name: 'Tottenham Hotspur' }, joined_on: '2023-01-05', left_on: null, squad_number: 7, is_loan: false },
-        { team: { id: 5, name: 'Chelsea' }, joined_on: '2020-07-01', left_on: '2023-01-04', squad_number: 10, is_loan: true },
-        { team: { id: 1, name: 'Tottenham Hotspur' }, joined_on: '2018-08-01', left_on: '2020-06-30', squad_number: 22, is_loan: false },
+        { team: { id: 1, name: 'Tottenham Hotspur' }, joined_on: '2023-01-05', left_on: null, squad_number: 7, on_loan_from_team: null },
+        { team: { id: 5, name: 'Chelsea' }, joined_on: '2020-07-01', left_on: '2023-01-04', squad_number: 10, on_loan_from_team: { id: 1, name: 'Tottenham Hotspur' } },
+        { team: { id: 1, name: 'Tottenham Hotspur' }, joined_on: '2018-08-01', left_on: '2020-06-30', squad_number: 22, on_loan_from_team: null },
+      ]);
+    });
+
+    it('breaks a history-ordering tie on identical joined_on dates using created_at', async () => {
+      // Same rationale as the current_club tie-break test above: two closed
+      // records sharing a joined_on must not fall back to unguaranteed DB
+      // return order in the rendered Club History list either.
+      jest.resetModules();
+      const player = makePlayer({
+        id: 'player-42',
+        player_history: [
+          { team_id: 5, joined_on: '2020-07-01', left_on: '2023-01-04', squad_number: 10, created_at: '2020-07-01T09:00:00.000Z', on_loan_from_team: null, team: { id: 5, name: 'Chelsea' } },
+          { team_id: 8, joined_on: '2020-07-01', left_on: '2023-01-04', squad_number: 4, created_at: '2020-07-01T10:30:00.000Z', on_loan_from_team: null, team: { id: 8, name: 'Leicester City' } },
+        ],
+      });
+      const mockFrom = mockSupabaseFrom({
+        players: { data: player, error: null },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getPlayerById } = await import('@/lib/data/players');
+      const result = await getPlayerById('player-42');
+
+      expect(result?.history).toEqual([
+        { team: { id: 8, name: 'Leicester City' }, joined_on: '2020-07-01', left_on: '2023-01-04', squad_number: 4, on_loan_from_team: null },
+        { team: { id: 5, name: 'Chelsea' }, joined_on: '2020-07-01', left_on: '2023-01-04', squad_number: 10, on_loan_from_team: null },
       ]);
     });
 

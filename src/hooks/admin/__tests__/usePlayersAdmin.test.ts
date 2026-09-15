@@ -52,6 +52,7 @@ const emptyPlayerHistoryFormShape = {
   joined_on: null,
   left_on: null,
   squad_number: null,
+  on_loan_from_team_id: null,
 };
 
 const history: PlayerHistory = {
@@ -61,6 +62,7 @@ const history: PlayerHistory = {
   joined_on: '2023-01-01',
   left_on: null,
   squad_number: 9,
+  on_loan_from_team_id: null,
 };
 
 const historyOther: PlayerHistory = {
@@ -70,6 +72,7 @@ const historyOther: PlayerHistory = {
   joined_on: '2022-01-01',
   left_on: null,
   squad_number: 4,
+  on_loan_from_team_id: null,
 };
 
 function statsFor(player_id: string, id: string): PlayerStats {
@@ -538,6 +541,7 @@ describe('usePlayersAdmin', () => {
         joined_on: '',
         left_on: '',
         squad_number: null,
+        on_loan_from_team_id: null,
       });
     });
 
@@ -558,6 +562,7 @@ describe('usePlayersAdmin', () => {
         joined_on: '',
         left_on: '',
         squad_number: null,
+        on_loan_from_team_id: null,
       });
     });
 
@@ -575,6 +580,23 @@ describe('usePlayersAdmin', () => {
         joined_on: '2023-01-01',
         left_on: null,
         squad_number: 9,
+        on_loan_from_team_id: null,
+      });
+    });
+
+    it('opens pre-filled with a loan record\'s on_loan_from_team_id', () => {
+      const { result } = setup();
+      const loanHistory: PlayerHistory = { ...history, id: 'history-3', on_loan_from_team_id: 5 };
+
+      act(() => result.current.openEditPlayerHistory(loanHistory));
+
+      expect(result.current.playerHistoryForm).toEqual({
+        player_id: 'player-1',
+        team_id: 1,
+        joined_on: '2023-01-01',
+        left_on: null,
+        squad_number: 9,
+        on_loan_from_team_id: 5,
       });
     });
 
@@ -619,6 +641,7 @@ describe('usePlayersAdmin', () => {
         joined_on: '2024-01-01',
         left_on: null,
         squad_number: null,
+        on_loan_from_team_id: null,
       });
       expect(mockCallAdminApi).toHaveBeenNthCalledWith(4, 'player-history', 'GET');
       expect(showMessage).toHaveBeenCalledWith('Player history created successfully', 'success');
@@ -667,8 +690,34 @@ describe('usePlayersAdmin', () => {
         joined_on: '2023-01-01',
         left_on: null,
         squad_number: 9,
+        on_loan_from_team_id: null,
       });
       expect(showMessage).toHaveBeenCalledWith('Player history updated successfully', 'success');
+    });
+
+    it('passes a non-null on_loan_from_team_id through to the create payload', async () => {
+      mockCallAdminApi.mockResolvedValueOnce({ data: { id: 'history-2' } }).mockResolvedValueOnce({ data: [] });
+      const { result } = setup();
+
+      act(() => result.current.openNewPlayerHistory());
+      act(() =>
+        result.current.setPlayerHistoryForm({
+          ...result.current.playerHistoryForm,
+          joined_on: '2024-01-01',
+          on_loan_from_team_id: 5,
+        })
+      );
+
+      await act(async () => {
+        await result.current.handlePlayerHistorySubmit();
+      });
+
+      expect(mockCallAdminApi).toHaveBeenNthCalledWith(
+        1,
+        'player-history',
+        'POST',
+        expect.objectContaining({ on_loan_from_team_id: 5 })
+      );
     });
 
     it('sets a form error and keeps the modal open when the API returns an error, without showing a message', async () => {

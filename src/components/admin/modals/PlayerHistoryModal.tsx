@@ -22,6 +22,18 @@ export function PlayerHistoryModal({
   onDelete,
   onSubmit,
 }: PlayerHistoryModalProps) {
+  const renderTeamOptions = (teamList: Team[]) =>
+    teamList.map((team) => (
+      <option key={team.id} value={team.id}>
+        {team.name}
+      </option>
+    ));
+  const teamOptions = renderTeamOptions(teams);
+  // Excludes the currently selected Team - "loaned from itself" is never a
+  // meaningful state, and nothing downstream (this route's PUT/POST, the DB) rejects
+  // it otherwise (WEB-83's known lack of admin write-payload validation).
+  const loanFromOptions = renderTeamOptions(teams.filter((team) => team.id !== form.team_id));
+
   return (
     <FormModal
       title={editingPlayerHistoryId ? 'Edit Player History' : 'Add Player History'}
@@ -40,11 +52,19 @@ export function PlayerHistoryModal({
           className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
         >
           <option value="">Select a team</option>
-          {teams.map((team) => (
-            <option key={team.id} value={team.id}>
-              {team.name}
-            </option>
-          ))}
+          {teamOptions}
+        </select>
+      </div>
+      <div>
+        <label htmlFor="player-history-loan-from" className="block text-sm font-medium text-gray-300 mb-1">Loan From</label>
+        <select
+          id="player-history-loan-from"
+          value={form.on_loan_from_team_id ?? ''}
+          onChange={(e) => onChange({ ...form, on_loan_from_team_id: e.target.value ? parseInt(e.target.value) : null })}
+          className="w-full px-3 py-2 bg-[var(--spurs-field-bg)] border border-[var(--spurs-input-border)] rounded text-[var(--spurs-input-text)]"
+        >
+          <option value="">Not a loan</option>
+          {loanFromOptions}
         </select>
       </div>
       <div>

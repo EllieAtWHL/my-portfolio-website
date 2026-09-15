@@ -10,6 +10,10 @@ import SearchInput from '@/components/spurs-women/SearchInput';
 import { usePlayersAdmin } from '@/hooks/admin/usePlayersAdmin';
 import type { Match, PlayerStats, Team } from '@/types/spurs-women-admin';
 
+function teamNameById(teams: Team[], teamId: number): string {
+  return teams.find(t => t.id === teamId)?.name ?? teamId.toString();
+}
+
 interface PlayersTabPanelProps {
   playersAdmin: ReturnType<typeof usePlayersAdmin>;
   teams: Team[];
@@ -141,15 +145,19 @@ export function PlayersTabPanel({
               {
                 key: 'team_id',
                 label: 'Team',
-                render: (value: unknown) => {
-                  const teamId = value as number;
-                  const team = teams.find(t => t.id === teamId);
-                  return team ? team.name : teamId.toString();
-                }
+                render: (value: unknown) => teamNameById(teams, value as number)
               },
               { key: 'joined_on', label: 'Joined On' },
               { key: 'left_on', label: 'Left On' },
               { key: 'squad_number', label: 'Squad Number' },
+              {
+                key: 'on_loan_from_team_id',
+                label: 'Loan From',
+                render: (value: unknown) => {
+                  const teamId = value as number | null;
+                  return teamId ? teamNameById(teams, teamId) : '-';
+                }
+              },
             ]}
             onNew={openNewPlayerHistory}
             onRecordClick={openEditPlayerHistory}

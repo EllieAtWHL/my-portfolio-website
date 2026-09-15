@@ -117,6 +117,7 @@ export interface PlayerHistory {
   joined_on: string | null;
   left_on: string | null;
   squad_number: number | null;
+  on_loan_from_team_id: number | null;
 }
 
 export interface Stadium {
