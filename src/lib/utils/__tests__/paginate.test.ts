@@ -1,7 +1,10 @@
 import { describe, it, expect, jest } from '@jest/globals';
+import { PostgrestError } from '@supabase/supabase-js';
 import { fetchAllPaginated } from '../paginate';
 
-type Page<T> = { data: T[] | null; error: { message: string } | null };
+type Page<T> = { data: T[] | null; error: PostgrestError | null };
+
+const dbDownError = new PostgrestError({ message: 'db down', details: '', hint: '', code: '' });
 
 describe('fetchAllPaginated', () => {
   it('returns all rows from a single page under the page size', async () => {
@@ -62,11 +65,11 @@ describe('fetchAllPaginated', () => {
     const fetchPage = jest.fn<(from: number, to: number) => Promise<Page<number>>>();
     fetchPage
       .mockResolvedValueOnce({ data: page1, error: null })
-      .mockResolvedValueOnce({ data: null, error: { message: 'db down' } });
+      .mockResolvedValueOnce({ data: null, error: dbDownError });
 
     const result = await fetchAllPaginated(fetchPage, 3);
 
-    expect(result).toEqual({ data: [0, 1, 2], error: { message: 'db down' } });
+    expect(result).toEqual({ data: [0, 1, 2], error: dbDownError });
     expect(fetchPage).toHaveBeenCalledTimes(2);
   });
 });

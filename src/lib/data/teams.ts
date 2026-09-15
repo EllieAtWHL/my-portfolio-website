@@ -78,11 +78,11 @@ export interface PlayerStatsAggregate {
 // current/former squad members).
 export async function fetchPlayerStatsAggregateForTeam(teamId: string): Promise<Map<string, PlayerStatsAggregate>> {
   // Fetch player_stats for all matches to aggregate stats, paginated via
-  // fetchAllPaginated - PostgREST caps a single request at 1000 rows, and Tottenham
-  // alone has more player_stats rows than that, which was silently truncating (and
-  // undercounting) these aggregates. Ordered by id (a stable, unique tiebreaker) so a
-  // batch of rows sharing the same created_at - e.g. a whole match upserted in one
-  // POST - can't be skipped or duplicated across a .range() page boundary.
+  // fetchAllPaginated - Tottenham alone has more player_stats rows than PostgREST's
+  // per-request cap, which was silently truncating (and undercounting) these
+  // aggregates (see fetchAllPaginated for why/how). Ordered by id (a stable, unique
+  // tiebreaker, unlike created_at - a whole match's rows can be upserted in one POST
+  // and share a timestamp) so this single read's row order is deterministic.
   type PlayerStatRow = { player_id: string; goals: number | null; assists: number | null; yellow_cards: number | null; red_cards: number | null; was_unused_substitute: boolean | null };
   const { data: playerStats, error: statsError } = await fetchAllPaginated<PlayerStatRow>((from, to) =>
     supabase

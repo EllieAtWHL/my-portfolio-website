@@ -25,16 +25,12 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    // PostgREST caps a single response at 1000 rows. player_stats already exceeds
-    // that (WEB-167 - it was silently truncating this GET to the 1000
-    // most-recently-created rows, hiding older records from every admin
-    // related-stats list), so page past it with fetchAllPaginated - the same
-    // helper fetchPlayerStatsAggregateForTeam (src/lib/data/teams.ts) uses for the
-    // public-facing career-stats aggregate on this same table.
+    // player_stats has grown past PostgREST's 1000-row response cap, which was
+    // silently truncating this GET (WEB-167) - see fetchAllPaginated for why/how.
     // Ordered by created_at then id (not created_at alone): POST above can upsert
     // an entire match's rows in one call, giving them an identical created_at, and
     // an unbroken tie at a page boundary could otherwise skip or duplicate a row
-    // across two .range() pages.
+    // within that single read.
     const { data, error } = await fetchAllPaginated((from, to) =>
       supabaseAdmin
         .from('player_stats')
