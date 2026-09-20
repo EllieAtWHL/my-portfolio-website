@@ -12,8 +12,12 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - static assets (images, and the PWA manifest - neither need a
+     *   Supabase session refresh, and the manifest in particular is
+     *   fetched by the OS/browser on its own schedule to check for
+     *   install-metadata updates, independent of any page load)
      * Feel free to modify this pattern to include more paths.
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|webmanifest)$).*)',
   ],
 }
