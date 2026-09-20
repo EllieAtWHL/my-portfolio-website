@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "../globals.css";
 import "../../styles/spurs-theme-layer.css";
 import SpursHeader from "../../components/spurs-women/SpursHeader";
@@ -19,9 +19,17 @@ export const metadata: Metadata = {
   // for "Add to Home Screen" and needs these instead.
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'black-translucent',
+    // 'default' keeps the status bar opaque and content below it - the
+    // fixed SpursHeader has no safe-area-inset padding, so
+    // 'black-translucent' (full-bleed under the status bar/notch) would
+    // clip the top of the nav on iOS.
+    statusBarStyle: 'default',
     title: 'Spurs Women',
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#081521',
 };
 
 export default function SpursWomenLayout({

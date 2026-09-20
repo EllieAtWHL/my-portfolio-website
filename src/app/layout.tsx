@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Nokora } from "next/font/google";
 import "./globals.css";
 import ThemeProvider from "../components/ThemeProvider";
@@ -27,6 +27,13 @@ export const metadata: Metadata = {
   },
 };
 
+// A route-tree viewport export (e.g. spurs-women/layout.tsx) overrides this
+// per-route; a plain <meta> tag here wouldn't be replaceable that way and
+// would just end up duplicated alongside the override.
+export const viewport: Viewport = {
+  themeColor: '#2d5a2d',
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -39,7 +46,6 @@ export default function RootLayout({
     >
       <head>
         <Script src="/theme-script.js" strategy="beforeInteractive" />
-        <meta name="theme-color" content="#2d5a2d" />
       </head>
       <body suppressHydrationWarning>
         <ThemeProvider>
