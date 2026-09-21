@@ -10,11 +10,11 @@ The related lists feature displays child records (media and player_stats) associ
 
 The related lists are implemented in:
 - Component: `/src/components/admin/RelatedList.tsx`
-- Usage: `/src/app/spurs-women/admin/page.tsx` - there are 5 `<RelatedList>` instances: Media (grouped by `media_type`, shown under a match), Player Stats (shown under a match), Player Stats (shown under a player - this one has the extra Opponent column, see below), Player History (shown under a player), and Stadium Names (shown under a stadium). Line numbers shift as the file changes; search for `<RelatedList` to find current locations.
+- Usage: since the WEB-127 admin-page decomposition, the 5 `<RelatedList>` instances no longer live in `page.tsx` directly - they're in the per-tab panels under `/src/components/admin/panels/`: Media and Player Stats (shown under a match) are in `MatchesTabPanel.tsx`, Player Stats (shown under a player - this one has the extra Opponent column, see below) and Player History are in `PlayersTabPanel.tsx`, and Stadium Names is in `StadiumsTabPanel.tsx`. Media is grouped by `type` (not `media_type` - see "Available Media Fields" below). Line numbers shift as these files change; search for `<RelatedList` to find current locations.
 
 ## Configuring Media Related Lists
 
-Media records are grouped by `media_type` and displayed as separate related lists. To change the fields displayed for media, modify the `columns` array in the admin page:
+Media records are grouped by `type` and displayed as separate related lists. To change the fields displayed for media, modify the `columns` array in `MatchesTabPanel.tsx`:
 
 ```typescript
 <RelatedList

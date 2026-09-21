@@ -109,6 +109,8 @@ styles/
   globals.css
 ```
 
+**Note:** this conceptual `features/` layout was the original target and was never built as a literal top-level `src/features/` directory - no such directory exists in the repo. What was actually implemented (see "Two sections, one app" in `CLAUDE.md`, and `reference/spurs-women/README.md` for the Spurs Women file map) groups by *type* rather than by feature: `src/app/{...,spurs-women/}` for routes, `src/components/spurs-women/` for Spurs Women–specific components alongside shared ones, `src/lib/data/` for the Spurs Women data layer, and `src/styles/spurs-theme.css` for Spurs Women theming. The "Clear separation between shared/personal/Spurs Women" goal above is still met, just via per-directory subfolders/naming conventions rather than a dedicated `features/` tree - so treat this code block as historical intent, not current structure.
+
 ## Requirements
 
 ### Functional Requirements
@@ -256,8 +258,8 @@ Approach:
   - Avoid try/catch in components unless handling a known failure case; prefer clear error states over silent fallbacks.
 
 Current state:
-  - `src/app/not-found.tsx` exists and is in use. `src/app/spurs-women/error.tsx` (WEB-96) is the first `error.tsx` boundary in the codebase - it sits above every `/spurs-women` route (matches, players, teams, stadiums, seasons, admin, etc.), so a single file catches thrown errors anywhere in that subtree via Next.js's nested-boundary behaviour. No `error.tsx` exists at the root or under core-site routes yet, since none of them have a data dependency that would throw.
-  - `trackError()` (WEB-97) is now called from `src/app/spurs-women/error.tsx`, the one place it can actually reach FullStory (client-rendered). It's deliberately not called from API routes or `cache-utils.ts`'s `CacheError` path, since both run server-side where `trackError()` no-ops - server-side errors are still `console.error`-only.
+  - `src/app/not-found.tsx` exists and is in use. `src/app/spurs-women/error.tsx` (WEB-96) was the first `error.tsx` boundary in the codebase, sitting above every `/spurs-women` route (matches, players, teams, stadiums, seasons, admin, etc.). Since then, WEB-125 (2026-08) added `src/app/error.tsx` and `src/app/global-error.tsx` (a root boundary for core-site routes, plus the top-level fallback Next.js requires for errors thrown in the root layout itself) and `src/app/spurs-women/admin/error.tsx` (a nested boundary that now catches admin-route errors before they'd reach `spurs-women/error.tsx`, per Next.js's nested-boundary precedence). `src/components/ErrorBoundary.tsx` is also available as a reusable component-level boundary (used where a component tree needs to fail independently of a route-level boundary) with a `context` prop for `trackError()` attribution.
+  - `trackError()` (WEB-97, extended by WEB-125) is called from `src/app/error.tsx`, `src/app/global-error.tsx`, `src/app/spurs-women/error.tsx`, `src/app/spurs-women/admin/error.tsx`, and `src/components/ErrorBoundary.tsx` - each client-rendered boundary where it can actually reach FullStory. It's deliberately not called from API routes or `cache-utils.ts`'s `CacheError` path, since both run server-side where `trackError()` no-ops - server-side errors are still `console.error`-only.
   - `src/components/ErrorState.tsx` (WEB-98) is the shared error-state component; `MatchesClient`, `MediaGallery`, `TeamClient`, and `StadiumClient` use it instead of silently rendering an empty/no-data state on fetch failure. `src/lib/data/client.ts` - the client-side fetcher module the original WEB-63 audit flagged - turned out to be dead code (zero callers besides its own test) once investigated, so it was deleted rather than "fixed."
   - `src/lib/retry.ts` (WEB-99) provides `retryWithBackoff()`, wrapping the outbound RSS/YouTube fetches in `src/lib/rss.ts` and the podcast RSS fetch in `src/lib/data/news.ts` - the external proxy routes (`spurs-women-news`, `spurs-women-videos`, `podcasts`) inherit it automatically since they call these same data-layer functions rather than fetching directly. Bounded at 3 attempts with exponential backoff by default; doesn't touch `src/lib/rate-limit.ts` (inbound) at all.
   - `public/sw.js` (WEB-100) is a minimal service worker that precaches exactly one file, `public/offline.html` (a self-contained static page, no JS/CSS dependencies), and serves it only for failed navigation requests - everything else (assets, API calls) passes straight through, untouched. Registered client-side by `src/components/ServiceWorkerRegistration.tsx`, production builds only (a dev-registered SW fights Next's own hot-reloading). `src/components/OfflineBanner.tsx` shows a fixed, site-wide banner via `useSyncExternalStore` subscribed to the browser's `online`/`offline` events - fixed positioning (`z-[200]`, matching `SkipLink`'s convention) is required because the core site's navbar is itself `position: fixed` (`z-index: 100` in `main-theme.css`), so a normal in-flow banner would render correctly in the DOM but sit invisibly behind it.
@@ -375,7 +377,7 @@ Current state:
 Decision:
   - Direct deployment via Vercel.
   - Git-based deploys from main branch.
-  - A lightweight GitHub Actions CI setup now exists: `.github/workflows/ci.yml` runs lint, typecheck, the Jest suite + coverage, and a production build (as separate jobs) on push/PR to main; `.github/workflows/playwright.yml` runs the Playwright E2E suite across chromium/firefox/webkit; `.github/workflows/validate-manifest.yml` regenerates and validates the photo manifest (it does not run a production build - that's covered by `ci.yml`'s `build` job). None of these gate the Vercel deploy itself - still no staged/enterprise-grade pipeline.
+  - A lightweight GitHub Actions CI setup now exists: `.github/workflows/ci.yml` runs lint, typecheck, the Jest suite + coverage, and a production build (as separate jobs) on PRs to `main` and on pushes to `main` or `develop`; `.github/workflows/playwright.yml` runs the Playwright E2E suite across chromium/firefox/webkit; `.github/workflows/validate-manifest.yml` regenerates and validates the photo manifest (it does not run a production build - that's covered by `ci.yml`'s `build` job). None of these gate the Vercel deploy itself - still no staged/enterprise-grade pipeline.
 
 Rationale:
   - Solo developer
@@ -772,7 +774,7 @@ For implementation detail on specific systems, see:
 
 The backlog/TODO list lives in Jira, not in this repo - see the "Jira is the source of truth" section in CLAUDE.md. The `WEB` project covers both the core site (`core-site` label) and Spurs Women (`spurs-women` label), with epics labeled both where work spans the whole site.
 
-Known open tech debt at time of writing: Button migration is incomplete (13
+Known open tech debt at time of writing: Button migration is incomplete (14
 files still render raw `<button>` elements outside the shared component - see
 BUTTON_MIGRATION.md for the current list), and cache hit-rate monitoring/
 metrics collection has not been implemented (see the Technical Debt & Performance epic in Jira).

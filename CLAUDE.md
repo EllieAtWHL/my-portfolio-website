@@ -130,7 +130,7 @@ npx playwright test            # E2E suite (chromium/firefox/webkit; auto-starts
 
 Run a single Jest test file: `npx jest path/to/file.test.tsx`. Run a single Playwright spec: `npx playwright test tests/home.spec.ts`.
 
-Other scripts (see `package.json`): `migrate-storage[:dry-run]`, `generate-external-manifest[:help]`, `init-external-local`, `validate-manifest` — all photo-gallery/storage-manifest tooling, documented in `reference/photo-gallery/README.md`.
+Other scripts (see `package.json`): `generate-external-manifest[:help]`, `init-external-local`, `validate-manifest` — all photo-gallery/storage-manifest tooling, documented in `reference/photo-gallery/README.md`. (`migrate-storage[:dry-run]` was the one-time migration script this list used to include - removed from `package.json` per WEB-123, now `scripts/migrate-storage-source.js`'s "doubly-inert" leftover, see that doc's "History" section.)
 
 **Square-bracket routes**: quote paths in git commands for dynamic route files, e.g. `git add "src/app/spurs-women/matches/[matchId]/page.tsx"` — otherwise the shell treats `[matchId]` as a glob.
 
