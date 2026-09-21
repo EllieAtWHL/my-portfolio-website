@@ -49,6 +49,11 @@ describe('extractVideoId (via fetchYouTubeMetadata / getBasicYouTubeMetadata)', 
     expect(result?.videoId).toBe('abc12345678');
   });
 
+  it('extracts the id from a live URL (livestream / livestream replay)', () => {
+    const result = getBasicYouTubeMetadata('https://www.youtube.com/live/abc12345678');
+    expect(result?.videoId).toBe('abc12345678');
+  });
+
   it('returns null for a URL that is not a recognised YouTube format', () => {
     const result = getBasicYouTubeMetadata('https://example.com/not-youtube');
     expect(result).toBeNull();
@@ -100,6 +105,26 @@ describe('fetchYouTubeMetadata', () => {
 
     expect(result).toBeNull();
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('returns full metadata for a live URL (livestream / livestream replay)', async () => {
+    fetchMock
+      .mockResolvedValueOnce(jsonResponse({ title: 'Spurs Women Live', author_name: 'Spurs Women' })) // oembed
+      .mockResolvedValueOnce(jsonResponse({})); // noembed
+
+    const result = await fetchYouTubeMetadata('https://www.youtube.com/live/abc12345678');
+
+    expect(result).toEqual({
+      title: 'Spurs Women Live',
+      channelName: 'Spurs Women',
+      thumbnail: 'https://img.youtube.com/vi/abc12345678/hqdefault.jpg',
+      videoId: 'abc12345678',
+      publishDate: undefined,
+    });
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      'https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=abc12345678&format=json'
+    );
   });
 
   it('returns full metadata composed from the oEmbed response plus a computed thumbnail URL', async () => {

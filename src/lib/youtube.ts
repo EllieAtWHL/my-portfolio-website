@@ -9,9 +9,11 @@ export interface YouTubeVideoMetadata {
 }
 
 // Function to extract video ID from YouTube URL
-function extractVideoId(url: string): string | null {
-  // Handle various YouTube URL formats including Shorts
-  const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([^&\n?#]+)/;
+export function extractVideoId(url: string): string | null {
+  // Handle various YouTube URL formats including Shorts and Live (the
+  // /live/ format YouTube uses for a livestream, both while it's live and
+  // after it ends and becomes a VOD/replay - see WEB-172).
+  const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/|youtube\.com\/live\/)([^&\n?#]+)/;
   const match = url.match(regex);
   return match ? match[1] : null;
 }

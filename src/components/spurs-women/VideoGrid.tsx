@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Media } from '@/lib/data/media';
-import { fetchMultipleYouTubeMetadata, YouTubeVideoMetadata } from '@/lib/youtube';
+import { extractVideoId, fetchMultipleYouTubeMetadata, YouTubeVideoMetadata } from '@/lib/youtube';
 import VideoCard from './VideoCard';
 import { YouTubeVideo } from '@/lib/rss';
 
@@ -22,16 +22,8 @@ function mediaToYouTubeVideo(media: Media, metadata?: YouTubeVideoMetadata): You
   }
   
   // Fallback to basic extraction without API call
-  let videoId = 'unknown';
-  const regularMatch = media.url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/);
-  const shortsMatch = media.url.match(/youtube\.com\/shorts\/([^&\n?#]+)/);
-  
-  if (regularMatch) {
-    videoId = regularMatch[1];
-  } else if (shortsMatch) {
-    videoId = shortsMatch[1];
-  }
-  
+  const videoId = extractVideoId(media.url) || 'unknown';
+
   // Generate a better title if none exists
   const generateTitleFromUrl = (): string => {
     if (videoId !== 'unknown') {
