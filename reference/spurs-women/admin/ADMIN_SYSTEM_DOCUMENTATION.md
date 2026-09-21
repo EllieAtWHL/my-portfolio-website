@@ -9,9 +9,10 @@ The admin system provides a web-based interface for managing Spurs Women's footb
 ### Components
 
 1. **Admin UI** (`src/app/spurs-women/admin/page.tsx`)
-   - Tabbed single-page interface; `page.tsx` itself is a composition root (~870 lines) that wires hooks to components, not where the logic lives
-   - Per-entity state and CRUD logic live in hooks under `src/hooks/admin/` (`useMatchesAdmin`, `useTeamsAdmin`, `usePlayersAdmin`, `useStadiumsAdmin`, plus `usePlayerStatsModal` for the player-stats modal shared between the matches and players tabs)
-   - Presentational pieces live under `src/components/admin/`: `TabNav`, `Pagination`, entity tables in `tables/` (built on a shared `DataTable`), and related-record modals in `modals/` (built on a shared `FormModal`) — see "Frontend Component Architecture" below
+   - Tabbed single-page interface; `page.tsx` itself is a composition root (402 lines as of WEB-149) that wires hooks to components, not where the logic lives — it was cut further, from ~870 lines, by WEB-127's extraction of the per-tab panels below
+   - Per-tab JSX lives in `src/components/admin/panels/{MatchesTabPanel,TeamsTabPanel,PlayersTabPanel,StadiumsTabPanel}.tsx` (WEB-127), each composing that tab's table, related-record modals, and form modal
+   - Per-entity state and CRUD logic live in hooks under `src/hooks/admin/` (`useMatchesAdmin`, `useTeamsAdmin`, `usePlayersAdmin`, `useStadiumsAdmin`, plus `usePlayerStatsModal` for the player-stats modal shared between the matches and players tabs, and `usePhotoUploadModal` for the mobile photo-album upload flow added in WEB-149)
+   - Presentational pieces live under `src/components/admin/`: `TabNav`, `Pagination`, entity tables in `tables/` (built on a shared `DataTable`), and related-record modals in `modals/` (built on a shared `FormModal`, including `PhotoUploadModal` — see `reference/photo-gallery/README.md`) — see "Frontend Component Architecture" below
    - Authentication via Supabase Auth
    - Pagination for data tables, via the generic `useSearchPagination` hook
 
@@ -30,9 +31,10 @@ The admin system provides a web-based interface for managing Spurs Women's footb
 
 - **Types** — `src/types/spurs-women-admin.ts` (shared entity interfaces)
 - **Generic hooks** — `src/hooks/useSearchPagination.ts` (search + pagination over any list)
-- **Per-entity hooks** — `src/hooks/admin/{useMatchesAdmin,useTeamsAdmin,usePlayersAdmin,useStadiumsAdmin}.ts`, each owning that entity's list state, edit-mode state, and CRUD handlers. `usePlayerStatsModal.ts` is a separate hook because the player-stats modal is opened from *both* the matches and players tabs — it's wired in `page.tsx` with setters from both `useMatchesAdmin` and `usePlayersAdmin`, which is the trickiest piece of cross-hook wiring on the page (see the "adds player stats to a player" test in `page.test.tsx`, which specifically exercises this wiring).
+- **Per-entity hooks** — `src/hooks/admin/{useMatchesAdmin,useTeamsAdmin,usePlayersAdmin,useStadiumsAdmin}.ts`, each owning that entity's list state, edit-mode state, and CRUD handlers. `usePlayerStatsModal.ts` is a separate hook because the player-stats modal is opened from *both* the matches and players tabs — it's wired with setters from both `useMatchesAdmin` and `usePlayersAdmin`, which is the trickiest piece of cross-hook wiring on the page (see the "adds player stats to a player" test in `page.test.tsx`, which specifically exercises this wiring). `usePhotoUploadModal.ts` (WEB-149) similarly owns the mobile photo-album upload modal's state, used from the matches tab.
+- **Per-tab panels** — `src/components/admin/panels/{MatchesTabPanel,TeamsTabPanel,PlayersTabPanel,StadiumsTabPanel}.tsx` (WEB-127), each composing that tab's table/modals from the props `page.tsx` passes down, so `page.tsx` itself only wires hooks to panels rather than rendering tab JSX directly.
 - **Entity tables** — `src/components/admin/tables/{MatchesTable,TeamsTable,PlayersTable,StadiumsTable}.tsx`, each a thin column-definition wrapper around a shared `DataTable.tsx`.
-- **Related-record modals** — `src/components/admin/modals/{MediaModal,PlayerStatsModal,PlayerHistoryModal,StadiumNameModal}.tsx`, each a thin fields-only wrapper around a shared `FormModal.tsx` (handles the overlay/card/title/error-banner/footer-buttons chrome).
+- **Related-record modals** — `src/components/admin/modals/{MediaModal,PlayerStatsModal,PlayerHistoryModal,StadiumNameModal,PhotoUploadModal}.tsx`, each a thin fields-only wrapper around a shared `FormModal.tsx` (handles the overlay/card/title/error-banner/footer-buttons chrome), except `PhotoUploadModal` (WEB-149) which has its own upload-progress UI.
 - **Nav/pagination** — `TabNav.tsx`, `Pagination.tsx`.
 
 **Why `RelatedList.tsx` was *not* merged onto `DataTable`**: `RelatedList` renders the Media/Player Stats/Player History/Stadium Name lists shown inside a match/player/stadium's "Related Records" tab, and looks superficially like the same table-rendering job as the four entity tables. It was deliberately left as its own component rather than rebuilt on `DataTable`, because:
@@ -368,6 +370,22 @@ All entity routes below also implement `PUT` (update by `id`) and `DELETE` (dele
 **GET** - Fetch all competitions (used for dropdowns)
 - Requires authentication and admin authorization
 
+### Cache API
+**Endpoint**: `/api/admin/cache/revalidate`
+**Methods**: POST
+
+**POST** - Invalidate all data-layer cache tags via `revalidateAllCache()` (WEB-132's "Invalidate Cache" admin button)
+- Requires authentication and admin authorization
+- Returns the list of revalidated tags
+
+### Photo Upload API
+**Endpoints**: `/api/admin/photo-upload`, `/api/admin/photo-upload/finalize`
+**Methods**: POST
+
+The mobile photo-album upload flow added in WEB-149 (built on the WEB-148 spike) - see "Adding photos from a phone" in `reference/photo-gallery/README.md` for the full picture. `/api/admin/photo-upload` resizes/compresses one photo and creates a git blob for it (one photo per request by design, to stay clear of serverless duration limits and isolate per-photo failures); `/api/admin/photo-upload/finalize` is the single point where a whole batch is pushed to the gallery repo and the match's `media` row is upserted, so an N-photo album triggers the gallery repo's manifest-regeneration webhook once, not N times.
+- Both require authentication and admin authorization (via the same centralized `/api/admin/*` middleware)
+- Node.js runtime (not Edge) - `sharp`'s native bindings require it
+
 ## Admin UI Features
 
 ### Tabbed Interface
@@ -486,7 +504,7 @@ Required environment variables:
 
 Potential improvements to the admin system:
 - Add bulk import/export capabilities
-- Add data validation on the server side
+- Add data validation on the server side (tracked in WEB-83)
 - Add audit logging for admin operations
 - Implement role-based access control for multiple admin users
-- Add file upload for media instead of URL input
+- ~~Add file upload for media instead of URL input~~ - partially done: WEB-149 added a mobile photo-album upload flow (see "Photo Upload API" above); the Media form's URL input (for single photos/articles/social/video links) is unchanged
