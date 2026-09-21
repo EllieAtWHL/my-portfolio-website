@@ -105,6 +105,33 @@ BBC Sport has no coverage for 2022/23 but does cover current competitive
 fixtures, so the routine researches each flagged match against BBC Sport and
 tottenhamhotspur.com via the Kernel browser-automation connector (see above).
 
+## Additional manual source for historic backfill: THFCDB
+
+[thfcdb.com/womens](https://thfcdb.com/womens/) is an independent fan-built
+database (not affiliated with the club) that's useful for **manual**
+historic backfill work (WEB-113-style gap filling) - it isn't wired into the
+WEB-114 routine above, which is scoped to recent matches with BBC Sport
+coverage.
+
+- **Coverage**: match pages give scorers/cards with minute, a full
+  lineup (starting XI + bench with squad numbers, subs-on minute, manager),
+  referee, attendance, venue, weather, and team-level stats (shots, shots on
+  target, xG, possession). Player pages give DOB, nationality, squad number,
+  and a per-competition career stats breakdown. Maps well onto our `matches`,
+  `players`, and the core-lineup fields of `player_stats` (see field list in
+  `reference/spurs-women/admin/ADMIN_SYSTEM_DOCUMENTATION.md`).
+- **Gap**: no per-player advanced stats (passes, tackles, interceptions,
+  clearances, fouls, offsides, `player_rating`) - only team-level, so it
+  can't fill those `player_stats` columns.
+- **Reliability caveat**: the site itself flags pre-2018 records as "not
+  exhaustive... should be taken as a guide" - treat as a cross-check rather
+  than a sole source for older seasons.
+- **Access**: no API or bulk export - browser/manual use only. `robots.txt`
+  only disallows `/cache/` and `/account/login`, and the maintainer's About
+  page states data is believed "publicly available and free to reproduce,"
+  but there's no formal license - it's a single-person hobby project, so a
+  courtesy heads-up is worth it before any large-scale pull.
+
 ## Known issue: sandbox network egress blocks Supabase directly
 
 As of 2026-08-31, the routine's cloud sandbox has a network egress allowlist
