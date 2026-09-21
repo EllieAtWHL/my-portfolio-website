@@ -59,8 +59,12 @@ const DEFAULTS = {
   assists: 0,
   yellowCards: 0,
   redCards: 0,
-  shots: 0,
-  shotsOnTarget: 0,
+  // shots/shotsOnTarget are non-nullable columns but BBC-sourced research
+  // never reports them per-player - 0 would falsely claim "took no shots"
+  // rather than "not sourced", so these stay null like the truly-nullable
+  // fields (clean_sheet, passes_*, etc.) unless an entry explicitly sets them.
+  shots: null,
+  shotsOnTarget: null,
   playerOfTheMatch: false,
 };
 
@@ -170,7 +174,7 @@ async function main() {
   console.log(`Match: ${match.date} Tottenham Hotspur ${match.spurs_score}-${match.opponent_score} ${opponent?.name ?? 'Unknown opponent'} (${match.is_home_match ? 'home' : 'away'})`);
 
   const { data: existing, error: existingError } = await supabase
-    .from('player_stats').select('id').eq('match_id', matchId).eq('team_id', tottenham.id);
+    .from('player_stats').select('id, goals').eq('match_id', matchId).eq('team_id', tottenham.id);
   if (existingError) {
     console.error('Could not check for existing player_stats rows:', existingError.message);
     process.exit(1);
@@ -180,17 +184,19 @@ async function main() {
     process.exit(1);
   }
 
-  const rows = [];
-  for (const entry of players) {
-    const { id: playerId, source } = await resolvePlayer(supabase, entry);
+  const resolved = await Promise.all(
+    players.map(async (entry) => ({ entry, ...(await resolvePlayer(supabase, entry)) }))
+  );
+  const rows = resolved.map(({ entry, id: playerId, source }) => {
     const row = toRow({ playerId, entry, matchId, teamId: tottenham.id });
-    rows.push(row);
     console.log(`  ${entry.name ?? playerId} -> ${playerId} (${source}) — ${row.started ? 'started' : row.was_substitute ? 'sub' : 'unused sub'}, ${row.minutes_played}m, g${row.goals} a${row.assists} y${row.yellow_cards} r${row.red_cards}${row.player_of_the_match ? ', POTM' : ''}`);
-  }
+    return row;
+  });
 
-  const goalsSum = rows.reduce((sum, r) => sum + r.goals, 0);
+  const existingGoalsSum = existing.reduce((sum, r) => sum + (r.goals ?? 0), 0);
+  const goalsSum = existingGoalsSum + rows.reduce((sum, r) => sum + r.goals, 0);
   if (goalsSum !== match.spurs_score) {
-    console.warn(`\nWarning: summed goals (${goalsSum}) don't match match.spurs_score (${match.spurs_score}). Double-check before applying.`);
+    console.warn(`\nWarning: summed goals (${goalsSum}${existingGoalsSum ? `, including ${existingGoalsSum} from ${existing.length} already-entered row(s)` : ''}) don't match match.spurs_score (${match.spurs_score}). Double-check before applying.`);
   }
 
   if (!apply) {
@@ -207,4 +213,7 @@ async function main() {
   console.log(`\nInserted ${inserted.length} player_stats row(s) for match ${matchId}.`);
 }
 
-main();
+main().catch((err) => {
+  console.error(err.message);
+  process.exit(1);
+});
