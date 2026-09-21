@@ -1,5 +1,6 @@
 'use client';
 
+import { useCallback } from 'react';
 import { PlayerForm } from '@/components/admin/PlayerForm';
 import { PlayerHistoryModal } from '@/components/admin/modals/PlayerHistoryModal';
 import { RelatedList } from '@/components/admin/RelatedList';
@@ -8,10 +9,32 @@ import { Pagination } from '@/components/admin/Pagination';
 import { PlayersTable } from '@/components/admin/tables/PlayersTable';
 import SearchInput from '@/components/spurs-women/SearchInput';
 import { usePlayersAdmin } from '@/hooks/admin/usePlayersAdmin';
+import { getTeamDisplayName } from '@/lib/utils/team-display';
 import type { Match, PlayerStats, Team } from '@/types/spurs-women-admin';
 
 function teamNameById(teams: Team[], teamId: number): string {
   return teams.find(t => t.id === teamId)?.name ?? teamId.toString();
+}
+
+// Shared by the Player Stats related list's Opponent column and its search filter
+// (WEB-169), so the two stay in sync rather than re-deriving this independently.
+// Exported (with matchesPlayerStatsSearch below) so this non-trivial logic gets its
+// own direct unit tests rather than only indirect coverage through the rendered panel.
+export function resolveOpponentName(stat: PlayerStats, match: Match | undefined, teams: Team[]): string {
+  if (!match) return '';
+  const opponentTeamId = match.home_team_id === stat.team_id ? match.away_team_id : match.home_team_id;
+  const opponentTeam = teams.find(t => t.id === opponentTeamId);
+  return getTeamDisplayName(opponentTeam, '');
+}
+
+// The Player Stats related list's search predicate (WEB-169) - a plain function so it
+// can be unit tested directly, wrapped in a useCallback below only where it needs to be
+// a stable reference for useSearchPagination's memoization.
+export function matchesPlayerStatsSearch(stat: PlayerStats, searchTerm: string, matches: Match[], teams: Team[]): boolean {
+  const term = searchTerm.toLowerCase();
+  const match = matches.find(m => m.id === stat.match_id);
+  const opponentName = resolveOpponentName(stat, match, teams);
+  return (match?.date ?? '').toLowerCase().includes(term) || opponentName.toLowerCase().includes(term);
 }
 
 interface PlayersTabPanelProps {
@@ -65,6 +88,11 @@ export function PlayersTabPanel({
     handlePlayerHistorySubmit,
   } = playersAdmin;
 
+  const playerStatsFilterFn = useCallback(
+    (stat: PlayerStats, searchTerm: string) => matchesPlayerStatsSearch(stat, searchTerm, matches, teams),
+    [matches, teams]
+  );
+
   return (
     <>
       {isPlayerEditMode && (
@@ -100,7 +128,10 @@ export function PlayersTabPanel({
 
       {playerEditTab === 'related' && isPlayerEditMode && (
         <div id="player-related-panel" role="tabpanel" aria-labelledby="tab-related" className="space-y-4">
-          {/* Player Stats related list */}
+          {/* Player Stats related list - a player's whole career, which can grow long
+              (unlike the Match tab's version of this list, capped at one squad), so
+              this is the one RelatedList consumer that opts into search + pagination
+              (WEB-169). */}
           <RelatedList
             title="Player Stats"
             records={relatedPlayerStatsForPlayer}
@@ -120,12 +151,7 @@ export function PlayersTabPanel({
                 label: 'Opponent',
                 render: (value: unknown, stat: PlayerStats) => {
                   const match = matches.find(m => m.id === (value as string));
-                  if (!match) return '-';
-                  const opponentTeamId = match.home_team_id === stat.team_id
-                    ? match.away_team_id
-                    : match.home_team_id;
-                  const opponentTeam = teams.find(t => t.id === opponentTeamId);
-                  return opponentTeam?.short_name || opponentTeam?.name || '-';
+                  return resolveOpponentName(stat, match, teams) || '-';
                 }
               },
               { key: 'started', label: 'Started', render: (value: unknown) => (value as boolean) ? 'Yes' : 'No' },
@@ -135,6 +161,12 @@ export function PlayersTabPanel({
             onNew={() => openNewPlayerStats('player')}
             onRecordClick={(stat) => openEditPlayerStats(stat, 'player')}
             emptyMessage="No player stats records found"
+            search={{
+              id: 'player-stats',
+              placeholder: 'Search by match date or opponent...',
+              perPage: 10,
+              filterFn: playerStatsFilterFn,
+            }}
           />
 
           {/* Player History related list */}

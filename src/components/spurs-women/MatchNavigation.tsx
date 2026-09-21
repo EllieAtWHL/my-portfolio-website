@@ -6,6 +6,7 @@ import { Button } from '@/components/Button';
 import { ChevronIcon } from '@/components/ChevronIcon';
 import { Match, MatchNavSummary } from '@/lib/data/matches';
 import TeamPill from '@/components/spurs-women/TeamPill';
+import { getTeamDisplayName } from '@/lib/utils/team-display';
 
 // Tiers, not Tailwind classes: these are opaque lookup keys into
 // HEADER_SIZE_CLASSES below, matching Button.tsx's sm/md/lg size-prop
@@ -44,10 +45,6 @@ export default function MatchNavigation({
     startTransition(() => {
       router.push(`/spurs-women/matches/${matchId}`);
     });
-  };
-
-  const getTeamDisplayName = (team: { short_name?: string; name?: string } | null) => {
-    return team?.short_name || team?.name || 'Unknown Team';
   };
 
   // Pulses the arrow in place while its navigation is pending, rather than

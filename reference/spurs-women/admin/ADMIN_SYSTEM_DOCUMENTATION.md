@@ -38,7 +38,7 @@ The admin system provides a web-based interface for managing Spurs Women's footb
 **Why `RelatedList.tsx` was *not* merged onto `DataTable`**: `RelatedList` renders the Media/Player Stats/Player History/Stadium Name lists shown inside a match/player/stadium's "Related Records" tab, and looks superficially like the same table-rendering job as the four entity tables. It was deliberately left as its own component rather than rebuilt on `DataTable`, because:
 1. `DataTable`'s `render` is mandatory by design, so it never needs to touch a record field via an unsafe cast. `RelatedList` relies on an *optional* `render` with a `record[key] ?? '-'` fallback (used by roughly a dozen column definitions in `page.tsx`) — supporting that would mean reintroducing that unsafe cast into `DataTable`, i.e. moving complexity into the component that's currently simplest.
 2. `RelatedList` also renders its own title/count/"New" button header and hides the table entirely (not just the rows) when there are no records — different chrome from the bare entity tables.
-3. `RelatedList` has no dedicated unit test file (only indirect coverage via `page.test.tsx`), and is wired into the riskiest part of the page (the shared player-stats modal, `usePlayerStatsModal`). A regression there is less likely to be caught immediately than one in the entity tables, which each have their own test file.
+3. `RelatedList` is wired into the riskiest part of the page (the shared player-stats modal, `usePlayerStatsModal`) - a regression there is less likely to be caught immediately than one in the entity tables. It now has its own dedicated test file (`__tests__/RelatedList.test.tsx`, added in `WEB-169` alongside its opt-in search/pagination), on top of the indirect coverage via `page.test.tsx`.
 
 Net: the two components serve different-enough call shapes that forcing them through one interface would grow `DataTable`'s prop surface to satisfy a union of needs no single caller actually has — not a simplification. If `RelatedList`'s duplication becomes a real problem later, revisit this, but as of this writing it's ~35 lines of overlap against a component with a materially different contract.
 
@@ -408,7 +408,7 @@ Each of the four top-level tabs (Match, Team, Player, Stadium) displays a pagina
 - 20 records per page
 - Displays relevant fields for each entity type
 
-Related-record lists (Media, Player Stats, Player History, Stadium Name) render in full, unpaginated, inside their parent record's edit view - they show related data such as player names in the player stats list, and the match opponent (derived from the match's home/away teams relative to the stat's `team_id`) in a player's Player Stats list.
+Related-record lists (Media, Player Stats, Player History, Stadium Name) render in full, unpaginated, inside their parent record's edit view - they show related data such as player names in the player stats list, and the match opponent (derived from the match's home/away teams relative to the stat's `team_id`) in a player's Player Stats list. The one exception is a player's career-long Player Stats list, which opts into `RelatedList`'s search/pagination (10 per page, search by match date or opponent) via its `search` prop (`WEB-169`) - the only related list unbounded enough to need it; see `RelatedList.tsx`'s doc comment on that prop.
 
 ### Pagination
 - Each top-level tab tracks its own current page/total pages, independently of the others
