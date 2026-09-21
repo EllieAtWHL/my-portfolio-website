@@ -46,7 +46,8 @@ So the routine:
   match, ready to paste into the admin UI - or a note that a match couldn't
   be confidently sourced.
 - Never writes to Supabase or the admin UI. Ellie reviews each week's ticket
-  and applies the inserts herself, in due course, via the normal admin UI.
+  and applies the inserts herself, in due course - see "Applying researched
+  data" below for the lowest-friction way to do that.
 
 ## Kernel connector - validated 2026-08-25
 
@@ -127,6 +128,71 @@ no-op, not a masked failure), then folded into the routine's stored prompt
 so future runs use it directly rather than needing to rediscover it. Safe to
 leave in place even after the allowlist is eventually fixed - it only
 engages when the direct path fails.
+
+## Applying researched data
+
+Once a run's Jira ticket has sourced data for a match, get it into Supabase
+with `scripts/apply-player-stats.js` (`npm run apply-player-stats`) rather
+than retyping each field into the admin UI form by hand. It's a deliberately
+human-run, human-reviewed step - not wired into the routine above, for the
+same reason the routine itself doesn't write (see "Scope" above): a
+production write needs someone present to review the specific edit.
+
+1. Copy the ticket's tables into a JSON file, one object per player, e.g.:
+
+   ```json
+   {
+     "matchId": "c4d95e0d-3cd7-4d40-a33d-a8509ee88b75",
+     "players": [
+       { "name": "Lize Kop", "started": true, "minutesPlayed": 90 },
+       { "name": "Drew Spence", "started": true, "captain": true, "minutesPlayed": 90 },
+       { "name": "Olivia Holdt", "started": true, "minutesPlayed": 74, "minuteOff": 74,
+         "goals": 3, "playerOfTheMatch": true },
+       { "name": "Alice Sombath", "substitute": true, "minuteOn": 75, "minutesPlayed": 15 },
+       { "name": "Ella Morris", "unusedSubstitute": true }
+     ]
+   }
+   ```
+
+   Each player needs exactly one of `started` / `substitute` /
+   `unusedSubstitute` set `true`; every other field defaults to `0`/`false`/
+   `null` as appropriate, so only include what the source actually reports
+   (this matches the existing convention of leaving unsourced nullable stat
+   fields - `shots`, `passes`, `tackles`, `clean_sheet`, `player_rating`,
+   etc. - `null` rather than guessing `0`; see the full field list in
+   `reference/spurs-women/admin/ADMIN_SYSTEM_DOCUMENTATION.md`). Names are
+   resolved against `players.first_name || ' ' || last_name`
+   case-insensitively, falling back to a unique last-name match; if a source
+   only gives a partial name (BBC's "A. Sombath" line-ups panel, say) or the
+   name is ambiguous, the script errors out listing candidates - add a
+   `"playerId"` field to that entry instead of fixing the name.
+
+2. Dry-run it first (the default - nothing is written until you pass
+   `--apply`):
+
+   ```bash
+   npm run apply-player-stats -- path/to/data.json
+   ```
+
+   This resolves every name to a `player_id`, prints one line per player so
+   you can eyeball it against the ticket, warns if summed goals don't match
+   `matches.spurs_score`, and refuses to run at all if `player_stats` rows
+   already exist for that match (pass `--force` to add to them anyway - it
+   never overwrites or dedupes, so only do this when you mean to add missing
+   rows to a partially-entered match).
+
+3. Once the dry run looks right, add `--apply` to write for real:
+
+   ```bash
+   npm run apply-player-stats -- path/to/data.json --apply
+   ```
+
+Writes go straight to the production database via
+`SUPABASE_SERVICE_ROLE_KEY` (the same credential `src/lib/admin-api.ts` uses
+for the admin UI's `/api/admin/*` routes) - not through the admin UI itself,
+so its CSRF/auth/rate-limit middleware doesn't apply here. That's an
+accepted trade-off for a script only Ellie runs locally with the ticket open
+next to it, not a pattern to extend to anything unattended.
 
 ## Cadence
 
