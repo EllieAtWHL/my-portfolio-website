@@ -9,6 +9,7 @@ import { Pagination } from '@/components/admin/Pagination';
 import { PlayersTable } from '@/components/admin/tables/PlayersTable';
 import SearchInput from '@/components/spurs-women/SearchInput';
 import { usePlayersAdmin } from '@/hooks/admin/usePlayersAdmin';
+import { getTeamDisplayName } from '@/lib/utils/team-display';
 import type { Match, PlayerStats, Team } from '@/types/spurs-women-admin';
 
 function teamNameById(teams: Team[], teamId: number): string {
@@ -23,7 +24,7 @@ export function resolveOpponentName(stat: PlayerStats, match: Match | undefined,
   if (!match) return '';
   const opponentTeamId = match.home_team_id === stat.team_id ? match.away_team_id : match.home_team_id;
   const opponentTeam = teams.find(t => t.id === opponentTeamId);
-  return opponentTeam?.short_name || opponentTeam?.name || '';
+  return getTeamDisplayName(opponentTeam, '');
 }
 
 // The Player Stats related list's search predicate (WEB-169) - a plain function so it
