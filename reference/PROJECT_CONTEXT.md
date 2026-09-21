@@ -377,7 +377,7 @@ Current state:
 Decision:
   - Direct deployment via Vercel.
   - Git-based deploys from main branch.
-  - A lightweight GitHub Actions CI setup now exists: `.github/workflows/ci.yml` runs lint, typecheck, the Jest suite + coverage, and a production build (as separate jobs) on push/PR to main; `.github/workflows/playwright.yml` runs the Playwright E2E suite across chromium/firefox/webkit; `.github/workflows/validate-manifest.yml` regenerates and validates the photo manifest (it does not run a production build - that's covered by `ci.yml`'s `build` job). None of these gate the Vercel deploy itself - still no staged/enterprise-grade pipeline.
+  - A lightweight GitHub Actions CI setup now exists: `.github/workflows/ci.yml` runs lint, typecheck, the Jest suite + coverage, and a production build (as separate jobs) on PRs to `main` and on pushes to `main` or `develop`; `.github/workflows/playwright.yml` runs the Playwright E2E suite across chromium/firefox/webkit; `.github/workflows/validate-manifest.yml` regenerates and validates the photo manifest (it does not run a production build - that's covered by `ci.yml`'s `build` job). None of these gate the Vercel deploy itself - still no staged/enterprise-grade pipeline.
 
 Rationale:
   - Solo developer
