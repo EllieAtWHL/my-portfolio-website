@@ -9,7 +9,7 @@ export interface YouTubeVideoMetadata {
 }
 
 // Function to extract video ID from YouTube URL
-function extractVideoId(url: string): string | null {
+export function extractVideoId(url: string): string | null {
   // Handle various YouTube URL formats including Shorts and Live (the
   // /live/ format YouTube uses for a livestream, both while it's live and
   // after it ends and becomes a VOD/replay - see WEB-172).
