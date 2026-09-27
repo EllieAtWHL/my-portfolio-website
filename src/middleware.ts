@@ -6,18 +6,9 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - static assets (images, and the PWA manifest - neither need a
-     *   Supabase session refresh, and the manifest in particular is
-     *   fetched by the OS/browser on its own schedule to check for
-     *   install-metadata updates, independent of any page load)
-     * Feel free to modify this pattern to include more paths.
-     */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|webmanifest)$).*)',
-  ],
+  // Only these prefixes actually consume the session `user` inside
+  // updateSession (admin auth, admin API auth/CSRF/rate-limit, profile auth).
+  // Running it on every other route pays for a Supabase auth revalidation
+  // call on page loads that never use the result - see WEB-176.
+  matcher: ['/spurs-women/admin/:path*', '/api/admin/:path*', '/spurs-women/profile/:path*'],
 }
