@@ -114,6 +114,8 @@ Only implement the work requested by the Jira issue unless:
 
 Avoid introducing unrelated changes simply because they are noticed.
 
+When scope expands under one of the exceptions above, update the Jira issue (summary, description, acceptance criteria) and the PR title/description to match the actual final scope, not just the original ask - both, not just whichever is more convenient at the time. If the PR already exists, edit its description as soon as the scope changes rather than leaving it to describe a narrower change than what's actually in the diff.
+
 ## Commands
 
 ```bash
