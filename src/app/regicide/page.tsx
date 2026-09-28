@@ -11,7 +11,7 @@ export const metadata = {
     type: 'website',
     images: [
       {
-        url: 'https://ellieatwhl.co.uk/regicide/imgs/regicide.png',
+        url: 'https://ellieatwhl.co.uk/regicide/regicide.png',
         width: 1200,
         height: 630,
         alt: 'Regicide Card Game',
@@ -22,7 +22,7 @@ export const metadata = {
     card: 'summary_large_image',
     title: 'EllieAtWHL - Regicide',
     description: 'Regicide is a challenging, card game based on a standard 52 card deck.',
-    images: ['https://ellieatwhl.co.uk/regicide/imgs/regicide.png'],
+    images: ['https://ellieatwhl.co.uk/regicide/regicide.png'],
   },
 };
 
