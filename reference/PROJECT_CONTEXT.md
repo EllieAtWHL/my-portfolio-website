@@ -221,7 +221,7 @@ Guiding principles:
 - Group related tests with `describe` blocks
 
 **Quality Standards:**
-- Tests must pass before deployment (CI/CD gate)
+- Tests must pass in CI (`.github/workflows/ci.yml`) on PRs/pushes to `main`/`develop` - but this does not gate the actual Vercel deploy itself, which is a direct git-push-to-deploy from `main` with no staged/gated pipeline (see "Deployment Pipeline" below)
 - New code should not reduce overall test coverage
 - Tests should be maintainable and easy to understand
 - Use proper assertions and avoid brittle selectors
