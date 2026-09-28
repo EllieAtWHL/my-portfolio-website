@@ -21,6 +21,7 @@ AI agents working in this codebase.
 | [`fullstory/README.md`](./fullstory/README.md) | FullStory analytics integration |
 | [`photo-gallery/README.md`](./photo-gallery/README.md) | GitHub-hosted photo gallery system, including the mobile upload flow (WEB-149) |
 | [`regicide/README.md`](./regicide/README.md) | Regicide card game: engine, component map, card face/toast systems, known gaps |
+| [`microbrew/README.md`](./microbrew/README.md) | Microbrew board game port: current status, file map, static-data notes, attribution requirements |
 
 ## Spurs Women Section
 
