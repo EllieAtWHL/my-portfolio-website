@@ -56,7 +56,8 @@ WHERE match_id = 'your-match-id'
 **Note**: `media` has no `storage_source` column, despite some historical
 references to one (a TypeScript `storage_source?: 'github' | null` field on
 `Media`/`PhotoMedia` in `src/lib/data/media.ts`, threaded through in
-`MediaGallery.tsx`, and the now-doubly-inert `migrate-storage-source.js`).
+`MediaGallery.tsx`, and the now-removed `migrate-storage-source.js`, per
+WEB-123 - see "History" below).
 Confirmed against the live PostgREST schema
 (`GET {SUPABASE_URL}/rest/v1/` → `definitions.media`) while debugging a
 `publish-match-photos.js` failure - `storage_source` is never actually read

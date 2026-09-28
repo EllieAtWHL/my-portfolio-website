@@ -94,19 +94,13 @@ The site runs **two parallel styling systems** that don't talk to each other:
 
 The color palette is now exposed to Tailwind correctly (via `@theme` in `globals.css`, per the fix above), backed by the same CSS variables the hand-written CSS uses. But **most Tailwind-utility usage doesn't even attempt to use those tokens** — it uses Tailwind's generic default palette instead (`gray-800`, `yellow-50`, `red-600`...). 50 files do this.
 
-A concrete example, `src/app/regicide/page.tsx`:
-```tsx
-<h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">
-<div className="bg-yellow-50 dark:bg-yellow-900/30 border-l-4 border-yellow-400 dark:border-yellow-600 p-4 rounded">
-  <p className="text-lg font-semibold text-yellow-800 dark:text-yellow-300 mb-2">
-```
-This is a warning banner. `variables.css` already defines a full warning palette (`--warning-bg`, `--warning-accent`, `--warning-text`, `--warning-dark-bg`, `--warning-dark-border`, `--warning-dark-text`) used by the hand-written `.outdated-banner` component elsewhere on the site — but it isn't exposed to Tailwind (no `warning` group in `@theme` yet), so this page falls back to generic yellow instead of matching. (I tried adding a `warning` token as a pilot before Track 0 was fixed — see "Pilot" below. Worth redoing now that the underlying config actually works.)
+Note (2026-09): `src/app/regicide/page.tsx`, previously used below as the concrete example of this (a `gray-800`/`yellow-50` maintenance/warning banner), was reduced to a thin wrapper (`MainSitePage` + `RegicideGame`, no heading or banner markup at all) by the WEB-128 component-split work — that banner no longer exists anywhere in the codebase (confirmed via repo-wide grep for `yellow-50`/`yellow-900`), so the "Pilot" and "Suggested next steps" item below that reference redoing a warning-token pilot on that file are stale and no longer actionable as written. `variables.css` still defines a full warning palette (`--warning-bg`, `--warning-accent`, `--warning-text`, `--warning-dark-bg`, `--warning-dark-border`, `--warning-dark-text`) used by the hand-written `.outdated-banner` component elsewhere on the site, and it's still not exposed to Tailwind (no `warning` group in `@theme` yet) — that gap is real, it just no longer has a live example in `regicide/page.tsx` to point at. A fresh example (a component still using generic `yellow-*`/`gray-800` where a `--warning-*` or brand token would match) would need to be re-identified before redoing this pilot.
 
 ## What "done" doesn't mean here
 
 Not every `gray-600`/`gray-100` text class is a problem. Neutral body text doesn't need to be forced onto a brand token — brand colors exist for accents, interactive elements, and semantic states (warning/error/success), not for every pixel of text. The real gap is narrower and more useful than "replace all Tailwind colors": **semantic states that already have a defined brand token in `variables.css` should use it via Tailwind, instead of silently falling back to Tailwind's defaults.**
 
-Also worth naming: there's currently no brand "error/danger" token at all (`variables.css` only defines `warning-*`). `src/app/spurs-women/admin/page.tsx:373` uses raw `bg-red-600` for what looks like a destructive-action state. Introducing a brand error color is a design decision, not a mechanical fix — out of scope for this document, flagged for a future decision.
+Also worth naming: there's currently no brand "error/danger" token at all (`variables.css` only defines `warning-*`). `src/app/spurs-women/admin/page.tsx:302` uses raw `bg-red-600` for what looks like a destructive-action state. Introducing a brand error color is a design decision, not a mechanical fix — out of scope for this document, flagged for a future decision.
 
 ## Recommended approach: infra fixed, then two tracks, not one big rewrite
 
@@ -125,7 +119,7 @@ Tried the obvious first step in Track A before the config bug was understood: ad
 
 ## Suggested next steps
 
-1. Redo the `warning` token pilot on `regicide/page.tsx`: add a `warning` group to the `@theme` block in `globals.css` (bg/bg-light/accent/text/dark-bg/dark-border/dark-text, mirroring the `--warning-*` variables), point the banner at it, verify against the existing `.outdated-banner` styling in both themes.
+1. Redo the `warning` token pilot: add a `warning` group to the `@theme` block in `globals.css` (bg/bg-light/accent/text/dark-bg/dark-border/dark-text, mirroring the `--warning-*` variables), then find a current component still using generic `yellow-*`/`gray-800` where `--warning-*` would match (the original example, `regicide/page.tsx`'s maintenance banner, no longer exists — see "Current state" above) and point it at the new token, verifying against the existing `.outdated-banner` styling in both themes.
 2. Sweep the remaining ~49 files using generic Tailwind palette colors; replace with `brand-*`/`spurs-*`/`dark-*` tokens where a semantic match exists.
 3. Decide on a brand error/danger token if the red-600 admin usage should match site identity rather than stay a universal "danger" red (there's a reasonable argument either way) — the one remaining "found, not fixed" item.
 4. Only after Track A is done and stable, revisit whether Track B (full CSS-to-Tailwind migration) is worth doing at all.

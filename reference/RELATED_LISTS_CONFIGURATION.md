@@ -256,6 +256,7 @@ interface RelatedListProps<T> {
   onNew?: () => void;        // Callback for "New" button
   onRecordClick?: (record: T) => void; // Callback for clicking a record
   emptyMessage?: string;      // Message when no records exist
+  search?: RelatedListSearchConfig<T>; // Opt-in search/pagination (see below)
 }
 
 interface ColumnConfig<T> {
@@ -264,6 +265,36 @@ interface ColumnConfig<T> {
   render?: (value: unknown, record: T) => React.ReactNode;
   id?: string; // Overrides the React key; required if another column shares the same `key`
 }
+
+interface RelatedListSearchConfig<T> {
+  id: string;                                    // Used to build the SearchInput's id/label
+  placeholder: string;
+  filterFn: (record: T, search: string) => unknown;
+  perPage?: number;
+}
+```
+
+### Opt-in search/pagination
+
+Most related lists (Player History, Media, Stadium Name, a single match's
+Player Stats squad) stay naturally small and don't pass `search` at all,
+keeping their current simple, unpaginated rendering. For a list that can grow
+long (e.g. a player's career Player Stats, see WEB-169), pass `search` to get
+a `SearchInput` (filtering via `filterFn`) plus `Pagination`, both wired
+through the shared `useSearchPagination` hook:
+
+```tsx
+<RelatedList
+  title="Player Stats"
+  records={careerStats}
+  columns={[...]}
+  search={{
+    id: 'player-stats',
+    placeholder: 'Search by season or competition...',
+    filterFn: (stat, search) => stat.season_name?.toLowerCase().includes(search.toLowerCase()),
+    perPage: 10,
+  }}
+/>
 ```
 
 ## Best Practices
