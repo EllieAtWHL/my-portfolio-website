@@ -74,7 +74,7 @@ export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
               <path d="M8 5v14l11-7z" />
             </svg>
           }
-          className="justify-self-center inline-flex items-center text-lg tracking-wide px-10 py-4"
+          className="justify-self-center inline-flex items-center tracking-wide"
         >
           Play Game
         </Button>

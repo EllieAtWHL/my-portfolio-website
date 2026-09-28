@@ -63,7 +63,7 @@ export function GameStart({ onStartGame }: GameStartProps) {
               <path d="M8 5v14l11-7z" />
             </svg>
           }
-          className="inline-flex items-center text-lg tracking-wide px-10 py-4"
+          className="inline-flex items-center tracking-wide"
         >
           Play Game
         </Button>
