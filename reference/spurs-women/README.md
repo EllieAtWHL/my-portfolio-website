@@ -83,7 +83,7 @@ Core tables (Supabase/PostgreSQL):
 - **`matches`** - fixtures/results, scores, kickoff time, stadium, attendance, and match statistics (possession, shots, corners) as columns
 - **`teams`** - `id` (int), `name`, `short_name`, `primary_color`, `secondary_color`, `is_tottenham`
 - **`seasons`** - `id`, `name`, `start_date`, `end_date`, `season_review`
-- **`competitions`** - `id`, `name`, `icon_svg`, `short_name`
+- **`competitions`** - `id`, `name`, `type`, `nickname`, `icon_svg`
 - **`stadia`** (plural table name) - venue details, capacity, location, `home_team_id`
 - **`stadium_names`** - historical name changes per stadium, with `valid_from`/`valid_to`
 - **`players`** - profile fields, indexed on `last_name`
@@ -116,6 +116,6 @@ for TTLs, cache keys, invalidation, and monitoring.
 
 ## External Integrations
 
-- **YouTube**: video metadata via the oEmbed API, thumbnails, publish dates
+- **YouTube**: video metadata via the channel's YouTube RSS/Atom feed (`rss-parser`, see `fetchSpursWomenVideos` in `src/lib/rss.ts`), thumbnails built from the video ID, publish dates from the feed
 - **RSS feeds**: news and podcast aggregation, with HTML sanitization and fallback content on feed failure
 - **API routes**: `/api/spurs-women-news`, `/api/spurs-women-videos` - server-side fetching, caching, and error fallback
