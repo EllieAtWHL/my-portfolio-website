@@ -772,7 +772,7 @@ For implementation detail on specific systems, see:
 - **Spurs Women admin system**: `reference/spurs-women/admin/ADMIN_SYSTEM_DOCUMENTATION.md`
 - **Public API reference**: `reference/spurs-women/api/API_DOCUMENTATION.md` (see also `reference/spurs-women/api/openapi-spec.yaml`)
 
-The backlog/TODO list lives in Jira, not in this repo - see the "Jira is the source of truth" section in CLAUDE.md. The `WEB` project covers both the core site (`core-site` label) and Spurs Women (`spurs-women` label), with epics labeled both where work spans the whole site.
+The backlog/TODO list lives in Jira, not in this repo - see the "Jira is the source of truth" section in CLAUDE.md. The `WEB` project covers both the core site (`core-site` label) and Spurs Women (`spurs-women` label); every issue (not just epics) carries the label(s) for the section(s) it touches, both where work spans the whole site. The board's quick filters are built on these labels and on epic parenting - see "Labels and board filters" in CLAUDE.md.
 
 Known open tech debt at time of writing: Button migration is incomplete (14
 files still render raw `<button>` elements outside the shared component - see
