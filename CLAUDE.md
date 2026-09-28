@@ -34,14 +34,28 @@ The [`EW` Confluence space](https://eleanormatthewman.atlassian.net/wiki/spaces/
 
 ### Jira is the source of truth
 
-Unless explicitly told otherwise, all development work should originate from a Jira issue in the **`WEB`** project (https://eleanormatthewman.atlassian.net/jira/software/projects/WEB) - the single Jira project for this repo, covering both the core site and Spurs Women. There is no separate Spurs Women Jira project; the two sections are distinguished by `core-site` / `spurs-women` labels on epics (an epic gets both labels where the work spans the whole site).
+Unless explicitly told otherwise, all development work should originate from a Jira issue in the **`WEB`** project (https://eleanormatthewman.atlassian.net/jira/software/projects/WEB) - the single Jira project for this repo, covering both the core site and Spurs Women. There is no separate Spurs Women Jira project; the two sections are distinguished by `core-site` / `spurs-women` labels (an issue gets both labels where the work spans the whole site).
+
+#### Labels and board filters
+
+**Every issue - not just epics - gets the `core-site` and/or `spurs-women` label(s) for the section(s) it actually touches.** Don't rely on the parent epic's label to carry over: Jira doesn't inherit labels, and some epics mix sections (e.g. WEB-44 Technical Debt & Performance and WEB-46 Security & Compliance hold both Spurs-only and core-site-only children), so the child's own label is what says which part of the site it affects. The board's quick filters depend on this:
+
+| Filter | JQL | Relies on |
+|---|---|---|
+| Spurs Women | `labels = spurs-women` | the `spurs-women` label on each issue |
+| Regicide | `key = WEB-32 OR parent = WEB-32` | parenting under the Regicide epic |
+| Microbrew | `key = WEB-1 OR parent = WEB-1` | parenting under the Microbrew epic |
+| London 2012 | `key = WEB-2 OR parent = WEB-2` | parenting under the London 2012 Blog epic |
+| Tech Debt & Quality | `key in (WEB-38, WEB-44, WEB-46) OR parent in (WEB-38, WEB-44, WEB-46)` | parenting under Component Consistency & Standardization, Technical Debt & Performance, or Security & Compliance |
+
+So when creating or triaging an issue: label it for its section(s), and file tech-debt/refactor/performance/security work under one of those three epics rather than a "General Improvements" epic, or it won't show up in the Tech Debt & Quality filter. If a new epic is added for any of these areas, update the matching filter's JQL on the board and in this table.
 
 When working on an existing Jira issue:
 
 - Use the Jira issue description and acceptance criteria as the primary source of requirements.
 - Do not invent or assume Jira issue keys.
 - If no Jira issue key has been provided, ask for it before suggesting branch names, commits or pull requests.
-- When creating a new Jira issue (e.g. for a related bug/refactor found mid-task), attach it to the most fitting existing epic with the correct `core-site`/`spurs-women` label(s) rather than leaving it unparented - check the current epic list in Jira rather than assuming one exists.
+- When creating a new Jira issue (e.g. for a related bug/refactor found mid-task), attach it to the most fitting existing epic and give the issue itself the correct `core-site`/`spurs-women` label(s) (see "Labels and board filters" above) rather than leaving it unparented or unlabelled - check the current epic list in Jira rather than assuming one exists.
 
 ### Branch naming
 
