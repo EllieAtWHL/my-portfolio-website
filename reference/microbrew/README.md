@@ -29,7 +29,7 @@ image - that would make the page read as official.
 
 | File | Responsibility |
 |---|---|
-| `src/app/microbrew/page.tsx` | Route + metadata. No OG/Twitter share image yet - add `public/microbrew/microbrew.png` (a gameplay screenshot, like Regicide's) once there's a play area |
+| `src/app/microbrew/page.tsx` | Route + metadata. No OG/Twitter share image yet - add `public/microbrew/microbrew.png` (a gameplay screenshot, like Regicide's) once there's a play area - tracked in [WEB-189](https://eleanormatthewman.atlassian.net/browse/WEB-189) |
 | `src/components/MicrobrewGame.tsx` | Top-level `'start' \| 'playing'` screen switch; not yet wired to the hook |
 | `src/components/microbrew/GameStart.tsx` | Landing screen: title, tagline, description, attribution/buy link, Play button (disabled until `onStartGame` is passed) |
 | `src/lib/microbrew/data.ts` | Typed static data: tokens, 12 customers, 16 recipes, 7 reputation cards, component counts |

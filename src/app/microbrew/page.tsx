@@ -7,7 +7,7 @@ const description =
 // No share image yet: Regicide's is a gameplay screenshot, and the game's own
 // box art would make link previews read as official. Add
 // public/microbrew/microbrew.png and openGraph/twitter `images` once there's
-// a play area to screenshot.
+// a play area to screenshot (WEB-189).
 export const metadata = {
   title: 'Microbrew',
   description,
