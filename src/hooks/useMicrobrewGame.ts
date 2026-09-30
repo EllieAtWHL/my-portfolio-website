@@ -2,7 +2,9 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import {
+  brewSwap as brewSwapTransition,
   createNewGame,
+  endBrew as endBrewTransition,
   getRecipeBacks,
   returnRecipe as returnRecipeTransition,
   swapSetupHop as swapSetupHopTransition,
@@ -14,8 +16,10 @@ import type { BeerColour } from '@/lib/microbrew/data';
 export type {
   BoardState,
   BrewmasterSpace,
+  BrewState,
   Copper,
   CopperSlot,
+  CopperToken,
   GamePhase,
   GameState,
   PlayerIndex,
@@ -43,11 +47,19 @@ export function useMicrobrewGame() {
     setGame((current) => (current ? swapSetupHopTransition(current, target) : current));
   }, []);
 
+  const brewSwap = useCallback((from: CopperSlot, to: CopperSlot) => {
+    setGame((current) => (current ? brewSwapTransition(current, from, to) : current));
+  }, []);
+
+  const endBrew = useCallback(() => {
+    setGame((current) => (current ? endBrewTransition(current) : current));
+  }, []);
+
   /** Public: each player's recipe card backs (colour tiers), per player index. */
   const recipeBacks = useMemo<[BeerColour[], BeerColour[]] | null>(
     () => (game ? [getRecipeBacks(game.players[0]), getRecipeBacks(game.players[1])] : null),
     [game],
   );
 
-  return { game, recipeBacks, startGame, resetGame, returnRecipe, swapSetupHop };
+  return { game, recipeBacks, startGame, resetGame, returnRecipe, swapSetupHop, brewSwap, endBrew };
 }

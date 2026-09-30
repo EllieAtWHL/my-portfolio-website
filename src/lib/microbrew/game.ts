@@ -29,6 +29,9 @@ import {
   type TokenType,
 } from './data';
 import { deal, shuffle } from './deck';
+import { getLegalTargets, isLegalSwap, sameSlot, swapTokens, type Copper, type CopperSlot } from './copper';
+
+export type { Copper, CopperSlot, CopperToken } from './copper';
 
 /**
  * - `returnRecipe`: the second player has drawn an extra recipe and must choose
@@ -40,18 +43,6 @@ import { deal, shuffle } from './deck';
 export type GamePhase = 'returnRecipe' | 'hopSwap' | 'playing' | 'finished';
 
 export type PlayerIndex = 0 | 1;
-
-/**
- * A Copper is 4 columns of 4 slots, each column ordered bottom (index 0) to
- * top. It is not a square grid: see COPPER_RAISED_COLUMNS for the stagger.
- */
-export type Copper = TokenType[][];
-
-export interface CopperSlot {
-  column: number;
-  /** 0 = bottom of the column. */
-  slot: number;
-}
 
 /** Spaces on the Brewmaster's path (Manage -> Flush -> Advertise -> Manage, WEB-184). */
 export type BrewmasterSpace = 'manage' | 'flush' | 'advertise';
@@ -96,6 +87,17 @@ export interface GameState {
   /** Whose decision the game is waiting on. */
   currentPlayer: PlayerIndex;
   board: BoardState;
+  /**
+   * A Brew in progress: the current player's moving token has made at least
+   * one swap and can still swap again. null when no chain is open.
+   */
+  brew: BrewState | null;
+}
+
+export interface BrewState {
+  /** Where the moving token is now. Only this token may keep swapping. */
+  slot: CopperSlot;
+  swaps: number;
 }
 
 const MALTS: MaltColour[] = ['yellow', 'orange', 'brown'];
@@ -201,6 +203,7 @@ export function createNewGame(playerOneName: string, playerTwoName: string): Gam
         spareBrewers: [MAX_BREWERS - STARTING_BREWERS, MAX_BREWERS - STARTING_BREWERS],
       },
     },
+    brew: null,
   };
 }
 
@@ -253,7 +256,7 @@ export function swapSetupHop(game: GameState, target: CopperSlot): GameState {
   if (token === undefined) {
     throw new Error(`No Copper slot at column ${target.column}, slot ${target.slot}`);
   }
-  if (token === 'hops') {
+  if (token === 'hops' || token === null) {
     throw new Error('The setup hop must replace a malt');
   }
 
@@ -278,6 +281,46 @@ export function swapSetupHop(game: GameState, target: CopperSlot): GameState {
     currentPlayer: game.firstPlayer,
     board: { ...game.board, tin: [...tin, ...Array<TokenType>(remainingHops).fill('hops')] },
   };
+}
+
+/**
+ * Brew: the current player swaps the token at `from` with its neighbour at
+ * `to`. The first swap starts a chain with that token; while the chain is
+ * open, only the same token (now at `game.brew.slot`) may keep swapping. The
+ * chain closes by itself once the token has no legal swap left, or earlier via
+ * endBrew - the player never has to take the longest chain.
+ *
+ * Worker placement (spending a brewer on Brew) is WEB-181's job; this is just
+ * the puzzle.
+ */
+export function brewSwap(game: GameState, from: CopperSlot, to: CopperSlot): GameState {
+  assertPhase(game, 'playing');
+  if (game.brew && !sameSlot(game.brew.slot, from)) {
+    throw new Error('Only the token already being brewed can keep swapping');
+  }
+  const current = game.players[game.currentPlayer].copper;
+  if (!isLegalSwap(current, from, to)) {
+    throw new Error(
+      `Illegal Brew swap from column ${from.column} slot ${from.slot} to column ${to.column} slot ${to.slot}`,
+    );
+  }
+  const copper = swapTokens(current, from, to);
+
+  const canContinue = getLegalTargets(copper, to).length > 0;
+  return {
+    ...game,
+    players: updatePlayer(game.players, game.currentPlayer, (p) => ({ ...p, copper })),
+    brew: canContinue ? { slot: to, swaps: (game.brew?.swaps ?? 0) + 1 } : null,
+  };
+}
+
+/** Stops an open Brew chain early. */
+export function endBrew(game: GameState): GameState {
+  assertPhase(game, 'playing');
+  if (!game.brew) {
+    throw new Error('There is no Brew in progress to end');
+  }
+  return { ...game, brew: null };
 }
 
 /**

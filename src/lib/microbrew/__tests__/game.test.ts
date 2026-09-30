@@ -1,8 +1,11 @@
 import {
+  brewSwap,
   createNewGame,
+  endBrew,
   getRecipeBacks,
   returnRecipe,
   swapSetupHop,
+  type Copper,
   type GameState,
 } from '../game';
 import { CUSTOMERS, RECIPES, REPUTATION_CARDS, type TokenType } from '../data';
@@ -44,7 +47,7 @@ const o: TokenType = 'orange';
 const b: TokenType = 'brown';
 
 const ids = (cards: readonly { id: string }[]) => cards.map((card) => card.id);
-const count = (tokens: TokenType[], type: TokenType) => tokens.filter((t) => t === type).length;
+const count = (tokens: readonly (TokenType | null)[], type: TokenType) => tokens.filter((t) => t === type).length;
 const recipeIds = (...numbers: number[]) => numbers.map((n) => `recipe-${String(n).padStart(2, '0')}`);
 
 function dealFixtureGame(): GameState {
@@ -274,5 +277,95 @@ describe('getRecipeBacks', () => {
     // recipe-03 is dark, recipe-07 is light (see RECIPES).
     expect(getRecipeBacks(game.players[1])).toEqual(['dark', 'light']);
     expect(getRecipeBacks(game.players[0])).toEqual(['medium']);
+  });
+});
+
+describe('Brew', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  // The legality rules themselves are covered in copper.test.ts; these check
+  // how a Brew chain is tracked in game state.
+  const slot = (column: number, s: number) => ({ column, slot: s });
+
+  /** The fixture game after setup, with player one (the current player) given `copper`. */
+  function playingWith(copper: Copper): GameState {
+    const game = completeFixtureSetup();
+    return { ...game, players: [{ ...game.players[0], copper }, game.players[1]] };
+  }
+
+  it('starts with no Brew in progress', () => {
+    expect(dealFixtureGame().brew).toBeNull();
+    expect(completeFixtureSetup().brew).toBeNull();
+  });
+
+  it("swaps in the current player's Copper and keeps the chain open while the token can move", () => {
+    // Fixture after setup: player one's hop is at column 1 (index), slot 1.
+    const game = brewSwap(completeFixtureSetup(), slot(1, 1), slot(0, 0));
+
+    expect(game.players[0].copper[0]).toEqual(['hops', y, y, y]);
+    expect(game.players[0].copper[1]).toEqual([y, y, y, y]);
+    expect(game.players[1].copper).toEqual(completeFixtureSetup().players[1].copper);
+    expect(game.brew).toEqual({ slot: slot(0, 0), swaps: 1 });
+  });
+
+  it('lets the same token keep swapping, counting the swaps', () => {
+    let game = brewSwap(completeFixtureSetup(), slot(1, 1), slot(0, 0));
+    game = brewSwap(game, slot(0, 0), slot(1, 0));
+
+    expect(game.players[0].copper[1]).toEqual(['hops', y, y, y]);
+    expect(game.brew).toEqual({ slot: slot(1, 0), swaps: 2 });
+  });
+
+  it('only lets the token already being brewed keep swapping', () => {
+    const game = brewSwap(completeFixtureSetup(), slot(1, 1), slot(0, 0));
+    // (3,3) orange -> (2,2) yellow would be legal on its own.
+    expect(() => brewSwap(game, slot(3, 3), slot(2, 2))).toThrow(/Only the token already being brewed/);
+  });
+
+  it('lets the player stop the chain early', () => {
+    const game = endBrew(brewSwap(completeFixtureSetup(), slot(1, 1), slot(0, 0)));
+
+    expect(game.brew).toBeNull();
+    expect(game.players[0].copper[0]).toEqual(['hops', y, y, y]);
+    // A new Brew can then start with any token.
+    expect(brewSwap(game, slot(3, 3), slot(2, 2)).brew).toEqual({ slot: slot(2, 2), swaps: 1 });
+  });
+
+  it('closes the chain by itself once the token has no legal swap left', () => {
+    // The orange at (1,1) can drop down-left past the yellow at (0,0), and from
+    // there it's stuck: the orange below-right is the same shade and the yellow
+    // above-right is lighter.
+    const copper: Copper = [
+      [y, b, b, b],
+      [o, o, b, b],
+      [b, b, b, b],
+      [b, b, b, b],
+    ];
+    const game = brewSwap(playingWith(copper), slot(1, 1), slot(0, 0));
+
+    expect(game.players[0].copper[0][0]).toBe(o);
+    expect(game.players[0].copper[1][1]).toBe(y);
+    expect(game.brew).toBeNull();
+  });
+
+  it('rejects an illegal swap and leaves the game unchanged', () => {
+    const game = completeFixtureSetup();
+    // Yellow down past yellow: same shade. ((1,1) holds the hop, so (0,0)->(1,1) would be legal.)
+    expect(() => brewSwap(game, slot(0, 0), slot(1, 0))).toThrow(/Illegal Brew swap/);
+    // Same column.
+    expect(() => brewSwap(game, slot(1, 1), slot(1, 2))).toThrow(/Illegal Brew swap/);
+    expect(game.players[0].copper[1]).toEqual([y, 'hops', y, y]);
+  });
+
+  it('only brews once play has started', () => {
+    const setup = returnRecipe(dealFixtureGame(), 'recipe-07');
+    expect(() => brewSwap(setup, slot(0, 0), slot(1, 0))).toThrow(/Expected phase 'playing'/);
+    expect(() => endBrew(setup)).toThrow(/Expected phase 'playing'/);
+  });
+
+  it('refuses to end a Brew that never started', () => {
+    expect(() => endBrew(completeFixtureSetup())).toThrow(/no Brew in progress/);
   });
 });
