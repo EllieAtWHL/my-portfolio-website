@@ -30,14 +30,16 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const variantClasses = {
       primary: 'button primary',
       secondary: 'button secondary',
-      // bg-transparent/dark:bg-transparent are required, not decorative: the shared
-      // "button" class in baseClasses (needed for focus/transition styles) also
-      // carries main-theme.css's .button base rule (a green gradient background)
-      // and, in dark mode, globals.css's separate ".dark button, .dark .button"
-      // rule (a solid light background) - ghost has no other variant class to
-      // beat those with, so without an explicit transparent background here it
-      // silently renders as a solid filled button instead of "text-only".
-      ghost: 'bg-transparent dark:bg-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-gray-800',
+      // bg-none, bg-transparent/dark:bg-transparent and shadow-none are required,
+      // not decorative: the shared "button" class in baseClasses (needed for
+      // focus/transition styles) also carries main-theme.css's .button base rule
+      // and, in dark mode, globals.css's ".dark .button" rule - ghost has no
+      // other variant class to beat those with. The light-mode .button sets its
+      // green gradient via the `background` shorthand, which lands in
+      // background-image, so bg-transparent (background-color only) doesn't
+      // clear it - bg-none does. shadow-none drops .button's green glow.
+      // Without all three it renders as a filled button instead of "text-only".
+      ghost: 'bg-none bg-transparent dark:bg-transparent shadow-none text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-gray-800',
       spurs: 'spurs-button'
     };
     

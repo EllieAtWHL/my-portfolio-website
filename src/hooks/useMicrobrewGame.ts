@@ -1,53 +1,53 @@
 'use client';
 
-import { useCallback, useState } from 'react';
-import type { Customer, Recipe, ReputationCard, TokenType } from '@/lib/microbrew/data';
+import { useCallback, useMemo, useState } from 'react';
+import {
+  createNewGame,
+  getRecipeBacks,
+  returnRecipe as returnRecipeTransition,
+  swapSetupHop as swapSetupHopTransition,
+  type CopperSlot,
+  type GameState,
+} from '@/lib/microbrew/game';
+import type { BeerColour } from '@/lib/microbrew/data';
 
-// Skeleton only (WEB-178). The full GameState field list, dealing and setup
-// logic land in WEB-179; game actions in later stories. Like useRegicideGame,
-// this hook will own all game state and actions and be used exactly once, by
-// MicrobrewGame.
+export type {
+  BoardState,
+  BrewmasterSpace,
+  Copper,
+  CopperSlot,
+  GamePhase,
+  GameState,
+  PlayerIndex,
+  PlayerState,
+} from '@/lib/microbrew/game';
 
-export type GamePhase = 'setup' | 'playing' | 'finished';
-
-export type PlayerIndex = 0 | 1;
-
-export interface PlayerState {
-  name: string;
-  /** Tokens in the player's Copper, one array per column (top first). */
-  copper: TokenType[][];
-  cash: number;
-  brewers: number;
-  recipeHand: Recipe[];
-  loyalCustomers: Customer[];
-  /** Secret reputation cards, scored at game end. */
-  reputation: ReputationCard[];
-}
-
-export interface BoardState {
-  /** The shared token supply (the "tin"). */
-  tin: TokenType[];
-  customerDeck: Customer[];
-  thirstyCustomers: Customer[];
-  recipeDeck: Recipe[];
-  recipeBoard: Recipe[];
-  reputationDeck: ReputationCard[];
-  publicReputation: ReputationCard[];
-}
-
-export interface GameState {
-  phase: GamePhase;
-  players: [PlayerState, PlayerState];
-  currentPlayer: PlayerIndex;
-  board: BoardState;
-}
-
+// Like useRegicideGame, this hook owns all game state and actions and is used
+// exactly once, by MicrobrewGame. The rules themselves are pure functions in
+// src/lib/microbrew/game.ts; this hook just holds the state and applies them.
 export function useMicrobrewGame() {
-  const [game] = useState<GameState | null>(null);
+  const [game, setGame] = useState<GameState | null>(null);
 
-  const startGame = useCallback(() => {
-    // Deals a new game - implemented in WEB-179.
+  const startGame = useCallback((playerOneName: string, playerTwoName: string) => {
+    setGame(createNewGame(playerOneName, playerTwoName));
   }, []);
 
-  return { game, startGame };
+  /** Abandons the current game and returns to the start screen. */
+  const resetGame = useCallback(() => setGame(null), []);
+
+  const returnRecipe = useCallback((recipeId: string) => {
+    setGame((current) => (current ? returnRecipeTransition(current, recipeId) : current));
+  }, []);
+
+  const swapSetupHop = useCallback((target: CopperSlot) => {
+    setGame((current) => (current ? swapSetupHopTransition(current, target) : current));
+  }, []);
+
+  /** Public: each player's recipe card backs (colour tiers), per player index. */
+  const recipeBacks = useMemo<[BeerColour[], BeerColour[]] | null>(
+    () => (game ? [getRecipeBacks(game.players[0]), getRecipeBacks(game.players[1])] : null),
+    [game],
+  );
+
+  return { game, recipeBacks, startGame, resetGame, returnRecipe, swapSetupHop };
 }

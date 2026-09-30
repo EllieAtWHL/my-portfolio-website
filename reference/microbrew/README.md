@@ -8,14 +8,33 @@ serve it to customers for cash and reputation. Lives at `/microbrew` in the
 personal-site section. Tracked under epic
 [WEB-1](https://eleanormatthewman.atlassian.net/browse/WEB-1).
 
-**Status: scaffolding only** ([WEB-178](https://eleanormatthewman.atlassian.net/browse/WEB-178)).
-The route, landing screen, static card/token data and hook skeleton exist; no
-dealing or game logic yet. The Play button is disabled with a "Coming soon"
-note until the hook is wired up. MVP scope is 2-player local hot-seat only.
+**Status: setup only.** Scaffolding and data landed in
+[WEB-178](https://eleanormatthewman.atlassian.net/browse/WEB-178); dealing a
+new game and the two setup choices (returning a recipe, the hop swaps) in
+[WEB-179](https://eleanormatthewman.atlassian.net/browse/WEB-179). Turns aren't
+playable yet. MVP scope is 2-player local hot-seat only.
 
 It follows the same shape as Regicide (see [`../regicide/README.md`](../regicide/README.md)):
 one route, one top-level screen switch, screen components in a folder, and one
-hook owning all game state and actions.
+hook owning all game state and actions. One difference: the rules live as pure
+functions in `src/lib/microbrew/game.ts` rather than inside the hook, because
+Microbrew's rules are much larger and are easier to test without React.
+
+## Not playable on the live site yet
+
+The game ships ticket by ticket, so `/microbrew` is only playable outside
+production. `isMicrobrewPlayable()` (`src/lib/microbrew/availability.ts`) is
+read by the server-rendered page and passed down as a `playable` prop:
+
+| Where | Playable? |
+|---|---|
+| Production (`VERCEL_ENV=production`) | No - Play is disabled with "Coming soon" |
+| Vercel PR previews (`VERCEL_ENV=preview`) | Yes - test each ticket from its PR's preview URL |
+| Local `npm run dev` (no `VERCEL_ENV`) | Yes |
+
+To launch, set `MICROBREW_ENABLED=true` in the Vercel **production**
+environment and redeploy. No code change is needed. The page is statically
+rendered, so the flag is read at build time.
 
 ## Attribution
 
@@ -29,12 +48,66 @@ image - that would make the page read as official.
 
 | File | Responsibility |
 |---|---|
-| `src/app/microbrew/page.tsx` | Route + metadata. No OG/Twitter share image yet - add `public/microbrew/microbrew.png` (a gameplay screenshot, like Regicide's) once there's a play area - tracked in [WEB-189](https://eleanormatthewman.atlassian.net/browse/WEB-189) |
-| `src/components/MicrobrewGame.tsx` | Top-level `'start' \| 'playing'` screen switch; not yet wired to the hook |
-| `src/components/microbrew/GameStart.tsx` | Landing screen: title, tagline, description, attribution/buy link, Play button (disabled until `onStartGame` is passed) |
-| `src/lib/microbrew/data.ts` | Typed static data: tokens, 12 customers, 16 recipes, 7 reputation cards, component counts |
+| `src/app/microbrew/page.tsx` | Route + metadata; passes `playable` down. No OG/Twitter share image yet - add `public/microbrew/microbrew.png` (a gameplay screenshot, like Regicide's) once there's a play area - tracked in [WEB-189](https://eleanormatthewman.atlassian.net/browse/WEB-189) |
+| `src/components/MicrobrewGame.tsx` | Top-level screen switch: `GameStart` with no game, `SetupScreen` once one is dealt |
+| `src/components/microbrew/GameStart.tsx` | Landing screen: title, description, attribution/buy link, player name inputs and Play (disabled with "Coming soon" when `onStartGame` isn't passed) |
+| `src/components/microbrew/SetupScreen.tsx` | **Placeholder** setup UI: the hidden-hand recipe return, the hop swaps, and a plain summary of everything dealt. Later stories replace it with the real board |
+| `src/components/microbrew/Copper.tsx` | **Placeholder** Copper view: 4 staggered columns drawn bottom-up, optionally clickable (used for the hop swap). WEB-180 builds the real board |
+| `src/lib/microbrew/data.ts` | Typed static data: tokens, 12 customers, 16 recipes, 7 reputation cards, Copper layout, component counts |
 | `src/lib/microbrew/deck.ts` | Pure `shuffle` (Fisher-Yates, matching the prototype) and `deal` helpers |
-| `src/hooks/useMicrobrewGame.ts` | Hook skeleton: `GameState` / `PlayerState` / `BoardState` interfaces and a stub `startGame`. The full field list is settled in WEB-179 |
+| `src/lib/microbrew/game.ts` | `GameState` types and pure transitions: `createNewGame`, `returnRecipe`, `swapSetupHop`, plus `getRecipeBacks` |
+| `src/lib/microbrew/availability.ts` | `isMicrobrewPlayable()` - see above |
+| `src/hooks/useMicrobrewGame.ts` | Owns the `GameState` and exposes `startGame`, `resetGame`, `returnRecipe`, `swapSetupHop` and the public `recipeBacks` |
+
+## Game state
+
+- **Copper:** `TokenType[][]` - 4 columns, each ordered bottom (index 0) to
+  top. It isn't a square grid: columns 1 and 3 (indices 0 and 2) sit half a
+  slot higher (`COPPER_RAISED_COLUMNS`). The 5th "side tank" column comes with
+  the Copper Upgrade (WEB-183).
+- **Phases:** `returnRecipe` -> `hopSwap` (first player, then second) ->
+  `playing` -> `finished`. `currentPlayer` is whoever the game is waiting on.
+- **The tin** is a bag. After setup its order is meaningless, so later draws
+  (Mash, WEB-183) must draw at random, not from the front.
+- **Secret vs public:** recipe hands and each player's 2 reputation cards are
+  secret. A recipe's colour tier is printed on its back, so `getRecipeBacks`
+  (and the hook's `recipeBacks`) expose just that. The 2 unused reputation
+  cards are dropped at setup and never appear in state.
+- Invalid transitions (wrong phase, a card not in hand, swapping onto a hop)
+  throw, because the UI only ever offers legal choices.
+
+## Setup (`createNewGame`)
+
+Follows the rulebook's Setup section with one digital-only change: the first
+player is chosen **before** recipes are dealt, because the recipe step's extra
+draw goes to the player going second.
+
+1. Both players start on $0 with 2 ready brewers. The supply holds each
+   player's 3rd brewer and the 2 Upgrade tokens. The Brewmaster starts on
+   Manage.
+2. The 48 malts are shuffled into the tin. Player one's Copper is drawn first,
+   then player two's, each column by column from the left and bottom-up within
+   a column (the order matters for the Brew puzzle). 16 malts stay in the tin.
+3. Customers: 1 loyal each, then 2 thirsty; 8 left in the deck.
+4. Recipes: 1 each, 3 revealed, then the second player draws an extra and
+   **chooses** one to shuffle back (`returnRecipe`).
+5. Reputation: 1 public, 2 secret each, 2 set aside unseen.
+6. Each player, first player first, **chooses** a malt to replace with a hop
+   (`swapSetupHop`); the malt goes back to the tin. After both, the other 4
+   hops join the tin (16 + 2 + 4 = 22 tokens) and play begins.
+
+Randomness is consumed in a fixed order - first player, tin, customers,
+recipes, reputation - which the tests depend on.
+
+## Testing
+
+`src/lib/microbrew/__tests__/game.test.ts` pins `Math.random` to `0` (every
+Fisher-Yates swap then rotates the array left by one, as in Regicide's tests)
+and works the whole expected deal through by hand in its header comment, so
+the assertions check exact cards and tokens rather than random output. Both
+first-player branches are covered with `mockReturnValueOnce`. The hook,
+`GameStart` and `MicrobrewGame` (the whole placeholder setup flow) have lighter
+tests on top.
 
 ## Data notes
 
