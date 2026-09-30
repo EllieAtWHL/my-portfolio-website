@@ -290,6 +290,10 @@ export function swapSetupHop(game: GameState, target: CopperSlot): GameState {
  * chain closes by itself once the token has no legal swap left, or earlier via
  * endBrew - the player never has to take the longest chain.
  *
+ * There's deliberately no limit on revisiting slots: a hop can always swap, so
+ * its chain only ends via endBrew, and the rulebook's tips recommend "power
+ * moves" moving a hop in a circular path.
+ *
  * Worker placement (spending a brewer on Brew) is WEB-181's job; this is just
  * the puzzle.
  */

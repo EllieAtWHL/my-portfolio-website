@@ -318,6 +318,22 @@ describe('Brew', () => {
     expect(game.brew).toEqual({ slot: slot(1, 0), swaps: 2 });
   });
 
+  it("lets a hop keep going round in a circle (the rulebook's hop \"power move\")", () => {
+    // Hop at (1,1) -> (0,1) -> (1,2) -> (2,1) -> (1,1): back where it started.
+    let game = completeFixtureSetup();
+    for (const [from, to] of [
+      [slot(1, 1), slot(0, 1)],
+      [slot(0, 1), slot(1, 2)],
+      [slot(1, 2), slot(2, 1)],
+      [slot(2, 1), slot(1, 1)],
+    ]) {
+      game = brewSwap(game, from, to);
+    }
+
+    expect(game.brew).toEqual({ slot: slot(1, 1), swaps: 4 });
+    expect(game.players[0].copper[1][1]).toBe('hops');
+  });
+
   it('only lets the token already being brewed keep swapping', () => {
     const game = brewSwap(completeFixtureSetup(), slot(1, 1), slot(0, 0));
     // (3,3) orange -> (2,2) yellow would be legal on its own.

@@ -129,7 +129,10 @@ no change here.
 **Chains.** The first `brewSwap` starts a chain with the picked token. While
 `game.brew` is open, only that token (now at `brew.slot`) may keep swapping. The
 chain closes by itself when the token has no legal swap left, or earlier via
-`endBrew`: the player never has to take the longest chain. A token picked but
+`endBrew`: the player never has to take the longest chain. There's deliberately
+no limit on revisiting slots: a hop can always swap, so a hop's chain only
+ends via `endBrew`, and the rulebook's tips recommend "power moves" moving a hop
+in a circular path. A token picked but
 not yet swapped is UI-only state in `GameScreen`, so it can be changed or
 cancelled freely. Spending a brewer on Brew is WEB-181's job.
 
