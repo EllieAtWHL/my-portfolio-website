@@ -1,5 +1,6 @@
 import MainSitePage from '@/components/MainSitePage';
 import MicrobrewGame from '@/components/MicrobrewGame';
+import { isMicrobrewPlayable } from '@/lib/microbrew/availability';
 
 const description =
   'Microbrew is a medium-weight worker placement / puzzle game hybrid for two players. An unofficial digital version of the One Free Elephant board game.';
@@ -29,7 +30,7 @@ export default function Microbrew() {
     <MainSitePage>
       <div className="content-with-footer">
         <div className="scrollable">
-          <MicrobrewGame />
+          <MicrobrewGame playable={isMicrobrewPlayable()} />
         </div>
       </div>
     </MainSitePage>

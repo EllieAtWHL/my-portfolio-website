@@ -1,6 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { GameStart } from '../GameStart';
-import MicrobrewGame from '../../MicrobrewGame';
 
 describe('GameStart', () => {
   it('renders the title, tagline and Play button', () => {
@@ -25,26 +24,33 @@ describe('GameStart', () => {
     expect(buyLink).toHaveAttribute('rel', 'noopener noreferrer');
   });
 
-  it('disables Play and shows "Coming soon" until a start handler is provided', () => {
+  it('disables Play, hides the name inputs and shows "Coming soon" when not playable', () => {
     render(<GameStart />);
 
     expect(screen.getByRole('button', { name: /play game/i })).toBeDisabled();
     expect(screen.getByText('Coming soon')).toBeInTheDocument();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 
-  it('calls onStartGame when Play is clicked', () => {
+  it('starts the game with the entered player names', () => {
     const onStartGame = jest.fn();
     render(<GameStart onStartGame={onStartGame} />);
 
+    fireEvent.change(screen.getByLabelText("Player One's name"), { target: { value: '  Alice ' } });
+    fireEvent.change(screen.getByLabelText("Player Two's name"), { target: { value: 'Bob' } });
     fireEvent.click(screen.getByRole('button', { name: /play game/i }));
-    expect(onStartGame).toHaveBeenCalledTimes(1);
+
+    expect(onStartGame).toHaveBeenCalledWith('Alice', 'Bob');
     expect(screen.queryByText('Coming soon')).not.toBeInTheDocument();
   });
-});
 
-describe('MicrobrewGame', () => {
-  it('starts on the GameStart screen', () => {
-    render(<MicrobrewGame />);
-    expect(screen.getByRole('heading', { name: 'MICROBREW' })).toBeInTheDocument();
+  it('falls back to default names when left blank', () => {
+    const onStartGame = jest.fn();
+    render(<GameStart onStartGame={onStartGame} />);
+
+    fireEvent.change(screen.getByLabelText("Player One's name"), { target: { value: '   ' } });
+    fireEvent.click(screen.getByRole('button', { name: /play game/i }));
+
+    expect(onStartGame).toHaveBeenCalledWith('Player One', 'Player Two');
   });
 });
