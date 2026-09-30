@@ -18,6 +18,8 @@ describe('Button Component', () => {
     rerender(<Button variant="ghost">Ghost</Button>)
     button = screen.getByRole('button')
     expect(button).toHaveClass('text-gray-600', 'hover:text-gray-900')
+    // .button's light-mode gradient is a background-image, so ghost must clear it
+    expect(button).toHaveClass('bg-none', 'bg-transparent', 'shadow-none')
 
     rerender(<Button variant="spurs">Spurs</Button>)
     button = screen.getByRole('button')
