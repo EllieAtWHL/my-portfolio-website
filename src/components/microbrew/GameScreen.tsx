@@ -208,8 +208,8 @@ function BrewStep({ game, picked, notice, onCancel, onEndBrew }: BrewStepProps) 
         </p>
       </div>
       <p className={mutedClassName}>
-        Tokens swap along the lines. A malt moves up past a darker malt and down past a lighter one; hops swap with
-        anything.
+        Tokens swap along the lines. Light malts rise and dark malts sink: a swap always leaves the lighter malt on
+        top. Hops swap with anything.
       </p>
       <p className={mutedClassName}>Other actions and turns arrive in later updates.</p>
     </div>

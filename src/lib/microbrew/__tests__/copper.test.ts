@@ -143,6 +143,49 @@ describe('a multi-step chain', () => {
   });
 });
 
+describe('light malts rise, dark malts sink', () => {
+  // The rules in one line: every legal malt-for-malt swap leaves the lighter
+  // malt on top, and every such swap is allowed. Checked exhaustively over
+  // many pseudo-random Coppers (a fixed-seed generator, so it's deterministic).
+  const DARKNESS: Record<string, number> = { yellow: 1, orange: 2, brown: 3 };
+
+  function randomCopper(seed: number): Copper {
+    let state = seed;
+    const next = () => {
+      state = (state * 1103515245 + 12345) % 2147483648;
+      return state / 2147483648;
+    };
+    const pool: CopperToken[] = ['yellow', 'orange', 'brown', 'hops', null];
+    return Array.from({ length: 5 }, () => Array.from({ length: 4 }, () => pool[Math.floor(next() * pool.length)]));
+  }
+
+  it('holds for every neighbouring pair of malts on 200 random Coppers (with side tank)', () => {
+    const checked = { legal: 0, illegal: 0 };
+    for (let seed = 1; seed <= 200; seed++) {
+      const copper = randomCopper(seed);
+      copper.forEach((column, c) =>
+        column.forEach((moving, s) => {
+          const from = at(c, s);
+          for (const to of getNeighbours(copper, from)) {
+            const target = copper[to.column][to.slot];
+            if (!moving || !target || moving === 'hops' || target === 'hops') continue;
+
+            // Swapping moves the lower token up, so the lighter malt ends on top
+            // exactly when the lower one is the lighter of the two.
+            const [lower, upper] = slotHeight(from) < slotHeight(to) ? [moving, target] : [target, moving];
+            const lighterEndsOnTop = DARKNESS[lower] < DARKNESS[upper];
+            expect(isLegalSwap(copper, from, to)).toBe(lighterEndsOnTop);
+            checked[lighterEndsOnTop ? 'legal' : 'illegal']++;
+          }
+        }),
+      );
+    }
+    // Guard against a vacuous pass: plenty of both outcomes were exercised.
+    expect(checked.legal).toBeGreaterThan(500);
+    expect(checked.illegal).toBeGreaterThan(500);
+  });
+});
+
 describe('swapTokens', () => {
   it('swaps two slots without mutating the input', () => {
     const before = copperOf('YB', 'OH');
