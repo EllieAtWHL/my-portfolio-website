@@ -38,6 +38,7 @@ Made by Ellie on 3 Oct 2026:
 | Where the code lives | A Vite + TypeScript app inside this repo (see [Platform and hosting](#platform-and-hosting)) |
 | Puzzle code versioning | Hidden versioning: today's codes (`M-4K7P`) mean generator v1 (see [Puzzle codes](#puzzle-codes)) |
 | Belt direction | Keep the prototype's: enter bottom-left, run clockwise, up the left side first |
+| Look and feel | The **main EllieAtWHL design system**, not the prototype's lavender/Fredoka look (see [Visual language](#visual-language)) |
 
 ## Game rules
 
@@ -250,9 +251,10 @@ configs felt far too easy at every level.
 
 ## UI, visuals and interaction
 
-A single portrait screen, mobile first (max width about 460 px), with a cosy
-knitted look where each stitch is drawn as a knit "V". The UI copy uses
-British English ("colour").
+A single portrait screen, mobile first (max width about 460 px). The page
+chrome is in the main site's style, and the board has a cosy knitted look
+where each stitch is drawn as a knit "V". The UI copy uses British English
+("colour").
 
 **Layout, top to bottom**
 
@@ -268,22 +270,51 @@ British English ("colour").
 6. Three supply columns.
 7. A "Play a code" input with a Play button and inline validation message.
 
-**Visual language**
+### Visual language
 
-- Font: Fredoka (rounded), with system fallbacks. It must be self-hosted (see
-  [Platform and hosting](#platform-and-hosting)).
-- Page tokens: light lavender background `#EAE3F1` with ink `#3A2D4A`; dark
-  mode heather `#2B2239` with ink `#F4EEF9`. The board panel stays light in
+Bobbin follows the main EllieAtWHL design system
+([`../ellieatwhl-design-system/`](../ellieatwhl-design-system/README.md)): the
+same colours, fonts, themes and component styles as the rest of the personal
+site. It must feel like part of the site, not a separate brand. The
+prototype's lavender palette, mustard buttons and Fredoka font are **not**
+carried over. Only its layout and the game-specific drawing (stitches,
+spools, belt) are.
+
+- **Colour tokens are shared, not copied.** The Vite build imports the site's
+  own `src/styles/variables.css`, so Bobbin picks up any palette change and
+  can't drift. No hardcoded hex for UI chrome (same rule as the rest of the
+  repo: see `reference/CSS_ARCHITECTURE.md`). The page background, ink,
+  buttons, focus rings and cards use the main site's green brand tokens for
+  light mode and the `--dark-*` tokens for dark mode.
+- **Same theme choice as the site.** Light and dark are both first-class. On
+  load, Bobbin applies the same logic as `public/theme-script.js`: the
+  `theme` localStorage key (`light`/`dark`), falling back to
+  `prefers-color-scheme`, applied as the `light`/`dark` class on `<html>`.
+  Bobbin is on the same origin, so the visitor's choice on the main site
+  carries over. Any theme toggle in Bobbin writes the same key.
+- **Font: Nokora**, the site's font (loaded in `src/app/layout.tsx` via
+  `next/font/google`). Bobbin can't use Next's hashed font files, so it
+  bundles its own copy of Nokora, which also satisfies the CSP's
+  `font-src 'self'` and works offline. It's used on canvas too (the spool
+  capacity numbers).
+- **Component styles** follow `main-theme.css`/the design system: the same
+  button shapes and colours, corner radii (12px cards, 8px controls),
+  understated borders, and spacing.
+- **The yarn palette is gameplay, not chrome.** The 12 yarn colours stay as
+  they are (they must stay distinct from each other and readable on the
+  board). The board panel behind the stitches is a neutral surface, light in
   both themes, so yarn colours read consistently.
-- Stitches: two tilted ellipses per cell with a soft highlight. Collected
-  cells show a faint empty stitch, so the picture looks unravelled rather than
-  erased.
-- Bobbins: wooden spools with yarn wound in the bobbin colour, stripe lines,
-  and the capacity in white with a dark outline. Also rendered as inline SVG
-  for the DOM rack and columns.
-- Effects: a curved thread flies from each collected stitch to its bobbin
-  (~280 ms), and a ring pops where a bobbin empties (~360 ms).
-- Primary button colour: mustard `#F2B632`.
+- **Game drawing:** stitches are two tilted ellipses per cell with a soft
+  highlight. Collected cells show a faint empty stitch, so the picture looks
+  unravelled rather than erased. Bobbins are wooden spools wound in the yarn
+  colour, with the capacity in white with a dark outline, drawn on canvas and
+  as inline SVG for the DOM rack and columns. Effects: a curved thread flies
+  from each collected stitch to its bobbin (~280 ms), and a ring pops where a
+  bobbin empties (~360 ms).
+- **No main-site navbar.** Bobbin is a standalone installable app, and the
+  site navbar's links would leave the PWA's scope. Instead, the header has a
+  small link back to the main site. Hide it when running installed
+  (`display-mode: standalone`).
 
 **Interaction and feedback**
 
@@ -306,7 +337,8 @@ fully playable offline after the first visit.
 
 **Requirements**
 
-- Installable: a web app manifest with `id`, `start_url` and `scope` all
+- Installable: a web app manifest (theme and background colours taken from
+  the main site's brand tokens) with `id`, `start_url` and `scope` all
   `/bobbin/`, name and short name, icons (192 and 512 px, plus maskable,
   original art), theme and background colours, `display: standalone`, and
   portrait orientation.
@@ -361,7 +393,7 @@ Investigated in WEB-193:
   intercepts `/bobbin/*`. The site-wide security headers do apply. The CSP
   (`script-src 'self'`, `font-src 'self'`, `style-src 'self'`) allows a
   same-origin worker and bundled assets, but would **block Google Fonts**, so
-  Fredoka must be self-hosted. Any new runtime network call would need a CSP
+  Nokora must be bundled. Any new runtime network call would need a CSP
   entry, but the game shouldn't make any.
 
 ## Architecture
