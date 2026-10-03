@@ -150,6 +150,12 @@ design, so applying the same rule to them would be a false positive.
   - Responsive breakpoints
 - **Rule:** Only styles used exclusively on the not-found page
 
+### Outside `src/styles/`: Bobbin (`games/bobbin/src/styles.css`)
+- **Purpose:** Styles for the Bobbin puzzle game, a standalone Vite app at `/bobbin/` that can't use the site's React components or Tailwind build (see `reference/bobbin/README.md`)
+- **Shares, doesn't copy, the tokens:** it `@import`s this folder's `variables.css` directly, so palette changes reach Bobbin automatically
+- **Mirrors some site rules:** its `.btn-primary`/`.btn-secondary` mirror `main-theme.css`'s `.button.primary`/`.button.secondary` (as the shared `Button` renders them at size `sm`, including `globals.css`'s `.dark button` pale fill for dark secondary buttons); its panels and dialog mirror `about-me.css`'s `.accent-card`; its page background mirrors `globals.css`'s light/dark body gradients
+- **Rule:** if you change one of those mirrored site rules, update Bobbin's copy in the same piece of work - nothing else will flag the drift
+
 ### `globals.css`
 - **Purpose:** Entry point for CSS imports and truly global utilities
 - **Contains:**
