@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Yarn Loop prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EAE3F1; --ink:#3A2D4A; --ink-soft:#6E5F80; --panel:#FBF8FD; --empty:#E4DCEC;
+  --belt:#3A2D4A; --belt-stitch:#9C8BB6; --slot:#DCD2E6; --btn:#F2B632; --btn-ink:#3A2D4A;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#2B2239; --ink:#F4EEF9; --ink-soft:#B7A9C9; --panel:#F3EEF8; --empty:#DDD3E7;
+  --belt:#1E1729; --belt-stitch:#6F5F88; --slot:#3C3050;
+}}
+:root[data-theme="dark"]{
+  --bg:#2B2239; --ink:#F4EEF9; --ink-soft:#B7A9C9; --panel:#F3EEF8; --empty:#DDD3E7;
+  --belt:#1E1729; --belt-stitch:#6F5F88; --slot:#3C3050;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%; scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0; min-height:100%; background:var(--bg); color:var(--ink);
+  font-family:"Fredoka", ui-rounded, "Segoe UI", system-ui, sans-serif; -webkit-tap-highlight-color:transparent;}
+.app{max-width:460px; margin:0 auto; padding:14px 16px 20px; display:flex; flex-direction:column; gap:12px}
+header{display:flex; align-items:flex-end; justify-content:space-between; gap:12px}
+.title small{display:block; font-size:.85rem; color:var(--ink-soft); font-weight:400}
+.title h1{margin:0; font-size:1.6rem; font-weight:600; line-height:1.1}
+.hbtns{display:flex; gap:6px}
+button{font:inherit; cursor:pointer}
+.ghost{background:transparent; border:2px solid var(--ink-soft); color:var(--ink); border-radius:999px; padding:6px 14px; font-weight:500; font-size:.9rem}
+.ghost:disabled{opacity:.35; cursor:default}
+button:focus-visible{outline:3px solid var(--btn); outline-offset:2px}
+.stage{position:relative}
+canvas{display:block; width:100%; touch-action:manipulation}
+.hint{margin:0; font-size:.9rem; color:var(--ink-soft); line-height:1.4; text-align:center}
+.label{font-size:.85rem; color:var(--ink-soft); margin:0 0 6px; display:flex; justify-content:space-between}
+.rack{display:grid; grid-template-columns:repeat(5,1fr); gap:8px}
+.slot{aspect-ratio:1; border-radius:14px; background:var(--slot); border:none; padding:0; display:grid; place-items:center}
+.slot:disabled{cursor:default}
+.supply{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
+.col{background:var(--slot); border-radius:18px; padding:8px; display:flex; flex-direction:column; align-items:center; gap:6px; min-height:150px}
+.col .more{font-size:.8rem; color:var(--ink-soft); margin-top:auto}
+.spool{border:none; background:none; padding:0; display:grid; place-items:center; transition:transform .12s}
+.spool:not(:disabled):active{transform:scale(.92)}
+.spool:disabled{cursor:default}
+.spool svg{display:block}
+.overlay{position:absolute; inset:0; display:none; place-items:center; background:rgba(43,34,57,.55); border-radius:24px}
+.overlay.show{display:grid}
+.card{background:var(--panel); color:#3A2D4A; border-radius:20px; padding:22px 24px; text-align:center; width:min(85%,300px)}
+.card h2{margin:0 0 6px; font-size:1.4rem; font-weight:600}
+.card p{margin:0 0 16px; color:#6E5F80; line-height:1.4}
+.primary{background:var(--btn); color:var(--btn-ink); border:none; border-radius:999px; padding:10px 22px; font-weight:600; font-size:1rem}
+.title small strong{color:var(--ink); font-weight:600; letter-spacing:.04em}
+.link{background:none; border:none; color:var(--ink-soft); text-decoration:underline; padding:0 0 0 4px; font-size:.85rem}
+.primary.small{padding:6px 16px; font-size:.9rem}
+.seg{display:grid; grid-template-columns:repeat(3,1fr); background:var(--slot); border-radius:999px; padding:4px; gap:4px}
+.seg button{border:none; background:transparent; color:var(--ink); border-radius:999px; padding:7px 0; font-weight:500}
+.seg button[aria-pressed="true"]{background:var(--panel); color:#3A2D4A; box-shadow:0 1px 0 rgba(58,45,74,.15)}
+.codeform{margin-top:4px}
+.codeform label{font-size:.85rem; color:var(--ink-soft); display:block; margin-bottom:6px}
+.codeform .row{display:flex; gap:8px}
+.codeform input{flex:1; min-width:0; font:inherit; font-size:1rem; letter-spacing:.06em; text-transform:uppercase; padding:8px 14px; border-radius:999px; border:2px solid var(--ink-soft); background:transparent; color:var(--ink)}
+.codeform input:focus-visible{outline:3px solid var(--btn); outline-offset:2px}
+.codeform p{margin:6px 0 0; font-size:.85rem; color:var(--ink-soft); min-height:1em}
+@media (prefers-reduced-motion: reduce){ .spool{transition:none} }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="title"><h1 id="lvlName">Easy puzzle</h1><small>Code <strong id="lvlCode"></strong> <button class="link" id="copyBtn">Copy</button></small></div>
+    <div class="hbtns">
+      <button class="ghost" id="restartBtn">Restart</button>
+      <button class="primary small" id="newBtn">New</button>
+    </div>
+  </header>
+  <div class="seg" role="group" aria-label="Difficulty">
+    <button data-d="E">Easy</button><button data-d="M">Medium</button><button data-d="H">Hard</button>
+  </div>
+  <div class="stage">
+    <canvas id="cv" aria-label="Knitted picture with a conveyor belt around it"></canvas>
+    <div class="overlay" id="overlay"><div class="card">
+      <h2 id="ovTitle"></h2><p id="ovText"></p><button class="primary" id="ovBtn"></button>
+    </div></div>
+  </div>
+  <p class="hint" id="hint">Tap a bobbin to send it round the belt. It picks up the outermost stitches of its own colour. Leftover yarn waits on the rack.</p>
+  <div>
+    <p class="label"><span>Rack</span><span id="beltInfo">Belt 0 of 5</span></p>
+    <div class="rack" id="rack"></div>
+  </div>
+  <div class="supply" id="supply"></div>
+  <form class="codeform" id="codeForm">
+    <label for="codeInput">Play a code</label>
+    <div class="row"><input id="codeInput" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="M-4K7P"><button class="ghost" type="submit">Play</button></div>
+    <p id="codeMsg" role="status"></p>
+  </form>
+</div>
+<script>
+// ---------- shared rules ----------
+const ALPH = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+const PALETTE = { a:"#EF5B5B", b:"#F4A340", c:"#F2C94C", d:"#5FB36A", e:"#3FB8AF", f:"#8FD3DA",
+  g:"#6C9BE8", h:"#A98BE0", i:"#F29BC0", j:"#4A3560", k:"#FFFFFF", l:"#E9C99A" };
+const NAMES = { a:"red", b:"orange", c:"yellow", d:"green", e:"teal", f:"sky blue", g:"blue", h:"lilac", i:"pink", j:"plum", k:"white", l:"oatmeal" };
+// casual = target win rate for a player who reacts to what's on screen but doesn't plan ahead
+const DIFF = {
+  E:{ label:"Easy",   size:[9,10],  colours:[4,4], window:100, rack:4, belt:4, maxCap:20, deal:"random",  casual:[0.45,0.85], pics:["rings","waves","quilt","sprite","mix"] },
+  M:{ label:"Medium", size:[11,12], colours:[5,5], window:40,  rack:3, belt:4, maxCap:20, deal:"random", casual:[0.15,0.45], pics:["rings","waves","quilt","mix"] },
+  H:{ label:"Hard",   size:[12,13], colours:[6,6], window:100, rack:3, belt:4, maxCap:20, deal:"random", casual:[0,0.12],   pics:["rings","rings","waves","quilt"] },
+};
+const COLS = 3;
+
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+
+// Belt starts bottom-left and runs clockwise: up the left, across the top, down the right, back along the bottom
+function beltLen(grid){ return 2*grid.length + 2*grid[0].length; }
+function lineFirst(grid, i){
+  const H = grid.length, W = grid[0].length;
+  if (i < H){ const y=H-1-i; for(let x=0;x<W;x++) if(grid[y][x]) return [x,y]; }
+  else if (i < H+W){ const x=i-H; for(let y=0;y<H;y++) if(grid[y][x]) return [x,y]; }
+  else if (i < 2*H+W){ const y=i-H-W; for(let x=W-1;x>=0;x--) if(grid[y][x]) return [x,y]; }
+  else { const x=W-1-(i-2*H-W); for(let y=H-1;y>=0;y--) if(grid[y][x]) return [x,y]; }
+  return null;
+}
+function exposed(grid){
+  const L = beltLen(grid), set = new Map();
+  for(let i=0;i<L;i++){ const p=lineFirst(grid,i); if(p) set.set(p[0]+","+p[1], p); }
+  return [...set.values()];
+}
+
+// ---------- picture generators ----------
+function pick(rng, arr){ return arr[Math.floor(rng()*arr.length)]; }
+function shuffle(rng, arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(rng()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
+
+function genRings(rng, W, H, cols){
+  const cx=(W-1)/2, cy=(H-1)/2, bw = pick(rng,[1,1.5,2]);
+  const metric = pick(rng,["circle","diamond","square"]);
+  const sectors = rng() < 0.35 ? pick(rng,[4,8]) : 0;
+  return Array.from({length:H},(_,y)=>Array.from({length:W},(_,x)=>{
+    const dx=x-cx, dy=y-cy;
+    const d = metric==="circle" ? Math.hypot(dx,dy) : metric==="diamond" ? (Math.abs(dx)+Math.abs(dy))*0.75 : Math.max(Math.abs(dx),Math.abs(dy));
+    let idx = Math.floor(d/bw);
+    if (sectors){ const a = Math.atan2(dy,dx)+Math.PI; idx += Math.floor(a/(2*Math.PI/sectors)) % 2; }
+    return cols[idx % cols.length];
+  }));
+}
+function genWaves(rng, W, H, cols){
+  const amp = 0.8 + rng()*2, freq = 0.4 + rng()*0.7, ph = rng()*6.28, bw = pick(rng,[2,2,3]);
+  const diag = rng() < 0.4;
+  return Array.from({length:H},(_,y)=>Array.from({length:W},(_,x)=>{
+    const v = (diag ? (x+y)/1.4 : y) + amp*Math.sin(x*freq+ph);
+    return cols[((Math.floor(v/bw) % cols.length)+cols.length) % cols.length];
+  }));
+}
+function genQuilt(rng, W, H, cols){
+  const t = pick(rng,[2,3]);
+  const tiles = {};
+  return Array.from({length:H},(_,y)=>Array.from({length:W},(_,x)=>{
+    // mirror so the quilt is symmetric left-right
+    const tx = Math.floor(Math.min(x, W-1-x)/t), ty = Math.floor(y/t);
+    const key = tx+","+ty;
+    if (!tiles[key]) tiles[key] = { a:pick(rng,cols), b:pick(rng,cols), style:pick(rng,["solid","diag","dot"]) };
+    const tl = tiles[key], lx = x % t, ly = y % t;
+    if (tl.style==="solid") return tl.a;
+    if (tl.style==="diag") return (lx >= ly) ? tl.a : tl.b;
+    return (lx===Math.floor(t/2) && ly===Math.floor(t/2)) ? tl.b : tl.a;
+  }));
+}
+function genSprite(rng, W, H, cols, base){
+  const g = base || Array.from({length:H},()=>Array(W).fill(cols[0]));
+  const half = Math.ceil(W/2), cx=(W-1)/2, cy=(H-1)/2;
+  let m = Array.from({length:H},(_,y)=>Array.from({length:half},(_,x)=>{
+    const d = Math.hypot((x-cx)/(W*0.42), (y-cy)/(H*0.42));
+    return rng() < (d < 1 ? 0.62 - d*0.25 : 0);
+  }));
+  for (let it=0; it<2; it++){
+    m = m.map((row,y)=>row.map((v,x)=>{
+      let n=0; for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){ if(!dx&&!dy) continue;
+        const yy=y+dy; let xx=x+dx; if (xx>=half) xx = W-1-xx; if(yy>=0&&yy<H&&xx>=0&&xx<half&&m[yy][xx]) n++; }
+      return n>=5 || (v && n>=3);
+    }));
+  }
+  const inM = (x,y)=> y>=0&&y<H&&x>=0&&x<W && m[y][x<half?x:W-1-x];
+  const fill = cols[1], line = cols[2 % cols.length], spot = cols[(3 % cols.length)] ;
+  for (let y=0;y<H;y++) for (let x=0;x<W;x++){
+    if (!inM(x,y)) continue;
+    const edge = !inM(x-1,y)||!inM(x+1,y)||!inM(x,y-1)||!inM(x,y+1);
+    g[y][x] = edge && cols.length>2 ? line : fill;
+  }
+  if (cols.length > 3){
+    for (let y=1;y<H-1;y++) for (let x=1;x<half;x++){
+      if (inM(x,y) && inM(x-1,y)&&inM(x+1,y)&&inM(x,y-1)&&inM(x,y+1) && rng()<0.2){ g[y][x]=spot; g[y][W-1-x]=spot; }
+    }
+  }
+  return g;
+}
+function genPicture(rng, W, H, cols, pics){
+  const type = pick(rng, pics || ["rings","waves","quilt","sprite","sprite","mix"]);
+  if (type==="rings") return genRings(rng,W,H,cols);
+  if (type==="waves") return genWaves(rng,W,H,cols);
+  if (type==="quilt") return genQuilt(rng,W,H,cols);
+  if (type==="sprite") return genSprite(rng,W,H,cols);
+  // mix: striped background with a sprite on top
+  const bg = genWaves(rng,W,H,cols.slice(0,2));
+  return genSprite(rng,W,H,[cols[0],...cols.slice(2),cols[1]].slice(0,cols.length), bg);
+}
+
+// ---------- bobbins ----------
+function peelBobbins(grid, maxCap){
+  const g = grid.map(r=>r.slice()); const out = [];
+  let left = g.flat().filter(Boolean).length;
+  while(left > 0){
+    const ex = exposed(g); const counts = {};
+    ex.forEach(([x,y]) => { const c=g[y][x]; counts[c]=(counts[c]||0)+1; });
+    const c = Object.keys(counts).sort((a,b)=>counts[b]-counts[a])[0];
+    ex.forEach(([x,y]) => { if(g[y][x]===c){ g[y][x]=null; left--; } });
+    const last = out[out.length-1];
+    if (last && last.c===c) last.n += counts[c]; else out.push({c, n:counts[c]});
+  }
+  for(let i=0;i<out.length;i++){
+    if(out[i].n < 3){
+      let j=-1;
+      for(let k=i-1;k>=0;k--) if(out[k].c===out[i].c){ j=k; break; }
+      if(j<0) for(let k=i+1;k<out.length;k++) if(out[k].c===out[i].c){ j=k; break; }
+      if(j>=0){ out[j].n += out[i].n; out.splice(i,1); i--; }
+    }
+  }
+  const res=[]; out.forEach(b=>{ const k=Math.ceil(b.n/maxCap); let n=b.n; for(let j=k;j>0;j--){ const m=Math.round(n/j); res.push({c:b.c,n:m}); n-=m; } });
+  return res;
+}
+
+// Plays a level. policy "smart" plans colour by colour, "casual" picks any colour it can see.
+// Once the bobbins left fit on the rack, everything is fed back automatically (as in the game).
+function simulate(grid0, cols0, cfg, policy, rng){
+  policy = policy || "smart"; rng = rng || Math.random;
+  const grid = grid0.map(r=>r.slice()), L = beltLen(grid);
+  const cols = cols0.map(c=>c.map(b=>({...b}))), rack=[]; let belt=[], peak=0;
+  let left = grid.flat().filter(Boolean).length, exLeft = -1, exCache = null;
+  for (let t=0; t<6000 && left>0; t++){
+    for (const b of belt){ b.i++; if(b.i>=0 && b.i<L){ const p=lineFirst(grid,b.i); if(p && grid[p[1]][p[0]]===b.c){ grid[p[1]][p[0]]=null; b.n--; left--; } } }
+    const keep=[];
+    for (const b of belt){ if(b.n===0) continue; if(b.i>=L){ if(rack.length>=cfg.rack) return {won:false, peak}; rack.push(b); peak=Math.max(peak,rack.length); continue; } keep.push(b); }
+    belt = keep;
+    if (belt.length >= cfg.belt || belt.some(b=>b.i<1)) continue;
+    const supplyLeft = cols.reduce((a,c)=>a+c.length,0);
+    if (supplyLeft + rack.length + belt.length <= cfg.rack){
+      let b = rack.shift(); if (!b){ const k=[0,1,2].find(k=>cols[k].length); if (k!==undefined) b = cols[k].shift(); }
+      if (b){ b.i=-1; delete b.link; belt.push(b); } continue;
+    }
+    if (exLeft !== left){ exCache = new Set(exposed(grid).map(([x,y])=>grid[y][x])); exLeft = left; }
+    const ex = exCache;
+    const onBelt = new Set(belt.map(b=>b.c));
+    const fronts = [0,1,2].filter(k=>cols[k].length && (cols[k][0].link===undefined || [0,1,2].some(j=>j!==k && cols[j].length && cols[j][0].id===cols[k][0].link)));
+    let choice = null;
+    if (policy === "smart"){
+      const useful = b => ex.has(b.c) && !onBelt.has(b.c);
+      const ri = rack.findIndex(useful);
+      if (ri>=0) choice = ["r", ri];
+      else {
+        const good = shuffle(rng, fronts.filter(k=>useful(cols[k][0])));
+        if (good.length) choice = ["c", good[0]];
+        else if (belt.length===0 && rack.length < cfg.rack && fronts.length){
+          // nothing useful: bank the bobbin whose colour is closest to the surface
+          choice = ["c", fronts[Math.floor(rng()*fronts.length)]];
+        } else if (belt.length===0 && rack.length) choice = ["r", 0];
+      }
+    } else {
+      if (belt.length >= 2) continue;
+      const opts = fronts.map(k=>["c",k]).concat(rack.map((_,i)=>["r",i]));
+      const seen = opts.filter(([w,k])=> ex.has(w==="c" ? cols[k][0].c : rack[k].c));
+      const pool = seen.length && rng() < 0.8 ? seen : opts;
+      if (pool.length) choice = pool[Math.floor(rng()*pool.length)];
+    }
+    if (choice){
+      if (choice[0]==="c" && cols[choice[1]][0].link !== undefined){
+        const b = cols[choice[1]][0], k2 = [0,1,2].find(k=>k!==choice[1] && cols[k].length && cols[k][0].id===b.link);
+        if (k2===undefined || belt.length + 2 > cfg.belt) continue;
+        const a = cols[choice[1]].shift(), c = cols[k2].shift(); a.i=-1; c.i=-2; belt.push(a, c);
+      } else { const b = choice[0]==="r" ? rack.splice(choice[1],1)[0] : cols[choice[1]].shift(); b.i=-1; belt.push(b); }
+    }
+  }
+  return {won: left===0, peak};
+}
+function rate(grid, cols, cfg, policy, runs, rng){
+  let w=0; for (let i=0;i<runs;i++) if (simulate(grid, cols, cfg, policy, rng).won) w++; return w/runs;
+}
+
+function parseCode(s){
+  const m = String(s||"").toUpperCase().replace(/[^A-Z0-9]/g,"").match(/^([EMH])([2-9A-HJ-NP-Z]{4})$/);
+  if (!m) return null;
+  let n=0; for (const ch of m[2]) n = n*32 + ALPH.indexOf(ch);
+  return { d:m[1], seed:n, code: m[1]+"-"+m[2] };
+}
+function randomCode(d){
+  let s=""; for (let i=0;i<4;i++) s += ALPH[Math.floor(Math.random()*32)];
+  return d+"-"+s;
+}
+
+function generate(code){
+  const p = parseCode(code); const cfg = DIFF[p.d];
+  const base = mulberry32(p.seed * 7919 + p.d.charCodeAt(0));
+  let best = null;
+  for (let attempt=0; attempt<30; attempt++){
+    const rng = mulberry32(Math.floor(base()*4294967296));
+    const size = cfg.size[0] + Math.floor(rng()*(cfg.size[1]-cfg.size[0]+1));
+    const nCol = cfg.colours[0] + Math.floor(rng()*(cfg.colours[1]-cfg.colours[0]+1));
+    const colours = shuffle(rng, Object.keys(PALETTE)).slice(0, nCol);
+    const grid = genPicture(rng, size, size, colours, cfg.pics);
+    if (new Set(grid.flat()).size < nCol - 1) continue;
+    let bob = peelBobbins(grid, cfg.maxCap);
+    bob = bob.map((b,i)=>({b, k:i + rng()*cfg.window})).sort((a,b)=>a.k-b.k).map(o=>o.b);
+    const cols = [[],[],[]];
+    bob.forEach((b,i)=>{
+      let k = i % COLS;
+      if (cfg.deal==="random" || (cfg.deal==="mixed" && rng()<0.4)) k = Math.floor(rng()*COLS);
+      cols[k].push(b);
+    });
+    // must be winnable by a careful player
+    const smart = rate(grid, cols, cfg, "smart", 5, rng);
+    if (smart === 0) continue;
+    const casual = rate(grid, cols, cfg, "casual", 12, rng);
+    const lv = { grid, cols, cfg, code:p.code, casual, smart };
+    if (casual >= cfg.casual[0] && casual <= cfg.casual[1]) return lv;
+    // otherwise keep the closest miss
+    const miss = casual < cfg.casual[0] ? cfg.casual[0]-casual : casual-cfg.casual[1];
+    if (!best || miss < best.miss) best = {...lv, miss};
+  }
+  if (best) return best;
+  const rng = mulberry32(p.seed);
+  const colours = shuffle(rng, Object.keys(PALETTE)).slice(0, cfg.colours[0]);
+  const grid = genRings(rng, cfg.size[0], cfg.size[0], colours);
+  const cols = [[],[],[]]; peelBobbins(grid, cfg.maxCap).forEach((b,i)=>cols[i%3].push(b));
+  return { grid, cols, cfg:{...cfg, rack:5, belt:5}, code:p.code };
+}
+const TICK = 110;
+const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
+const $ = id => document.getElementById(id);
+let S = 360, DPR = 1, beltW, cell, bx, by;
+let diff = "E", code, cfg, RACK = 5, BELT_MAX = 5, grid, W, H, L, belt, rack, cols, pending, status, fx, lastTick, dirty, beltOffset = 0, started = false;
+
+function shade(hex, amt){
+  const n = parseInt(hex.slice(1),16); let r=n>>16, g=(n>>8)&255, b=n&255;
+  const f = v => Math.max(0, Math.min(255, Math.round(amt>0 ? v+(255-v)*amt : v*(1+amt))));
+  return "rgb("+f(r)+","+f(g)+","+f(b)+")";
+}
+
+let current = null, autoFinish = false;
+function load(c){
+  if (current && current.code === c) return start(current);
+  $("lvlName").textContent = "Knitting...";
+  setTimeout(()=>{ current = generate(c); start(current); }, 30);
+}
+function start(lv){
+  autoFinish = false;
+  code = lv.code; diff = code[0]; cfg = lv.cfg; RACK = cfg.rack; BELT_MAX = cfg.belt;
+  grid = lv.grid.map(r=>r.slice()); H = grid.length; W = grid[0].length; L = beltLen(grid);
+  cols = lv.cols.map(col=>col.map(b=>({...b})));
+  belt = []; rack = []; pending = []; fx = []; status = "play";
+  $("lvlName").textContent = cfg.label + " puzzle";
+  $("lvlCode").textContent = code;
+  document.querySelectorAll(".seg button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.d===diff));
+  $("hint").style.display = started ? "none" : "";
+  $("overlay").classList.remove("show");
+  layout(); dirty = true; renderUI();
+}
+function newPuzzle(d){ load(randomCode(d || diff)); }
+
+function layout(){
+  const w = cv.parentElement.clientWidth; if (w < 120) return;
+  S = w; DPR = window.devicePixelRatio || 1;
+  cv.width = S*DPR; cv.height = S*DPR; cv.style.height = S+"px";
+  beltW = S*0.11;
+  const inner = S - 2*beltW - 12;
+  cell = inner / Math.max(W,H);
+  bx = (S - cell*W)/2; by = (S - cell*H)/2;
+}
+
+// pixel position on the belt for index i (-1 and L are the entry corner)
+function beltPoint(i){
+  const m = beltW/2;
+  if (i < 0 || i >= L) return [m, S-m];
+  if (i < H) return [m, by + (H-1-i+.5)*cell];
+  if (i < H+W) return [bx + (i-H+.5)*cell, m];
+  if (i < 2*H+W) return [S-m, by + (i-H-W+.5)*cell];
+  return [bx + (W-1-(i-2*H-W)+.5)*cell, S-m];
+}
+function bobbinXY(b, f){
+  const a = beltPoint(b.prev), c = beltPoint(b.i);
+  return [a[0]+(c[0]-a[0])*f, a[1]+(c[1]-a[1])*f];
+}
+function cellXY(x,y){ return [bx+(x+.5)*cell, by+(y+.5)*cell]; }
+
+function send(b){
+  if (status !== "play" || belt.length + pending.length >= BELT_MAX) return;
+  pending.push(b); started = true; $("hint").style.display = "none"; dirty = true; renderUI();
+}
+function takeFromCol(k){ if (autoFinish || belt.length+pending.length>=BELT_MAX) return; send(cols[k].shift()); }
+function takeFromRack(k){ if (autoFinish || belt.length+pending.length>=BELT_MAX) return; send(rack.splice(k,1)[0]); }
+
+function tick(now){
+  for (const b of belt){
+    b.prev = b.i; b.i++;
+    if (b.i < L){
+      const p = lineFirst(grid, b.i);
+      if (p && grid[p[1]][p[0]] === b.c && b.n > 0){
+        grid[p[1]][p[0]] = null; b.n--;
+        const [x,y] = cellXY(p[0],p[1]);
+        fx.push({type:"thread", x, y, b, c:PALETTE[b.c], t0:now});
+      }
+    }
+  }
+  const keep = [];
+  for (const b of belt){
+    if (b.n === 0){ const [x,y]=beltPoint(b.i); fx.push({type:"pop", x, y, c:PALETTE[b.c], t0:now}); dirty = true; continue; }
+    if (b.i >= L){
+      if (rack.length >= RACK){ lose(); keep.push(b); continue; }
+      rack.push(b); dirty = true; continue;
+    }
+    keep.push(b);
+  }
+  belt = keep;
+  // once the bobbins left fit on the rack there's no way to lose, so feed them all back automatically
+  if (status === "play"){
+    const supplyLeft = cols.reduce((a,c)=>a+c.length,0);
+    if (!autoFinish && supplyLeft + rack.length + pending.length + belt.length <= RACK){ autoFinish = true; dirty = true; }
+    if (autoFinish){
+      while (belt.length + pending.length < BELT_MAX && (rack.length || cols.some(c=>c.length))){
+        pending.push(rack.length ? rack.shift() : cols.find(c=>c.length).shift()); dirty = true;
+      }
+    }
+  }
+  if (status === "play" && pending.length && !belt.some(b=>b.i < 1)){
+    const b = pending.shift(); b.i = -1; b.prev = -1; belt.push(b); dirty = true;
+  }
+  if (status === "play" && grid.every(r=>r.every(v=>!v))) win();
+  if (dirty) renderUI();
+}
+
+function win(){
+  status = "won";
+  setTimeout(()=>showOverlay("Pattern finished", "Every stitch collected. Code " + code + " will bring this one back.", "New " + cfg.label.toLowerCase() + " puzzle", ()=>newPuzzle()), 500);
+}
+function lose(){
+  if (status !== "play") return;
+  status = "lost";
+  showOverlay("The rack is full", "A bobbin came round with yarn left and had nowhere to wait. Try sending colours that can reach the edge.", "Try again", ()=>load(code));
+}
+function showOverlay(t, p, btn, fn){
+  $("ovTitle").textContent = t; $("ovText").textContent = p; $("ovBtn").textContent = btn;
+  $("ovBtn").onclick = fn; $("overlay").classList.add("show"); $("ovBtn").focus({preventScroll:true});
+}
+
+// ---------- drawing ----------
+function stitch(x, y, s, col){
+  const legs = [[-1,-0.5],[1,0.5]];
+  for (const [side, rot] of legs){
+    ctx.save(); ctx.translate(x + side*s*0.19, y); ctx.rotate(rot*0.9);
+    ctx.beginPath(); ctx.ellipse(0, 0, s*0.16, s*0.42, 0, 0, Math.PI*2);
+    ctx.fillStyle = col; ctx.fill();
+    ctx.beginPath(); ctx.ellipse(-s*0.04, -s*0.1, s*0.06, s*0.2, 0, 0, Math.PI*2);
+    ctx.fillStyle = "rgba(255,255,255,.28)"; ctx.fill();
+    ctx.restore();
+  }
+}
+function drawSpool(x, y, r, col, n){
+  const wood = "#C9A27A";
+  ctx.fillStyle = wood; roundRect(x-r, y-r, r*2, r*0.38, r*0.15); roundRect(x-r, y+r*0.62, r*2, r*0.38, r*0.15);
+  ctx.fillStyle = col; ctx.fillRect(x-r*0.8, y-r*0.62, r*1.6, r*1.24);
+  ctx.strokeStyle = shade(col.startsWith("#")?col:"#888888", -0.18); ctx.lineWidth = Math.max(1, r*0.08);
+  for (let k=-2;k<=2;k++){ ctx.beginPath(); ctx.moveTo(x-r*0.8, y+k*r*0.22 - r*0.08); ctx.lineTo(x+r*0.8, y+k*r*0.22 + r*0.08); ctx.stroke(); }
+  ctx.font = "600 " + Math.round(r*0.95) + "px Fredoka, system-ui, sans-serif";
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.lineWidth = r*0.28; ctx.strokeStyle = "rgba(40,28,56,.85)"; ctx.strokeText(n, x, y+r*0.04);
+  ctx.fillStyle = "#fff"; ctx.fillText(n, x, y+r*0.04);
+}
+function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x,y,w,h,r) : ctx.rect(x,y,w,h); ctx.fill(); }
+
+function draw(now){
+  if (!grid) return;
+  // once lost, ticks stop, so freeze bobbins where they are instead of re-playing their last step
+  const f = status === "lost" ? 1 : Math.min(1, (now - lastTick)/TICK);
+  const css = getComputedStyle(document.documentElement);
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.clearRect(0,0,S,S);
+  // belt
+  const m = beltW/2;
+  ctx.strokeStyle = css.getPropertyValue("--belt"); ctx.lineWidth = beltW*0.92; ctx.lineJoin = "round";
+  ctx.beginPath(); ctx.roundRect ? ctx.roundRect(m, m, S-beltW, S-beltW, beltW*0.6) : ctx.rect(m,m,S-beltW,S-beltW); ctx.stroke();
+  ctx.save(); ctx.setLineDash([beltW*0.18, beltW*0.22]);
+  const moving = belt.length > 0 && status === "play";
+  if (moving && !reduceMotion) beltOffset = -((now/TICK) * (S-4*m)/ (L/4)) % (beltW*0.4);
+  ctx.lineDashOffset = beltOffset;
+  ctx.strokeStyle = css.getPropertyValue("--belt-stitch"); ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.roundRect ? ctx.roundRect(m, m, S-beltW, S-beltW, beltW*0.6) : ctx.rect(m,m,S-beltW,S-beltW); ctx.stroke();
+  ctx.restore();
+  // panel
+  ctx.fillStyle = css.getPropertyValue("--panel");
+  roundRect(beltW+2, beltW+2, S-2*beltW-4, S-2*beltW-4, 14);
+  // stitches
+  const empty = css.getPropertyValue("--empty").trim();
+  for (let y=0;y<H;y++) for (let x=0;x<W;x++){
+    const [cx,cy] = cellXY(x,y);
+    stitch(cx, cy, cell, grid[y][x] ? PALETTE[grid[y][x]] : empty);
+  }
+  // highlight reachable stitches of colours on the belt
+  // threads
+  fx = fx.filter(e => now - e.t0 < (e.type==="pop"?360:280));
+  for (const e of fx){
+    const t = (now - e.t0) / (e.type==="pop"?360:280);
+    if (e.type === "thread"){
+      const [tx,ty] = belt.includes(e.b) ? bobbinXY(e.b, f) : [e.x, e.y];
+      const hx = e.x + (tx-e.x)*t, hy = e.y + (ty-e.y)*t;
+      ctx.strokeStyle = e.c; ctx.lineWidth = Math.max(2, cell*0.14); ctx.lineCap = "round";
+      ctx.globalAlpha = 1 - t*0.6;
+      ctx.beginPath(); ctx.moveTo(hx, hy); ctx.quadraticCurveTo((hx+tx)/2 + cell*0.3, (hy+ty)/2 - cell*0.3, tx, ty); ctx.stroke();
+      ctx.globalAlpha = 1;
+    } else {
+      ctx.strokeStyle = e.c; ctx.lineWidth = 3; ctx.globalAlpha = 1 - t;
+      ctx.beginPath(); ctx.arc(e.x, e.y, beltW*0.3 + t*beltW*0.5, 0, Math.PI*2); ctx.stroke(); ctx.globalAlpha = 1;
+    }
+  }
+  // bobbins on belt
+  const r = beltW*0.4;
+  for (const b of belt){ const [x,y] = bobbinXY(b, f); drawSpool(x, y, r, PALETTE[b.c], b.n); }
+  if (pending.length){ const [x,y] = beltPoint(-1); drawSpool(x, y, r*0.9, PALETTE[pending[0].c], pending[0].n); }
+}
+
+// ---------- DOM ----------
+function spoolSVG(c, n, size){
+  const col = PALETTE[c], dark = shade(col, -0.2);
+  return `<svg width="${size}" height="${size}" viewBox="0 0 40 40" aria-hidden="true">
+    <rect x="6" y="3" width="28" height="6" rx="2" fill="#C9A27A"/><rect x="6" y="31" width="28" height="6" rx="2" fill="#C9A27A"/>
+    <rect x="9" y="9" width="22" height="22" fill="${col}"/>
+    <g stroke="${dark}" stroke-width="1.6">${[12,17,22,27].map(v=>`<line x1="9" y1="${v-1.5}" x2="31" y2="${v+1.5}"/>`).join("")}</g>
+    <text x="20" y="21" text-anchor="middle" dominant-baseline="middle" font-family="Fredoka, system-ui, sans-serif" font-weight="600" font-size="15" fill="#fff" stroke="rgba(40,28,56,.85)" stroke-width="3.2" paint-order="stroke">${n}</text>
+  </svg>`;
+}
+function renderUI(){
+  dirty = false;
+  const full = autoFinish || belt.length + pending.length >= BELT_MAX || status !== "play";
+  $("beltInfo").textContent = autoFinish && status === "play" ? "Finishing up" : "Belt " + (belt.length + pending.length) + " of " + BELT_MAX;
+  const rk = $("rack"); rk.innerHTML = ""; rk.style.gridTemplateColumns = "repeat(" + RACK + ",1fr)";
+  for (let i=0;i<RACK;i++){
+    const b = rack[i]; const el = document.createElement("button"); el.className = "slot";
+    if (b){ el.innerHTML = spoolSVG(b.c, b.n, 40); el.disabled = full; el.setAttribute("aria-label", "Send " + NAMES[b.c] + " bobbin with " + b.n + " from the rack"); el.onclick = ()=>takeFromRack(i); }
+    else { el.disabled = true; el.setAttribute("aria-label","Empty rack slot"); }
+    rk.appendChild(el);
+  }
+  const sp = $("supply"); sp.innerHTML = "";
+  cols.forEach((col,k)=>{
+    const d = document.createElement("div"); d.className = "col";
+    col.slice(0,3).forEach((b,j)=>{
+      const el = document.createElement("button"); el.className = "spool";
+      el.innerHTML = spoolSVG(b.c, b.n, j===0 ? 52 : 40);
+      if (j>0){ el.disabled = true; el.style.opacity = j===1 ? .55 : .3; el.tabIndex = -1; el.setAttribute("aria-hidden","true"); }
+      else { el.disabled = full; el.setAttribute("aria-label","Send " + NAMES[b.c] + " bobbin with " + b.n); el.onclick = ()=>takeFromCol(k); }
+      d.appendChild(el);
+    });
+    if (col.length > 3){ const mo = document.createElement("span"); mo.className="more"; mo.textContent = "+" + (col.length-3) + " more"; d.appendChild(mo); }
+    sp.appendChild(d);
+  });
+}
+
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function loop(now){
+  if (!lastTick) lastTick = now;
+  while (now - lastTick >= TICK){ lastTick += TICK; if (grid && status !== "lost") tick(lastTick); }
+  if (now - lastTick > 1000) lastTick = now;
+  try { draw(now); } catch(e){ console.warn(e); }
+  requestAnimationFrame(loop);
+}
+$("restartBtn").onclick = ()=>load(code);
+$("newBtn").onclick = ()=>newPuzzle();
+document.querySelectorAll(".seg button").forEach(b=> b.onclick = ()=>newPuzzle(b.dataset.d));
+$("codeForm").addEventListener("submit", e=>{
+  e.preventDefault();
+  const p = parseCode($("codeInput").value);
+  if (!p){ $("codeMsg").textContent = "Codes look like M-4K7P: E, M or H, then four letters or numbers."; return; }
+  $("codeMsg").textContent = ""; $("codeInput").value = ""; load(p.code);
+});
+$("copyBtn").onclick = async ()=>{
+  try { await navigator.clipboard.writeText(code); $("copyBtn").textContent = "Copied"; }
+  catch { $("copyBtn").textContent = code; }
+  setTimeout(()=>$("copyBtn").textContent = "Copy", 1500);
+};
+window.addEventListener("resize", ()=>layout());
+document.addEventListener("visibilitychange", ()=>{ lastTick = performance.now(); });
+newPuzzle("E");
+requestAnimationFrame(loop);
+</script></body></html>
