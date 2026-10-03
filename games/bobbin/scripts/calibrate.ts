@@ -48,7 +48,8 @@ for (const d of ["E", "M", "H"] as Difficulty[]) {
     const p = generate(code);
     times.push(performance.now() - t0);
     sources[p.source]++;
-    casualAtGeneration.push(p.casual ?? 0);
+    // The last-resort fallback puzzle is never measured, so leave it out.
+    if (p.casual !== undefined) casualAtGeneration.push(p.casual);
     bobbins.push(p.cols.flat().length);
     const rng = mulberry32(i + 1);
     casual.push(winRate(p.grid, p.cols, p.cfg, "casual", CASUAL_RUNS, rng));
