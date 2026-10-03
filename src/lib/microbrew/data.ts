@@ -81,13 +81,11 @@ export const TOKEN_COUNTS: Record<TokenType, number> = {
 /** Hops swapped into each player's Copper during setup (the other 4 go into the tin afterwards). */
 export const SETUP_HOPS_PER_PLAYER = 1;
 
-// Copper layout: 16 basic slots as 4 columns of 4 (the 5th "side tank" column
-// is unlocked by the Copper Upgrade, WEB-183). Columns are staggered rather
-// than a square grid: columns 1 and 3 (indices 0 and 2) sit half a slot higher
-// than columns 2 and 4. Adjacency for the Brew puzzle is defined in WEB-180.
+// Copper size: 16 basic slots as 4 columns of 4 (the 5th "side tank" column is
+// unlocked by the Copper Upgrade, WEB-183). The staggered layout and adjacency
+// live in copper.ts.
 export const COPPER_COLUMNS = 4;
 export const COPPER_COLUMN_HEIGHT = 4;
-export const COPPER_RAISED_COLUMNS: readonly number[] = [0, 2];
 
 export const CUSTOMERS: readonly Customer[] = [
   {

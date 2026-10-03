@@ -8,11 +8,14 @@ serve it to customers for cash and reputation. Lives at `/microbrew` in the
 personal-site section. Tracked under epic
 [WEB-1](https://eleanormatthewman.atlassian.net/browse/WEB-1).
 
-**Status: setup only.** Scaffolding and data landed in
+**Status: setup and Brew.** Scaffolding and data landed in
 [WEB-178](https://eleanormatthewman.atlassian.net/browse/WEB-178); dealing a
 new game and the two setup choices (returning a recipe, the hop swaps) in
-[WEB-179](https://eleanormatthewman.atlassian.net/browse/WEB-179). Turns aren't
-playable yet. MVP scope is 2-player local hot-seat only.
+[WEB-179](https://eleanormatthewman.atlassian.net/browse/WEB-179); the Copper
+board and the Brew puzzle in
+[WEB-180](https://eleanormatthewman.atlassian.net/browse/WEB-180). Turns and
+worker placement aren't playable yet (WEB-181), so the first player can brew
+repeatedly. MVP scope is 2-player local hot-seat only.
 
 It follows the same shape as Regicide (see [`../regicide/README.md`](../regicide/README.md)):
 one route, one top-level screen switch, screen components in a folder, and one
@@ -49,22 +52,25 @@ image - that would make the page read as official.
 | File | Responsibility |
 |---|---|
 | `src/app/microbrew/page.tsx` | Route + metadata; passes `playable` down. No OG/Twitter share image yet - add `public/microbrew/microbrew.png` (a gameplay screenshot, like Regicide's) once there's a play area - tracked in [WEB-189](https://eleanormatthewman.atlassian.net/browse/WEB-189) |
-| `src/components/MicrobrewGame.tsx` | Top-level screen switch: `GameStart` with no game, `SetupScreen` once one is dealt |
+| `src/components/MicrobrewGame.tsx` | Top-level screen switch: `GameStart` with no game, `GameScreen` once one is dealt |
 | `src/components/microbrew/GameStart.tsx` | Landing screen: title, description, attribution/buy link, player name inputs and Play (disabled with "Coming soon" when `onStartGame` isn't passed) |
-| `src/components/microbrew/SetupScreen.tsx` | **Placeholder** setup UI: the hidden-hand recipe return, the hop swaps, and a plain summary of everything dealt. Later stories replace it with the real board |
-| `src/components/microbrew/Copper.tsx` | **Placeholder** Copper view: 4 staggered columns drawn bottom-up, optionally clickable (used for the hop swap). WEB-180 builds the real board |
-| `src/lib/microbrew/data.ts` | Typed static data: tokens, 12 customers, 16 recipes, 7 reputation cards, Copper layout, component counts |
+| `src/components/microbrew/GameScreen.tsx` | The in-game screen: an action panel for whatever the game is waiting on (the hidden-hand recipe return, the hop swaps, Brew), both players' breweries and the shared table. The **current player's own Copper** is the interactive board. The cards and summaries are still plain placeholders |
+| `src/components/microbrew/Copper.tsx` | The Copper board: hexagonal tokens (lettered Y/O/B/H so they don't rely on colour alone) on the staggered layout, with the diagonal swap lines drawn in an SVG underneath. Tokens are absolutely positioned buttons, driven by `onSlotClick` / `isSlotEnabled` / `selectedSlot` / `targetSlots`. While a token is picked, everything except it and its legal targets is muted |
+| `src/lib/microbrew/data.ts` | Typed static data: tokens, 12 customers, 16 recipes, 7 reputation cards, Copper size, component counts |
+| `src/lib/microbrew/copper.ts` | The Copper as pure functions: `Copper`/`CopperSlot` types, `slotHeight`, `getNeighbours`, `isLegalSwap`, `getLegalTargets`, `swapTokens` |
 | `src/lib/microbrew/deck.ts` | Pure `shuffle` (Fisher-Yates, matching the prototype) and `deal` helpers |
-| `src/lib/microbrew/game.ts` | `GameState` types and pure transitions: `createNewGame`, `returnRecipe`, `swapSetupHop`, plus `getRecipeBacks` |
+| `src/lib/microbrew/game.ts` | `GameState` types and pure transitions: `createNewGame`, `returnRecipe`, `swapSetupHop`, `brewSwap`, `endBrew`, plus `getRecipeBacks` |
 | `src/lib/microbrew/availability.ts` | `isMicrobrewPlayable()` - see above |
-| `src/hooks/useMicrobrewGame.ts` | Owns the `GameState` and exposes `startGame`, `resetGame`, `returnRecipe`, `swapSetupHop` and the public `recipeBacks` |
+| `src/hooks/useMicrobrewGame.ts` | Owns the `GameState` and exposes `startGame`, `resetGame`, `returnRecipe`, `swapSetupHop`, `brewSwap`, `endBrew` and the public `recipeBacks` |
 
 ## Game state
 
-- **Copper:** `TokenType[][]` - 4 columns, each ordered bottom (index 0) to
-  top. It isn't a square grid: columns 1 and 3 (indices 0 and 2) sit half a
-  slot higher (`COPPER_RAISED_COLUMNS`). The 5th "side tank" column comes with
-  the Copper Upgrade (WEB-183).
+- **Copper:** `(TokenType | null)[][]` - 4 columns, each ordered bottom
+  (index 0) to top; `null` is an empty slot (after a Bottle, until a Mash
+  refills it). See "The Copper and Brew" below for the layout. The 5th "side
+  tank" column comes with the Copper Upgrade (WEB-183).
+- **`brew`:** an open Brew chain (`{ slot, swaps }`: where the moving token is
+  now, and how many swaps it has made), or `null`.
 - **Phases:** `returnRecipe` -> `hopSwap` (first player, then second) ->
   `playing` -> `finished`. `currentPlayer` is whoever the game is waiting on.
 - **The tin** is a bag. After setup its order is meaningless, so later draws
@@ -73,8 +79,8 @@ image - that would make the page read as official.
   secret. A recipe's colour tier is printed on its back, so `getRecipeBacks`
   (and the hook's `recipeBacks`) expose just that. The 2 unused reputation
   cards are dropped at setup and never appear in state.
-- Invalid transitions (wrong phase, a card not in hand, swapping onto a hop)
-  throw, because the UI only ever offers legal choices.
+- Invalid transitions (wrong phase, a card not in hand, swapping onto a hop,
+  an illegal Brew swap) throw, because the UI only ever offers legal choices.
 
 ## Setup (`createNewGame`)
 
@@ -99,15 +105,49 @@ draw goes to the player going second.
 Randomness is consumed in a fixed order - first player, tin, customers,
 recipes, reputation - which the tests depend on.
 
+## The Copper and Brew (`copper.ts`, `brewSwap`)
+
+Checked against the rulebook's Brew section and its two worked examples
+(rules p.13-14), which the tests reproduce.
+
+**Layout.** The Copper isn't a square grid. Columns 1 and 3 (indices 0 and 2,
+and the side tank at index 4) sit half a slot higher than columns 2 and 4.
+Slots are joined only by **diagonal** lines between adjacent columns: no
+vertical or horizontal lines. With `slotHeight = 2 * slot (+1 in a raised
+column)`, two slots are neighbours exactly when their columns differ by 1 and
+their heights by 1, so a slot has up to 4 neighbours. Adjacency is derived from
+the Copper's own column count, so adding the side tank column (WEB-183) needs
+no change here.
+
+**Swap rules** (`isLegalSwap`), judged from the moving token's point of view:
+
+- neither slot may be empty, and the target must be a diagonal neighbour;
+- a hop can swap with anything, and anything can swap with a hop;
+- a malt moving **up** must swap with a **darker** malt, and moving **down**
+  with a **lighter** one (yellow < orange < brown), so equal shades never swap.
+
+**Chains.** The first `brewSwap` starts a chain with the picked token. While
+`game.brew` is open, only that token (now at `brew.slot`) may keep swapping. The
+chain closes by itself when the token has no legal swap left, or earlier via
+`endBrew`: the player never has to take the longest chain. There's deliberately
+no limit on revisiting slots: a hop can always swap, so a hop's chain only
+ends via `endBrew`, and the rulebook's tips recommend "power moves" moving a hop
+in a circular path. A token picked but
+not yet swapped is UI-only state in `GameScreen`, so it can be changed or
+cancelled freely. Spending a brewer on Brew is WEB-181's job.
+
 ## Testing
 
 `src/lib/microbrew/__tests__/game.test.ts` pins `Math.random` to `0` (every
 Fisher-Yates swap then rotates the array left by one, as in Regicide's tests)
 and works the whole expected deal through by hand in its header comment, so
 the assertions check exact cards and tokens rather than random output. Both
-first-player branches are covered with `mockReturnValueOnce`. The hook,
-`GameStart` and `MicrobrewGame` (the whole placeholder setup flow) have lighter
-tests on top.
+first-player branches are covered with `mockReturnValueOnce`.
+`copper.test.ts` builds small Coppers from strings (`'YOBH.'` per column,
+bottom-up) to cover adjacency (corner, edge, interior, side tank), every swap
+rule, the rulebook's single-swap example and a multi-step chain. The hook,
+`GameStart` and `MicrobrewGame` (setup plus picking, chaining and ending a
+Brew) have lighter tests on top.
 
 ## Data notes
 

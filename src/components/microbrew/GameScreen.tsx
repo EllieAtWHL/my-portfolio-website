@@ -1,23 +1,33 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ComponentProps } from 'react';
 import { Button } from '@/components/Button';
 import type { BeerColour, Customer, Recipe, ReputationCard } from '@/lib/microbrew/data';
+import { getLegalTargets, sameSlot, swapTokens, tokenAt } from '@/lib/microbrew/copper';
 import type { CopperSlot, GameState, PlayerIndex } from '@/lib/microbrew/game';
 import { cn } from '@/lib/utils';
 import { Copper, TokenChip } from './Copper';
 
-// Placeholder UI for the setup choices (WEB-179): returning a recipe and the
-// two hop swaps, plus a plain summary of what's been dealt. Later stories
-// replace the pieces with the real board.
+// The game screen: an action panel for whatever the game is waiting on (setup
+// choices, then Brew), both players' breweries, and the shared table. The
+// current player's own Copper is the interactive board. Turns and the other
+// actions arrive in WEB-181 onwards; the cards and summaries are still plain
+// placeholders.
 
-interface SetupScreenProps {
+interface GameScreenProps {
   game: GameState;
   recipeBacks: [BeerColour[], BeerColour[]];
   onReturnRecipe: (recipeId: string) => void;
   onSwapHop: (slot: CopperSlot) => void;
+  onBrewSwap: (from: CopperSlot, to: CopperSlot) => void;
+  onEndBrew: () => void;
   onNewGame: () => void;
 }
+
+type CopperInteraction = Pick<
+  ComponentProps<typeof Copper>,
+  'onSlotClick' | 'isSlotEnabled' | 'selectedSlot' | 'targetSlots'
+>;
 
 const panelClassName = 'rounded-lg border border-gray-300 dark:border-gray-700 p-4 text-left';
 const mutedClassName = 'text-sm text-gray-600 dark:text-gray-400';
@@ -86,7 +96,15 @@ function reputationLabel(card: ReputationCard) {
   return card.type === 'flavour' ? `Flavour: ${card.flavour}` : `Regional: ${card.countries.join(', ')}`;
 }
 
-function PlayerPanel({ game, index, recipeBacks }: { game: GameState; index: PlayerIndex; recipeBacks: BeerColour[] }) {
+interface PlayerPanelProps {
+  game: GameState;
+  index: PlayerIndex;
+  recipeBacks: BeerColour[];
+  /** Makes this player's Copper the interactive board. */
+  interaction?: CopperInteraction;
+}
+
+function PlayerPanel({ game, index, recipeBacks, interaction }: PlayerPanelProps) {
   const player = game.players[index];
   return (
     <section aria-label={`${player.name}'s brewery`} className={cn(panelClassName, 'space-y-3')}>
@@ -103,8 +121,8 @@ function PlayerPanel({ game, index, recipeBacks }: { game: GameState; index: Pla
           <BeerColourBadge key={i} colour={colour} />
         ))}
       </div>
-      <div className="flex justify-center">
-        <Copper copper={player.copper} label={`${player.name}'s Copper`} />
+      <div className={cn('py-2 rounded-lg', interaction && 'bg-sky-500/10 ring-2 ring-sky-500/40')}>
+        <Copper copper={player.copper} label={`${player.name}'s Copper`} {...interaction} />
       </div>
       <div>
         <h4 className="text-sm font-medium mb-2">Loyal customer</h4>
@@ -116,7 +134,7 @@ function PlayerPanel({ game, index, recipeBacks }: { game: GameState; index: Pla
   );
 }
 
-function ReturnRecipeStep({ game, onReturnRecipe }: Pick<SetupScreenProps, 'game' | 'onReturnRecipe'>) {
+function ReturnRecipeStep({ game, onReturnRecipe }: Pick<GameScreenProps, 'game' | 'onReturnRecipe'>) {
   // Hot-seat: the hand stays hidden until the player it belongs to asks to see it.
   const [revealed, setRevealed] = useState(false);
   const player = game.players[game.currentPlayer];
@@ -153,36 +171,138 @@ function ReturnRecipeStep({ game, onReturnRecipe }: Pick<SetupScreenProps, 'game
   );
 }
 
-function HopSwapStep({ game, onSwapHop }: Pick<SetupScreenProps, 'game' | 'onSwapHop'>) {
+interface BrewStepProps {
+  game: GameState;
+  picked: CopperSlot | null;
+  notice: string | null;
+  onCancel: () => void;
+  onEndBrew: () => void;
+}
+
+function BrewStep({ game, picked, notice, onCancel, onEndBrew }: BrewStepProps) {
   const player = game.players[game.currentPlayer];
+  const swaps = game.brew?.swaps ?? 0;
+  const instruction = game.brew
+    ? `${player.name} is brewing: ${swaps} ${swaps === 1 ? 'swap' : 'swaps'} so far. Keep swapping the same token into a highlighted spot, or end the brew here.`
+    : picked
+      ? 'Now pick a highlighted neighbour to swap with, or pick a different token.'
+      : `${player.name}, Brew: pick a token in your Copper to move. It can keep swapping for as long as it has a legal move.`;
+
   return (
     <div className="space-y-3">
-      <p>
-        {player.name}, pick a malt in your Copper to replace with your starting hop. The malt goes back in the tin.
-      </p>
-      <p className={mutedClassName}>Tip: choose one of the 4 malts in the middle.</p>
-      <div className="flex justify-center">
-        <Copper copper={player.copper} onSelectSlot={onSwapHop} label={`${player.name}'s Copper`} />
+      <p>{instruction}</p>
+      {/* Fixed-height row so the board below doesn't jump as buttons come and go mid-puzzle. */}
+      <div className="flex flex-wrap items-center gap-3 min-h-10">
+        {game.brew && (
+          <Button variant="primary" size="sm" onClick={onEndBrew}>
+            End brew
+          </Button>
+        )}
+        {!game.brew && picked && (
+          <Button variant="secondary" size="sm" onClick={onCancel}>
+            Cancel
+          </Button>
+        )}
+        <p role="status" className="text-sm font-medium">
+          {notice}
+        </p>
       </div>
+      <p className={mutedClassName}>
+        Tokens swap along the lines. Light malts rise and dark malts sink: a swap always leaves the lighter malt on
+        top. Hops swap with anything.
+      </p>
+      <p className={mutedClassName}>Other actions and turns arrive in later updates.</p>
     </div>
   );
 }
 
-export function SetupScreen({ game, recipeBacks, onReturnRecipe, onSwapHop, onNewGame }: SetupScreenProps) {
+export function GameScreen({
+  game,
+  recipeBacks,
+  onReturnRecipe,
+  onSwapHop,
+  onBrewSwap,
+  onEndBrew,
+  onNewGame,
+}: GameScreenProps) {
   const { board } = game;
+  const player = game.players[game.currentPlayer];
+
+  // Brew: a token picked but not yet swapped is UI-only; once it has swapped,
+  // the engine's game.brew says which token is moving.
+  const [picked, setPicked] = useState<CopperSlot | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const movingSlot = game.brew?.slot ?? picked;
+  const targets = movingSlot ? getLegalTargets(player.copper, movingSlot) : [];
+  const isTarget = (slot: CopperSlot) => targets.some((t) => sameSlot(t, slot));
+
+  let interaction: CopperInteraction | undefined;
+  if (game.phase === 'hopSwap') {
+    interaction = {
+      onSlotClick: onSwapHop,
+      isSlotEnabled: (slot) => {
+        const token = tokenAt(player.copper, slot);
+        return !!token && token !== 'hops';
+      },
+    };
+  } else if (game.phase === 'playing') {
+    interaction = {
+      selectedSlot: movingSlot,
+      targetSlots: targets,
+      // Mid-chain only the moving token's targets are live; otherwise any token
+      // with a legal move can be picked (or re-picked).
+      isSlotEnabled: (slot) =>
+        isTarget(slot) || (!game.brew && getLegalTargets(player.copper, slot).length > 0),
+      onSlotClick: (slot) => {
+        if (movingSlot && isTarget(slot)) {
+          const after = swapTokens(player.copper, movingSlot, slot);
+          setNotice(
+            getLegalTargets(after, slot).length === 0
+              ? "Brew finished: that token can't move any further."
+              : null,
+          );
+          setPicked(null);
+          onBrewSwap(movingSlot, slot);
+          return;
+        }
+        setNotice(null);
+        setPicked(picked && sameSlot(picked, slot) ? null : slot);
+      },
+    };
+  }
+
+  const handleEndBrew = () => {
+    setNotice('Brew finished.');
+    onEndBrew();
+  };
+
+  const heading =
+    game.phase === 'playing' ? `${player.name}'s turn` : 'Setup';
+
   return (
     <div className="py-8 space-y-8">
-      <section aria-labelledby="microbrew-setup-heading" className={cn(panelClassName, 'space-y-3')}>
-        <h2 id="microbrew-setup-heading" className="text-2xl font-bold">
-          {game.phase === 'playing' ? 'Setup complete' : 'Setup'}
+      <section aria-labelledby="microbrew-action-heading" className={cn(panelClassName, 'space-y-3')}>
+        <h2 id="microbrew-action-heading" className="text-2xl font-bold">
+          {heading}
         </h2>
         {game.phase === 'returnRecipe' && <ReturnRecipeStep game={game} onReturnRecipe={onReturnRecipe} />}
-        {game.phase === 'hopSwap' && <HopSwapStep game={game} onSwapHop={onSwapHop} />}
-        {game.phase === 'playing' && (
+        {game.phase === 'hopSwap' && (
           <>
-            <p>{game.players[game.firstPlayer].name} goes first.</p>
-            <p className={mutedClassName}>Turns aren&apos;t playable yet; they arrive in a later update.</p>
+            <p>
+              {player.name}, pick a malt in your highlighted Copper to replace with your starting hop. The malt goes
+              back in the tin.
+            </p>
+            <p className={mutedClassName}>Tip: choose one of the 4 malts in the middle.</p>
           </>
+        )}
+        {game.phase === 'playing' && (
+          <BrewStep
+            game={game}
+            picked={picked}
+            notice={notice}
+            onCancel={() => setPicked(null)}
+            onEndBrew={handleEndBrew}
+          />
         )}
         <Button variant="ghost" size="sm" onClick={onNewGame}>
           New game
@@ -190,8 +310,15 @@ export function SetupScreen({ game, recipeBacks, onReturnRecipe, onSwapHop, onNe
       </section>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <PlayerPanel game={game} index={0} recipeBacks={recipeBacks[0]} />
-        <PlayerPanel game={game} index={1} recipeBacks={recipeBacks[1]} />
+        {([0, 1] as const).map((index) => (
+          <PlayerPanel
+            key={index}
+            game={game}
+            index={index}
+            recipeBacks={recipeBacks[index]}
+            interaction={index === game.currentPlayer ? interaction : undefined}
+          />
+        ))}
       </div>
 
       <section aria-label="Shared table" className={cn(panelClassName, 'space-y-4')}>
