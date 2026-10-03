@@ -268,6 +268,7 @@ Why this fits the project:
   - Next.js primitives remain the foundation; this adds the logging/UX/resilience layer on top rather than replacing them.
   - Splitting into smaller issues keeps each change reviewable despite the combined scope being larger than the original "keep complexity low" stance assumed.
   - Still deliberately excludes a custom error-boundary abstraction and full offline-first/installable PWA behaviour - out of proportion for a personal site without SLAs.
+  - One deliberate exception: the Bobbin puzzle game (`/bobbin/`, epic WEB-192) is a self-contained static app with its own `/bobbin/`-scoped service worker that precaches the whole game for offline play - it's a game meant to be installed on a phone, not a content page. It sits alongside the root `sw.js` rather than replacing it; see `reference/bobbin/README.md` for how the two coexist (including the shared-Cache-Storage cleanup rule fixed in WEB-194).
 
 ### Internationalisation / Localisation (i18n)
 

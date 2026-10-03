@@ -22,6 +22,7 @@ AI agents working in this codebase.
 | [`photo-gallery/README.md`](./photo-gallery/README.md) | GitHub-hosted photo gallery system, including the mobile upload flow (WEB-149) |
 | [`regicide/README.md`](./regicide/README.md) | Regicide card game: engine, component map, card face/toast systems, known gaps |
 | [`microbrew/README.md`](./microbrew/README.md) | Microbrew board game port: current status, file map, static-data notes, attribution requirements |
+| [`bobbin/README.md`](./bobbin/README.md) | Bobbin conveyor puzzle game (offline PWA at `/bobbin/`): rules, procedural generation, puzzle codes, difficulty calibration, hosting alongside the site's service worker |
 
 ## Spurs Women Section
 
