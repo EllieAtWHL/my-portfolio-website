@@ -144,6 +144,8 @@ npm run test:coverage          # Jest with coverage (enforces thresholds in jest
 npx playwright test            # E2E suite (chromium/firefox/webkit; auto-starts dev server)
 ```
 
+Bobbin (the offline puzzle game at `/bobbin/`, a standalone Vite app in `games/bobbin/`, see `reference/bobbin/README.md`): `npm run bobbin:dev`, `npm run bobbin:build` (into gitignored `public/bobbin/`), `npm run bobbin:calibrate` (difficulty report). Its Jest tests run in the normal `npm test`, and `npm run typecheck` checks it via its own `games/bobbin/tsconfig.json`.
+
 Run a single Jest test file: `npx jest path/to/file.test.tsx`. Run a single Playwright spec: `npx playwright test tests/home.spec.ts`.
 
 Other scripts (see `package.json`): `generate-external-manifest[:help]`, `init-external-local`, `validate-manifest` — all photo-gallery/storage-manifest tooling, documented in `reference/photo-gallery/README.md`. (`migrate-storage[:dry-run]` was the one-time migration script this list used to include - removed from `package.json` per WEB-123, now `scripts/migrate-storage-source.js`'s "doubly-inert" leftover, see that doc's "History" section.)

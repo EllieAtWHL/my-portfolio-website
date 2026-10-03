@@ -5,9 +5,13 @@ Yarn Loop, installable on an Android phone as a PWA without the Play Store.
 It will live at `/bobbin/` on this site. Tracked under epic
 [WEB-192](https://eleanormatthewman.atlassian.net/browse/WEB-192).
 
-**Status: planned.** Nothing is built yet. A playtested single-file prototype
-exists as [`prototype.html`](./prototype.html) (open it directly in a
-browser). It is the reference implementation for rules, generation and feel.
+**Status: core ported, not playable yet.** The pure rules, generator and
+simulated players live in `games/bobbin/` with tests and a calibration
+report ([WEB-195](https://eleanormatthewman.atlassian.net/browse/WEB-195)).
+There's no game UI yet ([WEB-196](https://eleanormatthewman.atlassian.net/browse/WEB-196)),
+and nothing is deployed ([WEB-197](https://eleanormatthewman.atlassian.net/browse/WEB-197)).
+The playtested single-file prototype is kept as
+[`prototype.html`](./prototype.html) (open it directly in a browser). It is the reference implementation for rules, generation and feel.
 This doc started as the build spec (`YARN_SPEC.md`, 30 Sep 2026). It replaces
 that spec and is now the source of truth. Where this doc and the prototype
 disagree, this doc wins, and the difference is called out.
@@ -221,15 +225,30 @@ one's win rate lands in the difficulty's target band.
 
 The fallback rings puzzle uses rack 5 and belt 5, so it's always solvable.
 
-**Measured results** (30 puzzles each, after the final prototype tuning; to be
-re-measured by the calibration script in WEB-195):
+**Measured results** (`npm run bobbin:calibrate`, 30 puzzles per difficulty,
+generator v1, 3 Oct 2026):
 
 | | Easy | Medium | Hard |
 |---|---|---|---|
-| Casual win rate | ~85% | ~31% | ~4% |
-| Smart win rate | ~97% | ~97% | ~89% |
-| Average bobbins | 9 | 13 | 14 |
-| Generation time (desktop Node) | ~140 ms avg, ~580 ms max | ~65 ms avg | ~85 ms avg |
+| Casual target band | 45-85% | 15-45% | 0-12% |
+| Casual win rate (generation's 12-run estimate) | 85% | 31% | 5% |
+| Casual win rate (independent re-measure, 24 runs) | 92% | 39% | 11% |
+| Smart win rate (independent, 10 runs) | 100% | 98% | 82% |
+| In band / closest miss / fallback | 13 / 17 / 0 | 30 / 0 / 0 | 30 / 0 / 0 |
+| Average bobbins | 9.7 | 13.3 | 14.0 |
+| Generation time (Node 24, desktop; avg / max) | 48 / 82 ms | 22 / 54 ms | 17 / 100 ms |
+
+The generation estimate matches the prototype spec's own table (~85% /
+~31% / ~4%), which is what that table measured. The independent re-measure
+reads easier across the board. That's selection bias, not a bug:
+generation keeps a puzzle *because* its noisy 12-run estimate landed in
+band, so a fresh measurement regresses toward the mean. In practice, real
+puzzles are a bit easier than their target bands suggest. More than half
+of Easy puzzles miss the band on the easy side and fall back to the closest
+miss. Both points feed into the difficulty retune
+([WEB-201](https://eleanormatthewman.atlassian.net/browse/WEB-201)).
+Generation is ~2-4x faster than the prototype spec measured. A phone will be
+slower, so it still runs in a Web Worker.
 
 Easy often sits at the top of its band, so it could be nudged harder. In
 playtesting, Hard felt genuinely challenging but beatable, and the earlier
@@ -401,40 +420,65 @@ Investigated in WEB-193:
 The rules, generator and simulator are pure TypeScript with no DOM access, so
 they can be unit tested and shared by the game and the simulated players.
 
-Proposed structure:
+Code lives in `games/bobbin/`. It has its own `tsconfig.json` and
+`package.json` (`"type": "module"`) but shares the repo's `node_modules`,
+ESLint, Jest and CI. The root `tsconfig.json` excludes `games/`, and
+`npm run typecheck` checks both projects. Imports use explicit `.ts`
+extensions, so the pure modules also run directly under Node 24 (which
+strips types) for scripts. Built so far:
 
 ```
-core/
-  rules.ts        belt geometry, lineFirst, exposed, single-tick step
-  rng.ts          seeded PRNG (mulberry32) and helpers
-  codes.ts        parse, format, random code, version prefix
-  palette.ts      yarn colours and names
-gen/
-  pictures.ts     rings, waves, quilt, sprite, mix
-  bobbins.ts      peel, merge, split, scramble, deal
-  difficulty.ts   configs per level
-  generate.ts     attempt loop, validation, fallback
-sim/
-  simulate.ts     smart and casual players, win-rate helper
-game/
-  state.ts        game state machine (play, finishing, won, lost)
-  loop.ts         fixed-step ticks + render interpolation
-render/
-  canvas.ts       belt, board, stitches, bobbins, effects
-  ui.ts           rack, supply, header, overlays, code form
-pwa/              manifest, icons, service worker config
-main.ts
+games/bobbin/
+  index.html, vite.config.ts   Vite app (base /bobbin/, builds to public/bobbin/)
+  src/
+    main.ts         placeholder entry point until WEB-196
+    core/
+      rules.ts      belt geometry, lineFirst, exposed, PlayState, the shared tick
+      rng.ts        seeded PRNG (mulberry32), pick, shuffle
+      math.ts       engine-independent sin/atan2/hypot for the pictures
+      codes.ts      parse, format, random code, hidden versioning
+      palette.ts    yarn colours and names
+    gen/
+      pictures.ts   rings, waves, quilt, sprite, mix
+      bobbins.ts    peel/merge/fold/split, scramble, deal
+      difficulty.ts configs per level
+      generate.ts   attempt loop, validation, fallback
+    sim/
+      simulate.ts   smart and casual players, winRate
+    __tests__/      Jest (runs in the root suite; see Testing below)
+  scripts/
+    calibrate.ts             calibration report
+    prototype-fixtures.mjs   regenerates the prototype's reference output
 ```
+
+Still to come in WEB-196: `game/` (state and effects layered on the core,
+plus the fixed-step loop) and `render/` (canvas, DOM UI).
+
+**Commands**
+
+| Command | What it does |
+|---|---|
+| `npm run bobbin:dev` | Vite dev server for the game |
+| `npm run bobbin:build` | Builds into `public/bobbin/` (gitignored). Not yet part of `npm run build`; that's WEB-197 |
+| `npm run bobbin:calibrate [N]` | Calibration report, N puzzles per difficulty (default 30) |
+| `npx jest games/bobbin` | Just Bobbin's tests |
 
 **Design rules**
 
-- **One source of truth for a tick.** In the prototype, the tick logic is
+- **One source of truth for a tick.** In the prototype, the tick logic was
   duplicated in `tick()` (game) and `simulate()` (players), and the two
-  drifted once (the auto-finish count). Both must call the same `step(state)`,
-  with the game layering effects on top.
+  drifted once (the auto-finish count). Now a tick is two shared halves in
+  `core/rules.ts`: `advance` (move, collect, pop, rack or lose) and `feed`
+  (one bobbin enters if the corner is clear). The game calls
+  `step` = `advance` + `feed`, and player taps queue into `pending` between
+  ticks. The simulator calls `advance`, then lets its player decide, then
+  `feed`, so a chosen bobbin enters on the same tick, exactly as the
+  calibrated prototype simulator did. `advance` returns events (collect,
+  empty, rack, enter, won, lost) for the game to hang effects on.
 - A fixed timestep for logic; `requestAnimationFrame` only for drawing and
   interpolation.
-- Generation can be slow on a phone (desktop max ~0.6 s), so it runs in a Web
+- Generation can be slow on a phone (desktop max ~0.1 s for the port, ~0.6 s
+  in the prototype), so it runs in a Web
   Worker with the "Knitting..." state showing.
 - The whole game must work with no network.
 
@@ -451,6 +495,35 @@ main.ts
 - Calibration report: a script that generates N puzzles per difficulty and
   prints casual and smart win rates, bobbin counts and generation times, like
   the tables above. Run it whenever difficulty changes.
+
+What exists (`games/bobbin/src/__tests__/`):
+
+- `generate.test.ts`:
+  - **Prototype fidelity.** With native `Math` swapped back in, 18 codes (6
+    per difficulty) reproduce the prototype's own output exactly
+    (`fixtures/prototype-v8.json`, made by running the prototype's script
+    in Node via `scripts/prototype-fixtures.mjs`). This proves the port,
+    including the restructured shared tick, behaves identically.
+  - **Golden snapshots** of 9 codes under the real (deterministic) generator.
+    If one fails, the generator changed: bump the generator version, never
+    `jest -u`.
+  - **Invariants** over 24 codes.
+- `rules.test.ts`: belt geometry and direction, line of sight, one stitch per
+  tick, racking, rack-overflow loss and freeze, entry corner, belt capacity,
+  auto-finish counting belt bobbins and its feed order.
+- `codes.test.ts`, `math.test.ts`.
+
+The pure modules sit at ~95-100% coverage and are included in the repo's
+`collectCoverageFrom` (except `main.ts`).
+
+## Deliberate differences from the prototype
+
+| Difference | Why | Effect on what codes build |
+|---|---|---|
+| Picture generators use `core/math.ts` (engine-independent `sin`/`atan2`/`hypot`) instead of `Math.*` | ECMAScript lets engines approximate these, and ring sectors and circles hit exact band edges, so Chrome and Safari could build different puzzles from the same code | None measured: 0 of 450 codes differ from native `Math` in V8 |
+| The game's auto-finish feeds lazily (pending, then rack, then columns, one at a time as the corner clears) instead of pre-filling the pending queue | Shared tick with the simulator, which always worked this way | None (the simulator was already like this); the game's visible feed order can differ slightly, but losing is impossible by then |
+| Linked-bobbin-pair code removed from the simulator | Dead code: the mechanic was dropped during tuning | None |
+| `simulate()` requires an RNG (the prototype defaulted to `Math.random`) | Generation must never touch `Math.random` | None (generation always passed one) |
 
 ## Assumptions
 
