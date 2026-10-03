@@ -325,6 +325,12 @@ spools, belt) are.
   they are (they must stay distinct from each other and readable on the
   board). The board panel behind the stitches is a neutral surface, light in
   both themes, so yarn colours read consistently.
+- **Start/finish station** ([WEB-205](https://eleanormatthewman.atlassian.net/browse/WEB-205),
+  from Ellie's playtest): the belt's bottom-left corner is drawn square
+  while the other three are rounded. A pad (`--bobbin-dock`: mint in light
+  mode, bright mint in dark) marks where bobbins wait, leave and return,
+  with chevrons showing them leave up the left side and come home along
+  the bottom. The first-run hint and the board's aria-label mention it.
 - **Game drawing:** stitches are two tilted ellipses per cell with a soft
   highlight. Collected cells show a faint empty stitch, so the picture looks
   unravelled rather than erased. Bobbins are wooden spools wound in the yarn
