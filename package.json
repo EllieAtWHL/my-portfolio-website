@@ -13,14 +13,17 @@
     "start": "next start",
     "lint": "eslint",
     "lint:css": "stylelint \"src/app/globals.css\"",
-    "typecheck": "tsc --noEmit -p .",
+    "typecheck": "tsc --noEmit -p . && tsc -p games/bobbin",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:mutation": "stryker run",
     "generate-external-manifest": "node scripts/generate-external-manifest.js",
     "generate-external-manifest:help": "node scripts/generate-external-manifest.js --help",
-    "init-external-local": "node scripts/generate-external-manifest.js --init-local"
+    "init-external-local": "node scripts/generate-external-manifest.js --init-local",
+    "bobbin:dev": "vite games/bobbin",
+    "bobbin:build": "vite build games/bobbin",
+    "bobbin:calibrate": "node games/bobbin/scripts/calibrate.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
@@ -61,6 +64,7 @@
     "stylelint": "^17.14.1",
     "tailwindcss": "^4",
     "typescript": "^5",
+    "vite": "^8.3.2",
     "whatwg-fetch": "^3.6.20"
   }
 }

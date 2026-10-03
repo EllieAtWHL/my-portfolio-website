@@ -20,6 +20,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Bobbin's Vite build output (gitignored).
+    "public/bobbin/**",
   ]),
   {
     // Standalone CommonJS Node CLI scripts, run directly via `node scripts/x.js`.

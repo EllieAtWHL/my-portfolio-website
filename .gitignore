@@ -22,6 +22,8 @@
 
 # production
 /build
+# Bobbin's Vite build output (npm run bobbin:build) - see reference/bobbin/README.md
+/public/bobbin/
 
 # misc
 .DS_Store
