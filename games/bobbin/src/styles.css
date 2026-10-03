@@ -45,6 +45,8 @@
      so yarn colours always read the same. */
   --bobbin-belt: var(--brand-primary-darker);
   --bobbin-belt-stitch: var(--brand-primary-light);
+  /* Start/finish pad and direction chevrons on the belt */
+  --bobbin-dock: var(--accent-brand);
   --bobbin-panel: var(--light-gray);
   --bobbin-empty-stitch: var(--bg-light-2);
   --bobbin-overlay: var(--dark-bg-opacity-50);
@@ -73,6 +75,7 @@
 
   --bobbin-belt: var(--dark-nav);
   --bobbin-belt-stitch: var(--dark-accent);
+  --bobbin-dock: var(--dark-accent-bright);
   --bobbin-overlay: var(--dark-bg-opacity-80);
 }
 

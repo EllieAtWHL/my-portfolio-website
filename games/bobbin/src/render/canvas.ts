@@ -11,6 +11,7 @@ import { POP_MS, THREAD_MS, type GameSession } from "../game/session.ts";
 export interface BoardColours {
   belt: string;
   beltStitch: string;
+  dock: string;
   panel: string;
   empty: string;
   font: string;
@@ -22,6 +23,7 @@ export function readBoardColours(root: HTMLElement = document.documentElement): 
   return {
     belt: v("--bobbin-belt"),
     beltStitch: v("--bobbin-belt-stitch"),
+    dock: v("--bobbin-dock"),
     panel: v("--bobbin-panel"),
     empty: v("--bobbin-empty-stitch"),
     font: v("--bobbin-font") || "sans-serif",
@@ -102,7 +104,10 @@ export class BoardRenderer {
     const m = beltW / 2;
     const track = () => {
       ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(m, m, S - beltW, S - beltW, beltW * 0.6);
+      // Radii clockwise from top-left; the bottom-left corner stays square,
+      // so the start/finish station there reads as a distinct point.
+      const r = beltW * 0.6;
+      if (ctx.roundRect) ctx.roundRect(m, m, S - beltW, S - beltW, [r, r, r, 0]);
       else ctx.rect(m, m, S - beltW, S - beltW);
       ctx.stroke();
     };
@@ -120,6 +125,8 @@ export class BoardRenderer {
     ctx.lineWidth = 2;
     track();
     ctx.restore();
+
+    this.drawDock();
 
     // Panel and stitches. The panel stays light in both themes so yarn
     // colours always read the same.
@@ -175,6 +182,52 @@ export class BoardRenderer {
       const [x, y] = this.beltPoint(-1);
       this.spool(x, y, r * 0.9, PALETTE[s.pending[0].c], s.pending[0].n);
     }
+  }
+
+  // The start/finish point: bobbins wait on a pad at the bottom-left
+  // corner, leave up the left side and come home along the bottom. Chevrons
+  // on the belt show both directions; drawn under the bobbins.
+  private drawDock() {
+    const { ctx, beltW, colours } = this;
+    const [cx, cy] = this.beltPoint(-1);
+    ctx.save();
+    ctx.fillStyle = colours.dock;
+    ctx.strokeStyle = colours.belt;
+    ctx.lineWidth = Math.max(2, beltW * 0.06);
+    ctx.beginPath();
+    ctx.arc(cx, cy, beltW * 0.42, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    // A small ring inside the pad: the "loop" bobbins go round and return to.
+    ctx.beginPath();
+    ctx.arc(cx, cy, beltW * 0.16, 0, Math.PI * 2);
+    ctx.stroke();
+
+    const chevron = (x: number, y: number, angle: number) => {
+      const r = beltW * 0.17;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.beginPath();
+      ctx.moveTo(-r, r * 0.6);
+      ctx.lineTo(0, -r * 0.6);
+      ctx.lineTo(r, r * 0.6);
+      ctx.stroke();
+      ctx.restore();
+    };
+    ctx.strokeStyle = colours.dock;
+    ctx.lineWidth = Math.max(2, beltW * 0.08);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    // Out: pointing up the left side, just above the pad.
+    const out = this.beltPoint(0);
+    chevron(cx, (cy + out[1]) / 2 - beltW * 0.35, 0);
+    chevron(cx, (cy + out[1]) / 2 - beltW * 0.75, 0);
+    // Home: pointing left along the bottom, just right of the pad.
+    const home = this.beltPoint(this.L - 1);
+    chevron((cx + home[0]) / 2 + beltW * 0.75, cy, -Math.PI / 2);
+    chevron((cx + home[0]) / 2 + beltW * 0.35, cy, -Math.PI / 2);
+    ctx.restore();
   }
 
   private roundRect(x: number, y: number, w: number, h: number, r: number) {
