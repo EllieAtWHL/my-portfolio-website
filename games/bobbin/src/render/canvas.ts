@@ -19,6 +19,12 @@ export interface BoardColours {
   font: string;
 }
 
+// "" (unset) or garbage falls back; a real 0 (no shading) is kept.
+function numberOr(value: string, fallback: number): number {
+  const n = value === "" ? NaN : Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
 export function readBoardColours(root: HTMLElement = document.documentElement): BoardColours {
   const css = getComputedStyle(root);
   const v = (name: string) => css.getPropertyValue(name).trim();
@@ -26,7 +32,7 @@ export function readBoardColours(root: HTMLElement = document.documentElement): 
     belt: v("--bobbin-belt"),
     beltStitch: v("--bobbin-belt-stitch"),
     dock: v("--bobbin-dock"),
-    outlineShade: Number(v("--bobbin-stitch-outline-shade")) || -0.22,
+    outlineShade: numberOr(v("--bobbin-stitch-outline-shade"), -0.22),
     panel: v("--bobbin-panel"),
     empty: v("--bobbin-empty-stitch"),
     font: v("--bobbin-font") || "sans-serif",
