@@ -37,6 +37,11 @@ const customJestConfig = {
     // Thin 4-line delegate to lib/supabase/middleware.ts#updateSession, which
     // holds the actual routing/auth logic and is unit tested directly.
     '!src/middleware.ts',
+    // Bobbin (standalone Vite app, reference/bobbin/README.md). main.ts is the
+    // DOM entry point; the pure core/gen/sim modules are what's unit tested.
+    'games/bobbin/src/**/*.ts',
+    '!games/bobbin/src/__tests__/**',
+    '!games/bobbin/src/main.ts',
   ],
   // NOTE ON THE 2026-08 DROP: these numbers used to be 75/60/70/75. That was
   // NOT a higher-quality baseline - collectCoverageFrom (above) didn't exist

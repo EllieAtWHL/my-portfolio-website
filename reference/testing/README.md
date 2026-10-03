@@ -47,7 +47,7 @@ Shared test infrastructure (test doubles, not test cases) lives outside any `__t
 
 ## Why coverage numbers cover the whole app, not just tested files
 
-`jest.config.js` sets `collectCoverageFrom: ['src/**/*.{ts,tsx}', ...]` explicitly. Without it, Jest's coverage report only includes files some test actually `import`s - a page or component with zero tests simply doesn't appear in the report at all, so "80% coverage" can quietly mean "80% of the 25% of the app anyone bothered to test." With `collectCoverageFrom` set, every source file shows up (as 0% if untested), so `npm run test:coverage`'s numbers reflect the real state of the whole app. `collectCoverageFrom` excludes `src/app/api/**` (API routes - see below) and `src/middleware.ts` (thin delegate to `src/lib/supabase/middleware.ts#updateSession`, which is unit tested directly).
+`jest.config.js` sets `collectCoverageFrom: ['src/**/*.{ts,tsx}', ...]` explicitly. Without it, Jest's coverage report only includes files some test actually `import`s - a page or component with zero tests simply doesn't appear in the report at all, so "80% coverage" can quietly mean "80% of the 25% of the app anyone bothered to test." With `collectCoverageFrom` set, every source file shows up (as 0% if untested), so `npm run test:coverage`'s numbers reflect the real state of the whole app. It also includes the Bobbin game's pure modules (`games/bobbin/src/**`, except its DOM entry point `main.ts`), whose tests live in `games/bobbin/src/__tests__/` and run in the same Jest suite. `collectCoverageFrom` excludes `src/app/api/**` (API routes - see below) and `src/middleware.ts` (thin delegate to `src/lib/supabase/middleware.ts#updateSession`, which is unit tested directly).
 
 ## Mutation testing (StrykerJS)
 
