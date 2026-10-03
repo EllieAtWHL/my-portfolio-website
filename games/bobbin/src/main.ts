@@ -76,15 +76,16 @@ function send(action: () => boolean) {
 
 async function load(code: string) {
   const token = ++loadToken;
-  currentCode = code;
   const p = parseCode(code)!;
-  els.title.textContent = "Knitting…";
-  els.code.textContent = p.code;
-  setDifficultyButtons(p.difficulty);
+  // Only the title changes while generating; the code, difficulty and
+  // currentCode switch over when the puzzle actually starts, so a failed
+  // load leaves the screen matching the game still being played.
+  els.title.textContent = "Knitting\u2026";
   let puzzle: Puzzle;
   try {
     puzzle = await puzzles.get(p.code);
   } catch {
+    if (token !== loadToken) return;
     els.title.textContent = "Bobbin";
     els.codeMsg.textContent = "Couldn't build that puzzle. Try another code.";
     return;
@@ -95,6 +96,9 @@ async function load(code: string) {
 
 function start(puzzle: Puzzle) {
   session = new GameSession(puzzle);
+  currentCode = puzzle.code;
+  setDifficultyButtons(parseCode(puzzle.code)!.difficulty);
+  els.codeMsg.textContent = "";
   els.title.textContent = "Bobbin";
   els.levelName.textContent = `${puzzle.cfg.label} puzzle`;
   els.code.textContent = puzzle.code;

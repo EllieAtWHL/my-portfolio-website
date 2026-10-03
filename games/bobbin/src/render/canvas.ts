@@ -138,7 +138,9 @@ export class BoardRenderer {
       if (e.type === "thread") {
         const t = (now - e.t0) / THREAD_MS;
         const [sx, sy] = this.cellPoint(e.x, e.y);
-        const [tx, ty] = s.belt.includes(e.bobbin) ? this.bobbinPoint(e.bobbin, f) : [sx, sy];
+        // A bobbin that emptied on this stitch has already left the belt:
+        // aim at where it popped, so its last thread still flies to it.
+        const [tx, ty] = s.belt.includes(e.bobbin) ? this.bobbinPoint(e.bobbin, f) : this.beltPoint(e.bobbin.i);
         const hx = sx + (tx - sx) * t;
         const hy = sy + (ty - sy) * t;
         ctx.strokeStyle = e.colour;
