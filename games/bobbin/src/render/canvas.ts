@@ -44,6 +44,12 @@ export class BoardRenderer {
   private dashOffset = 0;
   colours: BoardColours;
   reduceMotion = false;
+  /** Bobbins still flying in from the DOM (render/flight.ts): not drawn yet. */
+  hidden: ReadonlySet<BeltBobbin> = new Set();
+  /** Until this time, the start pad glows (send feedback under reduced motion). */
+  dockGlowUntil = 0;
+  private lastAlpha = 0;
+  private lastSession: GameSession | null = null;
 
   constructor(canvas: HTMLCanvasElement, colours: BoardColours) {
     this.canvas = canvas;
@@ -95,8 +101,10 @@ export class BoardRenderer {
   draw(session: GameSession, now: number, alpha: number, tickClock: number): void {
     const { ctx, size: S, beltW, colours } = this;
     const s = session.state;
+    this.lastSession = session;
     // Once lost, ticks stop: freeze bobbins where they are rather than replaying their last step.
     const f = s.status === "lost" ? 1 : alpha;
+    this.lastAlpha = f;
     ctx.clearRect(0, 0, S, S);
 
     // Belt: a dark rounded track with a stitched dashed centre line that
@@ -126,7 +134,7 @@ export class BoardRenderer {
     track();
     ctx.restore();
 
-    this.drawDock();
+    this.drawDock(now);
 
     // Panel and stitches. The panel stays light in both themes so yarn
     // colours always read the same.
@@ -175,22 +183,53 @@ export class BoardRenderer {
     // Bobbins on the belt, and the next one waiting at the entry corner.
     const r = beltW * 0.4;
     for (const b of s.belt) {
+      if (this.hidden.has(b)) continue;
       const [x, y] = this.bobbinPoint(b, f);
       this.spool(x, y, r, PALETTE[b.c], b.n);
     }
-    if (s.pending.length) {
+    const waiting = s.pending[0];
+    if (waiting && !this.hidden.has(waiting)) {
       const [x, y] = this.beltPoint(-1);
-      this.spool(x, y, r * 0.9, PALETTE[s.pending[0].c], s.pending[0].n);
+      this.spool(x, y, r * 0.9, PALETTE[waiting.c], waiting.n);
     }
+  }
+
+  /**
+   * Where bobbin b is drawn right now, in viewport (client) coordinates, and
+   * the spool's drawn size - so a flight can land exactly on it. Null once
+   * it's left the belt (emptied or racked).
+   */
+  screenPoint(b: BeltBobbin): { x: number; y: number; size: number } | null {
+    const s = this.lastSession?.state;
+    if (!s) return null;
+    const r = this.beltW * 0.4;
+    let point: [number, number];
+    let size = 2 * r;
+    if (s.belt.includes(b)) point = this.bobbinPoint(b, this.lastAlpha);
+    else if (s.pending.includes(b)) {
+      point = this.beltPoint(-1);
+      size = 2 * r * 0.9;
+    } else return null;
+    const rect = this.canvas.getBoundingClientRect();
+    return { x: rect.left + point[0], y: rect.top + point[1], size };
   }
 
   // The start/finish point: bobbins wait on a pad at the bottom-left
   // corner, leave up the left side and come home along the bottom. Chevrons
   // on the belt show both directions; drawn under the bobbins.
-  private drawDock() {
+  private drawDock(now: number) {
     const { ctx, beltW, colours } = this;
     const [cx, cy] = this.beltPoint(-1);
     ctx.save();
+    if (now < this.dockGlowUntil) {
+      // Static glow (no motion), for sends under prefers-reduced-motion.
+      ctx.fillStyle = colours.dock;
+      ctx.globalAlpha = 0.35;
+      ctx.beginPath();
+      ctx.arc(cx, cy, beltW * 0.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
     ctx.fillStyle = colours.dock;
     ctx.strokeStyle = colours.belt;
     ctx.lineWidth = Math.max(2, beltW * 0.06);

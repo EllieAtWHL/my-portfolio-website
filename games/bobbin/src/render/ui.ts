@@ -4,12 +4,78 @@
 // can't be focused.
 
 import { COLOUR_NAMES } from "../core/palette.ts";
+import type { BeltBobbin } from "../core/rules.ts";
 import type { GameSession } from "../game/session.ts";
 import { spoolSVG } from "./spool.ts";
 
 export interface UiHandlers {
-  onSendColumn: (k: number) => void;
-  onSendRack: (k: number) => void;
+  /** `button` is the tapped button, so the send can animate from it. */
+  onSendColumn: (k: number, button: HTMLButtonElement) => void;
+  onSendRack: (k: number, button: HTMLButtonElement) => void;
+}
+
+export interface RenderOptions {
+  /** Slide bobbins to their new places when the queue moves (off under reduced motion). */
+  animate?: boolean;
+}
+
+// ---------- queue movement (FLIP) ----------
+//
+// When a column or the rack is rebuilt, each bobbin that's still visible
+// slides (and grows or shrinks) from where it was to where it now is, and
+// newly revealed bobbins fade in. Only the spool graphic inside each button
+// moves: the button (the tap target) is already fixed in its final place, so
+// a quick second tap on the front slot can't fall into a gap mid-slide, and
+// nothing is rebuilt mid-tap (see `reuse` below).
+
+export const QUEUE_MS = 220;
+const bobbinOf = new WeakMap<Element, BeltBobbin>();
+
+interface Snapshot {
+  rect: DOMRect;
+  opacity: string;
+}
+
+function snapshot(el: HTMLElement): Map<BeltBobbin, Snapshot> {
+  const before = new Map<BeltBobbin, Snapshot>();
+  el.querySelectorAll("button").forEach((btn) => {
+    const b = bobbinOf.get(btn);
+    if (b) before.set(b, { rect: btn.getBoundingClientRect(), opacity: getComputedStyle(btn).opacity });
+  });
+  return before;
+}
+
+function slide(el: HTMLElement, before: Map<BeltBobbin, Snapshot>) {
+  el.querySelectorAll<HTMLButtonElement>("button").forEach((btn) => {
+    const b = bobbinOf.get(btn);
+    const art = btn.firstElementChild as SVGElement | null;
+    if (!b || !art || typeof art.animate !== "function") return;
+    const now = btn.getBoundingClientRect();
+    if (!now.width) return;
+    const old = before.get(b);
+    if (!old?.rect.width) {
+      // Newly revealed (e.g. the next bobbin up from "+N more").
+      art.animate([{ opacity: 0, transform: "translateY(12px)" }, { opacity: 1, transform: "none" }], {
+        duration: QUEUE_MS,
+        easing: "ease-out",
+      });
+      return;
+    }
+    const dx = old.rect.left + old.rect.width / 2 - (now.left + now.width / 2);
+    const dy = old.rect.top + old.rect.height / 2 - (now.top + now.height / 2);
+    const scale = old.rect.width / now.width;
+    if (Math.abs(dx) < 1 && Math.abs(dy) < 1 && Math.abs(scale - 1) < 0.01) return;
+    // The button's own (final) opacity still applies, so start the art at
+    // the ratio that makes it look as faded as it was.
+    const fromOpacity = Math.min(1, Number(old.opacity) / (Number(getComputedStyle(btn).opacity) || 1));
+    art.animate(
+      [
+        { transform: `translate(${dx}px, ${dy}px) scale(${scale})`, opacity: fromOpacity },
+        { transform: "none", opacity: 1 },
+      ],
+      { duration: QUEUE_MS, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" },
+    );
+  });
 }
 
 /** Bobbins shown per supply column: the tappable front plus two dimmed. */
@@ -35,10 +101,11 @@ function reuse(el: HTMLElement, key: string, enabled: boolean): boolean {
 
 const bobbinKey = (b: { c: string; n: number }) => b.c + b.n;
 
-export function renderRack(el: HTMLElement, session: GameSession, handlers: UiHandlers): void {
+export function renderRack(el: HTMLElement, session: GameSession, handlers: UiHandlers, options: RenderOptions = {}): void {
   const s = session.state;
   const enabled = session.canSend;
   if (reuse(el, `${s.rackSize}|${s.rack.map(bobbinKey).join(",")}`, enabled)) return;
+  const before = options.animate ? snapshot(el) : null;
   el.style.setProperty("--rack-slots", String(s.rackSize));
   el.replaceChildren();
   for (let i = 0; i < s.rackSize; i++) {
@@ -52,19 +119,22 @@ export function renderRack(el: HTMLElement, session: GameSession, handlers: UiHa
       slot.disabled = !enabled;
       slot.dataset.sendable = "";
       slot.setAttribute("aria-label", `Send ${COLOUR_NAMES[b.c]} bobbin with ${b.n} from the rack`);
-      slot.addEventListener("click", () => handlers.onSendRack(i));
+      bobbinOf.set(slot, b);
+      slot.addEventListener("click", () => handlers.onSendRack(i, slot));
     } else {
       slot.disabled = true;
       slot.setAttribute("aria-label", "Empty rack slot");
     }
     el.appendChild(slot);
   }
+  if (before) slide(el, before);
 }
 
-export function renderSupply(el: HTMLElement, session: GameSession, handlers: UiHandlers): void {
+export function renderSupply(el: HTMLElement, session: GameSession, handlers: UiHandlers, options: RenderOptions = {}): void {
   const enabled = session.canSend;
   const key = session.state.cols.map((col) => col.slice(0, VISIBLE_PER_COLUMN).map(bobbinKey).join(",") + "+" + col.length).join("|");
   if (reuse(el, key, enabled)) return;
+  const before = options.animate ? snapshot(el) : null;
   el.replaceChildren();
   session.state.cols.forEach((col, k) => {
     const column = document.createElement("div");
@@ -74,11 +144,12 @@ export function renderSupply(el: HTMLElement, session: GameSession, handlers: Ui
       btn.type = "button";
       btn.className = "spool";
       btn.innerHTML = spoolSVG(b.c, b.n, j === 0 ? 52 : 40);
+      bobbinOf.set(btn, b);
       if (j === 0) {
         btn.disabled = !enabled;
         btn.dataset.sendable = "";
         btn.setAttribute("aria-label", `Send ${COLOUR_NAMES[b.c]} bobbin with ${b.n}`);
-        btn.addEventListener("click", () => handlers.onSendColumn(k));
+        btn.addEventListener("click", () => handlers.onSendColumn(k, btn));
       } else {
         // Upcoming: visible for planning, but not interactive.
         btn.classList.add("upcoming", `upcoming-${j}`);
@@ -100,6 +171,7 @@ export function renderSupply(el: HTMLElement, session: GameSession, handlers: Ui
     }
     el.appendChild(column);
   });
+  if (before) slide(el, before);
 }
 
 export interface OverlayContent {

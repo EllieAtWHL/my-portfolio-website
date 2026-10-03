@@ -478,7 +478,8 @@ games/bobbin/
     render/
       canvas.ts     board: belt, stitches, travelling spools, thread/pop effects
       spool.ts      spool as inline SVG for the DOM
-      ui.ts         rack, supply columns, status line, overlays
+      ui.ts         rack, supply columns, status line, overlays, queue slide (FLIP)
+      flight.ts     a sent spool flying from its button to the belt
     sim/
       simulate.ts   smart and casual players, winRate
     __tests__/      Jest (runs in the root suite; see Testing below)
@@ -499,6 +500,25 @@ The DOM rack and supply only re-render when a tick changed something.
 supply when the bobbins shown change, and otherwise just toggles `disabled`
 in place. Browser testing found this: an early version rebuilt them on every
 collecting tick.
+
+**Sending gives visible feedback** ([WEB-207](https://eleanormatthewman.atlassian.net/browse/WEB-207),
+Ellie's playtest). Before this, a tapped bobbin just vanished, and when the
+next one was the same colour it looked as if the tap hadn't registered.
+- `render/flight.ts` flies a copy of the spool from the tapped button to
+  wherever that bobbin now is on the board. That's the start pad, or
+  already partway up the belt: `BoardRenderer.screenPoint` gives its live
+  position each frame, so the copy lands exactly on it. The board doesn't
+  draw the real bobbin until the flight lands.
+- `render/ui.ts` slides the column's remaining spools up (and grows the new
+  front one) from where they were, and fades in any newly revealed bobbin.
+  This uses FLIP: measure before the rebuild, then animate from the old box.
+- Only the spool **graphic** inside each button animates. The button, which
+  is the tap target, is already in its final place, so a quick second tap
+  on the front slot never falls into a gap. The flight copy ignores pointer
+  events. The send itself is still instant; all of this is visual.
+- Under `prefers-reduced-motion` there's no flight and no slide. Instead,
+  the column (or rack) flashes a mint ring and the start pad glows for
+  400 ms, without moving.
 
 **Puzzles load through `PuzzleSource`:** it generates in the Web Worker and
 caches by code, so Restart and Try again never regenerate. If workers are
@@ -568,6 +588,10 @@ What exists (`games/bobbin/src/__tests__/`):
   loss, and the puzzle left untouched for Restart. Also FixedClock ticking,
   interpolation and stall resync.
 - `client.test.ts`: worker generation, caching and the inline fallbacks.
+- `flight.test.ts` (jsdom): flight easing and interpolation, the copy
+  following a moving target and cleaning up, and the queue slide (an
+  identical-looking next bobbin still animates; nothing animates under
+  reduced motion).
 - `ui.test.ts` (jsdom): supply and rack buttons and labels, upcoming
   bobbins not focusable, buttons kept stable while the contents are
   unchanged, status text, overlays (focus, the code kept on one line), and
