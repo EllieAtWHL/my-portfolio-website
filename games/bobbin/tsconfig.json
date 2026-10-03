@@ -1,0 +1,22 @@
+{
+  // Bobbin is a standalone Vite app (see reference/bobbin/README.md), so it
+  // has its own tsconfig rather than inheriting the Next.js one: no React/JSX,
+  // no Next plugin, and explicit `.ts` import extensions so the pure modules
+  // also run directly under Node (e.g. scripts/calibrate.ts) without a build.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "types": ["node", "jest"]
+  },
+  "include": ["src/**/*.ts", "scripts/**/*.ts", "vite.config.ts"]
+}
