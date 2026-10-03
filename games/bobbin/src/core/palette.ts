@@ -35,3 +35,17 @@ export const COLOUR_NAMES: Record<Colour, string> = {
   k: "white",
   l: "oatmeal",
 };
+
+// Game art, like the yarn colours above (not UI chrome, so not site tokens):
+// the wooden spool ends and the outline that keeps capacity numbers readable
+// on any yarn colour.
+export const SPOOL_WOOD = "#C9A27A";
+export const SPOOL_NUMBER = "#FFFFFF";
+export const SPOOL_NUMBER_OUTLINE = "rgba(40, 28, 56, 0.85)";
+
+/** Lighten (amt > 0) or darken (amt < 0) a #RRGGBB colour. */
+export function shade(hex: string, amt: number): string {
+  const n = parseInt(hex.slice(1), 16);
+  const f = (v: number) => Math.max(0, Math.min(255, Math.round(amt > 0 ? v + (255 - v) * amt : v * (1 + amt))));
+  return `rgb(${f(n >> 16)}, ${f((n >> 8) & 255)}, ${f(n & 255)})`;
+}
