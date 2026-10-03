@@ -50,7 +50,7 @@ describe("supply columns", () => {
     }
     expect(col.querySelector(".more")?.textContent).toBe("+2 more");
     buttons[0].click();
-    expect(h.onSendColumn).toHaveBeenCalledWith(0);
+    expect(h.onSendColumn).toHaveBeenCalledWith(0, buttons[0]);
   });
 
   it("keeps the same buttons while the contents are unchanged, so a tap mid-tick isn't lost", () => {
@@ -84,7 +84,7 @@ describe("rack", () => {
     expect(slots[1].disabled).toBe(true);
     expect(slots[1].getAttribute("aria-label")).toBe("Empty rack slot");
     slots[0].click();
-    expect(h.onSendRack).toHaveBeenCalledWith(0);
+    expect(h.onSendRack).toHaveBeenCalledWith(0, slots[0]);
   });
 });
 

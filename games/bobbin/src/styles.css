@@ -508,6 +508,27 @@ canvas {
 .spool svg,
 .slot svg {
   display: block;
+  /* Queue slides animate the graphic, not the button (render/ui.ts). */
+  transform-origin: center;
+}
+
+/* The spool copy that flies to the belt when a bobbin is sent (render/flight.ts). */
+.flight {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 40px;
+  height: 40px;
+  z-index: 50;
+  pointer-events: none;
+  transform-origin: center;
+  will-change: transform;
+}
+
+/* Send feedback under reduced motion: a brief highlight, no movement. */
+.column.sent,
+.panel.sent {
+  box-shadow: 0 0 0 3px var(--bobbin-dock), var(--bobbin-surface-shadow);
 }
 
 /* ---------- code form ---------- */

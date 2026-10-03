@@ -10,7 +10,9 @@ import { PuzzleSource } from "./gen/client.ts";
 import type { Puzzle } from "./gen/generate.ts";
 import { FixedClock } from "./game/clock.ts";
 import { GameSession } from "./game/session.ts";
+import type { BeltBobbin } from "./core/rules.ts";
 import { BoardRenderer, readBoardColours } from "./render/canvas.ts";
+import { FlightLayer } from "./render/flight.ts";
 import {
   LOST_OVERLAY,
   beltStatusText,
@@ -58,13 +60,46 @@ let started = false; // first bobbin sent this visit: hides the hint
 let uiDirty = true;
 let loadToken = 0;
 
+const flights = new FlightLayer();
+renderer.hidden = flights.inFlight;
+const SENT_FLASH_MS = 400;
+
 const handlers = {
-  onSendColumn: (k: number) => send(() => session!.sendColumn(k)),
-  onSendRack: (k: number) => send(() => session!.sendRack(k)),
+  onSendColumn: (k: number, btn: HTMLButtonElement) =>
+    send(session?.state.cols[k]?.[0], btn, () => els.supply.children[k] as HTMLElement, () => session!.sendColumn(k)),
+  onSendRack: (k: number, btn: HTMLButtonElement) =>
+    send(session?.state.rack[k], btn, () => els.rack.closest<HTMLElement>(".panel"), () => session!.sendRack(k)),
 };
 
-function send(action: () => boolean) {
-  if (!session || !action()) return;
+// The send itself is instant; what follows is only feedback that it happened
+// (WEB-207): the spool flies to the start pad and the queue moves up - or,
+// under reduced motion, the pad glows and the column flashes, without motion.
+function send(
+  bobbin: BeltBobbin | undefined,
+  btn: HTMLButtonElement,
+  flashTarget: () => HTMLElement | null,
+  action: () => boolean,
+) {
+  if (!session || !bobbin) return;
+  // Measure the spool graphic, not the button: rack slots are bigger than
+  // the spool inside them.
+  const from = (btn.querySelector("svg") ?? btn).getBoundingClientRect();
+  if (!action()) return;
+  const now = performance.now();
+  // Re-render now (not next frame) so the queue animation, or the flash,
+  // starts on the same frame as the tap - and the flash lands on the
+  // rebuilt column rather than the one it replaced.
+  renderUi();
+  if (renderer.reduceMotion) {
+    renderer.dockGlowUntil = now + SENT_FLASH_MS;
+    const source = flashTarget();
+    if (source) {
+      source.classList.add("sent");
+      setTimeout(() => source.classList.remove("sent"), SENT_FLASH_MS);
+    }
+  } else {
+    flights.launch(bobbin, from, now);
+  }
   if (!started) {
     started = true;
     els.hint.hidden = true;
@@ -95,6 +130,7 @@ async function load(code: string) {
 }
 
 function start(puzzle: Puzzle) {
+  flights.clear();
   session = new GameSession(puzzle);
   currentCode = puzzle.code;
   setDifficultyButtons(parseCode(puzzle.code)!.difficulty);
@@ -124,8 +160,9 @@ function setDifficultyButtons(d: Difficulty) {
 function renderUi() {
   if (!session) return;
   uiDirty = false;
-  renderRack(els.rack, session, handlers);
-  renderSupply(els.supply, session, handlers);
+  const options = { animate: !renderer.reduceMotion };
+  renderRack(els.rack, session, handlers, options);
+  renderSupply(els.supply, session, handlers, options);
   els.beltStatus.textContent = beltStatusText(session);
 }
 
@@ -147,6 +184,8 @@ function frame(now: number) {
       // A drawing bug must never stop the game loop.
       console.warn(error);
     }
+    // After draw, so flights aim at where bobbins were drawn this frame.
+    flights.update(now, (b) => renderer.screenPoint(b));
     if (uiDirty) renderUi();
   }
   requestAnimationFrame(frame);
