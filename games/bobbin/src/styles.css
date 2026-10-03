@@ -41,14 +41,17 @@
   --bobbin-secondary-text: var(--brand-primary-darker);
   --bobbin-secondary-border: var(--brand-primary-dark);
 
-  /* Board (read by render/canvas.ts). The panel stays light in both themes
-     so yarn colours always read the same. */
+  /* Board (read by render/canvas.ts). */
   --bobbin-belt: var(--brand-primary-darker);
   --bobbin-belt-stitch: var(--brand-primary-light);
   /* Start/finish pad and direction chevrons on the belt */
   --bobbin-dock: var(--accent-brand);
   --bobbin-panel: var(--light-gray);
   --bobbin-empty-stitch: var(--bg-light-2);
+  /* Filled stitches get a hairline in a shade of their own yarn colour:
+     darker on the light panel (keeps white/oatmeal visible), lighter on the
+     dark panel (keeps plum visible). */
+  --bobbin-stitch-outline-shade: -0.22;
   --bobbin-overlay: var(--dark-bg-opacity-50);
 }
 
@@ -76,6 +79,11 @@
   --bobbin-belt: var(--dark-nav);
   --bobbin-belt-stitch: var(--dark-accent);
   --bobbin-dock: var(--dark-accent-bright);
+  /* Dark board in dark mode (Ellie, WEB-206): darkest site surface, so the
+     belt (--dark-nav) still frames it; collected stitches are a faint ghost. */
+  --bobbin-panel: var(--dark-bg-2);
+  --bobbin-empty-stitch: var(--dark-nav);
+  --bobbin-stitch-outline-shade: 0.45;
   --bobbin-overlay: var(--dark-bg-opacity-80);
 }
 

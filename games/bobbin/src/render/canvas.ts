@@ -14,7 +14,15 @@ export interface BoardColours {
   dock: string;
   panel: string;
   empty: string;
+  /** shade() amount for filled-stitch outlines: < 0 darkens, > 0 lightens. */
+  outlineShade: number;
   font: string;
+}
+
+// "" (unset) or garbage falls back; a real 0 (no shading) is kept.
+function numberOr(value: string, fallback: number): number {
+  const n = value === "" ? NaN : Number(value);
+  return Number.isFinite(n) ? n : fallback;
 }
 
 export function readBoardColours(root: HTMLElement = document.documentElement): BoardColours {
@@ -24,6 +32,7 @@ export function readBoardColours(root: HTMLElement = document.documentElement): 
     belt: v("--bobbin-belt"),
     beltStitch: v("--bobbin-belt-stitch"),
     dock: v("--bobbin-dock"),
+    outlineShade: numberOr(v("--bobbin-stitch-outline-shade"), -0.22),
     panel: v("--bobbin-panel"),
     empty: v("--bobbin-empty-stitch"),
     font: v("--bobbin-font") || "sans-serif",
@@ -136,8 +145,7 @@ export class BoardRenderer {
 
     this.drawDock(now);
 
-    // Panel and stitches. The panel stays light in both themes so yarn
-    // colours always read the same.
+    // Panel and stitches: light panel in light mode, dark in dark mode.
     ctx.fillStyle = colours.panel;
     this.roundRect(beltW + 2, beltW + 2, S - 2 * beltW - 4, S - 2 * beltW - 4, 12);
     for (let y = 0; y < this.H; y++) {
@@ -278,8 +286,9 @@ export class BoardRenderer {
   }
 
   // A knit "V": two tilted ellipses with a soft highlight. Filled stitches
-  // get a hairline in a darker shade of their own colour, so pale yarns
-  // (white, oatmeal) still read against the light panel.
+  // get a hairline in a shade of their own colour (--bobbin-stitch-outline-
+  // shade): darker on the light panel so pale yarns read, lighter on the
+  // dark panel so plum does.
   private stitch(x: number, y: number, s: number, colour: string, filled: boolean) {
     const { ctx } = this;
     for (const [side, rot] of [[-1, -0.5], [1, 0.5]] as const) {
@@ -291,7 +300,7 @@ export class BoardRenderer {
       ctx.fillStyle = colour;
       ctx.fill();
       if (filled && colour.startsWith("#")) {
-        ctx.strokeStyle = shade(colour, -0.22);
+        ctx.strokeStyle = shade(colour, this.colours.outlineShade);
         ctx.lineWidth = Math.max(0.75, s * 0.03);
         ctx.stroke();
       }
