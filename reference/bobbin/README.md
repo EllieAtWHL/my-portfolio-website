@@ -5,11 +5,13 @@ Yarn Loop, installable on an Android phone as a PWA without the Play Store.
 It will live at `/bobbin/` on this site. Tracked under epic
 [WEB-192](https://eleanormatthewman.atlassian.net/browse/WEB-192).
 
-**Status: core ported, not playable yet.** The pure rules, generator and
-simulated players live in `games/bobbin/` with tests and a calibration
-report ([WEB-195](https://eleanormatthewman.atlassian.net/browse/WEB-195)).
-There's no game UI yet ([WEB-196](https://eleanormatthewman.atlassian.net/browse/WEB-196)),
-and nothing is deployed ([WEB-197](https://eleanormatthewman.atlassian.net/browse/WEB-197)).
+**Status: playable locally, not deployed yet.** The game runs in full under
+`npm run bobbin:dev`. That covers the core rules, generator and simulated
+players ([WEB-195](https://eleanormatthewman.atlassian.net/browse/WEB-195)),
+plus the playable UI in the main site's design system
+([WEB-196](https://eleanormatthewman.atlassian.net/browse/WEB-196)). It isn't
+served at `/bobbin/` or installable yet
+([WEB-197](https://eleanormatthewman.atlassian.net/browse/WEB-197)).
 The playtested single-file prototype is kept as
 [`prototype.html`](./prototype.html) (open it directly in a browser). It is the reference implementation for rules, generation and feel.
 This doc started as the build spec (`YARN_SPEC.md`, 30 Sep 2026). It replaces
@@ -331,9 +333,25 @@ spools, belt) are.
   from each collected stitch to its bobbin (~280 ms), and a ring pops where a
   bobbin empties (~360 ms).
 - **No main-site navbar.** Bobbin is a standalone installable app, and the
-  site navbar's links would leave the PWA's scope. Instead, the header has a
-  small link back to the main site. Hide it when running installed
-  (`display-mode: standalone`).
+  site navbar's links would leave the PWA's scope. Instead, a small
+  "← EllieAtWHL" link (to `/projects`) sits in the top bar, hidden when
+  running installed (`display-mode: standalone`), next to a light/dark
+  toggle.
+- **How it's implemented** (`games/bobbin/src/styles.css`):
+  - The site's tokens are mapped onto `--bobbin-*` custom properties, with
+    a `.dark` block. `render/canvas.ts` reads the board ones (`--bobbin-belt`,
+    `--bobbin-belt-stitch`, `--bobbin-panel`, `--bobbin-empty-stitch`) so the
+    canvas follows the theme too.
+  - Buttons mirror the site's `Button` at size `sm`: green gradient primary,
+    outlined secondary. In dark mode, primary is a mint gradient and
+    secondary a pale fill, matching how the site renders them.
+  - Panels mirror `.accent-card`; the dialog keeps its accent left border.
+  - Collected stitches use `--bg-light-2`, a pale brand green, so they read
+    as unravelled and don't get confused with white yarn.
+  - Filled stitches get a hairline in a darker shade of their own colour, so
+    pale yarns (white, oatmeal) stay visible on the light panel.
+  - `reference/CSS_ARCHITECTURE.md` lists which site rules these mirror;
+    keep them in step.
 
 **Interaction and feedback**
 
@@ -425,24 +443,36 @@ Code lives in `games/bobbin/`. It has its own `tsconfig.json` and
 ESLint, Jest and CI. The root `tsconfig.json` excludes `games/`, and
 `npm run typecheck` checks both projects. Imports use explicit `.ts`
 extensions, so the pure modules also run directly under Node 24 (which
-strips types) for scripts. Built so far:
+strips types) for scripts.
 
 ```
 games/bobbin/
-  index.html, vite.config.ts   Vite app (base /bobbin/, builds to public/bobbin/)
+  index.html      page markup; applies the stored theme inline before first paint
+  vite.config.ts  base /bobbin/, builds to public/bobbin/
   src/
-    main.ts         placeholder entry point until WEB-196
+    main.ts         entry point: wires session, clock, renderer and DOM together
+    styles.css      the page's styles, built on the site's design tokens (see Visual language)
+    theme.ts        light/dark, shared with the main site's `theme` setting
     core/
       rules.ts      belt geometry, lineFirst, exposed, PlayState, the shared tick
       rng.ts        seeded PRNG (mulberry32), pick, shuffle
       math.ts       engine-independent sin/atan2/hypot for the pictures
       codes.ts      parse, format, random code, hidden versioning
-      palette.ts    yarn colours and names
+      palette.ts    yarn colours and names, spool art colours
     gen/
       pictures.ts   rings, waves, quilt, sprite, mix
       bobbins.ts    peel/merge/fold/split, scramble, deal
       difficulty.ts configs per level
       generate.ts   attempt loop, validation, fallback
+      worker.ts     Web Worker that runs generate() off the main thread
+      client.ts     PuzzleSource: worker + cache + inline fallback
+    game/
+      session.ts    GameSession: PlayState + effects + phase (play/finishing/won/lost)
+      clock.ts      fixed 110 ms timestep with render interpolation
+    render/
+      canvas.ts     board: belt, stitches, travelling spools, thread/pop effects
+      spool.ts      spool as inline SVG for the DOM
+      ui.ts         rack, supply columns, status line, overlays
     sim/
       simulate.ts   smart and casual players, winRate
     __tests__/      Jest (runs in the root suite; see Testing below)
@@ -451,14 +481,30 @@ games/bobbin/
     prototype-fixtures.mjs   regenerates the prototype's reference output
 ```
 
-Still to come in WEB-196: `game/` (state and effects layered on the core,
-plus the fixed-step loop) and `render/` (canvas, DOM UI).
+**How a frame works:** `requestAnimationFrame` asks the `FixedClock` how
+many whole 110 ms ticks are due and runs `GameSession.tick` for each one
+(the shared core `step`, plus recording effects). It then draws the canvas,
+interpolating each bobbin between its previous and current belt position.
+The DOM rack and supply only re-render when a tick changed something.
+
+**Taps must survive the belt.** The belt ticks every 110 ms, and replacing a
+`<button>` mid-tap loses the tap (`pointerdown` lands on the old element,
+`pointerup` on the new one). So `render/ui.ts` only rebuilds the rack or
+supply when the bobbins shown change, and otherwise just toggles `disabled`
+in place. Browser testing found this: an early version rebuilt them on every
+collecting tick.
+
+**Puzzles load through `PuzzleSource`:** it generates in the Web Worker and
+caches by code, so Restart and Try again never regenerate. If workers are
+unavailable or the worker errors, it falls back to generating inline. A
+newer request supersedes an older one still generating, so tapping New
+twice can't start the wrong puzzle.
 
 **Commands**
 
 | Command | What it does |
 |---|---|
-| `npm run bobbin:dev` | Vite dev server for the game |
+| `npm run bobbin:dev` | Vite dev server for the game: open `http://localhost:5173/bobbin/` |
 | `npm run bobbin:build` | Builds into `public/bobbin/` (gitignored). Not yet part of `npm run build`; that's WEB-197 |
 | `npm run bobbin:calibrate [N]` | Calibration report, N puzzles per difficulty (default 30) |
 | `npx jest games/bobbin` | Just Bobbin's tests |
@@ -512,9 +558,19 @@ What exists (`games/bobbin/src/__tests__/`):
   tick, racking, rack-overflow loss and freeze, entry corner, belt capacity,
   auto-finish counting belt bobbins and its feed order.
 - `codes.test.ts`, `math.test.ts`.
+- `session.test.ts`: GameSession phases, effects and their expiry, freeze on
+  loss, and the puzzle left untouched for Restart. Also FixedClock ticking,
+  interpolation and stall resync.
+- `client.test.ts`: worker generation, caching and the inline fallbacks.
+- `ui.test.ts` (jsdom): supply and rack buttons and labels, upcoming
+  bobbins not focusable, buttons kept stable while the contents are
+  unchanged, status text, overlays (focus, the code kept on one line), and
+  the theme shared with the site.
 
-The pure modules sit at ~95-100% coverage and are included in the repo's
-`collectCoverageFrom` (except `main.ts`).
+Everything except `main.ts`, `render/canvas.ts` (jsdom has no 2D canvas) and
+the 5-line `gen/worker.ts` is in the repo's `collectCoverageFrom`. Those
+three are checked by playing in a real browser: see the WEB-196 PR for the
+win/lose/auto-finish/dark-mode run-through.
 
 ## Deliberate differences from the prototype
 
@@ -523,6 +579,11 @@ The pure modules sit at ~95-100% coverage and are included in the repo's
 | Picture generators use `core/math.ts` (engine-independent `sin`/`atan2`/`hypot`) instead of `Math.*` | ECMAScript lets engines approximate these, and ring sectors and circles hit exact band edges, so Chrome and Safari could build different puzzles from the same code | None measured: 0 of 450 codes differ from native `Math` in V8 |
 | The game's auto-finish feeds lazily (pending, then rack, then columns, one at a time as the corner clears) instead of pre-filling the pending queue | Shared tick with the simulator, which always worked this way | None (the simulator was already like this); the game's visible feed order can differ slightly, but losing is impossible by then |
 | Linked-bobbin-pair code removed from the simulator | Dead code: the mechanic was dropped during tuning | None |
+| Look and feel: main EllieAtWHL design system instead of the lavender/Fredoka look | Ellie's call (see Visual language) | None |
+| Header shows "Code X · Copy"; the difficulty name is only in the segmented control (and screen-reader text) | The prototype's "Easy puzzle · Code X Copy" wrapped awkwardly at phone width | None |
+| Win text reads "To play this one again, use code X." with the code kept on one line | The prototype's sentence broke the code at its hyphen | None |
+| Collected stitches are pale brand green, and filled stitches have a hairline outline | Keeps white and oatmeal yarn visible on the light panel and distinct from collected stitches | None |
+| Rack/supply buttons persist between ticks instead of being rebuilt every render | Rebuilding mid-tap dropped taps | None |
 | `simulate()` requires an RNG (the prototype defaulted to `Math.random`) | Generation must never touch `Math.random` | None (generation always passed one) |
 
 ## Assumptions

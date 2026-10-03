@@ -5,9 +5,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Bobbin</title>
     <meta name="description" content="A knitted conveyor-belt colour puzzle." />
+    <script>
+      // Same logic as the main site's public/theme-script.js (shared `theme`
+      // key, `light`/`dark` class on <html>), inlined so the right theme is
+      // applied before first paint - see src/theme.ts.
+      (function () {
+        var stored = null;
+        try { stored = localStorage.getItem("theme"); } catch (e) {}
+        var dark = stored === "dark" || (stored !== "light" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.classList.add(dark ? "dark" : "light");
+      })();
+    </script>
   </head>
   <body>
-    <main id="app"></main>
+    <div class="app">
+      <nav class="topbar" aria-label="Site">
+        <a class="site-link" href="/projects">&larr; EllieAtWHL</a>
+        <button type="button" class="icon-button" id="themeBtn" aria-label="Switch to dark mode">
+          <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+          <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></g></svg>
+        </button>
+      </nav>
+
+      <header class="game-header">
+        <div>
+          <h1 id="title">Bobbin</h1>
+          <p class="code-line">
+            <span class="visually-hidden" id="levelName">Easy puzzle</span>Code <strong id="code">&hellip;</strong>
+            <button type="button" class="text-button" id="copyBtn">Copy</button>
+          </p>
+        </div>
+        <div class="header-actions">
+          <button type="button" class="btn btn-secondary" id="restartBtn">Restart</button>
+          <button type="button" class="btn btn-primary" id="newBtn">New</button>
+        </div>
+      </header>
+
+      <div class="segmented" role="group" aria-label="Difficulty">
+        <button type="button" data-difficulty="E" aria-pressed="false">Easy</button>
+        <button type="button" data-difficulty="M" aria-pressed="false">Medium</button>
+        <button type="button" data-difficulty="H" aria-pressed="false">Hard</button>
+      </div>
+
+      <main>
+        <div class="stage">
+          <canvas id="board" role="img" aria-label="Knitted picture with a conveyor belt around it"></canvas>
+          <div class="overlay" id="overlay" hidden>
+            <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="overlayTitle" aria-describedby="overlayText">
+              <h2 id="overlayTitle"></h2>
+              <p id="overlayText"></p>
+              <button type="button" class="btn btn-primary" id="overlayBtn"></button>
+            </div>
+          </div>
+        </div>
+
+        <p class="hint" id="hint">
+          Tap a bobbin to send it round the belt. It picks up the outermost stitches of its own colour.
+          Leftover yarn waits on the rack.
+        </p>
+
+        <section class="panel" aria-labelledby="rackLabel">
+          <div class="panel-heading">
+            <h2 id="rackLabel">Rack</h2>
+            <span id="beltStatus" aria-live="polite">Belt 0 of 4</span>
+          </div>
+          <div class="rack" id="rack"></div>
+        </section>
+
+        <section class="supply" id="supply" aria-label="Bobbins to send"></section>
+
+        <form class="panel code-form" id="codeForm" novalidate>
+          <label for="codeInput">Play a code</label>
+          <div class="code-row">
+            <input id="codeInput" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="M-4K7P" aria-describedby="codeMsg" />
+            <button type="submit" class="btn btn-secondary">Play</button>
+          </div>
+          <p id="codeMsg" role="status"></p>
+        </form>
+      </main>
+    </div>
     <script type="module" src="./src/main.ts"></script>
   </body>
 </html>

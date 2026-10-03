@@ -1,0 +1,551 @@
+/* Bobbin's styles, built on the main EllieAtWHL design system.
+ *
+ * Colour tokens are imported from the site's own src/styles/variables.css
+ * (not copied), so Bobbin follows any palette change. The component rules
+ * below mirror the site's equivalents - buttons from main-theme.css's
+ * .button/.button.primary/.button.secondary (as rendered by the shared
+ * Button component at size "sm"), cards from about-me.css's .accent-card,
+ * the page background from globals.css - because Bobbin is a standalone
+ * Vite app and can't use the site's React components or Tailwind build.
+ * If one of those site rules changes, update its mirror here.
+ *
+ * Light and dark are both first-class; `.dark` on <html> comes from the
+ * site's shared `theme` setting (src/theme.ts). The 12 yarn colours are game
+ * art, not UI chrome, and live in src/core/palette.ts.
+ */
+@import "../../../src/styles/variables.css";
+
+:root {
+  --bobbin-font: Nokora, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --bobbin-radius: 12px;
+  --bobbin-gutter: 16px;
+
+  /* Page */
+  --bobbin-bg: linear-gradient(135deg, var(--bg-light-1) 0%, var(--bg-light-2) 100%);
+  --bobbin-text: var(--brand-primary-darkest);
+  --bobbin-heading: var(--brand-primary-dark);
+  --bobbin-muted: var(--brand-primary-dark);
+  --bobbin-focus: var(--brand-primary-dark);
+
+  /* Surfaces (accent-card) */
+  --bobbin-surface: var(--bg-white);
+  --bobbin-surface-shadow: 0 2px 16px var(--shadow-dark);
+  --bobbin-slot: var(--bg-light-1);
+  --bobbin-border: var(--neutral-border);
+
+  /* Buttons */
+  --bobbin-primary-bg: linear-gradient(135deg, var(--brand-primary-dark) 0%, var(--brand-primary-light) 100%);
+  --bobbin-primary-text: var(--bg-light-1);
+  --bobbin-primary-shadow: var(--brand-opacity-40);
+  --bobbin-secondary-bg: transparent;
+  --bobbin-secondary-text: var(--brand-primary-darker);
+  --bobbin-secondary-border: var(--brand-primary-dark);
+
+  /* Board (read by render/canvas.ts). The panel stays light in both themes
+     so yarn colours always read the same. */
+  --bobbin-belt: var(--brand-primary-darker);
+  --bobbin-belt-stitch: var(--brand-primary-light);
+  --bobbin-panel: var(--light-gray);
+  --bobbin-empty-stitch: var(--bg-light-2);
+  --bobbin-overlay: var(--dark-bg-opacity-50);
+}
+
+.dark {
+  --bobbin-bg: linear-gradient(135deg, var(--dark-bg-1) 0%, var(--dark-bg-2) 100%);
+  --bobbin-text: var(--dark-text);
+  --bobbin-heading: var(--dark-accent);
+  --bobbin-muted: var(--dark-accent);
+  --bobbin-focus: var(--dark-accent);
+
+  --bobbin-surface: var(--dark-bg-opacity-50);
+  --bobbin-surface-shadow: 0 2px 16px var(--shadow-dark-medium);
+  --bobbin-slot: var(--dark-bg-opacity-80);
+  --bobbin-border: var(--dark-border);
+
+  --bobbin-primary-bg: linear-gradient(135deg, var(--dark-accent) 0%, var(--dark-accent-bright) 100%);
+  --bobbin-primary-text: var(--dark-text-darker);
+  --bobbin-primary-shadow: var(--accent-opacity-30);
+  /* The site's dark secondary button renders as a pale fill with dark text
+     (globals.css's `.dark button` rule), so mirror that. */
+  --bobbin-secondary-bg: var(--dark-text);
+  --bobbin-secondary-text: var(--dark-text-darker);
+  --bobbin-secondary-border: var(--dark-accent);
+
+  --bobbin-belt: var(--dark-nav);
+  --bobbin-belt-stitch: var(--dark-accent);
+  --bobbin-overlay: var(--dark-bg-opacity-80);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: var(--bobbin-bg);
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bobbin-bg);
+  color: var(--bobbin-text);
+  font-family: var(--bobbin-font);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-tap-highlight-color: transparent;
+  padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0)
+    env(safe-area-inset-left, 0);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--bobbin-focus);
+  outline-offset: 2px;
+}
+
+.app {
+  max-width: 460px;
+  margin: 0 auto;
+  padding: 8px var(--bobbin-gutter) 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Screen-reader-only text (the visible difficulty is the segmented control). */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- top bar ---------- */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 40px;
+}
+
+.site-link {
+  color: var(--bobbin-heading);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  border-radius: 6px;
+}
+
+.site-link:hover {
+  text-decoration: underline;
+}
+
+/* Installed as an app: no way back to the site from here (it would leave the
+   app's scope), so hide the link. */
+@media (display-mode: standalone) {
+  .site-link {
+    visibility: hidden;
+  }
+}
+
+.icon-button {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-left: auto;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--bobbin-heading);
+  cursor: pointer;
+}
+
+.icon-button:hover {
+  background: var(--brand-opacity-10);
+}
+
+.dark .icon-button:hover {
+  background: var(--accent-opacity-10);
+}
+
+.icon-sun,
+.dark .icon-moon {
+  display: none;
+}
+
+.dark .icon-sun {
+  display: block;
+}
+
+/* ---------- header ---------- */
+
+.game-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+h1 {
+  margin: 0;
+  color: var(--bobbin-heading);
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.1;
+  /* page-title-solid's soft shadow */
+  text-shadow: 2px 2px 4px var(--shadow-dark);
+}
+
+.dark h1 {
+  text-shadow: none;
+}
+
+.code-line {
+  margin: 4px 0 0;
+  color: var(--bobbin-muted);
+  font-size: 0.9rem;
+}
+
+.code-line strong {
+  color: var(--bobbin-text);
+  letter-spacing: 0.04em;
+}
+
+.text-button {
+  border: none;
+  background: none;
+  padding: 0 0 0 4px;
+  color: var(--bobbin-heading);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ---------- buttons (mirror main-theme.css .button, Button size "sm") ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--bobbin-radius);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.btn-primary {
+  border: 2px solid transparent;
+  background: var(--bobbin-primary-bg);
+  color: var(--bobbin-primary-text);
+}
+
+.btn-secondary {
+  border: 2px solid var(--bobbin-secondary-border);
+  background: var(--bobbin-secondary-bg);
+  color: var(--bobbin-secondary-text);
+}
+
+.btn:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px var(--bobbin-primary-shadow);
+}
+
+.btn:not(:disabled):active {
+  transform: translateY(-1px);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- difficulty ---------- */
+
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--bobbin-radius);
+  background: var(--bobbin-surface);
+  box-shadow: var(--bobbin-surface-shadow);
+}
+
+.segmented button {
+  border: none;
+  border-radius: 8px;
+  padding: 6px 0;
+  background: transparent;
+  color: var(--bobbin-heading);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.segmented button[aria-pressed="true"] {
+  background: var(--bobbin-primary-bg);
+  color: var(--bobbin-primary-text);
+}
+
+/* ---------- board ---------- */
+
+.stage {
+  position: relative;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  touch-action: manipulation;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 24px;
+  background: var(--bobbin-overlay);
+}
+
+.overlay[hidden] {
+  display: none;
+}
+
+/* accent-card */
+.dialog {
+  width: min(85%, 300px);
+  padding: 1.5rem;
+  border-radius: var(--bobbin-radius);
+  border-left: 4px solid var(--bobbin-heading);
+  background: var(--bg-white);
+  box-shadow: var(--bobbin-surface-shadow);
+  text-align: center;
+}
+
+.dark .dialog {
+  background: var(--dark-bg-1);
+}
+
+.dialog h2 {
+  margin: 0 0 0.5rem;
+  color: var(--bobbin-heading);
+  font-size: 1.3rem;
+}
+
+.dialog p {
+  margin: 0 0 1rem;
+  line-height: 1.5;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.hint {
+  margin: 0;
+  color: var(--bobbin-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.hint[hidden] {
+  display: none;
+}
+
+/* ---------- rack and supply ---------- */
+
+.panel {
+  padding: 12px;
+  border-radius: var(--bobbin-radius);
+  background: var(--bobbin-surface);
+  box-shadow: var(--bobbin-surface-shadow);
+}
+
+.panel-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  color: var(--bobbin-muted);
+  font-size: 0.85rem;
+}
+
+.panel-heading h2 {
+  margin: 0;
+  color: var(--bobbin-heading);
+  font-size: 1rem;
+}
+
+.rack {
+  display: grid;
+  grid-template-columns: repeat(var(--rack-slots, 4), 1fr);
+  gap: 8px;
+}
+
+.slot {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  max-height: 64px;
+  border: 2px dashed var(--bobbin-border);
+  border-radius: 10px;
+  background: var(--bobbin-slot);
+  padding: 0;
+}
+
+.slot.filled {
+  border-style: solid;
+  cursor: pointer;
+}
+
+.slot:disabled {
+  cursor: default;
+}
+
+.supply {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-height: 150px;
+  padding: 10px 8px;
+  border-radius: var(--bobbin-radius);
+  background: var(--bobbin-surface);
+  box-shadow: var(--bobbin-surface-shadow);
+}
+
+.column .more {
+  margin-top: auto;
+  color: var(--bobbin-muted);
+  font-size: 0.8rem;
+}
+
+.spool {
+  display: grid;
+  place-items: center;
+  border: none;
+  background: none;
+  padding: 0;
+  border-radius: 8px;
+  transition: transform 0.12s ease;
+}
+
+.spool:not(:disabled) {
+  cursor: pointer;
+}
+
+.spool:not(:disabled):active {
+  transform: scale(0.92);
+}
+
+.spool.upcoming {
+  pointer-events: none;
+}
+
+.spool.upcoming-1 {
+  opacity: 0.55;
+}
+
+.spool.upcoming-2 {
+  opacity: 0.3;
+}
+
+.spool svg,
+.slot svg {
+  display: block;
+}
+
+/* ---------- code form ---------- */
+
+.code-form label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--bobbin-heading);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.code-row {
+  display: flex;
+  gap: 8px;
+}
+
+.code-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 14px;
+  border: 1px solid var(--bobbin-border);
+  border-radius: var(--bobbin-radius);
+  background: var(--bg-white);
+  color: var(--brand-primary-darkest);
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dark .code-row input {
+  background: var(--dark-bg-1);
+  color: var(--dark-text);
+}
+
+.code-form p {
+  margin: 6px 0 0;
+  min-height: 1.2em;
+  color: var(--bobbin-muted);
+  font-size: 0.85rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .spool {
+    transition: none;
+  }
+
+  .btn:not(:disabled):hover {
+    transform: none;
+  }
+}

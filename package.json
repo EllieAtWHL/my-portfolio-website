@@ -26,6 +26,7 @@
     "bobbin:calibrate": "node games/bobbin/scripts/calibrate.ts"
   },
   "dependencies": {
+    "@fontsource/nokora": "^5.3.0",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.90.1",
     "@vercel/analytics": "^1.6.1",
