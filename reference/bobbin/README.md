@@ -535,24 +535,23 @@ overturned.
 | A bobbin collects at most one stitch per position per tick | Matches the genre and keeps motion readable | Changes pacing and difficulty numbers |
 | Rack bobbins can be sent in any order | Simplest and most forgiving | A queue-style rack would make everything harder |
 | 3 supply columns, 2 upcoming bobbins visible per column | Mirrors the genre | Affects planning and difficulty |
-| The target device is Android with Chrome | Ellie referenced the Google Play store | iPhone needs extra testing ([WEB-204](https://eleanormatthewman.atlassian.net/browse/WEB-204)) |
+| The target device is Android with Chrome | Just for Ellie for now (confirmed 3 Oct 2026) | iPhone is kept possible but untested ([WEB-204](https://eleanormatthewman.atlassian.net/browse/WEB-204)) |
 | The casual simulated player approximates a real human | Needed a measurable proxy | Difficulty bands may need retuning after playtesting |
 | No persistence yet | Not discussed in detail | Stats, streaks or resume need a storage design ([WEB-199](https://eleanormatthewman.atlassian.net/browse/WEB-199)) |
 
 ## Open decisions and backlog
 
-Phase 5 tickets. Each one notes the decision it needs from Ellie before work
-starts.
+Phase 5 tickets. Ellie's answers from 3 Oct 2026 are recorded below. Anything
+still open is noted on its ticket.
 
-| Ticket | Covers | Decision needed |
+| Ticket | Covers | Decision |
 |---|---|---|
-| [WEB-198](https://eleanormatthewman.atlassian.net/browse/WEB-198) | Sound, haptics, wake lock, rack-nearly-full warning, win celebration | Are sound and haptics wanted, and on by default? Is a rack warning wanted? |
-| [WEB-199](https://eleanormatthewman.atlassian.net/browse/WEB-199) | Local settings, stats and streaks | What to save: settings, stats, last puzzle, mid-puzzle resume? |
-| [WEB-200](https://eleanormatthewman.atlassian.net/browse/WEB-200) | Daily puzzle | Wanted? At which difficulty? |
-| [WEB-201](https://eleanormatthewman.atlassian.net/browse/WEB-201) | Retune difficulty from real play; extra mechanics | Is Easy easy enough? Should Medium and Hard get hidden or fewer visible bobbins? |
-| [WEB-202](https://eleanormatthewman.atlassian.net/browse/WEB-202) | More picture generators | None |
-| [WEB-203](https://eleanormatthewman.atlassian.net/browse/WEB-203) | Colour-blind palette or patterned yarns | None |
-| [WEB-204](https://eleanormatthewman.atlassian.net/browse/WEB-204) | iPhone and Safari support | Is the game just for Ellie, or for friends and family too? |
+| [WEB-198](https://eleanormatthewman.atlassian.net/browse/WEB-198) | Sound, haptics, wake lock, rack-nearly-full warning, win celebration | No sound or vibration in the first version. When built, both are **off by default**, behind a setting. Rack warning: still open |
+| [WEB-199](https://eleanormatthewman.atlassian.net/browse/WEB-199) | Local settings, stats and streaks | Keep it simple: save nothing beyond the shared light/dark `theme` key for now. Keep game state as plain, serialisable data so saving can be added later |
+| [WEB-200](https://eleanormatthewman.atlassian.net/browse/WEB-200) | Daily puzzle | Wanted eventually, not for launch. Difficulty still to decide |
+| [WEB-201](https://eleanormatthewman.atlassian.net/browse/WEB-201) | Difficulty | Easy is too easy, so make it harder. Medium and Hard get extra mechanics (e.g. hidden or fewer visible upcoming bobbins), introduced progressively. Final tuning after playtesting |
+| [WEB-202](https://eleanormatthewman.atlassian.net/browse/WEB-202) | More picture generators | No decision needed |
+| [WEB-203](https://eleanormatthewman.atlassian.net/browse/WEB-203) | Colour-blind palette or patterned yarns | No decision needed |
+| [WEB-204](https://eleanormatthewman.atlassian.net/browse/WEB-204) | iPhone and Safari support | Just for Ellie for now, but keep the iPhone route open: build nothing Android-only without a fallback (safe areas, no reliance on `navigator.vibrate`, iOS-valid manifest and icons) |
 
-Anything in this list that changes the generator must bump the puzzle-code
-version (see [Puzzle codes](#puzzle-codes)).
+**Generator changes and versioning:** until Bobbin is deployed (WEB-197), nobody holds a code, so a retune can simply redefine v1. Regenerate the golden snapshots deliberately and say so in the PR. After launch, anything that changes what codes build must bump the generator version (see [Puzzle codes](#puzzle-codes)).
