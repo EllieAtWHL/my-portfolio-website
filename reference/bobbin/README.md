@@ -323,8 +323,12 @@ spools, belt) are.
   understated borders, and spacing.
 - **The yarn palette is gameplay, not chrome.** The 12 yarn colours stay as
   they are (they must stay distinct from each other and readable on the
-  board). The board panel behind the stitches is a neutral surface, light in
-  both themes, so yarn colours read consistently.
+  board). The board panel behind the stitches follows the theme: light in
+  light mode, the site's darkest surface (`--dark-bg-2`) in dark mode.
+  Originally it stayed light in both themes so yarn colours read the same,
+  but in dark mode a big bright canvas jarred
+  ([WEB-206](https://eleanormatthewman.atlassian.net/browse/WEB-206), Ellie's
+  call). Every yarn stays readable in both because of the outline rule below.
 - **Start/finish station** ([WEB-205](https://eleanormatthewman.atlassian.net/browse/WEB-205),
   from Ellie's playtest): the belt's bottom-left corner is drawn square
   while the other three are rounded. A pad (`--bobbin-dock`: mint in light
@@ -346,16 +350,20 @@ spools, belt) are.
 - **How it's implemented** (`games/bobbin/src/styles.css`):
   - The site's tokens are mapped onto `--bobbin-*` custom properties, with
     a `.dark` block. `render/canvas.ts` reads the board ones (`--bobbin-belt`,
-    `--bobbin-belt-stitch`, `--bobbin-panel`, `--bobbin-empty-stitch`) so the
-    canvas follows the theme too.
+    `--bobbin-belt-stitch`, `--bobbin-dock`, `--bobbin-panel`,
+    `--bobbin-empty-stitch`, `--bobbin-stitch-outline-shade`), so the canvas
+    follows the theme too.
   - Buttons mirror the site's `Button` at size `sm`: green gradient primary,
     outlined secondary. In dark mode, primary is a mint gradient and
     secondary a pale fill, matching how the site renders them.
   - Panels mirror `.accent-card`; the dialog keeps its accent left border.
-  - Collected stitches use `--bg-light-2`, a pale brand green, so they read
-    as unravelled and don't get confused with white yarn.
-  - Filled stitches get a hairline in a darker shade of their own colour, so
-    pale yarns (white, oatmeal) stay visible on the light panel.
+  - Collected stitches are a faint ghost of the panel: `--bg-light-2` (pale
+    brand green) in light mode, so they aren't confused with white yarn, and
+    `--dark-nav` in dark mode.
+  - Filled stitches get a hairline in a shade of their own colour
+    (`--bobbin-stitch-outline-shade`). It's darker in light mode, so pale
+    yarns (white, oatmeal) stay visible, and lighter in dark mode, so plum
+    (`#4A3560`) stays visible on the dark panel.
   - `reference/CSS_ARCHITECTURE.md` lists which site rules these mirror;
     keep them in step.
 
@@ -588,7 +596,8 @@ win/lose/auto-finish/dark-mode run-through.
 | Look and feel: main EllieAtWHL design system instead of the lavender/Fredoka look | Ellie's call (see Visual language) | None |
 | Header shows "Code X · Copy"; the difficulty name is only in the segmented control (and screen-reader text) | The prototype's "Easy puzzle · Code X Copy" wrapped awkwardly at phone width | None |
 | Win text reads "To play this one again, use code X." with the code kept on one line | The prototype's sentence broke the code at its hyphen | None |
-| Collected stitches are pale brand green, and filled stitches have a hairline outline | Keeps white and oatmeal yarn visible on the light panel and distinct from collected stitches | None |
+| Collected stitches are a faint ghost of the panel colour, and filled stitches have a hairline outline that's darker in light mode and lighter in dark mode | Keeps white/oatmeal (light) and plum (dark) visible, and collected stitches distinct | None |
+| The board panel is dark in dark mode | Ellie (WEB-206): a bright canvas jarred on the dark page | None |
 | Rack/supply buttons persist between ticks instead of being rebuilt every render | Rebuilding mid-tap dropped taps | None |
 | `simulate()` requires an RNG (the prototype defaulted to `Math.random`) | Generation must never touch `Math.random` | None (generation always passed one) |
 
