@@ -59,6 +59,17 @@ describe("FlightLayer", () => {
 });
 
 describe("queue movement", () => {
+  // jsdom has no layout or Web Animations: stub both, and always restore them.
+  const animate = jest.fn();
+  beforeEach(() => {
+    animate.mockReset();
+    (SVGElement.prototype as unknown as { animate: unknown }).animate = animate;
+  });
+  afterEach(() => {
+    delete (SVGElement.prototype as unknown as { animate?: unknown }).animate;
+    jest.restoreAllMocks();
+  });
+
   function session() {
     const cols: BeltBobbin[][] = [[bobbin("a"), bobbin("a"), bobbin("b"), bobbin("c")], [], []];
     return new GameSession({
@@ -75,15 +86,11 @@ describe("queue movement", () => {
     document.body.appendChild(el);
     const s = session();
     const handlers = { onSendColumn: jest.fn(), onSendRack: jest.fn() };
-    // jsdom has no layout: give each button a position from its index.
-    const animate = jest.fn();
-    const proto = HTMLButtonElement.prototype as unknown as { getBoundingClientRect: () => DOMRect };
-    const original = proto.getBoundingClientRect;
-    proto.getBoundingClientRect = function (this: HTMLButtonElement) {
+    // Give each button a position from its index.
+    jest.spyOn(HTMLButtonElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLButtonElement) {
       const i = [...(this.parentElement?.children ?? [])].indexOf(this);
       return rect(0, i * 50, i === 0 ? 52 : 40);
-    };
-    (SVGElement.prototype as unknown as { animate: unknown }).animate = animate;
+    });
 
     renderSupply(el, s, handlers, { animate: true });
     animate.mockClear(); // a fresh puzzle's spools fade in; only the send matters here
@@ -98,15 +105,11 @@ describe("queue movement", () => {
     expect(first[1].duration).toBe(QUEUE_MS);
     expect(animate).toHaveBeenCalledTimes(3);
     expect(animate.mock.calls[2][0][0]).toEqual({ opacity: 0, transform: "translateY(12px)" });
-
-    proto.getBoundingClientRect = original;
   });
 
   it("doesn't animate when asked not to (reduced motion) or when the rack is unchanged", () => {
     const el = document.createElement("div");
     const s = session();
-    const animate = jest.fn();
-    (SVGElement.prototype as unknown as { animate: unknown }).animate = animate;
     const handlers = { onSendColumn: jest.fn(), onSendRack: jest.fn() };
     renderSupply(el, s, handlers, { animate: false });
     s.sendColumn(0);

@@ -81,7 +81,9 @@ function send(
   action: () => boolean,
 ) {
   if (!session || !bobbin) return;
-  const from = btn.getBoundingClientRect();
+  // Measure the spool graphic, not the button: rack slots are bigger than
+  // the spool inside them.
+  const from = (btn.querySelector("svg") ?? btn).getBoundingClientRect();
   if (!action()) return;
   const now = performance.now();
   // Re-render now (not next frame) so the queue animation, or the flash,
@@ -176,13 +178,14 @@ function frame(now: number) {
         if (e.type === "won") onWon();
       }
     }
-    flights.update(now, (b) => renderer.screenPoint(b));
     try {
       renderer.draw(session, now, alpha, now);
     } catch (error) {
       // A drawing bug must never stop the game loop.
       console.warn(error);
     }
+    // After draw, so flights aim at where bobbins were drawn this frame.
+    flights.update(now, (b) => renderer.screenPoint(b));
     if (uiDirty) renderUi();
   }
   requestAnimationFrame(frame);
