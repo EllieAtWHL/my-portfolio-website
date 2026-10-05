@@ -279,6 +279,17 @@ so its CSRF/auth/rate-limit middleware doesn't apply here. That's an
 accepted trade-off for a script only Ellie runs locally with the ticket open
 next to it, not a pattern to extend to anything unattended.
 
+Bypassing the admin UI also bypasses its cache invalidation, and past-season
+match data caches for 7 days (see `reference/spurs-women/cache/README.md`).
+So after a successful `--apply` the script revalidates the production
+site's `players` + `matches` tags itself - the same pair the admin UI's
+`invalidatePlayerStatsCache` clears - using `CACHE_API_KEY` from
+`.env.local` (`SITE_URL` overrides the default `https://www.ellieatwhl.co.uk`).
+If the key is missing or the call fails, it warns with the manual command
+rather than failing, since the insert has already happened. Any other
+one-off direct correction to `player_stats` (outside this script) needs the
+same manual revalidation afterwards.
+
 ## Cadence
 
 Runs every Monday at 08:00 UTC. Routine:
