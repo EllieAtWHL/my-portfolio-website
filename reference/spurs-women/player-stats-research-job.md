@@ -202,36 +202,40 @@ can't remember how a previous run resolved the same question.
   box-vs-report differences as judgment calls. (WEB-177 and WEB-208
   disagreed on exactly this for Aston Villa, 27 Sep 2026; the box is what's
   in the DB.)
-- **Minutes are whole numbers against the nominal match length**: 90, or
-  120 if the match went to extra time. Stoppage time and penalty
-  shootouts don't extend it.
-  - Started and played the whole match: `minutes_played` = the nominal
-    length.
-  - Started and subbed off: `minutes_played` = `minute_off`, even past the
-    nominal length. Off at 92' is 92.
-  - Came on and stayed on: `minutes_played` = nominal length −
-    `minute_on`, floored at 0. On at 92' is 0, and on at 103' in a
-    120-minute match is 17.
-  - Came on and later went off: `minutes_played` = `minute_off` −
-    `minute_on`. On at 60', off at 85' is 25.
-  - Sent off: `minute_off` = the red-card minute, and `minutes_played`
-    follows the rules above as if they'd been subbed off then (so
-    `minute_off`, or `minute_off − minute_on` for a substitute). Stoppage
-    time counts like any other minute: a red at 90+6 is `minute_off` 96.
-    A red card plus a `minute_off` is what marks a sending-off rather than
-    a substitution; the match lineup shows it as `🟥 96'` instead of
-    `← 96'`.
-  - Half-time substitutions are minute **46**, following BBC Sport (the
-    source of truth). THFCDB records the same change as **45** - when
-    using it as the backup source, convert a half-time 45 to 46 (so
-    `minute_on` 46 / `minutes_played` 44, and the player replaced has
-    `minute_off` 46 / `minutes_played` 46). Some older rows still use 45;
-    don't copy that.
-
-  This matches existing rows (e.g. matches `bb686fd7…` and `5b4833d2…` for
-  92' changes, `b76847ea…` for extra time, and `c0221ff0…` for a
-  substitute who was later taken off). Never write approximate values like
-  "~90".
+- **Minutes** (decided by Ellie, 2026-10-05, WEB-211). One rule for every
+  row, so the data is consistent rather than exact to the second:
+  - **`minute_on` / `minute_off` record what actually happened**, as whole
+    minutes, including stoppage time: off at 90+2 is stored as `92`, so the
+    match page shows `← 92'`. Every substitution has both sides stored -
+    never just a `minutes_played` total.
+  - **`minutes_played` never exceeds the nominal match length**: 90, or 120
+    if the match went to extra time (`matches.spurs_score_aet` set).
+    Stoppage time and penalty shootouts don't extend it.
+    Below, "nominal" means that 90 or 120:
+    - Started and finished: nominal.
+    - Started and went off: `minute_off`, capped at nominal (off at 92 in
+      a 90-minute match is 90).
+    - Came on: nominal − `minute_on`, floored at 0 (on at 92 is 0; on at
+      103 in a 120-minute match is 17).
+    - Came on and later went off: `minute_off` (capped at nominal) −
+      `minute_on`. On at 60', off at 85' is 25.
+    - Sent off: as if subbed off at the red-card minute - `minute_off` is
+      the real minute (90+6 is 96) and `minutes_played` is capped at nominal (90). A
+      red card plus a `minute_off` is what marks a sending-off; the match
+      lineup shows it as `🟥 96'` instead of `← 96'`.
+  - **Half-time changes are minute 45** on both sides: the player going off
+    has `minute_off` 45 / `minutes_played` 45, and the player coming on has
+    `minute_on` 45 / `minutes_played` 45 (75 in an extra-time match). BBC (and usually THFCDB) show a
+    half-time change as 46' - convert it to 45. Some older THFCDB pages list
+    it as 45' just before their HT marker; that's the same change.
+  - Sources follow "Sourcing approach" above: the source decides **who**
+    came on and off; a source that lists fewer changes than we have isn't
+    evidence they didn't happen; and a minute or so of difference between
+    sources isn't worth changing a row for.
+  - Checks that should always hold: a match's `minutes_played` totals 11 ×
+    the nominal length (990, or 1320 with extra time), less any minutes lost
+    to an unreplaced sending-off; and every `minute_on` pairs with a
+    `minute_off` at the same minute (excluding sending-offs).
 - **Cards** (decided by Ellie, 2026-10-05, WEB-210):
   - Second-yellow sending-off: `yellow_cards` 2 + `red_cards` 1 (shown as
     🟨🟨🟥). An earlier caution plus a separate straight red is
