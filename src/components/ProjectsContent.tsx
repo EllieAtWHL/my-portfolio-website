@@ -83,11 +83,13 @@ export default function ProjectsContent() {
           isExternal: false
         },
         {
-          // A static Vite app served at /bobbin, not a Next route - a plain
-          // <a> (as rendered below) does the full page load it needs.
+          // A static Vite app served at /bobbin/play, not a Next route - a
+          // plain <a> (as rendered below) does the full page load it needs.
+          // Linked directly (not via the /bobbin redirect) so the link also
+          // works offline, inside the app's /bobbin/ service worker scope.
           id: 'bobbin',
           title: 'Bobbin',
-          url: '/bobbin',
+          url: '/bobbin/play',
           isExternal: false
         }/*,
         {

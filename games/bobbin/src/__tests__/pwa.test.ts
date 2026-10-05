@@ -112,6 +112,20 @@ describe("registerServiceWorker", () => {
     expect(show).toHaveBeenCalledTimes(1);
   });
 
+  it("unregisters the first release's slash-less /bobbin registration, and only that", async () => {
+    const sw = new FakeContainer();
+    const legacy = { scope: "https://example.com/bobbin", unregister: jest.fn() };
+    const current = { scope: "https://example.com/bobbin/", unregister: jest.fn() };
+    const site = { scope: "https://example.com/", unregister: jest.fn() };
+    (sw as unknown as { getRegistrations: () => Promise<unknown[]> }).getRegistrations = () =>
+      Promise.resolve([legacy, current, site]);
+    registerServiceWorker({ show: jest.fn() }, sw as unknown as ServiceWorkerContainer, jest.fn());
+    await flush();
+    expect(legacy.unregister).toHaveBeenCalled();
+    expect(current.unregister).not.toHaveBeenCalled();
+    expect(site.unregister).not.toHaveBeenCalled();
+  });
+
   it("does nothing without service worker support", () => {
     expect(() => registerServiceWorker({ show: jest.fn() }, undefined)).not.toThrow();
   });

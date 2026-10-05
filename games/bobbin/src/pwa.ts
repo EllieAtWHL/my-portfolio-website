@@ -4,7 +4,9 @@
 // small "Update ready" prompt when a newer version has downloaded.
 
 export const SW_URL = "/bobbin/sw.js";
-export const SW_SCOPE = "/bobbin";
+export const SW_SCOPE = "/bobbin/";
+/** Scope used before the Android fix (no trailing slash); unregistered on sight. */
+const LEGACY_SCOPE_PATH = "/bobbin";
 
 export interface UpdatePrompt {
   show: (apply: () => void) => void;
@@ -33,6 +35,13 @@ export function registerServiceWorker(
     reloaded = true;
     reload();
   });
+
+  // The first release registered "/bobbin" (no slash). Drop that
+  // registration so only one Bobbin worker exists per browser; the new
+  // worker's activate step deletes its old bobbin- caches.
+  sw.getRegistrations?.()
+    .then((regs) => regs.filter((r) => new URL(r.scope).pathname === LEGACY_SCOPE_PATH).forEach((r) => r.unregister()))
+    .catch(() => {});
 
   sw.register(SW_URL, { scope: SW_SCOPE })
     .then((reg) => {

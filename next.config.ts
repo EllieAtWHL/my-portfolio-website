@@ -108,10 +108,14 @@ const nextConfig: NextConfig = {
         headers: securityHeaders,
       },
       {
-        // Bobbin's service worker controls "/bobbin" (no trailing slash -
-        // Next redirects "/bobbin/" to "/bobbin"), which is wider than the
-        // "/bobbin/" a worker at /bobbin/sw.js may claim by default, so it
-        // needs explicit permission. See reference/bobbin/README.md.
+        // Transition only (WEB-197): the first release registered Bobbin's
+        // worker with the slash-less scope "/bobbin", wider than
+        // /bobbin/sw.js may claim by default. Browsers that visited it keep
+        // that registration, and its update checks fail without this header
+        // - stranding them on the old version. With it, they update to the
+        // current worker, whose page then unregisters the old "/bobbin"
+        // registration (src/pwa.ts) and registers "/bobbin/". Safe to remove
+        // once old installs have had time to update.
         source: "/bobbin/sw.js",
         headers: [{ key: "Service-Worker-Allowed", value: "/bobbin" }],
       },
@@ -119,9 +123,20 @@ const nextConfig: NextConfig = {
   },
   async rewrites() {
     // Bobbin is a static Vite build in public/bobbin/ (WEB-197), not a Next
-    // route: serve its page at /bobbin. Its assets are requested by their
-    // real /bobbin/... paths and need no rewrite.
-    return [{ source: "/bobbin", destination: "/bobbin/index.html" }];
+    // route: serve its page at /bobbin/play. Its assets are requested by
+    // their real /bobbin/... paths and need no rewrite.
+    return [{ source: "/bobbin/play", destination: "/bobbin/index.html" }];
+  },
+  async redirects() {
+    // The game lives at /bobbin/play, inside its app scope "/bobbin/". The
+    // scope must end in a slash: Android installs a web app by registering
+    // which links it opens, and a slash-less scope ("/bobbin") let it be
+    // confused with the site's other installed app (Spurs Women), so Chrome
+    // on Android said "already installed" and couldn't open it. "/bobbin/"
+    // itself can't be the page, because Next redirects "/bobbin/" to
+    // "/bobbin" - so the friendly /bobbin URL forwards here instead.
+    // Temporary (307) so the target can still change.
+    return [{ source: "/bobbin", destination: "/bobbin/play", permanent: false }];
   },
 };
 
