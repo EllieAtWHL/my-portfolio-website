@@ -2,13 +2,12 @@
 // this template into public/bobbin/sw.js, filling in the build's file list
 // and a version hash - don't edit the generated file.
 //
-// Scope is "/bobbin" (no trailing slash) because Next.js redirects
-// "/bobbin/" to "/bobbin", and a "/bobbin/" scope wouldn't control that
-// page. next.config.ts sends `Service-Worker-Allowed: /bobbin` on this file
-// to permit it.
+// Scope is "/bobbin/" (the default for a worker at /bobbin/sw.js) and the
+// game page is /bobbin/play - see next.config.ts for why the scope must end
+// in a slash (Android) and why the page can't be "/bobbin/" itself.
 //
 // Strategy: precache every file of the build on install, then serve
-// everything under /bobbin cache-first, so the game works fully offline. A
+// everything under /bobbin/ cache-first, so the game works fully offline. A
 // new deploy means a new version: the new worker installs in the background
 // and waits; it takes over on the next launch, or straight away if the
 // player taps "Update" (src/pwa.ts posts SKIP_WAITING).
@@ -49,7 +48,7 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
-  if (url.pathname !== "/bobbin" && !url.pathname.startsWith("/bobbin/")) return;
+  if (!url.pathname.startsWith("/bobbin/")) return;
 
   // Page loads always get the app shell (offline too); everything else is
   // served from the precache, falling back to the network for anything the

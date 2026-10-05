@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
 
 // Bobbin (reference/bobbin/README.md) is a static Vite build in public/bobbin/,
-// served at /bobbin by a next.config.ts rewrite. playwright.config.ts builds it
+// served at /bobbin/play by a next.config.ts rewrite (/bobbin redirects there). playwright.config.ts builds it
 // before starting the dev server.
 test.describe('Bobbin', () => {
-  test('serves the game at /bobbin with no console or CSP errors', async ({ page }) => {
+  test('serves the game at /bobbin/play (via /bobbin) with no console or CSP errors', async ({ page }) => {
     const errors: string[] = [];
     page.on('console', (msg) => {
       if (msg.type() === 'error') errors.push(msg.text());
@@ -13,6 +13,7 @@ test.describe('Bobbin', () => {
 
     await page.goto('/bobbin');
 
+    await expect(page).toHaveURL(/\/bobbin\/play$/);
     await expect(page).toHaveTitle('Bobbin');
     await expect(page.locator('#code')).toHaveText(/^E-[2-9A-HJ-NP-Z]{4}$/);
     await expect(page.getByRole('button', { name: /^Send .+ bobbin with \d+$/ }).first()).toBeVisible();
@@ -36,22 +37,23 @@ test.describe('Bobbin', () => {
     expect(href).toBe('/bobbin/manifest.webmanifest');
 
     const manifest = await (await request.get(href!)).json();
-    expect(manifest).toMatchObject({ id: '/bobbin', start_url: '/bobbin', scope: '/bobbin', display: 'standalone' });
+    // The scope must end in a slash and contain start_url - see next.config.ts.
+    expect(manifest).toMatchObject({ id: '/bobbin/', start_url: '/bobbin/play', scope: '/bobbin/', display: 'standalone' });
     for (const icon of manifest.icons) {
       expect((await request.get(icon.src)).status()).toBe(200);
     }
 
     const sw = await request.get('/bobbin/sw.js');
     expect(sw.status()).toBe(200);
-    expect(sw.headers()['service-worker-allowed']).toBe('/bobbin');
   });
 
-  test('works offline once loaded', async ({ page, context, browserName }) => {
+  test('is controlled by a /bobbin/-scoped worker and works offline once loaded', async ({ page, context, browserName }) => {
     // Playwright only exposes service workers reliably in Chromium.
     test.skip(browserName !== 'chromium', 'Service worker offline check runs in Chromium');
 
-    await page.goto('/bobbin');
-    await page.evaluate(() => navigator.serviceWorker.ready);
+    await page.goto('/bobbin/play');
+    const scope = await page.evaluate(async () => (await navigator.serviceWorker.ready).scope);
+    expect(new URL(scope).pathname).toBe('/bobbin/');
     await page.reload();
     await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
 

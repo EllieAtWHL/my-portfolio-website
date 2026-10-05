@@ -1,10 +1,10 @@
 {
-  "id": "/bobbin",
+  "id": "/bobbin/",
   "name": "Bobbin",
   "short_name": "Bobbin",
   "description": "A knitted conveyor-belt colour puzzle. Ad-free and works offline.",
-  "start_url": "/bobbin",
-  "scope": "/bobbin",
+  "start_url": "/bobbin/play",
+  "scope": "/bobbin/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#f0f9f0",

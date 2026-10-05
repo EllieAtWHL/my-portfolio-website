@@ -2,7 +2,7 @@
 
 An ad-free, offline-capable conveyor colour-sorting puzzle game in the style of
 Yarn Loop, installable on an Android phone as a PWA without the Play Store.
-It lives at `/bobbin` on this site. Tracked under epic
+It lives at `/bobbin` (which forwards to `/bobbin/play`) on this site. Tracked under epic
 [WEB-192](https://eleanormatthewman.atlassian.net/browse/WEB-192).
 
 **Status: live at `/bobbin`, installable and offline.** It covers the core
@@ -389,17 +389,27 @@ fully playable offline after the first visit.
 
 **What's live** ([WEB-197](https://eleanormatthewman.atlassian.net/browse/WEB-197)):
 
-- **Served at `/bobbin`.** `npm run build` runs `npm run bobbin:build` (Vite
-  build into the gitignored `public/bobbin/`) before `next build`, so Vercel
-  deploys both from one push. A `next.config.ts` rewrite serves
-  `/bobbin/index.html` at `/bobbin`; assets are requested by their real
-  `/bobbin/...` paths. It's linked from the Projects page's Games card.
-- **Scope is `/bobbin`, no trailing slash.** Next.js redirects `/bobbin/` to
-  `/bobbin` (308), and a worker scoped to `/bobbin/` would never control a
-  page at `/bobbin`. So the manifest's `id`, `start_url` and `scope` are all
-  `/bobbin`. That's wider than a worker at `/bobbin/sw.js` may claim by
-  default, so `next.config.ts` sends `Service-Worker-Allowed: /bobbin` on that
-  file. (The spec originally said `/bobbin/`.)
+- **Served at `/bobbin/play`.** `npm run build` runs `npm run bobbin:build`
+  (Vite build into the gitignored `public/bobbin/`) before `next build`, so
+  Vercel deploys both from one push. A `next.config.ts` rewrite serves
+  `/bobbin/index.html` at `/bobbin/play`, and `/bobbin` redirects there
+  (307). Assets are requested by their real `/bobbin/...` paths. The
+  Projects page's Games card links to `/bobbin`.
+- **Scope is `/bobbin/`, with a trailing slash.** The manifest has `id`
+  `/bobbin/`, `scope` `/bobbin/` and `start_url` `/bobbin/play`. The worker
+  at `/bobbin/sw.js` gets that scope by default.
+  - The page can't be `/bobbin/` itself, because Next.js redirects
+    `/bobbin/` to `/bobbin` (308). Hence `/bobbin/play`.
+  - **History:** the first release (PR #194) used `/bobbin` (no slash) for
+    all three, plus a `Service-Worker-Allowed` header. It installed fine on
+    Chrome for Mac. On Android, Chrome said "App already installed" (showing
+    Bobbin's own icon) and then "Could not open app", although no Bobbin app
+    existed: it wasn't in `chrome://webapks`, Settings → Apps or Play.
+  - Spurs Women was ruled out as the cause: `/projects` offers no "Open in
+    app", and the sheet showed Bobbin's icon.
+  - The fix gives Bobbin a fresh identity and a conventional slash-ended
+    scope, sidestepping whatever Android/Play recorded against the old one.
+    `src/pwa.ts` unregisters any leftover slash-less `/bobbin` worker.
 - **Manifest** (`games/bobbin/public/manifest.webmanifest`): name "Bobbin",
   `display: standalone`, portrait. Theme colour `#2d5a2d`
   (`--brand-primary-dark`) and background `#f0f9f0` (`--bg-light-1`), written
@@ -469,14 +479,14 @@ Investigated in WEB-193:
   worker only deletes caches with its own prefix), which blocks WEB-197.
 - **Manifests don't clash.** `public/spurs-women/manifest.webmanifest` sets
   `start_url` and `scope` to `/spurs-women`, with no explicit `id` (so `id`
-  defaults to `start_url`). Bobbin uses `/bobbin` for all three. There's no
+  defaults to `start_url`). Bobbin uses `/bobbin/` for its `id` and
+  `scope`. There's no
   need to narrow the root worker to `/spurs-women/`: it's the site-wide
   offline fallback, not a Spurs-specific worker.
 - **`next.config.ts`** had no `trailingSlash`, rewrites or redirects before
-  Bobbin. It now has just the `/bobbin` rewrite and the
-  `Service-Worker-Allowed` header (see What's live above). Next's default
-  trailing-slash redirect (`/bobbin/` → `/bobbin`) is why the scope has no
-  trailing slash. `src/middleware.ts` only matches admin and profile paths,
+  Bobbin. It now has just the `/bobbin/play` rewrite and the `/bobbin`
+  redirect (see What's live above). Next's default trailing-slash redirect
+  (`/bobbin/` → `/bobbin`) is why the page is `/bobbin/play`. `src/middleware.ts` only matches admin and profile paths,
   so nothing else intercepts `/bobbin/*`. The site-wide security headers do apply. The CSP
   (`script-src 'self'`, `font-src 'self'`, `style-src 'self'`) allows a
   same-origin worker and bundled assets, but would **block Google Fonts**, so
@@ -639,10 +649,11 @@ What exists (`games/bobbin/src/__tests__/`):
   first-installed and then updated in the same visit, or updated from
   another tab, also reloads.
 - `tests/bobbin.spec.ts` (Playwright, against the real Next server in all
-  three browsers): `/bobbin` serves with no console or CSP errors, sending a
-  bobbin works, the manifest, icons and `Service-Worker-Allowed` header are
-  right, it works offline after loading (Chromium), and the Projects page
-  links to it.
+  three browsers): `/bobbin` forwards to `/bobbin/play`, which serves with
+  no console or CSP errors; sending a bobbin works; the manifest (slash-ended
+  scope containing `start_url`) and icons are right; the worker's scope is
+  `/bobbin/` and the game works offline after loading (Chromium); and the
+  Projects page links to it.
 - `session.test.ts`: GameSession phases, effects and their expiry, freeze on
   loss, and the puzzle left untouched for Restart. Also FixedClock ticking,
   interpolation and stall resync.
