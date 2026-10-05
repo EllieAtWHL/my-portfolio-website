@@ -30,18 +30,23 @@ export default function PlayerRow({ player }: PlayerRowProps) {
     // yellow_cards and red_cards are independently entered, so a player can have both
     // (a second yellow leading to a red, or an earlier caution plus an unrelated straight
     // red) - show both rather than letting the red silently swallow the yellow.
+    // A sent-off player's minute_off is the red-card minute, not a substitution
+    // (see "Data conventions" in reference/spurs-women/player-stats-research-job.md),
+    // so it's shown against the card rather than with the substitution arrow.
+    const sentOff = redCards > 0 && !!stats.minute_off;
     if (redCards > 0) {
-      parts.push(yellowCards > 0 ? '🟨🟥' : '🟥');
+      const cards = yellowCards > 0 ? '🟨🟥' : '🟥';
+      parts.push(sentOff ? `${cards} ${stats.minute_off}'` : cards);
     } else if (yellowCards > 0) {
       parts.push('🟨');
     }
     if (rating) parts.push(rating);
-    
+
     // Add substitution minutes if player was subbed on or off
     if (stats.minute_on && stats.was_substitute) {
       parts.push(`→ ${stats.minute_on}'`);
     }
-    if (stats.minute_off && (stats.started || stats.was_substitute)) {
+    if (stats.minute_off && !sentOff && (stats.started || stats.was_substitute)) {
       parts.push(`← ${stats.minute_off}'`);
     }
     
