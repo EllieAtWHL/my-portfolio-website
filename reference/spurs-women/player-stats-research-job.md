@@ -177,15 +177,23 @@ can't remember how a previous run resolved the same question.
 - **Minutes are whole numbers against the nominal match length**: 90, or
   120 if the match went to extra time. Stoppage time and penalty
   shootouts don't extend it.
-  - Played the whole match: `minutes_played` = the nominal length.
-  - Subbed off: `minutes_played` = `minute_off`, even past the nominal
-    length. Off at 92' is 92.
-  - Came on: `minutes_played` = nominal length − `minute_on`, floored at 0.
-    On at 92' is 0, and on at 103' in a 120-minute match is 17.
+  - Started and played the whole match: `minutes_played` = the nominal
+    length.
+  - Started and subbed off: `minutes_played` = `minute_off`, even past the
+    nominal length. Off at 92' is 92.
+  - Came on and stayed on: `minutes_played` = nominal length −
+    `minute_on`, floored at 0. On at 92' is 0, and on at 103' in a
+    120-minute match is 17.
+  - Came on and later went off: `minutes_played` = `minute_off` −
+    `minute_on`. On at 60', off at 85' is 25.
+  - Sent off: no settled convention yet (the existing red-card rows don't
+    record a `minute_off`), so list the sending-off minute as a judgment
+    call rather than picking a value.
 
   This matches existing rows (e.g. matches `bb686fd7…` and `5b4833d2…` for
-  92' changes, and `b76847ea…` for extra time). Never write approximate
-  values like "~90".
+  92' changes, `b76847ea…` for extra time, and `c0221ff0…` for a
+  substitute who was later taken off). Never write approximate values like
+  "~90".
 - **Resolve every player to a `players.id` before reporting them.** BBC's
   line-ups give initialled names ("D. Spence"), which
   `apply-player-stats.js`'s name lookup can't resolve exactly. Its last-name
