@@ -221,11 +221,30 @@ can't remember how a previous run resolved the same question.
     A red card plus a `minute_off` is what marks a sending-off rather than
     a substitution; the match lineup shows it as `🟥 96'` instead of
     `← 96'`.
+  - Half-time substitutions are minute **46**, following BBC Sport (the
+    source of truth). THFCDB records the same change as **45** - when
+    using it as the backup source, convert a half-time 45 to 46 (so
+    `minute_on` 46 / `minutes_played` 44, and the player replaced has
+    `minute_off` 46 / `minutes_played` 46). Some older rows still use 45;
+    don't copy that.
 
   This matches existing rows (e.g. matches `bb686fd7…` and `5b4833d2…` for
   92' changes, `b76847ea…` for extra time, and `c0221ff0…` for a
   substitute who was later taken off). Never write approximate values like
   "~90".
+- **Cards** (decided by Ellie, 2026-10-05, WEB-210):
+  - Second-yellow sending-off: `yellow_cards` 2 + `red_cards` 1 (shown as
+    🟨🟨🟥). An earlier caution plus a separate straight red is
+    `yellow_cards` 1 + `red_cards` 1 (🟨🟥).
+  - A red card shown to a player who isn't on the pitch (on the bench,
+    after being subbed off, or after the final whistle): `red_cards` 1,
+    with minutes and `minute_off` unchanged. Accepted limitation: a player
+    subbed off and then shown a red on the bench will display as if sent
+    off at their substitution minute - rare enough not to need a separate
+    column.
+  - Record cards as shown on the day, even if later rescinded on appeal.
+    If that happens to a Spurs player, raise it with Ellie rather than
+    changing the row.
 - **Resolve every player to a `players.id` before reporting them.** BBC's
   line-ups give initialled names ("D. Spence"), which
   `apply-player-stats.js`'s name lookup can't resolve exactly. Its last-name

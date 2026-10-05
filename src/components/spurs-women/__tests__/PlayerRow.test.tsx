@@ -71,10 +71,10 @@ describe('PlayerRow', () => {
     expect(screen.getByText('🟥')).toBeInTheDocument()
   })
 
-  it('shows a second-yellow-to-red indicator distinctly from a straight red', () => {
+  it('shows both yellows for a second-yellow red, distinctly from a straight red', () => {
     render(<PlayerRow player={makePlayer({ yellow_cards: 2, red_cards: 1 })} />)
 
-    expect(screen.getByText('🟨🟥')).toBeInTheDocument()
+    expect(screen.getByText('🟨🟨🟥')).toBeInTheDocument()
   })
 
   it('does not drop an earlier caution when a player also has an unrelated red card', () => {
@@ -115,7 +115,7 @@ describe('PlayerRow', () => {
       />
     )
 
-    expect(screen.getByText("🟨🟥 80'")).toBeInTheDocument()
+    expect(screen.getByText("🟨🟨🟥 80'")).toBeInTheDocument()
   })
 
   it('shows both the on-minute and the sending-off minute for a substitute who is sent off', () => {
