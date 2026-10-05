@@ -9,7 +9,7 @@
     "find-missing-player-stats": "node scripts/find-matches-missing-player-stats.js",
     "apply-player-stats": "node scripts/apply-player-stats.js",
     "publish-match-photos": "node scripts/publish-match-photos.js",
-    "build": "next build",
+    "build": "npm run bobbin:build && next build",
     "start": "next start",
     "lint": "eslint",
     "lint:css": "stylelint \"src/app/globals.css\"",

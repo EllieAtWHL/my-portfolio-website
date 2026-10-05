@@ -2,16 +2,17 @@
 
 An ad-free, offline-capable conveyor colour-sorting puzzle game in the style of
 Yarn Loop, installable on an Android phone as a PWA without the Play Store.
-It will live at `/bobbin/` on this site. Tracked under epic
+It lives at `/bobbin` on this site. Tracked under epic
 [WEB-192](https://eleanormatthewman.atlassian.net/browse/WEB-192).
 
-**Status: playable locally, not deployed yet.** The game runs in full under
-`npm run bobbin:dev`. That covers the core rules, generator and simulated
-players ([WEB-195](https://eleanormatthewman.atlassian.net/browse/WEB-195)),
-plus the playable UI in the main site's design system
-([WEB-196](https://eleanormatthewman.atlassian.net/browse/WEB-196)). It isn't
-served at `/bobbin/` or installable yet
-([WEB-197](https://eleanormatthewman.atlassian.net/browse/WEB-197)).
+**Status: live at `/bobbin`, installable and offline.** It covers the core
+rules, generator and simulated players
+([WEB-195](https://eleanormatthewman.atlassian.net/browse/WEB-195)), the
+playable UI in the main site's design system
+([WEB-196](https://eleanormatthewman.atlassian.net/browse/WEB-196), with
+playtest fixes WEB-205 to WEB-207), and the installable offline PWA
+([WEB-197](https://eleanormatthewman.atlassian.net/browse/WEB-197)). For
+local development, use `npm run bobbin:dev`.
 The playtested single-file prototype is kept as
 [`prototype.html`](./prototype.html) (open it directly in a browser). It is the reference implementation for rules, generation and feel.
 This doc started as the build spec (`YARN_SPEC.md`, 30 Sep 2026). It replaces
@@ -23,7 +24,7 @@ disagree, this doc wins, and the difference is called out.
 | 1. Investigation and these docs | [WEB-193](https://eleanormatthewman.atlassian.net/browse/WEB-193) |
 | 2. Port the pure core (rules, RNG, codes, generator, simulator) | [WEB-195](https://eleanormatthewman.atlassian.net/browse/WEB-195) |
 | 3. Port the game (rendering, UI, state machine, Web Worker) | [WEB-196](https://eleanormatthewman.atlassian.net/browse/WEB-196) |
-| 4. PWA and deploy at `/bobbin/` | [WEB-197](https://eleanormatthewman.atlassian.net/browse/WEB-197), blocked by [WEB-194](https://eleanormatthewman.atlassian.net/browse/WEB-194) |
+| 4. PWA and deploy at `/bobbin` | [WEB-197](https://eleanormatthewman.atlassian.net/browse/WEB-197) (after [WEB-194](https://eleanormatthewman.atlassian.net/browse/WEB-194)) |
 | 5. Polish | See [Open decisions and backlog](#open-decisions-and-backlog) |
 
 **Goals:** satisfying Yarn Loop-style gameplay with no ads, purchases or
@@ -386,33 +387,61 @@ spools, belt) are.
 Bobbin ships as a PWA from this site, installable from Chrome on Android and
 fully playable offline after the first visit.
 
-**Requirements**
+**What's live** ([WEB-197](https://eleanormatthewman.atlassian.net/browse/WEB-197)):
 
-- Installable: a web app manifest (theme and background colours taken from
-  the main site's brand tokens) with `id`, `start_url` and `scope` all
-  `/bobbin/`, name and short name, icons (192 and 512 px, plus maskable,
-  original art), theme and background colours, `display: standalone`, and
-  portrait orientation.
-- Offline: a service worker scoped to `/bobbin/` precaches every game asset on
-  first visit. The game makes no network requests at runtime.
-- Updates: new versions download in the background and apply on next launch,
-  optionally with a small "Update ready" prompt.
-- Local-only data: anything saved lives on the device (localStorage or
-  IndexedDB). Clearing Chrome site data wipes it.
-
-**How it's built and served** (decided; implemented in WEB-195 and WEB-197)
-
-- A Vite + TypeScript app in its own folder in this repo, sharing the repo's
-  `node_modules`, lint, typecheck and CI. It doesn't need React or server
-  rendering.
-- `npm run build` builds it into `public/bobbin/` (gitignored) before
-  `next build`, so Vercel deploys both from one push.
-- A `next.config.ts` rewrite makes `/bobbin` and `/bobbin/` serve
-  `/bobbin/index.html`.
-- Why not a native Next.js route like Regicide and Microbrew: offline play
-  would mean precaching Next's `/_next/static/` chunks and coordinating with
-  the site's root service worker. A static build with its own scoped worker
-  avoids both.
+- **Served at `/bobbin`.** `npm run build` runs `npm run bobbin:build` (Vite
+  build into the gitignored `public/bobbin/`) before `next build`, so Vercel
+  deploys both from one push. A `next.config.ts` rewrite serves
+  `/bobbin/index.html` at `/bobbin`; assets are requested by their real
+  `/bobbin/...` paths. It's linked from the Projects page's Games card.
+- **Scope is `/bobbin`, no trailing slash.** Next.js redirects `/bobbin/` to
+  `/bobbin` (308), and a worker scoped to `/bobbin/` would never control a
+  page at `/bobbin`. So the manifest's `id`, `start_url` and `scope` are all
+  `/bobbin`. That's wider than a worker at `/bobbin/sw.js` may claim by
+  default, so `next.config.ts` sends `Service-Worker-Allowed: /bobbin` on that
+  file. (The spec originally said `/bobbin/`.)
+- **Manifest** (`games/bobbin/public/manifest.webmanifest`): name "Bobbin",
+  `display: standalone`, portrait. Theme colour `#2d5a2d`
+  (`--brand-primary-dark`) and background `#f0f9f0` (`--bg-light-1`), written
+  out because a manifest can't read CSS variables. Icons are 192 and 512 "any"
+  plus a 512 maskable. There's also a `favicon.svg` and, for iOS, an
+  `apple-touch-icon` and `apple-mobile-web-app-*` tags (WEB-204 keeps iPhone
+  possible).
+- **Icons** are original art: a yarn spool on the brand-green gradient,
+  generated by `node games/bobbin/scripts/make-icons.mjs` (uses `sharp`, which
+  is already a dependency). The PNGs are committed, so re-run the script only
+  if the design changes.
+- **Service worker** (`games/bobbin/sw-template.js`, hand-written in the
+  same spirit as the root `sw.js`, with no plugin dependency):
+  - Precaching: after each build, a small plugin in `vite.config.ts` writes
+    `public/bobbin/sw.js` from the template, filling in every built file to
+    precache (except the `.woff` font fallbacks, which installable browsers
+    never use) and a version hash. The hash covers the built files and the
+    template itself, so a change to the worker's own logic also gets a fresh
+    cache.
+  - Serving: page loads always get the cached app shell; everything else
+    under `/bobbin` is cache-first. The game makes no runtime network
+    requests; fonts and the puzzle Web Worker are precached too.
+  - Cache cleanup only touches `bobbin-`-prefixed caches (the WEB-194 rule).
+- **Updates** (`src/pwa.ts`, production builds only, registered after the
+  page's `load` so the precache download doesn't compete with first paint):
+  - A new deploy changes the worker's version. The browser installs the new
+    worker in the background, and it takes over on the next launch.
+  - If the game is open when an update finishes downloading (or one is
+    already waiting), a banner says "A new version of Bobbin is ready.
+    Updating restarts this puzzle." **Update** activates it and reloads once,
+    back into the same puzzle code via `sessionStorage`, from the start.
+  - A page reloads when a new worker *replaces* the one controlling it,
+    including when another tab applied the update, since that deletes the
+    old cache. It never reloads when a worker takes control for the first
+    time: an early version did, restarting a game the player had just
+    opened. Browser testing caught that, as did a variant where a page
+    first-installed and updated in the same visit never reloaded.
+  - Verified end to end on a production build (`next start`): first install
+    with no reload; then an in-place v2 brings up the banner; Update gives
+    one reload into v2 with the same code, and the old cache is deleted.
+- **Local-only data:** anything saved lives on the device. Currently that's
+  only the shared `theme` key (WEB-199). Clearing Chrome site data wipes it.
 
 ### How it fits alongside the site's existing service worker
 
@@ -425,9 +454,13 @@ Investigated in WEB-193:
   not just Spurs Women.
 - **It only handles navigations**, network-first, falling back to
   `/offline.html`. It doesn't precache or intercept other requests, so it
-  won't cache or interfere with Bobbin's files. Pages under `/bobbin/` are
-  controlled by Bobbin's own worker instead, because the most specific
-  matching scope wins.
+  won't cache or interfere with Bobbin's files. `/bobbin` is controlled by
+  Bobbin's own worker instead, because the most specific matching scope wins.
+  Before Bobbin's worker has installed (a first visit), the root worker's
+  network-first fallback handles that one navigation, which is harmless.
+  Verified on a production build (`next start`): Chrome reports both Bobbin
+  and Spurs Women installable, each worker controls its own scope, and both
+  caches survive side by side.
 - **Clash: cache cleanup.** The root worker's `activate` handler deletes every
   Cache Storage entry not named `offline-fallback-v1`. Cache Storage is shared
   by all workers on the origin, so the next root `sw.js` update would wipe
@@ -436,12 +469,15 @@ Investigated in WEB-193:
   worker only deletes caches with its own prefix), which blocks WEB-197.
 - **Manifests don't clash.** `public/spurs-women/manifest.webmanifest` sets
   `start_url` and `scope` to `/spurs-women`, with no explicit `id` (so `id`
-  defaults to `start_url`). Bobbin uses `/bobbin/` for all three. There's no
+  defaults to `start_url`). Bobbin uses `/bobbin` for all three. There's no
   need to narrow the root worker to `/spurs-women/`: it's the site-wide
   offline fallback, not a Spurs-specific worker.
-- **`next.config.ts`** has no `trailingSlash`, rewrites or redirects, and
-  `src/middleware.ts` only matches admin and profile paths, so nothing
-  intercepts `/bobbin/*`. The site-wide security headers do apply. The CSP
+- **`next.config.ts`** had no `trailingSlash`, rewrites or redirects before
+  Bobbin. It now has just the `/bobbin` rewrite and the
+  `Service-Worker-Allowed` header (see What's live above). Next's default
+  trailing-slash redirect (`/bobbin/` → `/bobbin`) is why the scope has no
+  trailing slash. `src/middleware.ts` only matches admin and profile paths,
+  so nothing else intercepts `/bobbin/*`. The site-wide security headers do apply. The CSP
   (`script-src 'self'`, `font-src 'self'`, `style-src 'self'`) allows a
   same-origin worker and bundled assets, but would **block Google Fonts**, so
   Nokora must be bundled. Any new runtime network call would need a CSP
@@ -462,9 +498,12 @@ strips types) for scripts.
 ```
 games/bobbin/
   index.html      page markup; applies the stored theme inline before first paint
+  sw-template.js  the offline service worker; the build fills in its file list and version
+  public/         copied into the build as-is: manifest.webmanifest, favicon.svg, icons/
   vite.config.ts  base /bobbin/, builds to public/bobbin/
   src/
     main.ts         entry point: wires session, clock, renderer and DOM together
+    pwa.ts          service worker registration and the "Update ready" prompt
     styles.css      the page's styles, built on the site's design tokens (see Visual language)
     theme.ts        light/dark, shared with the main site's `theme` setting
     core/
@@ -493,6 +532,7 @@ games/bobbin/
     __tests__/      Jest (runs in the root suite; see Testing below)
   scripts/
     calibrate.ts             calibration report
+    make-icons.mjs           regenerates the app icons and favicon (sharp)
     prototype-fixtures.mjs   regenerates the prototype's reference output
 ```
 
@@ -539,7 +579,8 @@ twice can't start the wrong puzzle.
 | Command | What it does |
 |---|---|
 | `npm run bobbin:dev` | Vite dev server for the game: open `http://localhost:5173/bobbin/` |
-| `npm run bobbin:build` | Builds into `public/bobbin/` (gitignored). Not yet part of `npm run build`; that's WEB-197 |
+| `npm run bobbin:build` | Builds into `public/bobbin/` (gitignored), including `sw.js`. `npm run build` runs it first; so does Playwright's web server |
+| `node games/bobbin/scripts/make-icons.mjs` | Regenerates the app icons and favicon (only if the design changes) |
 | `npm run bobbin:calibrate [N]` | Calibration report, N puzzles per difficulty (default 30) |
 | `npx jest games/bobbin` | Just Bobbin's tests |
 
@@ -592,6 +633,16 @@ What exists (`games/bobbin/src/__tests__/`):
   tick, racking, rack-overflow loss and freeze, entry corner, belt capacity,
   auto-finish counting belt bobbins and its feed order.
 - `codes.test.ts`, `math.test.ts`.
+- `pwa.test.ts`: service worker registration and updates. A first install
+  never reloads or prompts; an update is offered (including one already
+  downloading or waiting) and reloads once when applied. A page that was
+  first-installed and then updated in the same visit, or updated from
+  another tab, also reloads.
+- `tests/bobbin.spec.ts` (Playwright, against the real Next server in all
+  three browsers): `/bobbin` serves with no console or CSP errors, sending a
+  bobbin works, the manifest, icons and `Service-Worker-Allowed` header are
+  right, it works offline after loading (Chromium), and the Projects page
+  links to it.
 - `session.test.ts`: GameSession phases, effects and their expiry, freeze on
   loss, and the puzzle left untouched for Restart. Also FixedClock ticking,
   interpolation and stall resync.

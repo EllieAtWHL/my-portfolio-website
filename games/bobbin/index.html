@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Bobbin</title>
     <meta name="description" content="A knitted conveyor-belt colour puzzle." />
+    <link rel="manifest" href="/bobbin/manifest.webmanifest" />
+    <link rel="icon" href="/bobbin/favicon.svg" type="image/svg+xml" />
+    <!-- iOS ignores the manifest's icons/title (WEB-204 keeps iPhone possible) -->
+    <link rel="apple-touch-icon" href="/bobbin/icons/apple-touch-icon.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Bobbin" />
+    <meta name="theme-color" content="#2d5a2d" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0a1f0a" media="(prefers-color-scheme: dark)" />
     <script>
       // Same logic as the main site's public/theme-script.js (shared `theme`
       // key, `light`/`dark` class on <html>), inlined so the right theme is
@@ -26,6 +35,11 @@
           <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></g></svg>
         </button>
       </nav>
+
+      <div class="update-banner" id="updateBanner" role="status" hidden>
+        <span>A new version of Bobbin is ready. Updating restarts this puzzle.</span>
+        <button type="button" class="btn btn-primary" id="updateBtn">Update</button>
+      </div>
 
       <header class="game-header">
         <div>

@@ -144,7 +144,7 @@ npm run test:coverage          # Jest with coverage (enforces thresholds in jest
 npx playwright test            # E2E suite (chromium/firefox/webkit; auto-starts dev server)
 ```
 
-Bobbin (the offline puzzle game at `/bobbin/`, a standalone Vite app in `games/bobbin/`, see `reference/bobbin/README.md`): `npm run bobbin:dev`, `npm run bobbin:build` (into gitignored `public/bobbin/`), `npm run bobbin:calibrate` (difficulty report). Its Jest tests run in the normal `npm test`, and `npm run typecheck` checks it via its own `games/bobbin/tsconfig.json`.
+Bobbin (the offline puzzle game at `/bobbin`, a standalone Vite app in `games/bobbin/`, see `reference/bobbin/README.md`): `npm run bobbin:dev`, `npm run bobbin:build` (into gitignored `public/bobbin/`, including its service worker), `npm run bobbin:calibrate` (difficulty report). `npm run build` runs `bobbin:build` before `next build`, and Playwright's web server builds it too, so `/bobbin` exists for `tests/bobbin.spec.ts`; under a plain `npm run dev`, `/bobbin` 404s until you've run `bobbin:build` once. Its Jest tests run in the normal `npm test`, and `npm run typecheck` checks it via its own `games/bobbin/tsconfig.json`.
 
 Run a single Jest test file: `npx jest path/to/file.test.tsx`. Run a single Playwright spec: `npx playwright test tests/home.spec.ts`.
 

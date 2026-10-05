@@ -23,6 +23,7 @@ import {
   wonOverlay,
 } from "./render/ui.ts";
 import { currentTheme, toggleTheme, watchSystemTheme, type Theme } from "./theme.ts";
+import { registerServiceWorker } from "./pwa.ts";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -251,5 +252,45 @@ document.addEventListener("visibilitychange", () => clock.reset(performance.now(
 // Canvas text needs Nokora loaded before the first spool numbers are drawn.
 void document.fonts?.ready.then(() => (renderer.colours = readBoardColours()));
 
-newPuzzle("E");
+// Offline play and updates (WEB-197). Production only: see src/pwa.ts.
+// Registered after load so the precache download doesn't compete with the
+// first page load. An update reload resumes the same puzzle code (from the
+// start - the banner says so) rather than dealing a new random one.
+const RESUME_KEY = "bobbin-resume-code";
+if (import.meta.env.PROD) {
+  const banner = $("updateBanner");
+  window.addEventListener("load", () =>
+    registerServiceWorker(
+      {
+        show: (apply) => {
+          banner.hidden = false;
+          $<HTMLButtonElement>("updateBtn").onclick = apply;
+        },
+      },
+      navigator.serviceWorker,
+      () => {
+        try {
+          sessionStorage.setItem(RESUME_KEY, currentCode);
+        } catch {
+          // Storage blocked: the reload just deals a new puzzle.
+        }
+        location.reload();
+      },
+    ),
+  );
+}
+
+function resumeCode(): string | null {
+  try {
+    const code = sessionStorage.getItem(RESUME_KEY);
+    sessionStorage.removeItem(RESUME_KEY);
+    return code && parseCode(code) ? code : null;
+  } catch {
+    return null;
+  }
+}
+
+const resume = resumeCode();
+if (resume) void load(resume);
+else newPuzzle("E");
 requestAnimationFrame(frame);

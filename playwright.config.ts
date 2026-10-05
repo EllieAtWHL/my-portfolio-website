@@ -72,7 +72,9 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'npm run dev',
+    // /bobbin is a static build in public/bobbin/ (gitignored), so build it
+    // before starting the dev server or tests/bobbin.spec.ts would 404.
+    command: 'npm run bobbin:build && npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
   },
