@@ -11,7 +11,9 @@
  * credential `src/lib/admin-api.ts` uses for the admin UI, used directly
  * here instead of through that UI. This is a deliberately human-run,
  * human-reviewed step, not something to wire into the automated WEB-114
- * routine - see that doc for why.
+ * routine - see that doc for why. After a successful --apply it also
+ * revalidates the production site's `players` + `matches` cache tags (needs
+ * CACHE_API_KEY in .env.local; SITE_URL overrides the default production URL).
  *
  * Usage:
  *   npm run apply-player-stats -- path/to/data.json           # dry run (default)
@@ -211,6 +213,35 @@ async function main() {
     process.exit(1);
   }
   console.log(`\nInserted ${inserted.length} player_stats row(s) for match ${matchId}.`);
+
+  await revalidateSiteCache();
+}
+
+// Writing straight to Supabase skips the admin UI's cache invalidation, and
+// past-season match data caches for 7 days - so revalidate the same tags
+// `invalidatePlayerStatsCache` (src/lib/data/cache-invalidation.ts) does,
+// via the production /api/cache/revalidate endpoint. Never fails the run:
+// the insert has already happened, so a revalidation problem only warns.
+async function revalidateSiteCache() {
+  const tags = ['players', 'matches'];
+  const siteUrl = process.env.SITE_URL || 'https://www.ellieatwhl.co.uk';
+  const manualHint = `Revalidate manually: POST ${siteUrl}/api/cache/revalidate with {"tags": ${JSON.stringify(tags)}} (see reference/spurs-women/cache/README.md).`;
+
+  if (!process.env.CACHE_API_KEY) {
+    console.warn(`\nWarning: CACHE_API_KEY not set, so the site cache wasn't revalidated. ${manualHint}`);
+    return;
+  }
+  try {
+    const res = await fetch(`${siteUrl}/api/cache/revalidate`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${process.env.CACHE_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tags }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    console.log(`Revalidated site cache tags: ${tags.join(', ')}`);
+  } catch (err) {
+    console.warn(`\nWarning: cache revalidation failed (${err.message}). ${manualHint}`);
+  }
 }
 
 main().catch((err) => {
