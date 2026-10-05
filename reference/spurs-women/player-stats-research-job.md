@@ -236,6 +236,12 @@ can't remember how a previous run resolved the same question.
     the nominal length (990, or 1320 with extra time), less any minutes lost
     to an unreplaced sending-off; and every `minute_on` pairs with a
     `minute_off` at the same minute (excluding sending-offs).
+  - Player goals should add up to the Spurs score (`spurs_score_aet` where
+    the match went to extra time) **unless the opponent scored an own
+    goal**, which belongs to no Spurs player. When they fall short, check
+    the source has no Spurs scorer for the missing goal and say it's an own
+    goal, rather than crediting it to anyone. (A Spurs player's own goal
+    counts for the opponent and isn't recorded as a goal for her.)
 - **Cards** (decided by Ellie, 2026-10-05, WEB-210):
   - Second-yellow sending-off: `yellow_cards` 2 + `red_cards` 1 (shown as
     🟨🟨🟥). An earlier caution plus a separate straight red is
@@ -257,7 +263,15 @@ can't remember how a previous run resolved the same question.
   guessing. Matching by first initial + surname against `players` and
   writing the `playerId` into each entry avoids that entirely. If initial +
   surname still matches more than one player, list it as a judgment call
-  rather than picking one.
+  rather than picking one. Known name variants across sources:
+  - BBC shows both **Amy James-Turner** (formerly Amy Turner; THFCDB still
+    lists her as "Amy Turner") and **Angharad James** ("Haz", stored as
+    "Angharad James") as "A. James-Turner". Decide by who started or came
+    on, and check minutes. Mixing them up is why several 2023 matches were
+    missing Angharad's row.
+  - **Tinka Tandberg** is "Cathinka Tandberg" on THFCDB and "C. Tandberg"
+    on BBC. We store her preferred name, Tinka.
+  - **Jhanaie Dezire-Pierre** is "Jhanaie Pierre" on THFCDB.
 - **Check `players` before flagging someone as unknown.** Youth call-ups
   and rarely-used squad players usually already exist (both "new" names in
   WEB-208 did). Only flag a player if they're genuinely absent, since they'd

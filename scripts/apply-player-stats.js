@@ -165,7 +165,7 @@ async function main() {
 
   const { data: match, error: matchError } = await supabase
     .from('matches')
-    .select('id, date, spurs_score, opponent_score, is_home_match, home_team:home_team_id(name, is_tottenham), away_team:away_team_id(name, is_tottenham)')
+    .select('id, date, spurs_score, opponent_score, spurs_score_aet, is_home_match, home_team:home_team_id(name, is_tottenham), away_team:away_team_id(name, is_tottenham)')
     .eq('id', matchId)
     .single();
   if (matchError || !match) {
@@ -197,8 +197,12 @@ async function main() {
 
   const existingGoalsSum = existing.reduce((sum, r) => sum + (r.goals ?? 0), 0);
   const goalsSum = existingGoalsSum + rows.reduce((sum, r) => sum + r.goals, 0);
-  if (goalsSum !== match.spurs_score) {
-    console.warn(`\nWarning: summed goals (${goalsSum}${existingGoalsSum ? `, including ${existingGoalsSum} from ${existing.length} already-entered row(s)` : ''}) don't match match.spurs_score (${match.spurs_score}). Double-check before applying.`);
+  // Goals scored in extra time count, so compare against the after-extra-time
+  // score where there is one. Player goals can legitimately fall short of the
+  // score when the opponent scored an own goal (it belongs to no Spurs player).
+  const teamScore = match.spurs_score_aet ?? match.spurs_score;
+  if (goalsSum !== teamScore) {
+    console.warn(`\nWarning: summed goals (${goalsSum}${existingGoalsSum ? `, including ${existingGoalsSum} from ${existing.length} already-entered row(s)` : ''}) don't match the Spurs score (${teamScore}${match.spurs_score_aet != null ? ' after extra time' : ''}). Fine if the difference is an opponent own goal - otherwise double-check before applying.`);
   }
 
   if (!apply) {
