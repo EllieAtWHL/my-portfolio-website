@@ -1,6 +1,9 @@
 # Season Statistics Calculations Documentation
 
-This document explains how each statistic in the SeasonStats component is calculated.
+This document explains how each statistic in the SeasonStats component is
+calculated. It does **not** cover `SeasonStatsChart` (the cross-season trend
+chart on `/spurs-women/seasons`) - see "Cross-Season Trend Chart" at the
+bottom of this doc for that separate calculation path.
 
 ## Data Filtering
 
@@ -132,5 +135,27 @@ Results:
 - **League**: 15 matches, 53.3% win rate, 1.87 points/game, +10 GD
 - **Cups**: 5 matches, 40% win rate, +2 GD (computed but not shown in the UI - see "Cup Statistics" above)
 - **Attendance**: 12/20 attended (60.0%) - includes all competitive matches
+
+## Cross-Season Trend Chart
+
+`SeasonStatsChart.tsx` (rendered on `/spurs-women/seasons`, see
+`reference/spurs-women/README.md`) plots four metrics per season as a
+recharts `LineChart`. Its data comes from `fetchAllSeasonStatsFromDB` in
+`src/lib/data/seasons.ts`, a separate function from `SeasonStats.tsx` above
+- same league/cup/friendly classification rules, but computed once per
+season (across every season) rather than filtered down to a single season,
+and with a narrower set of metrics:
+
+- **Win Percentage**: same formula as "League Statistics" above, per season.
+- **Goals Per Game** / **Goals Conceded Per Game**: same formulas as "Goal
+  Statistics" above, per season.
+- **Attendance Percentage**: `attendedMatches / allCompetitiveMatches.length
+  * 100`, where `allCompetitiveMatches` is league matches plus cup matches
+  for that season (same definition as "Attendance" above).
+
+Cup statistics, match stats (possession/shots/corners), and clean sheets are
+*not* part of this chart - it only computes the four metrics listed above.
+All four default to `0` for a season with no qualifying matches, same
+zero-match guards as the per-season component.
 
 **Note**: The component displays these statistics in four organized sections (League Record, Goals, Match Stats, Attendance) with expand/collapse functionality.
