@@ -16,7 +16,7 @@
     "skipLibCheck": true,
     "isolatedModules": true,
     "resolveJsonModule": true,
-    "types": ["node", "jest"]
+    "types": ["node", "jest", "vite/client"]
   },
   "include": ["src/**/*.ts", "scripts/**/*.ts", "vite.config.ts"]
 }

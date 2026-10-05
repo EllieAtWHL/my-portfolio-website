@@ -213,6 +213,25 @@ main {
   display: block;
 }
 
+/* ---------- update banner (src/pwa.ts) ---------- */
+
+.update-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--bobbin-radius);
+  border-left: 4px solid var(--bobbin-heading);
+  background: var(--bobbin-surface);
+  box-shadow: var(--bobbin-surface-shadow);
+  font-size: 0.9rem;
+}
+
+.update-banner[hidden] {
+  display: none;
+}
+
 /* ---------- header ---------- */
 
 .game-header {

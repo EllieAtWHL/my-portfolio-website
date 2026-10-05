@@ -23,6 +23,7 @@ import {
   wonOverlay,
 } from "./render/ui.ts";
 import { currentTheme, toggleTheme, watchSystemTheme, type Theme } from "./theme.ts";
+import { registerServiceWorker } from "./pwa.ts";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -250,6 +251,17 @@ window.addEventListener("resize", () => session && renderer.layout(session.state
 document.addEventListener("visibilitychange", () => clock.reset(performance.now()));
 // Canvas text needs Nokora loaded before the first spool numbers are drawn.
 void document.fonts?.ready.then(() => (renderer.colours = readBoardColours()));
+
+// Offline play and updates (WEB-197). Production only: see src/pwa.ts.
+if (import.meta.env.PROD) {
+  const banner = $("updateBanner");
+  registerServiceWorker({
+    show: (apply) => {
+      banner.hidden = false;
+      $<HTMLButtonElement>("updateBtn").onclick = apply;
+    },
+  });
+}
 
 newPuzzle("E");
 requestAnimationFrame(frame);
