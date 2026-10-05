@@ -107,6 +107,18 @@ const nextConfig: NextConfig = {
         source: "/(.*)",
         headers: securityHeaders,
       },
+      {
+        // Transition only (WEB-197): the first release registered Bobbin's
+        // worker with the slash-less scope "/bobbin", wider than
+        // /bobbin/sw.js may claim by default. Browsers that visited it keep
+        // that registration, and its update checks fail without this header
+        // - stranding them on the old version. With it, they update to the
+        // current worker, whose page then unregisters the old "/bobbin"
+        // registration (src/pwa.ts) and registers "/bobbin/". Safe to remove
+        // once old installs have had time to update.
+        source: "/bobbin/sw.js",
+        headers: [{ key: "Service-Worker-Allowed", value: "/bobbin" }],
+      },
     ];
   },
   async rewrites() {

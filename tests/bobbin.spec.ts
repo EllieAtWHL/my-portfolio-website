@@ -45,6 +45,8 @@ test.describe('Bobbin', () => {
 
     const sw = await request.get('/bobbin/sw.js');
     expect(sw.status()).toBe(200);
+    // Kept so browsers holding the first release's "/bobbin" registration can update.
+    expect(sw.headers()['service-worker-allowed']).toBe('/bobbin');
   });
 
   test('is controlled by a /bobbin/-scoped worker and works offline once loaded', async ({ page, context, browserName }) => {
@@ -70,6 +72,6 @@ test.describe('Bobbin', () => {
   test('is linked from the Projects page', async ({ page }) => {
     await page.goto('/projects');
     const link = page.getByRole('link', { name: 'Bobbin' });
-    await expect(link).toHaveAttribute('href', '/bobbin');
+    await expect(link).toHaveAttribute('href', '/bobbin/play');
   });
 });

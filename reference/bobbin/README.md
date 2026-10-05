@@ -394,7 +394,7 @@ fully playable offline after the first visit.
   Vercel deploys both from one push. A `next.config.ts` rewrite serves
   `/bobbin/index.html` at `/bobbin/play`, and `/bobbin` redirects there
   (307). Assets are requested by their real `/bobbin/...` paths. The
-  Projects page's Games card links to `/bobbin`.
+  Projects page's Games card links to `/bobbin/play`.
 - **Scope is `/bobbin/`, with a trailing slash.** The manifest has `id`
   `/bobbin/`, `scope` `/bobbin/` and `start_url` `/bobbin/play`. The worker
   at `/bobbin/sw.js` gets that scope by default.
@@ -410,6 +410,15 @@ fully playable offline after the first visit.
   - The fix gives Bobbin a fresh identity and a conventional slash-ended
     scope, sidestepping whatever Android/Play recorded against the old one.
     `src/pwa.ts` unregisters any leftover slash-less `/bobbin` worker.
+  - **Migration:** `next.config.ts` still sends `Service-Worker-Allowed:
+    /bobbin` on `/bobbin/sw.js` for now. Without it, browsers holding the
+    first release's `/bobbin` registration would fail every update check and
+    stay on the old version forever. With it, they update to the current
+    worker, and its page then swaps the old registration for `/bobbin/`. It
+    can be removed once old installs have had time to update.
+  - **Offline links:** the bare `/bobbin` address is a server redirect
+    outside the `/bobbin/` scope, so it only works online. The installed
+    app (`start_url`) and the Projects link both use `/bobbin/play` directly.
 - **Manifest** (`games/bobbin/public/manifest.webmanifest`): name "Bobbin",
   `display: standalone`, portrait. Theme colour `#2d5a2d`
   (`--brand-primary-dark`) and background `#f0f9f0` (`--bg-light-1`), written
