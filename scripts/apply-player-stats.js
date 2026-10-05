@@ -236,6 +236,7 @@ async function revalidateSiteCache() {
       method: 'POST',
       headers: { Authorization: `Bearer ${process.env.CACHE_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ tags }),
+      signal: AbortSignal.timeout(15000),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     console.log(`Revalidated site cache tags: ${tags.join(', ')}`);
