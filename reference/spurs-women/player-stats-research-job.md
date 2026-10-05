@@ -211,18 +211,21 @@ can't remember how a previous run resolved the same question.
   - **`minutes_played` never exceeds the nominal match length**: 90, or 120
     if the match went to extra time (`matches.spurs_score_aet` set).
     Stoppage time and penalty shootouts don't extend it.
-    - Started and finished: 90.
-    - Started and went off: `minute_off`, capped at 90 (off at 92 is 90).
-    - Came on: 90 − `minute_on`, floored at 0 (on at 92 is 0).
-    - Came on and later went off: `minute_off` (capped at 90) −
+    Below, "nominal" means that 90 or 120:
+    - Started and finished: nominal.
+    - Started and went off: `minute_off`, capped at nominal (off at 92 in
+      a 90-minute match is 90).
+    - Came on: nominal − `minute_on`, floored at 0 (on at 92 is 0; on at
+      103 in a 120-minute match is 17).
+    - Came on and later went off: `minute_off` (capped at nominal) −
       `minute_on`. On at 60', off at 85' is 25.
     - Sent off: as if subbed off at the red-card minute - `minute_off` is
-      the real minute (90+6 is 96) and `minutes_played` is capped (90). A
+      the real minute (90+6 is 96) and `minutes_played` is capped at nominal (90). A
       red card plus a `minute_off` is what marks a sending-off; the match
       lineup shows it as `🟥 96'` instead of `← 96'`.
   - **Half-time changes are minute 45** on both sides: the player going off
     has `minute_off` 45 / `minutes_played` 45, and the player coming on has
-    `minute_on` 45 / `minutes_played` 45. BBC (and usually THFCDB) show a
+    `minute_on` 45 / `minutes_played` 45 (75 in an extra-time match). BBC (and usually THFCDB) show a
     half-time change as 46' - convert it to 45. Some older THFCDB pages list
     it as 45' just before their HT marker; that's the same change.
   - Sources follow "Sourcing approach" above: the source decides **who**
