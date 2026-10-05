@@ -253,15 +253,44 @@ document.addEventListener("visibilitychange", () => clock.reset(performance.now(
 void document.fonts?.ready.then(() => (renderer.colours = readBoardColours()));
 
 // Offline play and updates (WEB-197). Production only: see src/pwa.ts.
+// Registered after load so the precache download doesn't compete with the
+// first page load. An update reload resumes the same puzzle code (from the
+// start - the banner says so) rather than dealing a new random one.
+const RESUME_KEY = "bobbin-resume-code";
 if (import.meta.env.PROD) {
   const banner = $("updateBanner");
-  registerServiceWorker({
-    show: (apply) => {
-      banner.hidden = false;
-      $<HTMLButtonElement>("updateBtn").onclick = apply;
-    },
-  });
+  window.addEventListener("load", () =>
+    registerServiceWorker(
+      {
+        show: (apply) => {
+          banner.hidden = false;
+          $<HTMLButtonElement>("updateBtn").onclick = apply;
+        },
+      },
+      navigator.serviceWorker,
+      () => {
+        try {
+          sessionStorage.setItem(RESUME_KEY, currentCode);
+        } catch {
+          // Storage blocked: the reload just deals a new puzzle.
+        }
+        location.reload();
+      },
+    ),
+  );
 }
 
-newPuzzle("E");
+function resumeCode(): string | null {
+  try {
+    const code = sessionStorage.getItem(RESUME_KEY);
+    sessionStorage.removeItem(RESUME_KEY);
+    return code && parseCode(code) ? code : null;
+  } catch {
+    return null;
+  }
+}
+
+const resume = resumeCode();
+if (resume) void load(resume);
+else newPuzzle("E");
 requestAnimationFrame(frame);

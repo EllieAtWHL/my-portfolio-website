@@ -73,6 +73,35 @@ describe("registerServiceWorker", () => {
     expect(reload).toHaveBeenCalledTimes(1);
   });
 
+  it("first install then an update in the same visit: reloads on the update only", async () => {
+    const { sw, reload } = setup(false);
+    await flush();
+    sw.emit("controllerchange"); // first install claims the page
+    expect(reload).not.toHaveBeenCalled();
+    sw.emit("controllerchange"); // later, an update replaces it
+    expect(reload).toHaveBeenCalledTimes(1);
+  });
+
+  it("reloads when another tab applies the update (this tab's old cache is gone)", async () => {
+    const { sw, reload } = setup(true);
+    await flush();
+    sw.emit("controllerchange");
+    expect(reload).toHaveBeenCalledTimes(1);
+  });
+
+  it("offers an update that was already downloading when registration resolved", async () => {
+    const sw = new FakeContainer();
+    sw.controller = {};
+    const incoming = new FakeWorker();
+    sw.reg.installing = incoming;
+    const show = jest.fn();
+    registerServiceWorker({ show }, sw as unknown as ServiceWorkerContainer, jest.fn());
+    await flush();
+    incoming.state = "installed";
+    incoming.emit("statechange");
+    expect(show).toHaveBeenCalledTimes(1);
+  });
+
   it("offers an update that downloaded on an earlier visit", async () => {
     const sw = new FakeContainer();
     sw.controller = {};

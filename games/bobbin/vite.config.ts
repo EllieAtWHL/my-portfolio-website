@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig, type Plugin } from "vite";
@@ -11,13 +11,6 @@ const repoRoot = fileURLToPath(new URL("../..", import.meta.url));
 const outDir = fileURLToPath(new URL("../../public/bobbin", import.meta.url));
 const BASE = "/bobbin/";
 
-function listFiles(dir: string): string[] {
-  return readdirSync(dir).flatMap((name) => {
-    const path = join(dir, name);
-    return statSync(path).isDirectory() ? listFiles(path) : [path];
-  });
-}
-
 // Writes the service worker after the build: sw-template.js plus the list of
 // every built file to precache, and a version hash of their contents (so any
 // change to the game produces a new worker, which the browser then installs
@@ -27,13 +20,19 @@ function serviceWorker(): Plugin {
     name: "bobbin-service-worker",
     apply: "build",
     closeBundle() {
-      const files = listFiles(outDir)
-        .filter((f) => !f.endsWith("sw.js"))
+      const files = readdirSync(outDir, { recursive: true, withFileTypes: true })
+        .filter((d) => d.isFile())
+        .map((d) => relative(outDir, join(d.parentPath, d.name)).split("\\").join("/"))
+        // Not the worker itself; not the .woff font fallbacks, which every
+        // browser that can install the app skips in favour of .woff2.
+        .filter((f) => f !== "sw.js" && !f.endsWith(".woff"))
         .sort();
-      const hash = createHash("sha256");
-      for (const f of files) hash.update(relative(outDir, f)).update(readFileSync(f));
-      const precache = files.map((f) => BASE + relative(outDir, f).split("\\").join("/"));
       const template = readFileSync(fileURLToPath(new URL("./sw-template.js", import.meta.url)), "utf8");
+      // The version covers the worker's own code too, so a change to its
+      // logic alone still gets a fresh cache.
+      const hash = createHash("sha256").update(template);
+      for (const f of files) hash.update(f).update(readFileSync(join(outDir, f)));
+      const precache = files.map((f) => BASE + f);
       const sw = template
         .replace('"__VERSION__"', JSON.stringify(hash.digest("hex").slice(0, 12)))
         .replace("__PRECACHE__", JSON.stringify(precache, null, 2));
