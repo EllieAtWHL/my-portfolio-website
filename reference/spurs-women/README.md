@@ -55,7 +55,7 @@ src/
 Key components under `src/components/spurs-women/`:
 
 - **Layout**: `SpursHeader`, `SpursFooter`
-- **Matches**: `MatchCard`, `MatchStats` (see `match-stats.md`), `MatchFilterControls`, `SeasonStats` (see `SEASON_STATISTICS_CALCULATIONS.md`)
+- **Matches**: `MatchCard`, `MatchStats` (see `match-stats.md`), `MatchFilterControls`, `SeasonStats` (see `SEASON_STATISTICS_CALCULATIONS.md`), `SeasonStatsChart` (cross-season trend chart on `/spurs-women/seasons`, backed by `fetchAllSeasonStatsFromDB` in `seasons.ts` - see "Features" below)
 - **Media**: `NewsCard`, `VideoCard`, `PodcastCard`, `LightboxGallery`, `SeasonReviewCard`, `MediaGallery` (see `reference/photo-gallery/README.md`)
 - **Players**: `PlayerTable` (with `PlayerRow`) - sortable by name, position, nationality, squad/legacy number, and career stats; shared between the team roster tabs and `/spurs-women/players` - `TeamLineup` (`MatchFilters` also exists under `src/components/spurs-women/` but is currently dead code - unimported anywhere, see `reference/TAILWIND_MIGRATION_PLAN.md`; `PlayerCard`, previously noted here in the same category, has since been deleted from the repo outright)
 - **Utility**: `TeamPill` (team-colored name pill), `InteractiveMap` (stadium location)
@@ -69,7 +69,7 @@ components never fetch data directly. Caching is applied here (see
 | Module | Key functions |
 |--------|---------------|
 | `matches.ts` | `getUpcomingMatches`, `getPreviousMatches`, `getAllMatches`, `getSeasonMatches`, `getMatchById`, `getAdjacentMatches` |
-| `seasons.ts` | `getSeasons`, `getSeasonsWithMatchCounts`, `getSeasonById`, `getSeasonReview` |
+| `seasons.ts` | `getSeasons`, `getSeasonsWithMatchCounts`, `getSeasonById`, `getSeasonReview`, `fetchAllSeasonStatsFromDB` (per-season win%/goals-per-game/goals-conceded-per-game/attendance%, for `SeasonStatsChart`) |
 | `news.ts` | `getSpursWomenNews`, `getSpursWomenVideos`, `getPodcasts`, `getHomePageContent` |
 | `stadiums.ts` | `getStadiumBySlug`, `getAllStadiums`, `getStadiumsWithMatchCounts`, `getStadiumNames`, `getMatchesAtStadium`, `getCurrentStadiumName` |
 | `players.ts` | `getPlayersByMatch`, `getTeamLineupsByMatch`, `getPlayerById`, `getAllPlayers` |
@@ -97,6 +97,7 @@ See `admin/ADMIN_SYSTEM_DOCUMENTATION.md` for the full field-level breakdown use
 
 - **Match statistics**: possession/shots/corners visualization - `match-stats.md`
 - **Season statistics**: league vs. cup performance separation, attendance, points-per-game - `SEASON_STATISTICS_CALCULATIONS.md`
+- **Cross-season trend chart**: `SeasonStatsChart` on `/spurs-women/seasons` plots win%/goals-per-game/goals-conceded-per-game/attendance% across every season (a recharts `LineChart`), computed once per season by `fetchAllSeasonStatsFromDB` in `seasons.ts` - a separate calculation path from the per-season `SeasonStats` component above, not currently covered by `SEASON_STATISTICS_CALCULATIONS.md`
 - **Advanced filtering**: competition, season, team, venue, date range (`MatchFilterControls.tsx`)
 - **RSS integration**: news aggregation from multiple sources, YouTube channel videos, podcast feeds (N17 Women, Hometown Glory)
 - **Home-screen install**: `/spurs-women` is installable as a standalone PWA (Android "Add to Home Screen" / iOS "Add to Home Screen"), scoped to that section only. `public/spurs-women/manifest.webmanifest` + icons under `public/spurs-women/icons/` are linked from `src/app/spurs-women/layout.tsx`'s metadata (`manifest`, `icons`, `appleWebApp`) - not the root layout, so the core site isn't affected. The auth middleware's matcher in `src/middleware.ts` only allowlists `/spurs-women/admin`, `/api/admin`, and `/spurs-women/profile` (see WEB-176), so fetching the manifest never triggers a Supabase session refresh. Installability's service-worker requirement is covered by the existing site-wide `public/sw.js` (WEB-100, offline-fallback only) - no PWA-specific service worker needed on top of it.

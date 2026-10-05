@@ -400,15 +400,23 @@ fully playable offline after the first visit.
 - Local-only data: anything saved lives on the device (localStorage or
   IndexedDB). Clearing Chrome site data wipes it.
 
-**How it's built and served** (decided; implemented in WEB-195 and WEB-197)
+**How it's built and served** (decided; the Vite app itself is implemented
+per WEB-195/WEB-196, but the deploy-time wiring below is still planned, part
+of the not-yet-done WEB-197 - see "Status" above and `npm run bobbin:build`
+in the Commands table)
 
 - A Vite + TypeScript app in its own folder in this repo, sharing the repo's
   `node_modules`, lint, typecheck and CI. It doesn't need React or server
-  rendering.
-- `npm run build` builds it into `public/bobbin/` (gitignored) before
-  `next build`, so Vercel deploys both from one push.
-- A `next.config.ts` rewrite makes `/bobbin` and `/bobbin/` serve
-  `/bobbin/index.html`.
+  rendering. **Implemented.**
+- Plan: `npm run build` will build it into `public/bobbin/` (gitignored)
+  before `next build`, so Vercel deploys both from one push. **Not yet
+  wired** - today `npm run build` is plain `next build`, with no Vite/bobbin
+  step chained in, and `bobbin:build` is a separate script you run by hand
+  (see the Commands table).
+- Plan: a `next.config.ts` rewrite will make `/bobbin` and `/bobbin/` serve
+  `/bobbin/index.html`. **Not yet added** - `next.config.ts` currently has no
+  `rewrites()`/`redirects()` at all (also noted below, under "How it fits
+  alongside the site's existing service worker").
 - Why not a native Next.js route like Regicide and Microbrew: offline play
   would mean precaching Next's `/_next/static/` chunks and coordinating with
   the site's root service worker. A static build with its own scoped worker

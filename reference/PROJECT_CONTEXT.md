@@ -244,8 +244,8 @@ Guiding principles:
 ## Technical Decisions
 ### Error Handling & Error Boundaries
 
-Decision (revised 2026-08, WEB-63/WEB-44):
-  - Use Next.js route-level `error.tsx` and `not-found.tsx` files as the primary boundary mechanism - still no bespoke React error-boundary abstraction layered on top of Next's own.
+Decision (revised 2026-08, WEB-63/WEB-44; `src/components/ErrorBoundary.tsx` added since, see "Current state" below):
+  - Use Next.js route-level `error.tsx` and `not-found.tsx` files as the primary boundary mechanism, with `src/components/ErrorBoundary.tsx` as a narrowly-scoped, reusable component-level boundary for subtrees a route-level boundary can't reach on its own (e.g. inside a modal) - not a general-purpose abstraction meant to replace or wrap route-level boundaries everywhere.
   - Errors should fail loudly in development and degrade gracefully in production.
   - Centralised error logging, user-facing error messaging, retry handling for flaky external fetches, and basic offline awareness are now in scope (previously deferred) - tracked as a set of separately-sized issues under epic WEB-44 rather than one large ticket, so each can be reviewed and shipped independently.
 
@@ -258,7 +258,7 @@ Approach:
   - Avoid try/catch in components unless handling a known failure case; prefer clear error states over silent fallbacks.
 
 Current state:
-  - `src/app/not-found.tsx` exists and is in use. `src/app/spurs-women/error.tsx` (WEB-96) was the first `error.tsx` boundary in the codebase, sitting above every `/spurs-women` route (matches, players, teams, stadiums, seasons, admin, etc.). Since then, WEB-125 (2026-08) added `src/app/error.tsx` and `src/app/global-error.tsx` (a root boundary for core-site routes, plus the top-level fallback Next.js requires for errors thrown in the root layout itself) and `src/app/spurs-women/admin/error.tsx` (a nested boundary that now catches admin-route errors before they'd reach `spurs-women/error.tsx`, per Next.js's nested-boundary precedence). `src/components/ErrorBoundary.tsx` is also available as a reusable component-level boundary (used where a component tree needs to fail independently of a route-level boundary) with a `context` prop for `trackError()` attribution.
+  - `src/app/not-found.tsx` exists and is in use. `src/app/spurs-women/error.tsx` (WEB-96) was the first `error.tsx` boundary in the codebase, sitting above every `/spurs-women` route (matches, players, teams, stadiums, seasons, admin, etc.). Since then, WEB-125 (2026-08) added `src/app/error.tsx` and `src/app/global-error.tsx` (a root boundary for core-site routes, plus the top-level fallback Next.js requires for errors thrown in the root layout itself) and `src/app/spurs-women/admin/error.tsx` (a nested boundary that now catches admin-route errors before they'd reach `spurs-women/error.tsx`, per Next.js's nested-boundary precedence). `src/components/ErrorBoundary.tsx` is also available as a reusable component-level boundary (for a component tree that needs to fail independently of a route-level boundary) with a `context` prop for `trackError()` attribution - it currently has no production call sites (only its own test exercises it), available for future use rather than adopted anywhere yet.
   - `trackError()` (WEB-97, extended by WEB-125) is called from `src/app/error.tsx`, `src/app/global-error.tsx`, `src/app/spurs-women/error.tsx`, `src/app/spurs-women/admin/error.tsx`, and `src/components/ErrorBoundary.tsx` - each client-rendered boundary where it can actually reach FullStory. It's deliberately not called from API routes or `cache-utils.ts`'s `CacheError` path, since both run server-side where `trackError()` no-ops - server-side errors are still `console.error`-only.
   - `src/components/ErrorState.tsx` (WEB-98) is the shared error-state component; `MatchesClient`, `MediaGallery`, `TeamClient`, and `StadiumClient` use it instead of silently rendering an empty/no-data state on fetch failure. `src/lib/data/client.ts` - the client-side fetcher module the original WEB-63 audit flagged - turned out to be dead code (zero callers besides its own test) once investigated, so it was deleted rather than "fixed."
   - `src/lib/retry.ts` (WEB-99) provides `retryWithBackoff()`, wrapping the outbound RSS/YouTube fetches in `src/lib/rss.ts` and the podcast RSS fetch in `src/lib/data/news.ts` - the external proxy routes (`spurs-women-news`, `spurs-women-videos`, `podcasts`) inherit it automatically since they call these same data-layer functions rather than fetching directly. Bounded at 3 attempts with exponential backoff by default; doesn't touch `src/lib/rate-limit.ts` (inbound) at all.
@@ -267,7 +267,7 @@ Current state:
 Why this fits the project:
   - Next.js primitives remain the foundation; this adds the logging/UX/resilience layer on top rather than replacing them.
   - Splitting into smaller issues keeps each change reviewable despite the combined scope being larger than the original "keep complexity low" stance assumed.
-  - Still deliberately excludes a custom error-boundary abstraction and full offline-first/installable PWA behaviour - out of proportion for a personal site without SLAs.
+  - Still deliberately excludes a general-purpose error-boundary framework beyond the one narrowly-scoped `ErrorBoundary.tsx` component, and excludes full offline-first/installable PWA behaviour - out of proportion for a personal site without SLAs.
   - One deliberate exception: the Bobbin puzzle game (`/bobbin/`, epic WEB-192) is a self-contained static app with its own `/bobbin/`-scoped service worker that precaches the whole game for offline play - it's a game meant to be installed on a phone, not a content page. It sits alongside the root `sw.js` rather than replacing it; see `reference/bobbin/README.md` for how the two coexist (including the shared-Cache-Storage cleanup rule fixed in WEB-194).
 
 ### Internationalisation / Localisation (i18n)
@@ -482,16 +482,32 @@ Docker dependency:
     applied with `supabase migration repair --status applied <version>`
     (since it captures existing state, not a change to run).
 
-Current state:
-  - `supabase/migrations/20260826173645_add_matches_fk_indexes.sql` (WEB-61) -
-    the first migration, adding indexes on `matches.home_team_id`,
+Current state (as of 2026-10; `supabase/migrations/` is the authoritative
+list - this is a point-in-time summary, not guaranteed to stay exhaustive as
+more migrations land):
+  - `20260826173645_add_matches_fk_indexes.sql` (WEB-61) - the first
+    migration, adding indexes on `matches.home_team_id`,
     `matches.away_team_id`, `matches.stadium_id`.
-  - `supabase/migrations/20260826175328_baseline_schema.sql` (WEB-135) - a
-    full schema-only dump of every table/column/constraint/index/view in the
-    `public` schema at that point, captured via the `pg_dump` workaround
-    above. Treat this as a point-in-time baseline, not a live mirror - it
-    will drift from the real schema as new migrations are added on top, the
-    same way any snapshot does.
+  - `20260826175328_baseline_schema.sql` (WEB-135) - a full schema-only dump
+    of every table/column/constraint/index/view in the `public` schema at
+    that point, captured via the `pg_dump` workaround above. Treat this as a
+    point-in-time baseline, not a live mirror - it will drift from the real
+    schema as new migrations are added on top, the same way any snapshot
+    does.
+  - `20260826180844_drop_unused_stoarge_source_type.sql` (WEB-136) - drops
+    the dead `stoarge_source` (sic) enum type, the DB-side leftover of the
+    `storage_source` field removed from app code in WEB-123 (see
+    `reference/photo-gallery/README.md`'s "Database" section).
+  - `20260901180607_document_is_neutral_venue_column.sql` (WEB-137) - adds a
+    `COMMENT ON COLUMN` for `matches.is_neutral_venue`; also served as the
+    verification migration for the GitHub integration described above.
+  - `20260902180000_add_player_legacy_number.sql` (WEB-142) - adds
+    `players.legacy_number`, the club's permanent sequential debut number
+    (distinct from the per-stint `squad_number` in `player_history`).
+  - `20260914123000_player_history_loan_direction.sql` (WEB-156) - replaces
+    `player_history.is_loan` (a plain boolean) with a nullable
+    `on_loan_from_team_id` FK, so loan direction relative to Tottenham is
+    derivable instead of unrecorded.
   - For field-level documentation of what each table/column means (not just
     its DDL), see `reference/spurs-women/admin/ADMIN_SYSTEM_DOCUMENTATION.md`'s
     "Data Entities" section - that doc explains purpose and usage, the
@@ -660,9 +676,8 @@ The Spurs Women photo gallery uses an external repository (`spurs-women-photo-ga
   4. Commits and pushes manifest to `my-portfolio-website` main branch
 
 **Local Development:**
-- **Commit Hook**: Automatically runs `generate-external-manifest` when committing changes
-- **Purpose**: Ensures local development has latest manifest
-- **Note**: This is a backup mechanism - primary updates should come from GitHub Action
+- **No commit hook**: there is no `.husky`/git-hooks setup in this repo (confirmed: no `.husky` directory, no `simple-git-hooks`/`pre-commit` config, no custom `.git/hooks` scripts) - `generate-external-manifest` is never run automatically on commit. Run it manually (`npm run generate-external-manifest`) when you need a fresh local manifest; see `reference/photo-gallery/README.md` for the full manual/automated regeneration flow.
+- **Primary update path**: the GitHub Action in the external repo (see below), which lands the regenerated manifest here automatically
 
 ### Common Scenarios & Solutions
 
@@ -682,12 +697,7 @@ git restore public/spurs-women/photo-gallery.manifest.json
 git pull origin main
 ```
 
-#### Scenario 2: "Why does my local commit regenerate the manifest?"
-**Cause**: Commit hook runs `generate-external-manifest` for any commit
-**Expected Behavior**: This is normal - it's a backup mechanism
-**When to Worry**: Only if the manifest content is actually different from remote
-
-#### Scenario 3: "GitHub Action failed to update manifest"
+#### Scenario 2: "GitHub Action failed to update manifest"
 **Troubleshooting**:
 1. Check Actions tab in `spurs-women-photo-gallery` repo
 2. Verify `PORTFOLIO_REPO_TOKEN` secret is configured
@@ -775,7 +785,7 @@ For implementation detail on specific systems, see:
 
 The backlog/TODO list lives in Jira, not in this repo - see the "Jira is the source of truth" section in CLAUDE.md. The `WEB` project covers both the core site (`core-site` label) and Spurs Women (`spurs-women` label); every issue (not just epics) carries the label(s) for the section(s) it touches, both where work spans the whole site. The board's quick filters are built on these labels and on epic parenting - see "Labels and board filters" in CLAUDE.md.
 
-Known open tech debt at time of writing: Button migration is incomplete (14
+Known open tech debt at time of writing: Button migration is incomplete (15
 files still render raw `<button>` elements outside the shared component - see
 BUTTON_MIGRATION.md for the current list), and cache hit-rate monitoring/
 metrics collection has not been implemented (see the Technical Debt & Performance epic in Jira).
