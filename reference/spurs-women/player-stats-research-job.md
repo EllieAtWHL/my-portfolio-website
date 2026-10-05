@@ -118,6 +118,11 @@ browser-automation connector, see above) and manual lookups:
    empty in headless browsers and plain fetches, and ESPN's pages have
    returned garbled event lists through fetch-and-summarise tools.
 
+Whatever the source, check that every event (sub, card, goal) belongs to
+Tottenham before using it - we only store Spurs players' stats, and
+summarised page extracts have attributed an opponent's substitution to
+Spurs before (an Everton sub on the THFCDB page for 14 Dec 2022).
+
 A general web search is not a source in its own right - use it to find a
 page on one of the above, not to take a minute or a name from a search
 snippet.
