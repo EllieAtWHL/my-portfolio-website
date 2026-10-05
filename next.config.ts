@@ -107,7 +107,21 @@ const nextConfig: NextConfig = {
         source: "/(.*)",
         headers: securityHeaders,
       },
+      {
+        // Bobbin's service worker controls "/bobbin" (no trailing slash -
+        // Next redirects "/bobbin/" to "/bobbin"), which is wider than the
+        // "/bobbin/" a worker at /bobbin/sw.js may claim by default, so it
+        // needs explicit permission. See reference/bobbin/README.md.
+        source: "/bobbin/sw.js",
+        headers: [{ key: "Service-Worker-Allowed", value: "/bobbin" }],
+      },
     ];
+  },
+  async rewrites() {
+    // Bobbin is a static Vite build in public/bobbin/ (WEB-197), not a Next
+    // route: serve its page at /bobbin. Its assets are requested by their
+    // real /bobbin/... paths and need no rewrite.
+    return [{ source: "/bobbin", destination: "/bobbin/index.html" }];
   },
 };
 

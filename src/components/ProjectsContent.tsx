@@ -81,6 +81,14 @@ export default function ProjectsContent() {
           title: 'Regicide',
           url: '/regicide',
           isExternal: false
+        },
+        {
+          // A static Vite app served at /bobbin, not a Next route - a plain
+          // <a> (as rendered below) does the full page load it needs.
+          id: 'bobbin',
+          title: 'Bobbin',
+          url: '/bobbin',
+          isExternal: false
         }/*,
         {
           id: 'flappy',
