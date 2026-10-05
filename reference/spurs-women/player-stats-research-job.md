@@ -38,13 +38,17 @@ So the routine:
 
 - Only **reads** via the public anon Supabase client (the same
   `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` already shipped
-  to every browser - not a secret) to find matches needing research.
+  to every browser - not a secret) to find matches needing research, and to
+  resolve each sourced player to their `players.id`.
 - Researches each flagged match using the Kernel browser-automation
-  connector against BBC Sport / tottenhamhotspur.com.
+  connector against BBC Sport / tottenhamhotspur.com, following "Data
+  conventions" below.
 - Opens a **new Jira issue each run** (not a comment on WEB-114, which will
-  move to Done once the routine exists) containing the sourced data per
-  match, ready to paste into the admin UI - or a note that a match couldn't
-  be confidently sourced.
+  move to Done once the routine exists) containing, per match, a table of
+  the sourced data (full name + `player_id`) and a ready-to-use
+  `apply-player-stats` JSON block - or a note that a match couldn't be
+  confidently sourced. Genuinely ambiguous items go in a short "judgment
+  calls" list at the end, not inline.
 - Never writes to Supabase or the admin UI. Ellie reviews each week's ticket
   and applies the inserts herself, in due course - see "Applying researched
   data" below for the lowest-friction way to do that.
@@ -156,6 +160,46 @@ so future runs use it directly rather than needing to rediscover it. Safe to
 leave in place even after the allowlist is eventually fixed - it only
 engages when the direct path fails.
 
+## Data conventions
+
+Rules for turning a source into `player_stats` values, so research runs and
+apply sessions produce the same data every time. They're written down here
+rather than left to judgment because the routine runs cold each week and
+can't remember how a previous run resolved the same question.
+
+- **Assists come from BBC's structured assist box only.** If the written
+  match report credits someone the box doesn't (e.g. "Gaupset's low cross"),
+  the box wins. It's the formal record, and a contribution the report
+  describes may deliberately not count as an official assist. Don't raise
+  box-vs-report differences as judgment calls. (WEB-177 and WEB-208
+  disagreed on exactly this for Aston Villa, 27 Sep 2026; the box is what's
+  in the DB.)
+- **Minutes are whole numbers against the nominal match length**: 90, or
+  120 if the match went to extra time. Stoppage time and penalty
+  shootouts don't extend it.
+  - Played the whole match: `minutes_played` = the nominal length.
+  - Subbed off: `minutes_played` = `minute_off`, even past the nominal
+    length. Off at 92' is 92.
+  - Came on: `minutes_played` = nominal length − `minute_on`, floored at 0.
+    On at 92' is 0, and on at 103' in a 120-minute match is 17.
+
+  This matches existing rows (e.g. matches `bb686fd7…` and `5b4833d2…` for
+  92' changes, and `b76847ea…` for extra time). Never write approximate
+  values like "~90".
+- **Resolve every player to a `players.id` before reporting them.** BBC's
+  line-ups give initialled names ("D. Spence"), which
+  `apply-player-stats.js`'s name lookup can't resolve exactly. Its last-name
+  fallback then collides on real squad pairs (Spence/Spencer, Amanda/Matilda
+  Nildén), and the script stops with a list of candidates rather than
+  guessing. Matching by first initial + surname against `players` and
+  writing the `playerId` into each entry avoids that entirely. If initial +
+  surname still matches more than one player, list it as a judgment call
+  rather than picking one.
+- **Check `players` before flagging someone as unknown.** Youth call-ups
+  and rarely-used squad players usually already exist (both "new" names in
+  WEB-208 did). Only flag a player if they're genuinely absent, since they'd
+  need a `players` row before their stats can be entered.
+
 ## Applying researched data
 
 Once a run's Jira ticket has sourced data for a match, get it into Supabase
@@ -165,13 +209,17 @@ human-run, human-reviewed step - not wired into the routine above, for the
 same reason the routine itself doesn't write (see "Scope" above): a
 production write needs someone present to review the specific edit.
 
-1. Copy the ticket's tables into a JSON file, one object per player, e.g.:
+1. Save the ticket's per-match JSON block to a file, after settling any
+   items in its "judgment calls" list. (Older tickets that predate WEB-209
+   only have tables; transcribe those by hand, following "Data conventions"
+   above.) One object per player, e.g.:
 
    ```json
    {
      "matchId": "c4d95e0d-3cd7-4d40-a33d-a8509ee88b75",
      "players": [
-       { "name": "Lize Kop", "started": true, "minutesPlayed": 90 },
+       { "name": "Lize Kop", "playerId": "436248aa-9a17-4809-9c70-62ed1c74cc29",
+         "started": true, "minutesPlayed": 90 },
        { "name": "Drew Spence", "started": true, "captain": true, "minutesPlayed": 90 },
        { "name": "Olivia Holdt", "started": true, "minutesPlayed": 74, "minuteOff": 74,
          "goals": 3, "playerOfTheMatch": true },
@@ -187,12 +235,14 @@ production write needs someone present to review the specific edit.
    (this matches the existing convention of leaving unsourced nullable stat
    fields - `shots`, `passes`, `tackles`, `clean_sheet`, `player_rating`,
    etc. - `null` rather than guessing `0`; see the full field list in
-   `reference/spurs-women/admin/ADMIN_SYSTEM_DOCUMENTATION.md`). Names are
-   resolved against `players.first_name || ' ' || last_name`
-   case-insensitively, falling back to a unique last-name match; if a source
-   only gives a partial name (BBC's "A. Sombath" line-ups panel, say) or the
-   name is ambiguous, the script errors out listing candidates - add a
-   `"playerId"` field to that entry instead of fixing the name.
+   `reference/spurs-women/admin/ADMIN_SYSTEM_DOCUMENTATION.md`). An entry's
+   `"playerId"` is used as-is, and `name` is then only a label in the
+   dry-run output. Entries without one are resolved by name against
+   `players.first_name || ' ' || last_name` case-insensitively, falling back
+   to a unique last-name match. If a source only gives a partial name (BBC's
+   "A. Sombath" line-ups panel, say) or the name is ambiguous, the script
+   errors out listing candidates - add a `"playerId"` to that entry instead
+   of fixing the name (see "Data conventions" above).
 
 2. Dry-run it first (the default - nothing is written until you pass
    `--apply`):
