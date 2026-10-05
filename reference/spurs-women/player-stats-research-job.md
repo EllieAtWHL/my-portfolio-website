@@ -106,16 +106,44 @@ No reliable stats API exists for current-season matches. WEB-113's backfill
 found API-Football's free tier only covers the 2022-2024 seasons (see
 `.web113-cache/README.md`, gitignored/local-only), so it doesn't help here.
 BBC Sport has no coverage for 2022/23 but does cover current competitive
-fixtures, so the routine researches each flagged match against BBC Sport and
-tottenhamhotspur.com via the Kernel browser-automation connector (see above).
+fixtures. Source priority, for both the routine (via the Kernel
+browser-automation connector, see above) and manual lookups:
 
-## Additional manual source for historic backfill: THFCDB
+1. **BBC Sport** - first choice, and the authority for assists (see "Data
+   conventions" below).
+2. **THFCDB** (see below) - the next best source: lineups, sub minutes and
+   card minutes for every match, including seasons BBC doesn't cover.
+3. **tottenhamhotspur.com** and other outlets (Sky, ESPN) - last resort.
+   The club site is a client-rendered app that often crashes or comes back
+   empty in headless browsers and plain fetches, and ESPN's pages have
+   returned garbled event lists through fetch-and-summarise tools.
+
+Whatever the source, check that every event (sub, card, goal) belongs to
+Tottenham before using it - we only store Spurs players' stats, and
+summarised page extracts have attributed an opponent's substitution to
+Spurs before (an Everton sub on the THFCDB page for 14 Dec 2022).
+
+A general web search is not a source in its own right - use it to find a
+page on one of the above, not to take a minute or a name from a search
+snippet.
+
+## THFCDB
 
 [thfcdb.com/womens](https://thfcdb.com/womens/) is an independent fan-built
-database (not affiliated with the club) that's useful for **manual**
-historic backfill work (WEB-113-style gap filling) - it isn't wired into the
-WEB-114 routine above, which is scoped to recent matches with BBC Sport
-coverage.
+database (not affiliated with the club) - second in the source priority
+above, and the main source for manual historic backfill work (WEB-113-style
+gap filling).
+
+- **Finding a match page**: match URLs live under
+  `https://thfcdb.com/womens/matches/<season>/`, but the slug format isn't
+  consistent between seasons - e.g.
+  `2025-26/west-ham-united-1-february-2026-away` vs
+  `2022-23/0-3-v-everton-fc-14-december-2022` (score included, no
+  home/away) - so don't guess URLs. The season and player match lists
+  (`/womens/seasons/<season>/matches`) are rendered client-side, so a plain
+  fetch (or `curl`, which also hits a Cloudflare check on some pages) won't
+  list their links; open the list in a real browser session (Kernel) and
+  follow the link from there.
 
 - **Coverage**: match pages give scorers/cards with minute, a full
   lineup (starting XI + bench with squad numbers, subs-on minute, manager),
@@ -186,14 +214,37 @@ can't remember how a previous run resolved the same question.
     120-minute match is 17.
   - Came on and later went off: `minutes_played` = `minute_off` −
     `minute_on`. On at 60', off at 85' is 25.
-  - Sent off: no settled convention yet (the existing red-card rows don't
-    record a `minute_off`), so list the sending-off minute as a judgment
-    call rather than picking a value.
+  - Sent off: `minute_off` = the red-card minute, and `minutes_played`
+    follows the rules above as if they'd been subbed off then (so
+    `minute_off`, or `minute_off − minute_on` for a substitute). Stoppage
+    time counts like any other minute: a red at 90+6 is `minute_off` 96.
+    A red card plus a `minute_off` is what marks a sending-off rather than
+    a substitution; the match lineup shows it as `🟥 96'` instead of
+    `← 96'`.
+  - Half-time substitutions are minute **46**, following BBC Sport (the
+    source of truth). THFCDB records the same change as **45** - when
+    using it as the backup source, convert a half-time 45 to 46 (so
+    `minute_on` 46 / `minutes_played` 44, and the player replaced has
+    `minute_off` 46 / `minutes_played` 46). Some older rows still use 45;
+    don't copy that.
 
   This matches existing rows (e.g. matches `bb686fd7…` and `5b4833d2…` for
   92' changes, `b76847ea…` for extra time, and `c0221ff0…` for a
   substitute who was later taken off). Never write approximate values like
   "~90".
+- **Cards** (decided by Ellie, 2026-10-05, WEB-210):
+  - Second-yellow sending-off: `yellow_cards` 2 + `red_cards` 1 (shown as
+    🟨🟨🟥). An earlier caution plus a separate straight red is
+    `yellow_cards` 1 + `red_cards` 1 (🟨🟥).
+  - A red card shown to a player who isn't on the pitch (on the bench,
+    after being subbed off, or after the final whistle): `red_cards` 1,
+    with minutes and `minute_off` unchanged. Accepted limitation: a player
+    subbed off and then shown a red on the bench will display as if sent
+    off at their substitution minute - rare enough not to need a separate
+    column.
+  - Record cards as shown on the day, even if later rescinded on appeal.
+    If that happens to a Spurs player, raise it with Ellie rather than
+    changing the row.
 - **Resolve every player to a `players.id` before reporting them.** BBC's
   line-ups give initialled names ("D. Spence"), which
   `apply-player-stats.js`'s name lookup can't resolve exactly. Its last-name

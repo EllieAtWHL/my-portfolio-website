@@ -71,10 +71,10 @@ describe('PlayerRow', () => {
     expect(screen.getByText('🟥')).toBeInTheDocument()
   })
 
-  it('shows a second-yellow-to-red indicator distinctly from a straight red', () => {
+  it('shows both yellows for a second-yellow red, distinctly from a straight red', () => {
     render(<PlayerRow player={makePlayer({ yellow_cards: 2, red_cards: 1 })} />)
 
-    expect(screen.getByText('🟨🟥')).toBeInTheDocument()
+    expect(screen.getByText('🟨🟨🟥')).toBeInTheDocument()
   })
 
   it('does not drop an earlier caution when a player also has an unrelated red card', () => {
@@ -91,6 +91,65 @@ describe('PlayerRow', () => {
     expect(screen.getByText(/1 ⚽️/)).toBeInTheDocument()
     expect(screen.getByText(/2 👟/)).toBeInTheDocument()
     expect(screen.getByText(/🟨/)).toBeInTheDocument()
+  })
+
+  it('shows a substitution minute with the off arrow when there is no red card', () => {
+    render(<PlayerRow player={makePlayer({ minute_off: 67, minutes_played: 67 })} />)
+
+    expect(screen.getByText("← 67'")).toBeInTheDocument()
+  })
+
+  it('shows a sending-off minute against the red card, not as a substitution', () => {
+    render(
+      <PlayerRow player={makePlayer({ red_cards: 1, minute_off: 67, minutes_played: 67 })} />
+    )
+
+    expect(screen.getByText("🟥 67'")).toBeInTheDocument()
+    expect(screen.queryByText(/←/)).not.toBeInTheDocument()
+  })
+
+  it('shows a second-yellow sending-off minute against both cards', () => {
+    render(
+      <PlayerRow
+        player={makePlayer({ yellow_cards: 2, red_cards: 1, minute_off: 80, minutes_played: 80 })}
+      />
+    )
+
+    expect(screen.getByText("🟨🟨🟥 80'")).toBeInTheDocument()
+  })
+
+  it('shows both the on-minute and the sending-off minute for a substitute who is sent off', () => {
+    render(
+      <PlayerRow
+        player={makePlayer({
+          started: false,
+          was_substitute: true,
+          minute_on: 60,
+          minute_off: 85,
+          minutes_played: 25,
+          red_cards: 1,
+        })}
+      />
+    )
+
+    expect(screen.getByText("🟥 85' • → 60'")).toBeInTheDocument()
+    expect(screen.queryByText(/←/)).not.toBeInTheDocument()
+  })
+
+  it('shows a red card without a minute when no sending-off minute is recorded', () => {
+    // e.g. a red card shown to a player on the bench, who never had a minute_off
+    render(
+      <PlayerRow
+        player={makePlayer({
+          started: false,
+          was_unused_substitute: true,
+          minutes_played: 0,
+          red_cards: 1,
+        })}
+      />
+    )
+
+    expect(screen.getByText('🟥')).toBeInTheDocument()
   })
 
   it('renders card indicators for substitutes too', () => {
