@@ -93,21 +93,25 @@ Each column object has:
 - `render` (optional): A custom render function for complex display logic
 - `id` (optional): Overrides the React key for this column - required when two columns derive from the same `key` (see below)
 
-The player-related Player Stats list (shown in a player's edit view, `relatedPlayerStatsForPlayer` in the admin page) adds an Opponent column that reads `match_id` but renders the *other* team from the match rather than the match itself:
+The player-related Player Stats list (shown in a player's edit view, `relatedPlayerStatsForPlayer` in `PlayersTabPanel.tsx`) adds an Opponent column that reads `match_id` but renders the *other* team from the match rather than the match itself. The lookup itself lives in a standalone `resolveOpponentName(stat, match, teams)` helper exported from `PlayersTabPanel.tsx` (not inlined in the column's `render`), because it's also reused by that list's search `filterFn` (`matchesPlayerStatsSearch`, see "Opt-in search/pagination" below) - keeping the two in sync rather than re-deriving the opponent twice:
 
 ```typescript
+// In PlayersTabPanel.tsx:
+export function resolveOpponentName(stat: PlayerStats, match: Match | undefined, teams: Team[]): string {
+  if (!match) return '';
+  const opponentTeamId = match.home_team_id === stat.team_id ? match.away_team_id : match.home_team_id;
+  const opponentTeam = teams.find(t => t.id === opponentTeamId);
+  return getTeamDisplayName(opponentTeam, '');
+}
+
+// Used by the column:
 {
   key: 'match_id',
   id: 'opponent',
   label: 'Opponent',
   render: (value: unknown, stat: PlayerStats) => {
     const match = matches.find(m => m.id === (value as string));
-    if (!match) return '-';
-    const opponentTeamId = match.home_team_id === stat.team_id
-      ? match.away_team_id
-      : match.home_team_id;
-    const opponentTeam = teams.find(t => t.id === opponentTeamId);
-    return opponentTeam?.short_name || opponentTeam?.name || '-';
+    return resolveOpponentName(stat, match, teams) || '-';
   }
 }
 ```
