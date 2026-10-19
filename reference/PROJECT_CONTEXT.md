@@ -371,7 +371,7 @@ Decision (superseded):
   - That decision no longer holds: Jest + React Testing Library are now installed and automated testing is mandatory for new components/utilities (see "Testing Strategy" above and `reference/testing/README.md`).
 
 Current state:
-  - E2E testing with Playwright is now implemented: 13 spec files under `tests/` (personal-site pages, `tests/accessibility.spec.ts`, plus `tests/spurs-women/*`), run via `npx playwright test` and in CI via `.github/workflows/playwright.yml` across chromium/firefox/webkit.
+  - E2E testing with Playwright is now implemented: 14 spec files under `tests/` (personal-site pages, `tests/accessibility.spec.ts`, `tests/bobbin.spec.ts`, plus `tests/spurs-women/*`), run via `npx playwright test` and in CI via `.github/workflows/playwright.yml` across chromium/firefox/webkit.
 
 ### Deployment Pipeline
 
@@ -775,7 +775,7 @@ For implementation detail on specific systems, see:
 
 The backlog/TODO list lives in Jira, not in this repo - see the "Jira is the source of truth" section in CLAUDE.md. The `WEB` project covers both the core site (`core-site` label) and Spurs Women (`spurs-women` label); every issue (not just epics) carries the label(s) for the section(s) it touches, both where work spans the whole site. The board's quick filters are built on these labels and on epic parenting - see "Labels and board filters" in CLAUDE.md.
 
-Known open tech debt at time of writing: Button migration is incomplete (14
+Known open tech debt at time of writing: Button migration is incomplete (15
 files still render raw `<button>` elements outside the shared component - see
 BUTTON_MIGRATION.md for the current list), and cache hit-rate monitoring/
 metrics collection has not been implemented (see the Technical Debt & Performance epic in Jira).
