@@ -1,6 +1,11 @@
 # Season Statistics Calculations Documentation
 
-This document explains how each statistic in the SeasonStats component is calculated.
+This document explains how each statistic in the `SeasonStats` component
+(`src/components/spurs-women/SeasonStats.tsx`, used on a single season's
+detail page) is calculated. The separate `SeasonStatsChart.tsx` component
+(used on `/spurs-women/seasons` to chart win %/goals/attendance trends
+*across* seasons) is a different component with its own data path
+(`getAllSeasonStats` in `src/lib/data/seasons.ts`) and isn't covered here.
 
 ## Data Filtering
 

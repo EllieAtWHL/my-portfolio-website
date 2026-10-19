@@ -54,16 +54,18 @@ WHERE match_id = 'your-match-id'
 ```
 
 **Note**: `media` has no `storage_source` column, despite some historical
-references to one (a TypeScript `storage_source?: 'github' | null` field on
-`Media`/`PhotoMedia` in `src/lib/data/media.ts`, threaded through in
-`MediaGallery.tsx`, and the now-removed `migrate-storage-source.js`, per
-WEB-123 - see "History" below).
+references to one - a TypeScript `storage_source?: 'github' | null` field
+that used to exist on `Media`/`PhotoMedia` in `src/lib/data/media.ts` and was
+threaded through `MediaGallery.tsx`, plus the now-removed
+`migrate-storage-source.js` script, per WEB-123 - see "History" below.
 Confirmed against the live PostgREST schema
 (`GET {SUPABASE_URL}/rest/v1/` → `definitions.media`) while debugging a
-`publish-match-photos.js` failure - `storage_source` is never actually read
+`publish-match-photos.js` failure - `storage_source` was never actually read
 to branch on anything (every `photo album` is already resolved via the
-manifest regardless of its value), so this is dead type/doc drift rather
-than a functional bug. Tracked for cleanup in WEB-123.
+manifest regardless of its value), so this was dead type/doc drift rather
+than a functional bug. The dead TypeScript field/passthrough has since been
+removed along with the script (WEB-123) - `storage_source` no longer appears
+anywhere in `src/`.
 
 ## Adding a New Photo Gallery
 
