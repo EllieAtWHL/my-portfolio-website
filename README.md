@@ -66,7 +66,7 @@ Note: FullStory is configured separately - see below. It does not currently read
 
 ## Analytics & Monitoring
 
-This site uses FullStory for user session recording and analytics:
+This site uses FullStory for user session recording and analytics, consent-gated behind the site's cookie consent banner (see `reference/COOKIE_CONSENT.md`):
 
 ### 📊 FullStory Implementation
 
@@ -76,12 +76,13 @@ This site uses FullStory for user session recording and analytics:
 - Session recording and replay
 - User behavior analytics
 - Custom event tracking
-- Environment-based data separation
+- Consent-gated loading (no environment-based separation - FullStory records on every domain including `localhost`, see the reference doc)
 - Privacy-compliant data collection
 
 #### Files Involved
-- `/public/fullstory-init.js` - FullStory initialization script
-- `/src/app/layout.tsx` - Root layout with script integration
+- `/public/fullstory-init.js` - FullStory initialization script (org ID hardcoded here)
+- `/src/components/FullStoryLoader.tsx` - Loads the script via Next.js `Script`, only once cookie consent is accepted
+- `/src/app/layout.tsx` - Root layout, renders `FullStoryLoader`
 
 ## Learn More
 

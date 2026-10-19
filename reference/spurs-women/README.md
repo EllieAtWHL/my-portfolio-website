@@ -22,12 +22,16 @@ The backlog/TODO list lives in Jira (`WEB` project, `spurs-women` label), not in
 src/
 ├── app/spurs-women/
 │   ├── layout.tsx              # Root layout for the section
+│   ├── error.tsx                 # Route-level error boundary (WEB-96)
 │   ├── page.tsx                 # Homepage with aggregated content
 │   ├── matches/                 # All matches (filterable) + [matchId] detail pages
 │   ├── seasons/                 # All seasons + [seasonId] detail pages
 │   ├── teams/                   # All teams + [teamId] detail pages
 │   ├── players/                 # All players + [playerId] detail pages
 │   ├── stadiums/                # All stadiums + [stadiumSlug] detail pages
+│   ├── login/                    # Google OAuth sign-in page (WEB-176)
+│   ├── profile/                  # Signed-in user profile/logout page (WEB-176)
+│   ├── unauthorised/             # Shown when a signed-in user isn't the admin (WEB-176)
 │   └── admin/                   # Admin UI (see admin/ADMIN_SYSTEM_DOCUMENTATION.md)
 ├── components/spurs-women/      # Section-specific components
 ├── lib/data/                    # Data access layer (see below)
@@ -49,6 +53,9 @@ src/
 | `/spurs-women/players/[playerId]` | Player profile: match history, career timeline |
 | `/spurs-women/stadiums` | Grid of all stadiums with match counts |
 | `/spurs-women/stadiums/[stadiumSlug]` | Stadium detail: historical names, match history, capacity/location |
+| `/spurs-women/login` | Google OAuth sign-in (WEB-176), redirects to `/spurs-women/profile` |
+| `/spurs-women/profile` | Signed-in user's profile page; shows email and a logout action |
+| `/spurs-women/unauthorised` | Shown when a signed-in Google account isn't the admin email |
 
 ## Components
 
@@ -105,7 +112,7 @@ See `admin/ADMIN_SYSTEM_DOCUMENTATION.md` for the full field-level breakdown use
 
 - Tailwind CSS with a Spurs-specific design system: primary navy (`#132257`), white, gray accents
 - Utility classes: `.spurs-text`, `.spurs-wrapper`, `.spurs-accent`
-- **No dedicated light/dark mode design for this section, but the toggle isn't fully inert here**: the section is designed around a single fixed navy theme - `.spurs-wrapper` (in `spurs-theme.css`) sets its background and text color unconditionally, not gated behind a `.dark`/`.light` class. However, `ThemeProvider` (in `src/app/layout.tsx`) wraps the *entire* app, including `/spurs-women`, and several Spurs Women components/pages do ship stray `dark:` Tailwind variants (e.g. `src/app/spurs-women/page.tsx`, `PlayerTable.tsx`, `NewsCard.tsx`) - per the cascade-layers rules in `CSS_ARCHITECTURE.md`, a Tailwind `dark:` utility on a specific element wins over `.spurs-wrapper`'s unconditional color regardless of specificity, so those elements *do* visibly respond to the site's theme toggle. This is inconsistent, not an intentional per-element design - don't add new `dark:` variants in this section, and treat any existing ones as leftover rather than a pattern to follow.
+- **No dedicated light/dark mode design for this section, but the toggle isn't fully inert here**: the section is designed around a single fixed navy theme - `.spurs-wrapper` (in `spurs-theme.css`) sets its background and text color unconditionally, not gated behind a `.dark`/`.light` class. However, `ThemeProvider` (in `src/app/layout.tsx`) wraps the *entire* app, including `/spurs-women`, and several Spurs Women components/pages do ship stray `dark:` Tailwind variants (e.g. `src/app/spurs-women/page.tsx`, `PlayerTable.tsx`, `SeasonStats.tsx`) - per the cascade-layers rules in `CSS_ARCHITECTURE.md`, a Tailwind `dark:` utility on a specific element wins over `.spurs-wrapper`'s unconditional color regardless of specificity, so those elements *do* visibly respond to the site's theme toggle. (`NewsCard.tsx`, previously listed here, has no actual `dark:` class - only a comment explaining why one isn't needed, since it always renders on the fixed-dark `.spurs-accent-card` background - see `reference/ellieatwhl-design-system/VISUAL_LANGUAGE.md`'s "Spurs Women" section.) This is inconsistent, not an intentional per-element design - don't add new `dark:` variants in this section, and treat any existing ones as leftover rather than a pattern to follow.
 - Team colors are data-driven (`primary_color`/`secondary_color` columns) - see `TeamPill` and `getTeamColor` in `match-stats.md`
 - See `reference/CSS_ARCHITECTURE.md` for the site-wide CSS conventions this section follows
 

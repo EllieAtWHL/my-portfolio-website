@@ -47,14 +47,16 @@ Net: the two components serve different-enough call shapes that forcing them thr
 ## Authentication & Authorization
 
 ### Authentication
-- Uses Supabase Auth for user authentication
+- Uses Supabase Auth, via **Google OAuth** (WEB-176) rather than email/password - sign-in happens at `/spurs-women/login` (`supabase.auth.signInWithOAuth({ provider: 'google' })`), redirecting to `/spurs-women/profile` on success
+- `src/app/spurs-women/profile/page.tsx` shows the signed-in user's email and a logout action; `src/app/spurs-women/unauthorised/page.tsx` is shown when a signed-in Google account isn't the admin email
 - User must be logged in to access admin features
 - Session managed via cookies
 
 ### Authorization
 - Admin access restricted to a single email address
 - Configured via `ADMIN_EMAIL` environment variable
-- Enforced centrally for every `/api/admin/*` request in `src/lib/supabase/middleware.ts#updateSession` - not per-route-handler. Individual route handlers under `src/app/api/admin/*/route.ts` don't check auth themselves; they can assume the request already passed the check below and just call the shared `supabaseAdmin` client from `@/lib/admin-api`. This was previously duplicated in every route handler (~30+ copies of the same block), which is exactly how two routes shipped without it before WEB-70 - centralizing it means a new admin route can't ship unprotected by omission.
+- Enforced centrally for every `/api/admin/*` request and every `/spurs-women/admin` page request in `src/lib/supabase/middleware.ts#updateSession` - not per-route-handler. Individual route handlers under `src/app/api/admin/*/route.ts` don't check auth themselves; they can assume the request already passed the check below and just call the shared `supabaseAdmin` client from `@/lib/admin-api`. This was previously duplicated in every route handler (~30+ copies of the same block), which is exactly how two routes shipped without it before WEB-70 - centralizing it means a new admin route can't ship unprotected by omission.
+- An unauthenticated request to `/spurs-women/admin` (or `/spurs-women/profile`) redirects to `/spurs-women/login`; an authenticated-but-wrong-email request to `/spurs-women/admin` redirects to `/spurs-women/unauthorised`. An unauthenticated/unauthorized request to `/api/admin/*` returns a JSON `401`/`403` instead (see below), since those are fetched rather than navigated to.
 
 ```typescript
 if (!user) {
