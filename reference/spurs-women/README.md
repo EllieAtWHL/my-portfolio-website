@@ -28,7 +28,10 @@ src/
 │   ├── teams/                   # All teams + [teamId] detail pages
 │   ├── players/                 # All players + [playerId] detail pages
 │   ├── stadiums/                # All stadiums + [stadiumSlug] detail pages
-│   └── admin/                   # Admin UI (see admin/ADMIN_SYSTEM_DOCUMENTATION.md)
+│   ├── admin/                   # Admin UI (see admin/ADMIN_SYSTEM_DOCUMENTATION.md)
+│   ├── login/                   # Google OAuth sign-in (Supabase Auth)
+│   ├── profile/                 # Signed-in user's email/role, link to admin panel if ADMIN_EMAIL
+│   └── unauthorised/            # Shown when a non-admin user hits the admin panel
 ├── components/spurs-women/      # Section-specific components
 ├── lib/data/                    # Data access layer (see below)
 └── utils/supabase.ts            # Database connection
@@ -49,6 +52,10 @@ src/
 | `/spurs-women/players/[playerId]` | Player profile: match history, career timeline |
 | `/spurs-women/stadiums` | Grid of all stadiums with match counts |
 | `/spurs-women/stadiums/[stadiumSlug]` | Stadium detail: historical names, match history, capacity/location |
+| `/spurs-women/login` | Google OAuth sign-in via Supabase Auth, redirects to `/spurs-women/profile` |
+| `/spurs-women/profile` | Signed-in user's email and role (Admin/User); links to the admin panel if the user is `ADMIN_EMAIL` |
+| `/spurs-women/unauthorised` | Access-denied page shown when a non-admin user hits the admin panel |
+| `/spurs-women/admin` | Admin UI - see `admin/ADMIN_SYSTEM_DOCUMENTATION.md` |
 
 ## Components
 

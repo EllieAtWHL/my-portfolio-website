@@ -86,7 +86,7 @@ constraint, and index, not just the ones the admin UI touches - see
 - **Table**: `matches`
 - **Fields**:
   - `id` (string, UUID)
-  - `season_id` (number)
+  - `season_id` (string, UUID)
   - `competition_id` (string, UUID)
   - `date` (string, date)
   - `kickoff_time` (string, time)
@@ -494,7 +494,7 @@ Required environment variables:
 
 1. **Stadium Table Name**: The stadium table is named `stadia` (plural) in the database. The code queries `stadia` consistently (`src/lib/data/stadiums.ts`, `src/lib/data/query-builders.ts`, `src/app/api/admin/stadia/route.ts`) - there's no fallback to `stadiums`/`stadium` table names.
 
-2. **ID Types**: Most entities use UUID strings for IDs, but teams and seasons use integer IDs (players use UUID strings, like most other entities).
+2. **ID Types**: Most entities use UUID strings for IDs, but `teams` uses integer IDs. `seasons` and `competitions` also use UUID strings like most other entities, despite `season_id`/`competition_id` sometimes being assumed numeric.
 
 3. **Player Stats Upsert**: Player stats use `upsert` with conflict resolution on `player_id, match_id` to allow updating existing stats.
 

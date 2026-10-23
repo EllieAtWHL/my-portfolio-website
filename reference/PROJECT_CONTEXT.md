@@ -371,7 +371,7 @@ Decision (superseded):
   - That decision no longer holds: Jest + React Testing Library are now installed and automated testing is mandatory for new components/utilities (see "Testing Strategy" above and `reference/testing/README.md`).
 
 Current state:
-  - E2E testing with Playwright is now implemented: 13 spec files under `tests/` (personal-site pages, `tests/accessibility.spec.ts`, plus `tests/spurs-women/*`), run via `npx playwright test` and in CI via `.github/workflows/playwright.yml` across chromium/firefox/webkit.
+  - E2E testing with Playwright is now implemented: 14 spec files under `tests/` (personal-site pages, `tests/accessibility.spec.ts`, `tests/bobbin.spec.ts`, plus `tests/spurs-women/*`), run via `npx playwright test` and in CI via `.github/workflows/playwright.yml` across chromium/firefox/webkit.
 
 ### Deployment Pipeline
 
@@ -492,6 +492,14 @@ Current state:
     above. Treat this as a point-in-time baseline, not a live mirror - it
     will drift from the real schema as new migrations are added on top, the
     same way any snapshot does.
+  - Later migrations added on top of the baseline:
+    `20260826180844_drop_unused_stoarge_source_type.sql`,
+    `20260901180607_document_is_neutral_venue_column.sql`,
+    `20260902180000_add_player_legacy_number.sql`, and
+    `20260914123000_player_history_loan_direction.sql`. See each file for
+    what it changes - this list is a directory index, not a changelog;
+    check `supabase/migrations/` directly for the current set rather than
+    trusting this list to stay exhaustive.
   - For field-level documentation of what each table/column means (not just
     its DDL), see `reference/spurs-women/admin/ADMIN_SYSTEM_DOCUMENTATION.md`'s
     "Data Entities" section - that doc explains purpose and usage, the
@@ -775,7 +783,7 @@ For implementation detail on specific systems, see:
 
 The backlog/TODO list lives in Jira, not in this repo - see the "Jira is the source of truth" section in CLAUDE.md. The `WEB` project covers both the core site (`core-site` label) and Spurs Women (`spurs-women` label); every issue (not just epics) carries the label(s) for the section(s) it touches, both where work spans the whole site. The board's quick filters are built on these labels and on epic parenting - see "Labels and board filters" in CLAUDE.md.
 
-Known open tech debt at time of writing: Button migration is incomplete (14
+Known open tech debt at time of writing: Button migration is incomplete (15
 files still render raw `<button>` elements outside the shared component - see
 BUTTON_MIGRATION.md for the current list), and cache hit-rate monitoring/
 metrics collection has not been implemented (see the Technical Debt & Performance epic in Jira).
