@@ -377,7 +377,7 @@ Always verify styles work correctly in both themes before committing.
 4. **CSS-in-JS:** Evaluate if a CSS-in-JS solution would be beneficial for the project
 
 ### When to Re-evaluate
-- If `globals.css` grows beyond 500 lines again
+- If `globals.css` grows beyond 500 lines again - **this has already happened**: it's 903 lines as of this writing (most of it the `@theme` block added by `TAILWIND_MIGRATION_PLAN.md`'s Track 0 fix, plus the cascade-layers `@layer base` wrapping), but it hasn't yet been revisited/split since the structure (one `@theme` block, then layered imports, then global utilities) is still coherent rather than disorganized
 - If duplicate styles start appearing across multiple page files
 - If dark mode overrides become difficult to manage
 - If responsive breakpoints become inconsistent
