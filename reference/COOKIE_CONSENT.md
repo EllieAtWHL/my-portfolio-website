@@ -154,9 +154,14 @@ actually been exercised in production before (only in an unused
 being text-only, because the shared `button` class in `Button.tsx`'s
 `baseClasses` also picks up `main-theme.css`'s gradient `.button` background,
 and in dark mode a separate global `.dark button, .dark .button` rule, with
-nothing in the `ghost` variant to beat either. Fixed at the source
-(`bg-transparent dark:bg-transparent` added to `ghost`) so any future use of
-that variant gets a real transparent background, not just this button.
+nothing in the `ghost` variant to beat either. Fixed at the source in
+`Button.tsx` (`bg-none bg-transparent dark:bg-transparent shadow-none` added
+to `ghost` - `bg-none` is required too, not just `bg-transparent`, because
+`.button`'s light-mode gradient is set via the `background` shorthand, which
+lands in `background-image`, so a `background-color`-only utility like
+`bg-transparent` doesn't clear it; `shadow-none` drops `.button`'s green
+glow) so any future use of that variant gets a real transparent background,
+not just this button.
 
 ## Accessibility
 
