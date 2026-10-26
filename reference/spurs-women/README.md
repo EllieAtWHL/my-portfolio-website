@@ -28,7 +28,11 @@ src/
 │   ├── teams/                   # All teams + [teamId] detail pages
 │   ├── players/                 # All players + [playerId] detail pages
 │   ├── stadiums/                # All stadiums + [stadiumSlug] detail pages
-│   └── admin/                   # Admin UI (see admin/ADMIN_SYSTEM_DOCUMENTATION.md)
+│   ├── admin/                   # Admin UI (see admin/ADMIN_SYSTEM_DOCUMENTATION.md)
+│   ├── login/                   # Admin login page
+│   ├── profile/                 # Authenticated non-admin profile page
+│   ├── unauthorised/            # Shown when a logged-in user isn't the admin
+│   └── error.tsx                # Section error boundary (reports to FullStory)
 ├── components/spurs-women/      # Section-specific components
 ├── lib/data/                    # Data access layer (see below)
 └── utils/supabase.ts            # Database connection
