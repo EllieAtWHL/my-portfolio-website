@@ -371,7 +371,7 @@ Decision (superseded):
   - That decision no longer holds: Jest + React Testing Library are now installed and automated testing is mandatory for new components/utilities (see "Testing Strategy" above and `reference/testing/README.md`).
 
 Current state:
-  - E2E testing with Playwright is now implemented: 13 spec files under `tests/` (personal-site pages, `tests/accessibility.spec.ts`, plus `tests/spurs-women/*`), run via `npx playwright test` and in CI via `.github/workflows/playwright.yml` across chromium/firefox/webkit.
+  - E2E testing with Playwright is now implemented: 14 spec files under `tests/` (personal-site pages, `tests/accessibility.spec.ts`, `tests/bobbin.spec.ts`, plus `tests/spurs-women/*`), run via `npx playwright test` and in CI via `.github/workflows/playwright.yml` across chromium/firefox/webkit.
 
 ### Deployment Pipeline
 
