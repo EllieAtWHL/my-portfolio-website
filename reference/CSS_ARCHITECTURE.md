@@ -107,9 +107,8 @@ design, so applying the same rule to them would be a false positive.
 ### `experience.css`
 - **Purpose:** Experience page specific styles
 - **Contains:**
-  - `.experience-container`, `.tab-navigation`, `.experience-card`
-  - `.card-header`, `.company-logo`, `.job-title`
-  - `.certification-card`, `.award-card`
+  - `.experience-container`, `.tab-navigation`, `.experience-grid`
+  - Inner layout for the shared `Card` component: `.card-header`, `.company-logo` (plus `.photo-thumbnail` for photo crops), `.company-name`, `.role-*`
   - Modal styles (`.modal-overlay`, `.modal-content`)
   - Dark mode variants
   - Responsive breakpoints

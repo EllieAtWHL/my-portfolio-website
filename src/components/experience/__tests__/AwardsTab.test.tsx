@@ -1,11 +1,37 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { AwardsTab } from '../AwardsTab';
 
 describe('AwardsTab', () => {
-  it('renders both awards', () => {
+  it('renders every award, most recent first', () => {
     render(<AwardsTab />);
-    expect(screen.getByText('National Apprenticeship Awards 2023')).toBeInTheDocument();
-    expect(screen.getByText('All-Star Trailhead Ranger')).toBeInTheDocument();
+    const names = screen.getAllByRole('heading', { level: 3 }).map((heading) => heading.textContent);
+    expect(names).toEqual([
+      'Salesforce Golden Hoodie',
+      'National Apprenticeship Awards 2023',
+      'All-Star Trailhead Ranger',
+    ]);
+  });
+
+  it('uses the cropped thumbnail on the card when an award has one', () => {
+    render(<AwardsTab />);
+    const hoodieCardImage = screen.getByRole('img', { name: 'Salesforce Golden Hoodie' });
+    const apprenticeshipCardImage = screen.getByRole('img', { name: 'National Apprenticeship Awards 2023' });
+
+    expect(hoodieCardImage).toHaveAttribute('src', '/img/golden-hoodie-thumb.jpg');
+    expect(hoodieCardImage).toHaveClass('photo-thumbnail');
+    expect(apprenticeshipCardImage).toHaveAttribute('src', '/img/Highly Commended.jpg');
+    expect(apprenticeshipCardImage).not.toHaveClass('photo-thumbnail');
+  });
+
+  it('opens the detail modal for an award without additional info', () => {
+    render(<AwardsTab />);
+
+    fireEvent.click(screen.getByText('Salesforce Golden Hoodie'));
+
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByRole('heading', { name: 'Salesforce Golden Hoodie' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('img', { name: 'Salesforce Golden Hoodie' })).toHaveAttribute('src', '/img/golden-hoodie.jpg');
+    expect(within(dialog).getByText(/October 2026/)).toBeInTheDocument();
   });
 
   it('opens the detail modal with the additional info when an award is clicked', () => {

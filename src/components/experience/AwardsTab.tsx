@@ -9,11 +9,20 @@ interface Award {
   description: string;
   date: string;
   image: string;
+  // Square crop for the card; the modal still shows the full `image`
+  thumbnail?: string;
   additionalInfo?: string;
   additionalImages?: string[];
 }
 
 const awards: Award[] = [
+  {
+    name: 'Salesforce Golden Hoodie',
+    description: 'Recognising contributions to the Developer and Women in Technology communities',
+    date: 'October 2026',
+    image: '/img/golden-hoodie.jpg',
+    thumbnail: '/img/golden-hoodie-thumb.jpg'
+  },
   {
     name: 'National Apprenticeship Awards 2023',
     description: 'London Region Highly Commended Advanced Apprentice of the Year',
@@ -38,13 +47,13 @@ export function AwardsTab() {
         {awards.map((award, index) => (
           <Card key={index} variant="accent" padding="md" clickable onClick={() => setSelectedAward(award)}>
             <div className="card-header">
-              {award.image && (
+              {(award.thumbnail || award.image) && (
                 <img
-                  src={award.image}
+                  src={award.thumbnail || award.image}
                   alt={award.name}
                   width={60}
                   height={60}
-                  className="company-logo"
+                  className={award.thumbnail ? 'company-logo photo-thumbnail' : 'company-logo'}
                 />
               )}
               <div className="company-info">
