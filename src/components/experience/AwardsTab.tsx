@@ -15,6 +15,12 @@ interface Award {
 
 const awards: Award[] = [
   {
+    name: 'Salesforce Golden Hoodie',
+    description: 'Salesforce Golden Hoodie, recognising contributions to the Developer and Women in Technology communities',
+    date: 'October 2026',
+    image: '/img/golden-hoodie.jpg'
+  },
+  {
     name: 'National Apprenticeship Awards 2023',
     description: 'London Region Highly Commended Advanced Apprentice of the Year',
     date: 'October 2023',
