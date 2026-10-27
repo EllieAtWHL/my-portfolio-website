@@ -247,68 +247,6 @@
   font-weight: 500;
 }
 
-/* Awards */
-.awards-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2rem;
-  margin-top: 2rem;
-}
-
-.award-card {
-  background: var(--bg-white);
-  border-radius: 16px;
-  padding: 2rem;
-  box-shadow: 0 4px 20px var(--shadow-dark-08);
-  transition: all 0.3s ease;
-  border-left: 4px solid var(--brand-primary-dark);
-  position: relative;
-  overflow: hidden;
-  text-align: center;
-}
-
-.award-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 30px var(--shadow-dark-12);
-}
-
-.award-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 80px;
-}
-
-.award-image {
-  max-width: 100%;
-  height: auto;
-  max-height: 120px;
-  border-radius: 8px;
-  object-fit: contain;
-}
-
-.award-name {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--brand-primary-dark);
-  margin: 0 0 1rem 0;
-}
-
-.award-description {
-  color: var(--brand-primary-darkest);
-  line-height: 1.6;
-  margin: 0 0 1rem 0;
-}
-
-.award-date {
-  font-size: 0.9rem;
-  color: var(--neutral-gray);
-  margin: 0;
-  font-weight: 500;
-}
-
 /* Modal Styles */
 .modal-overlay {
   position: fixed;
@@ -517,24 +455,6 @@
   color: var(--dark-gray-medium);
 }
 
-.dark .award-card {
-  background: var(--dark-bg-opacity-50);
-  border-left-color: var(--dark-accent);
-  box-shadow: 0 4px 20px var(--shadow-dark-heavy);
-}
-
-.dark .award-name {
-  color: var(--dark-accent);
-}
-
-.dark .award-description {
-  color: var(--dark-text);
-}
-
-.dark .award-date {
-  color: var(--dark-gray-medium);
-}
-
 /* Dark mode for modal */
 .dark .modal-overlay {
   background: var(--shadow-black-90);
@@ -633,9 +553,5 @@
   .cert-image {
     width: 100px;
     height: 100px;
-  }
-
-  .award-card {
-    padding: 1.5rem;
   }
 }
