@@ -103,6 +103,12 @@
   padding: 8px;
 }
 
+/* Photo thumbnails fill the tile rather than sitting inside the logo padding */
+.company-logo.photo-thumbnail {
+  object-fit: cover;
+  padding: 0;
+}
+
 .company-info {
   flex: 1;
 }

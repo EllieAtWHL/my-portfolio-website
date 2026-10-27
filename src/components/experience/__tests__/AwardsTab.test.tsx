@@ -12,6 +12,16 @@ describe('AwardsTab', () => {
     ]);
   });
 
+  it('uses the cropped thumbnail on the card when an award has one', () => {
+    render(<AwardsTab />);
+    const [hoodieCardImage, apprenticeshipCardImage] = screen.getAllByRole('img');
+
+    expect(hoodieCardImage).toHaveAttribute('src', '/img/golden-hoodie-thumb.jpg');
+    expect(hoodieCardImage).toHaveClass('photo-thumbnail');
+    expect(apprenticeshipCardImage).toHaveAttribute('src', '/img/Highly Commended.jpg');
+    expect(apprenticeshipCardImage).not.toHaveClass('photo-thumbnail');
+  });
+
   it('opens the detail modal for an award without additional info', () => {
     render(<AwardsTab />);
 
