@@ -63,32 +63,6 @@
   width: 100%;
 }
 
-.experience-card {
-  background: var(--bg-white);
-  border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 20px var(--shadow-dark-08);
-  border-left: 4px solid var(--brand-primary-dark);
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.experience-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--brand-primary-dark), var(--dark-accent));
-}
-
-.experience-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 30px var(--shadow-dark-12);
-}
-
 .card-header {
   display: flex;
   align-items: flex-start;
@@ -120,38 +94,24 @@
   margin: 0 0 0.5rem 0;
 }
 
-.job-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--brand-primary-darkest);
-  margin: 0 0 0.25rem 0;
-}
-
-.job-date {
-  font-size: 0.9rem;
-  color: var(--neutral-gray);
-  margin: 0;
-  font-weight: 500;
-}
-
 .card-content {
   color: var(--brand-primary-darkest);
 }
 
-.job-description, .role-description {
+.role-description {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.job-description li, .role-description li {
+.role-description li {
   position: relative;
   padding-left: 1.5rem;
   margin-bottom: 0.75rem;
   line-height: 1.6;
 }
 
-.job-description li::before, .role-description li::before {
+.role-description li::before {
   content: '▸';
   position: absolute;
   left: 0;
@@ -204,53 +164,6 @@
   .cert-flex-container {
     gap: 6px;
   }
-}
-
-/* Certifications */
-.certification-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2rem;
-  margin-top: 2rem;
-}
-
-.certification-card {
-  background: var(--bg-white);
-  border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 20px var(--shadow-dark-08);
-  border-left: 4px solid var(--brand-primary-dark);
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  text-align: center;
-}
-
-.certification-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 30px var(--shadow-dark-12);
-}
-
-.cert-image {
-  width: 120px;
-  height: 120px;
-  object-fit: contain;
-  margin-bottom: 1rem;
-  border-radius: 8px;
-}
-
-.cert-name {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--brand-primary-dark);
-  margin: 0 0 0.5rem 0;
-}
-
-.cert-date {
-  font-size: 0.9rem;
-  color: var(--neutral-gray);
-  margin: 0;
-  font-weight: 500;
 }
 
 /* Modal Styles */
@@ -406,33 +319,15 @@
   box-shadow: 0 2px 12px var(--accent-opacity-15);
 }
 
-.dark .experience-card {
-  background: var(--dark-bg-opacity-50);
-  border-left-color: var(--dark-accent);
-  box-shadow: 0 4px 20px var(--shadow-dark-heavy);
-}
-
-.dark .experience-card::before {
-  background: linear-gradient(90deg, var(--dark-accent), var(--dark-accent-bright));
-}
-
 .dark .company-name {
   color: var(--dark-accent);
-}
-
-.dark .job-title {
-  color: var(--dark-text);
-}
-
-.dark .job-date {
-  color: var(--dark-gray-medium);
 }
 
 .dark .card-content {
   color: var(--dark-text);
 }
 
-.dark .job-description li::before, .dark .role-description li::before {
+.dark .role-description li::before {
   color: var(--dark-accent);
 }
 
@@ -445,19 +340,6 @@
 }
 
 .dark .role-date {
-  color: var(--dark-gray-medium);
-}
-
-.dark .certification-card {
-  background: var(--dark-bg-opacity-50);
-  box-shadow: 0 4px 20px var(--shadow-dark-heavy);
-}
-
-.dark .cert-name {
-  color: var(--dark-accent);
-}
-
-.dark .cert-date {
   color: var(--dark-gray-medium);
 }
 
@@ -526,10 +408,6 @@
     font-size: 0.9rem;
   }
 
-  .experience-card {
-    padding: 1rem;
-  }
-
   .card-header {
     flex-direction: column;
     gap: 0.5rem;
@@ -554,10 +432,5 @@
     padding: 0.5rem 0.75rem;
     min-width: 80px;
     font-size: 0.85rem;
-  }
-
-  .cert-image {
-    width: 100px;
-    height: 100px;
   }
 }

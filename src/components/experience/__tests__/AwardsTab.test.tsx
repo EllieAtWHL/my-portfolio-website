@@ -14,7 +14,8 @@ describe('AwardsTab', () => {
 
   it('uses the cropped thumbnail on the card when an award has one', () => {
     render(<AwardsTab />);
-    const [hoodieCardImage, apprenticeshipCardImage] = screen.getAllByRole('img');
+    const hoodieCardImage = screen.getByRole('img', { name: 'Salesforce Golden Hoodie' });
+    const apprenticeshipCardImage = screen.getByRole('img', { name: 'National Apprenticeship Awards 2023' });
 
     expect(hoodieCardImage).toHaveAttribute('src', '/img/golden-hoodie-thumb.jpg');
     expect(hoodieCardImage).toHaveClass('photo-thumbnail');

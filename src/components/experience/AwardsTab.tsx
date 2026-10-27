@@ -47,9 +47,9 @@ export function AwardsTab() {
         {awards.map((award, index) => (
           <Card key={index} variant="accent" padding="md" clickable onClick={() => setSelectedAward(award)}>
             <div className="card-header">
-              {award.image && (
+              {(award.thumbnail || award.image) && (
                 <img
-                  src={award.thumbnail ?? award.image}
+                  src={award.thumbnail || award.image}
                   alt={award.name}
                   width={60}
                   height={60}
