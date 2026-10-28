@@ -33,6 +33,9 @@ export default function InstagramPost({ url }: { url: string }) {
     blockquote.setAttribute('data-instgrm-permalink', url);
     blockquote.setAttribute('data-instgrm-version', '14');
     const link = document.createElement('a');
+    // Shown until embed.js swaps in the iframe (or for good, if it's blocked) -
+    // same Spurs link styling as the fallback below, not the global green <a>.
+    link.className = 'spurs-text venue-link';
     link.href = url;
     link.target = '_blank';
     link.rel = 'noopener noreferrer';

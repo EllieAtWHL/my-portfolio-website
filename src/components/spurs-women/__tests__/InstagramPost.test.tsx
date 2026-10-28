@@ -62,6 +62,7 @@ describe('InstagramPost', () => {
     const blockquote = container.querySelector('blockquote.instagram-media');
     expect(blockquote).toHaveAttribute('data-instgrm-permalink', POST_URL);
     expect(blockquote?.querySelector('a')).toHaveAttribute('href', POST_URL);
+    expect(blockquote?.querySelector('a')).toHaveClass('spurs-text', 'venue-link');
     expect(document.querySelector('script')).toHaveAttribute(
       'src',
       'https://www.instagram.com/embed.js'
