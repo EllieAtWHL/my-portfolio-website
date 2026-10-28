@@ -31,6 +31,7 @@ describe('stadiums data layer', () => {
       expect(mockFrom).toHaveBeenCalledWith('stadia');
       const chain = mockFrom.mock.results[0].value;
       expect(chain.eq).toHaveBeenCalledWith('slug', 'tottenham-hotspur-stadium');
+      expect(chain.eq).toHaveBeenCalledWith('spurs_women', true);
       expect(chain.single).toHaveBeenCalled();
     });
 
@@ -63,6 +64,7 @@ describe('stadiums data layer', () => {
       expect(mockFrom).toHaveBeenCalledWith('stadia');
       const chain = mockFrom.mock.results[0].value;
       expect(chain.eq).toHaveBeenCalledWith('home_team_id', '4');
+      expect(chain.eq).toHaveBeenCalledWith('spurs_women', true);
       expect(chain.order).toHaveBeenCalledWith('name');
     });
 
@@ -163,7 +165,7 @@ describe('stadiums data layer', () => {
       const { getAllStadiums } = await import('@/lib/data/stadiums');
       const result = await getAllStadiums();
 
-      expect(fetchAllFromDB).toHaveBeenCalledWith('stadia', 'name');
+      expect(fetchAllFromDB).toHaveBeenCalledWith('stadia', 'name', true, { spurs_women: true });
       expect(result).toEqual([{ id: 's1', name: 'Tottenham Hotspur Stadium' }]);
     });
 
@@ -178,8 +180,66 @@ describe('stadiums data layer', () => {
       const { getStadiumsWithMatchCounts } = await import('@/lib/data/stadiums');
       const result = await getStadiumsWithMatchCounts();
 
-      expect(fetchWithSingleMatchCountFromDB).toHaveBeenCalledWith('stadia', 'matches', 'stadium_id', 'name');
+      expect(fetchWithSingleMatchCountFromDB).toHaveBeenCalledWith('stadia', 'matches', 'stadium_id', 'name', { spurs_women: true });
       expect(result).toEqual([{ id: 's1', name: 'Tottenham Hotspur Stadium', match_count: 12 }]);
+    });
+  });
+  // WEB-222: stadia also holds Groundhopper-only grounds (spurs_women = false).
+  // A Spurs Women fetcher that forgot the filter would put them all on the
+  // Spurs Women pages, so every one is pinned here.
+  describe('Spurs Women filter (WEB-222)', () => {
+    it.each([
+      ['getStadiumBySlug', (m: typeof import('@/lib/data/stadiums')) => m.getStadiumBySlug('any-slug')],
+      ['getStadiumsForTeam', (m: typeof import('@/lib/data/stadiums')) => m.getStadiumsForTeam('4')],
+    ])('%s only returns spurs_women grounds', async (_name, call) => {
+      const mockFrom = mockSupabaseFrom({ stadia: { data: [], error: null } });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      await call(await import('@/lib/data/stadiums'));
+
+      expect(mockFrom.mock.results[0].value.eq).toHaveBeenCalledWith('spurs_women', true);
+    });
+
+    it.each([
+      ['getAllStadiums', 'fetchAllFromDB', (m: typeof import('@/lib/data/stadiums')) => m.getAllStadiums()],
+      ['getStadiumsWithMatchCounts', 'fetchWithSingleMatchCountFromDB', (m: typeof import('@/lib/data/stadiums')) => m.getStadiumsWithMatchCounts()],
+    ])('%s passes the spurs_women filter to %s', async (_name, fetcher, call) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const mocks = { fetchAllFromDB: jest.fn(async (..._args: unknown[]) => []), fetchWithSingleMatchCountFromDB: jest.fn(async (..._args: unknown[]) => []) };
+      jest.doMock('@/lib/data/generic-fetchers', () => mocks);
+
+      await call(await import('@/lib/data/stadiums'));
+
+      const args = mocks[fetcher as keyof typeof mocks].mock.calls[0];
+      expect(args[args.length - 1]).toEqual({ spurs_women: true });
+    });
+  });
+
+  describe('getGroundhopperStadiums', () => {
+    it('returns every ground with coordinates, Spurs Women or not', async () => {
+      const stadiums = [
+        { id: 's1', name: 'Emirates Stadium', spurs_women: true, latitude: 51.55, longitude: -0.1 },
+        { id: 's2', name: 'Anfield', spurs_women: false, latitude: 53.43, longitude: -2.96 },
+      ];
+      const mockFrom = mockSupabaseFrom({ stadia: { data: stadiums, error: null } });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getGroundhopperStadiums } = await import('@/lib/data/stadiums');
+      const result = await getGroundhopperStadiums();
+
+      expect(result).toEqual(stadiums);
+      const chain = mockFrom.mock.results[0].value;
+      expect(chain.eq).not.toHaveBeenCalledWith('spurs_women', expect.anything());
+      expect(chain.not).toHaveBeenCalledWith('latitude', 'is', null);
+      expect(chain.not).toHaveBeenCalledWith('longitude', 'is', null);
+    });
+
+    it('throws when the query errors', async () => {
+      const mockFrom = mockSupabaseFrom({ stadia: { data: null, error: { message: 'db down' } } });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getGroundhopperStadiums } = await import('@/lib/data/stadiums');
+      await expect(getGroundhopperStadiums()).rejects.toBeTruthy();
     });
   });
 });

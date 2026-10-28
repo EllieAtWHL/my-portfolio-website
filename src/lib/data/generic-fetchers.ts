@@ -1,16 +1,24 @@
 import { supabase } from '@/utils/supabase';
 
 /**
+ * Equality filters applied to a generic fetch, e.g. `{ spurs_women: true }`
+ * to keep Groundhopper-only grounds off the Spurs Women stadium pages.
+ */
+export type EqualityFilters = Record<string, string | number | boolean>;
+
+/**
  * Generic function to fetch all records from a table with optional ordering
  */
 export async function fetchAllFromDB<T>(
   tableName: string,
   orderByColumn: string = 'name',
-  ascending: boolean = true
+  ascending: boolean = true,
+  filters: EqualityFilters = {}
 ): Promise<T[]> {
   const { data, error } = await supabase
     .from(tableName)
     .select('*')
+    .match(filters)
     .order(orderByColumn, { ascending });
 
   if (error) {
@@ -121,12 +129,14 @@ export async function fetchWithSingleMatchCountFromDB<T extends { id: string | n
   tableName: string,
   matchTableName: string = 'matches',
   matchColumn: string = 'stadium_id',
-  orderByColumn: string = 'name'
+  orderByColumn: string = 'name',
+  filters: EqualityFilters = {}
 ): Promise<(T & { match_count: number })[]> {
   // Fetch entities first
   const { data: entitiesData, error: entitiesError } = await supabase
     .from(tableName)
     .select('*')
+    .match(filters)
     .order(orderByColumn);
 
   if (entitiesError) {

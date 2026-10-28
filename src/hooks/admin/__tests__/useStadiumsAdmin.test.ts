@@ -75,6 +75,7 @@ const expectedEmptyStadiumForm = {
   latitude: null,
   longitude: null,
   home_team_id: null,
+  spurs_women: true,
 };
 
 const expectedEmptyStadiumNameForm = {
@@ -107,6 +108,29 @@ describe('useStadiumsAdmin', () => {
 
   afterEach(() => {
     jest.restoreAllMocks();
+  });
+
+  describe('stadium scope filter (WEB-222)', () => {
+    const anfield: Stadium = { ...stadium, id: 'stadium-2', name: 'Anfield', slug: 'anfield', spurs_women: false };
+
+    it('shows only Spurs Women grounds by default', () => {
+      const { result } = setup([stadium, anfield]);
+
+      expect(result.current.stadiumScope).toBe('spurs-women');
+      expect(result.current.paginatedItems.map(s => s.id)).toEqual(['stadium-1']);
+    });
+
+    it('can show only Groundhopper grounds, or all of them, resetting to page 1', () => {
+      const { result } = setup([stadium, anfield]);
+
+      act(() => result.current.setCurrentPage(2));
+      act(() => result.current.setStadiumScope('game-only'));
+      expect(result.current.paginatedItems.map(s => s.id)).toEqual(['stadium-2']);
+      expect(result.current.currentPage).toBe(1);
+
+      act(() => result.current.setStadiumScope('all'));
+      expect(result.current.paginatedItems.map(s => s.id)).toEqual(['stadium-1', 'stadium-2']);
+    });
   });
 
   it('starts with the exact default state', () => {
@@ -213,6 +237,7 @@ describe('useStadiumsAdmin', () => {
         latitude: stadium.latitude,
         longitude: stadium.longitude,
         home_team_id: stadium.home_team_id,
+        spurs_women: true,
       });
       // Only the stadium name belonging to this stadium should be kept.
       expect(result.current.relatedStadiumNames).toEqual([stadiumName]);
@@ -342,6 +367,8 @@ describe('useStadiumsAdmin', () => {
       latitude: 51.5,
       longitude: -0.1,
       home_team_id: 3,
+      // Unticked, to prove the checkbox value is sent rather than defaulted.
+      spurs_women: false,
     };
     const expectedPayload = { ...filledForm };
     const fakeEvent = { preventDefault: jest.fn() } as unknown as React.FormEvent;
@@ -433,6 +460,26 @@ describe('useStadiumsAdmin', () => {
       // Stayed in edit mode; handleCancelEditStadium did not run.
       expect(result.current.isStadiumEditMode).toBe(true);
       expect(result.current.stadiumForm).toEqual(expectedPayload);
+    });
+
+    it('shows the server\'s reason when an update is refused (WEB-222)', async () => {
+      mockCallAdminApi.mockResolvedValueOnce({ data: [] }); // related-names GET
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ error: 'This ground has 3 Spurs Women matches, so it has to stay a Spurs Women ground.' }),
+      });
+      const { result, showMessage } = setup();
+
+      await act(async () => {
+        await result.current.handleEditStadium(stadium);
+      });
+      act(() => result.current.setStadiumForm({ ...filledForm, spurs_women: false }));
+      await act(async () => {
+        await result.current.handleStadiumSubmit(fakeEvent);
+      });
+
+      expect(showMessage).toHaveBeenCalledWith('This ground has 3 Spurs Women matches, so it has to stay a Spurs Women ground.', 'error');
+      expect(result.current.isStadiumEditMode).toBe(true);
     });
 
     it('still resets the form when the post-submit reload GET fails', async () => {

@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { FormWrapper } from './FormWrapper';
 import { FormField, TextInput, NumberInput, SelectInput, CheckboxInput, RadioGroup, TextArea } from './FormField';
 import { CollapsibleFormSection } from './CollapsibleFormSection';
 import { MatchStatsFields } from './MatchStatsFields';
 import { MatchExtraTimeFields } from './MatchExtraTimeFields';
+import SearchInput from '@/components/spurs-women/SearchInput';
 
 interface Team {
   id: number;
@@ -26,6 +28,7 @@ interface Stadium {
   id: string;
   name: string;
   city: string | null;
+  spurs_women?: boolean;
 }
 
 export interface MatchForm {
@@ -101,6 +104,29 @@ export function MatchForm({
   onDelete,
   onCancel,
 }: MatchFormProps) {
+  // stadia also holds every ground imported for Groundhopper (WEB-222), so the
+  // dropdown gets a type-to-filter box and lists Spurs Women grounds first.
+  // Picking a Groundhopper-only ground is fine: saving the match promotes it
+  // to a Spurs Women ground (database trigger, WEB-224).
+  const [stadiumFilter, setStadiumFilter] = useState('');
+  const stadiumDate = matchForm.date || new Date().toISOString().split('T')[0];
+  const stadiumOptions = stadiums
+    .map(stadium => {
+      const currentName = getCurrentStadiumName(stadium.id, stadiumDate);
+      const isSpursWomen = stadium.spurs_women !== false;
+      return {
+        value: stadium.id,
+        isSpursWomen,
+        label: `${currentName}${stadium.city && currentName !== stadium.name ? ` (${stadium.city})` : ''}${isSpursWomen ? '' : ' - Groundhopper only'}`,
+      };
+    })
+    .filter(option =>
+      !stadiumFilter ||
+      option.value === matchForm.stadium_id ||
+      option.label.toLowerCase().includes(stadiumFilter.trim().toLowerCase())
+    )
+    .sort((a, b) => Number(b.isSpursWomen) - Number(a.isSpursWomen) || a.label.localeCompare(b.label));
+
   return (
     <FormWrapper
       title="Match"
@@ -174,19 +200,26 @@ export function MatchForm({
           </FormField>
 
           <FormField label="Stadium" required htmlFor="stadium">
+            <div className="mb-2">
+              <SearchInput
+                id="stadium-filter"
+                label="Filter stadiums"
+                srOnlyLabel
+                placeholder="Type to filter stadiums..."
+                value={stadiumFilter}
+                onChange={setStadiumFilter}
+                // Enter in a text input submits the surrounding match form - not
+                // what anyone typing a filter means.
+                onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
+              />
+            </div>
             <SelectInput
               id="stadium"
               value={matchForm.stadium_id || ''}
               onChange={(value) => setMatchForm({ ...matchForm, stadium_id: value as string })}
-              options={stadiums.map(stadium => {
-                const currentName = getCurrentStadiumName(stadium.id, matchForm.date || new Date().toISOString().split('T')[0]);
-                return {
-                  value: stadium.id,
-                  label: `${currentName} ${stadium.city && currentName !== stadium.name ? `(${stadium.city})` : ''}`
-                };
-              })}
+              options={stadiumOptions}
               required
-              placeholder="Select stadium"
+              placeholder={stadiumFilter && stadiumOptions.length === 0 ? 'No stadiums match' : 'Select stadium'}
             />
           </FormField>
 

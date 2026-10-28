@@ -27,6 +27,7 @@ const stadiums: GroundhopperStadium[] = Array.from({ length: 7 }, (_, i) => ({
   openedYear: 1900 + i,
   latitude: 51.5,
   longitude: -0.1,
+  spursWomen: i < 2,
 }));
 
 function playRound(tap: 'Tap on target' | 'Tap far away' = 'Tap on target') {
@@ -79,7 +80,12 @@ describe('GroundhopperGame', () => {
     expect(screen.getByText('Groundhopper #1')).toBeInTheDocument();
     expect(screen.getByText('500')).toBeInTheDocument();
     expect(screen.getByText(/Streak 1 day · Best 1/)).toBeInTheDocument();
-    expect(screen.getAllByRole('link')).toHaveLength(5);
+    // Only Spurs Women grounds (stadium-0/1 here) link to a stadium page, and
+    // each is marked - the rest of the pool has no page to link to.
+    const links = screen.getAllByRole('link');
+    expect(links.length).toBeGreaterThanOrEqual(1);
+    links.forEach(link => expect(link.getAttribute('href')).toMatch(/\/spurs-women\/stadiums\/stadium-[01]$/));
+    expect(screen.getAllByText('Spurs Women ground')).toHaveLength(links.length);
     expect(JSON.parse(window.localStorage.getItem('groundhopper:v1:streak')!)).toEqual({
       lastPlayed: '2026-10-28',
       current: 1,

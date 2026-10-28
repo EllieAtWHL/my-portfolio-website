@@ -49,6 +49,11 @@ export interface StadiumName {
   valid_to: string | null;
 }
 
+// stadia holds both the Spurs Women grounds and grounds imported only for the
+// Groundhopper game (WEB-222). Every fetcher that feeds a Spurs Women page
+// filters to spurs_women = true; only getGroundhopperStadiums reads the lot.
+const SPURS_WOMEN_ONLY = { spurs_women: true };
+
 // Raw database fetch functions
 async function fetchStadiumBySlugFromDB(slug: string): Promise<Stadium | null> {
   const { data, error } = await supabase
@@ -58,6 +63,7 @@ async function fetchStadiumBySlugFromDB(slug: string): Promise<Stadium | null> {
       home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham)
     `)
     .eq('slug', slug)
+    .eq('spurs_women', true)
     .single();
 
   if (error) {
@@ -83,11 +89,11 @@ async function fetchStadiumNamesFromDB(stadiumId: string): Promise<StadiumName[]
 }
 
 async function fetchAllStadiumsFromDB(): Promise<Stadium[]> {
-  return fetchAllFromDB<Stadium>('stadia', 'name');
+  return fetchAllFromDB<Stadium>('stadia', 'name', true, SPURS_WOMEN_ONLY);
 }
 
 async function fetchStadiumsWithMatchCountsFromDB(): Promise<StadiumWithMatchCount[]> {
-  return fetchWithSingleMatchCountFromDB<Stadium>('stadia', 'matches', 'stadium_id', 'name');
+  return fetchWithSingleMatchCountFromDB<Stadium>('stadia', 'matches', 'stadium_id', 'name', SPURS_WOMEN_ONLY);
 }
 
 // A team can have more than one stadium on record (e.g. a bigger venue used for select
@@ -98,11 +104,28 @@ async function fetchStadiumsForTeamFromDB(teamId: string): Promise<Stadium[]> {
     .from('stadia')
     .select('*')
     .eq('home_team_id', teamId)
+    .eq('spurs_women', true)
     .order('name');
 
   if (error) {
     console.error('Error fetching stadiums for team:', error.message || JSON.stringify(error));
     return [];
+  }
+
+  return (data as Stadium[]) || [];
+}
+
+// Every ground with coordinates, Spurs Women or not - the Groundhopper pool.
+async function fetchGroundhopperStadiumsFromDB(): Promise<Stadium[]> {
+  const { data, error } = await supabase
+    .from('stadia')
+    .select('*')
+    .not('latitude', 'is', null)
+    .not('longitude', 'is', null)
+    .order('name');
+
+  if (error) {
+    throw error;
   }
 
   return (data as Stadium[]) || [];
@@ -152,6 +175,15 @@ export const getAllStadiums = createCachedFunction(
   fetchAllStadiumsFromDB,
   {
     keyParts: ['stadiums', 'all'],
+    tags: [CACHE_TAGS.STADIUMS],
+    revalidate: CACHE_TTL.STADIUM_DATA,
+  }
+);
+
+export const getGroundhopperStadiums = createCachedFunction(
+  fetchGroundhopperStadiumsFromDB,
+  {
+    keyParts: ['stadiums', 'groundhopper'],
     tags: [CACHE_TAGS.STADIUMS],
     revalidate: CACHE_TTL.STADIUM_DATA,
   }

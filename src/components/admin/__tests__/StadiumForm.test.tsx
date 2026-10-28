@@ -15,6 +15,7 @@ const baseForm = {
   latitude: null,
   longitude: null,
   home_team_id: null,
+  spurs_women: true,
 };
 
 const baseProps = {
@@ -100,5 +101,15 @@ describe('StadiumForm', () => {
 
     expect(onDelete).toHaveBeenCalledTimes(1);
     expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+  it('toggles the Spurs Women ground checkbox (WEB-222)', () => {
+    const setStadiumForm = jest.fn();
+    render(<StadiumForm {...baseProps} setStadiumForm={setStadiumForm} />);
+
+    const checkbox = screen.getByLabelText(/Spurs Women ground/i);
+    expect(checkbox).toBeChecked();
+    fireEvent.click(checkbox);
+
+    expect(setStadiumForm).toHaveBeenCalledWith(expect.objectContaining({ spurs_women: false }));
   });
 });

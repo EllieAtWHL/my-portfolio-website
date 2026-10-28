@@ -194,4 +194,58 @@ describe('MatchForm', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
+  describe('stadium field (WEB-222)', () => {
+    const grounds = [
+      { id: 'thfc', name: 'Tottenham Hotspur Stadium', city: 'London', spurs_women: true },
+      { id: 'anfield', name: 'Anfield', city: 'Liverpool', spurs_women: false },
+      { id: 'brisbane', name: 'Brisbane Road', city: 'London', spurs_women: true },
+    ];
+    const props = {
+      ...baseProps,
+      stadiums: grounds,
+      getCurrentStadiumName: (id: string) => grounds.find(g => g.id === id)!.name,
+    };
+    const optionLabels = () =>
+      Array.from((document.getElementById('stadium') as HTMLSelectElement).options)
+        .slice(1)
+        .map(o => o.textContent);
+
+    it('lists Spurs Women grounds first and marks Groundhopper-only ones', () => {
+      render(<MatchForm {...props} />);
+
+      expect(optionLabels()).toEqual([
+        'Brisbane Road',
+        'Tottenham Hotspur Stadium',
+        'Anfield - Groundhopper only',
+      ]);
+    });
+
+    it('filters the options as you type, keeping the selected stadium', () => {
+      render(<MatchForm {...props} matchForm={{ ...baseForm, stadium_id: 'thfc' }} />);
+
+      fireEvent.change(screen.getByLabelText('Filter stadiums'), { target: { value: 'anf' } });
+
+      expect(optionLabels()).toEqual(['Tottenham Hotspur Stadium', 'Anfield - Groundhopper only']);
+    });
+
+    it('says so when nothing matches', () => {
+      render(<MatchForm {...props} matchForm={{ ...baseForm, stadium_id: '' }} />);
+
+      fireEvent.change(screen.getByLabelText('Filter stadiums'), { target: { value: 'zzz' } });
+
+      expect(optionLabels()).toEqual([]);
+      expect(screen.getByRole('option', { name: 'No stadiums match' })).toBeInTheDocument();
+    });
+
+    it('does not submit the match when Enter is pressed in the filter', () => {
+      const onSubmit = jest.fn((e: { preventDefault: () => void }) => e.preventDefault());
+      render(<MatchForm {...props} onSubmit={onSubmit} />);
+
+      const filter = screen.getByLabelText('Filter stadiums');
+      const event = fireEvent.keyDown(filter, { key: 'Enter' });
+
+      expect(event).toBe(false); // default prevented
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+  });
 });

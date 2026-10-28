@@ -9,6 +9,7 @@ interface SearchInputProps {
   placeholder: string;
   value: string;
   onChange: (value: string) => void;
+  onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
 }
 
 // Shared label + text input for the "search/filter a list" boxes repeated
@@ -16,7 +17,7 @@ interface SearchInputProps {
 // own the surrounding wrapper div/margin or any result-count caption below
 // it, since those vary per caller (e.g. the players index shows one, the
 // admin panels don't) - only the label/input markup was ever identical.
-export default function SearchInput({ id, label, srOnlyLabel = false, placeholder, value, onChange }: SearchInputProps) {
+export default function SearchInput({ id, label, srOnlyLabel = false, placeholder, value, onChange, onKeyDown }: SearchInputProps) {
   return (
     <>
       <label htmlFor={id} className={srOnlyLabel ? 'sr-only' : 'block spurs-text text-xs font-medium mb-1'}>
@@ -28,6 +29,7 @@ export default function SearchInput({ id, label, srOnlyLabel = false, placeholde
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onKeyDown={onKeyDown}
         className="w-full px-4 py-2 rounded border border-[var(--spurs-input-border)] bg-[var(--spurs-input-bg)] text-[var(--spurs-input-text)] placeholder-[var(--spurs-input-placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--spurs-input-focus-ring)]"
       />
     </>

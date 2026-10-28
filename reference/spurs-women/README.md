@@ -74,7 +74,7 @@ components never fetch data directly. Caching is applied here (see
 | `matches.ts` | `getUpcomingMatches`, `getPreviousMatches`, `getAllMatches`, `getSeasonMatches`, `getMatchById`, `getAdjacentMatches` |
 | `seasons.ts` | `getSeasons`, `getSeasonsWithMatchCounts`, `getSeasonById`, `getSeasonReview` |
 | `news.ts` | `getSpursWomenNews`, `getSpursWomenVideos`, `getPodcasts`, `getHomePageContent` |
-| `stadiums.ts` | `getStadiumBySlug`, `getAllStadiums`, `getStadiumsWithMatchCounts`, `getStadiumNames`, `getMatchesAtStadium`, `getCurrentStadiumName` |
+| `stadiums.ts` | `getStadiumBySlug`, `getAllStadiums`, `getStadiumsWithMatchCounts`, `getStadiumNames`, `getMatchesAtStadium`, `getCurrentStadiumName` - the list/slug/team fetchers (`getAllStadiums`, `getStadiumsWithMatchCounts`, `getStadiumBySlug`, `getStadiumsForTeam`) are limited to `spurs_women = true` grounds - plus `getGroundhopperStadiums` (every ground with coordinates, for Groundhopper - see `groundhopper/README.md`) |
 | `players.ts` | `getPlayersByMatch`, `getTeamLineupsByMatch`, `getPlayerById`, `getAllPlayers` |
 | `teams.ts` | `getAllTeams`, `getTeamsWithMatchCounts`, `getTeamById`, `getMatchesForTeam`, `getPlayersForTeam` |
 | `media.ts` | `getMediaByMatch`, `getPhotosByMatch`, `getArticlesByMatch`, `getSocialMediaByMatch`, `getVideosByMatch` |
@@ -87,7 +87,7 @@ Core tables (Supabase/PostgreSQL):
 - **`teams`** - `id` (int), `name`, `short_name`, `primary_color`, `secondary_color`, `is_tottenham`
 - **`seasons`** - `id`, `name`, `start_date`, `end_date`, `season_review`
 - **`competitions`** - `id`, `name`, `type`, `nickname`, `icon_svg`
-- **`stadia`** (plural table name) - venue details, capacity, location, `home_team_id`
+- **`stadia`** (plural table name) - venue details, capacity, location, `home_team_id`; `spurs_women` separates Spurs Women grounds from grounds imported only for Groundhopper (see `groundhopper/README.md`)
 - **`stadium_names`** - historical name changes per stadium, with `valid_from`/`valid_to`
 - **`players`** - profile fields, indexed on `last_name`
 - **`player_history`** - squad membership per team (`joined_on`/`left_on`, `on_loan_from_team_id` for loan spells), indexed on `player_id`/`team_id`

@@ -1,5 +1,5 @@
 import { FormWrapper } from './FormWrapper';
-import { FormField, TextInput, NumberInput, SelectInput } from './FormField';
+import { FormField, TextInput, NumberInput, SelectInput, CheckboxInput } from './FormField';
 
 interface Team {
   id: number;
@@ -18,6 +18,7 @@ interface StadiumFormValues {
   latitude: number | null;
   longitude: number | null;
   home_team_id: number | null;
+  spurs_women: boolean;
 }
 
 interface StadiumFormProps {
@@ -151,6 +152,15 @@ export function StadiumForm({
               onChange={(value) => setStadiumForm({ ...stadiumForm, longitude: value })}
             />
           </FormField>
+        </div>
+        <div className="mt-6">
+          <CheckboxInput
+            id="stadium-spurs-women"
+            name="spurs_women"
+            checked={stadiumForm.spurs_women !== false}
+            onChange={(checked) => setStadiumForm({ ...stadiumForm, spurs_women: checked })}
+            label="Spurs Women ground (shown on the Spurs Women stadium pages; untick for grounds that are only in Groundhopper)"
+          />
         </div>
       </FormWrapper>
   );
