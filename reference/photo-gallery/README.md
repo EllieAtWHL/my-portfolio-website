@@ -283,8 +283,9 @@ uploaded, resized, and committed automatically:
    phone can still run out of memory partway through. Firefox is untested.
    The Upload Photos modal checks for these capabilities itself (not the
    browser name) and, when they're missing, shows a warning to upload
-   around 5 photos at a time or switch to Chrome. Uploading from a computer
-   is fine in any browser. JPEGs are recognised by their bytes, not the
+   around 5 photos at a time or switch to Chrome (making non-Chromium
+   uploads reliable is tracked in WEB-225). Uploading from a computer is
+   fine in any browser. JPEGs are recognised by their bytes, not the
    file's declared type, and one ImageDecoder can't handle (e.g. CMYK)
    falls back to the full-size decode.
 2. `POST /api/admin/photo-upload` (one request per photo - keeps each
