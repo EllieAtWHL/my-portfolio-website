@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { Card } from '@/components/Card';
-import { getStadiumsWithMatchCounts, StadiumWithMatchCount, getStadiumNames, getCurrentStadiumName } from '@/lib/data/stadiums';
+import { getStadiumsWithMatchCounts, StadiumWithMatchCount, StadiumName, getAllStadiumNames, getCurrentStadiumName } from '@/lib/data/stadiums';
 import Link from 'next/link';
 import { generatePageMetadata } from '@/lib/metadata';
 
@@ -20,17 +20,19 @@ export default async function StadiumsPage() {
     console.error('Error fetching stadiums:', error);
   }
 
-  // Fetch stadium names for each stadium to get current names
-  const stadiumsWithCurrentNames = await Promise.all(
-    stadiums.map(async (stadium) => {
-      const stadiumNames = await getStadiumNames(stadium.id);
-      const currentName = getCurrentStadiumName(stadiumNames);
-      return {
-        ...stadium,
-        currentName: currentName || stadium.name
-      };
-    })
-  );
+  // Every stadium's name history in one query; without it, stadiums just show
+  // their stadia name rather than taking the whole page down.
+  let namesByStadium: Record<string, StadiumName[]> = {};
+  try {
+    namesByStadium = await getAllStadiumNames();
+  } catch (error) {
+    console.error('Error fetching stadium names:', error);
+  }
+
+  const stadiumsWithCurrentNames = stadiums.map((stadium) => ({
+    ...stadium,
+    currentName: getCurrentStadiumName(namesByStadium[stadium.id] ?? []) || stadium.name
+  }));
 
   // Sort alphabetically by current name
   stadiumsWithCurrentNames.sort((a, b) => a.currentName.localeCompare(b.currentName));

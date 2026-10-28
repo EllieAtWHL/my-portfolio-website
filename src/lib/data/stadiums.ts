@@ -88,6 +88,21 @@ async function fetchStadiumNamesFromDB(stadiumId: string): Promise<StadiumName[]
   return data as StadiumName[];
 }
 
+// One query for every stadium's name history, so the list pages don't need a
+// stadium_names round trip per stadium (WEB-221).
+async function fetchAllStadiumNamesFromDB(): Promise<Record<string, StadiumName[]>> {
+  const { data, error } = await supabase
+    .from('stadium_names')
+    .select('*')
+    .order('valid_from', { ascending: false });
+
+  if (error) {
+    throw error;
+  }
+
+  return groupStadiumNamesByStadium((data as StadiumName[]) || []);
+}
+
 async function fetchAllStadiumsFromDB(): Promise<Stadium[]> {
   return fetchAllFromDB<Stadium>('stadia', 'name', true, SPURS_WOMEN_ONLY);
 }
@@ -207,6 +222,15 @@ export const getStadiumNames = createCachedFunction(
   }
 );
 
+export const getAllStadiumNames = createCachedFunction(
+  fetchAllStadiumNamesFromDB,
+  {
+    keyParts: ['stadium-names', 'all'],
+    tags: [CACHE_TAGS.STADIUM_NAMES],
+    revalidate: CACHE_TTL.STADIUM_DATA,
+  }
+);
+
 export const getMatchesAtStadium = createCachedFunction(
   fetchMatchesAtStadiumFromDB,
   {
@@ -215,6 +239,17 @@ export const getMatchesAtStadium = createCachedFunction(
     revalidate: CACHE_TTL.CURRENT_SEASON_MATCHES,
   }
 );
+
+// A plain object rather than a Map, since unstable_cache stores results as JSON.
+// Keeps each stadium's names in the order given, which getCurrentStadiumName
+// relies on (most recent valid_from first).
+export function groupStadiumNamesByStadium(stadiumNames: StadiumName[]): Record<string, StadiumName[]> {
+  const grouped: Record<string, StadiumName[]> = {};
+  for (const name of stadiumNames) {
+    (grouped[name.stadium_id] ??= []).push(name);
+  }
+  return grouped;
+}
 
 export function getCurrentStadiumName(stadiumNames: StadiumName[], date?: Date): string | null {
   if (!stadiumNames || stadiumNames.length === 0) {

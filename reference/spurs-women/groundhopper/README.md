@@ -69,14 +69,11 @@ than a separate table):
 
 - The page (`src/app/spurs-women/groundhopper/page.tsx`) reads
   `getGroundhopperStadiums` (every ground with coordinates) through the data
-  layer. Current sponsor names (`getStadiumNames`/`getCurrentStadiumName`) are
-  only looked up for Spurs Women grounds; imported ones have no name history.
-  A failed names lookup just means no "now known as" line for that stadium.
-  Known limitation: name history added to a Groundhopper-only ground isn't
-  shown until it becomes a Spurs Women ground (one bulk names query would fix
-  this and the per-stadium lookups, see
-  [WEB-221](https://eleanormatthewman.atlassian.net/browse/WEB-221)).
-  The page is statically rendered and revalidated with the stadium cache
+  layer. Current sponsor names come from one `getAllStadiumNames` query
+  (every ground's `stadium_names` history, grouped by stadium) passed through
+  `getCurrentStadiumName`, so a Groundhopper-only ground with name history
+  added in admin shows its current name too. A failed names lookup just means
+  no "now known as" line on any reveal. The page is statically rendered and revalidated with the stadium cache
   TTL/tags, like the Stadiums page.
 - `toGroundhopperStadium` drops anything without valid `latitude`/`longitude`,
   including `(0, 0)`, which is an unfilled form rather than a real location.
