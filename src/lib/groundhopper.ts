@@ -17,6 +17,9 @@ export interface GroundhopperStadium {
   openedYear: number | null;
   latitude: number;
   longitude: number;
+  // On the Spurs Women pages (stadia.spurs_women) - every daily set includes
+  // one, and only these have a stadium page to link to.
+  spursWomen: boolean;
 }
 
 export interface LatLng {
@@ -76,6 +79,7 @@ export function toGroundhopperStadium(
     openedYear: openedYear !== null && Number.isFinite(openedYear) ? openedYear : null,
     latitude,
     longitude,
+    spursWomen: stadium.spurs_women,
   };
 }
 
@@ -143,9 +147,22 @@ function mulberry32(seed: number): () => number {
   };
 }
 
+function shuffle<T>(items: T[], random: () => number): T[] {
+  const result = [...items];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
 // Sorted by id first so the result doesn't depend on the order the DB returns
 // rows in. Adding a stadium does reshuffle the day's set for anyone who hasn't
 // started yet - an in-progress game keeps its own stadium ids (see the hook).
+//
+// Every day includes one Spurs Women ground (if there are any), so the game
+// stays a Spurs Women game however many other grounds are in the pool. It
+// lands in a random round, not always the first.
 export function dailyStadiums(
   stadiums: GroundhopperStadium[],
   dateKey: string,
@@ -153,11 +170,12 @@ export function dailyStadiums(
 ): GroundhopperStadium[] {
   const pool = [...stadiums].sort((a, b) => a.id.localeCompare(b.id));
   const random = mulberry32(hashString(`groundhopper:${dateKey}`));
-  for (let i = pool.length - 1; i > 0; i--) {
-    const j = Math.floor(random() * (i + 1));
-    [pool[i], pool[j]] = [pool[j], pool[i]];
+  const [featured] = shuffle(pool.filter(s => s.spursWomen), random);
+  if (!featured) {
+    return shuffle(pool, random).slice(0, count);
   }
-  return pool.slice(0, count);
+  const others = shuffle(pool.filter(s => s.id !== featured.id), random).slice(0, Math.max(0, count - 1));
+  return shuffle([featured, ...others], random);
 }
 
 export function updateStreak(previous: StreakState, dateKey: string): StreakState {

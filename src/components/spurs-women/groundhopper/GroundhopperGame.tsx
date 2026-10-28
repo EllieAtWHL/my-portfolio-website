@@ -28,6 +28,11 @@ function stadiumFacts(stadium: GroundhopperStadium): string[] {
   return facts;
 }
 
+// Shown on the reveal and in the results, not while guessing.
+function SpursWomenBadge({ stadium }: { stadium: GroundhopperStadium }) {
+  return stadium.spursWomen ? <span className="groundhopper-badge">Spurs Women ground</span> : null;
+}
+
 function RoundPips({ total, scores, current }: { total: number; scores: number[]; current: number }) {
   return (
     <ol className="groundhopper-pips" aria-label="Round scores">
@@ -104,9 +109,15 @@ export default function GroundhopperGame({ stadiums }: GroundhopperGameProps) {
                 <Card variant="spursAccent" padding="sm" hover={false}>
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <Link href={`/spurs-women/stadiums/${stadium.slug}`} className="spurs-text font-semibold underline-offset-2 hover:underline">
-                        {stadium.name}
-                      </Link>
+                      {/* Only Spurs Women grounds have a stadium page - the rest would 404. */}
+                      {stadium.spursWomen ? (
+                        <Link href={`/spurs-women/stadiums/${stadium.slug}`} className="spurs-text font-semibold underline-offset-2 hover:underline">
+                          {stadium.name}
+                        </Link>
+                      ) : (
+                        <span className="spurs-text font-semibold">{stadium.name}</span>
+                      )}
+                      <SpursWomenBadge stadium={stadium} />
                       {stadium.currentName && <p className="spurs-text text-xs opacity-75">Now {stadium.currentName}</p>}
                       <p className="spurs-text text-xs opacity-75">{stadiumFacts(stadium).join(' · ')}</p>
                     </div>
@@ -163,6 +174,7 @@ export default function GroundhopperGame({ stadiums }: GroundhopperGameProps) {
                 <span className="groundhopper-round-score">{result.score}</span>
                 <span className="spurs-text text-sm"> points · {formatDistance(result.distanceKm)} away</span>
               </p>
+              <SpursWomenBadge stadium={stadium} />
               {stadium.currentName && <p className="spurs-text text-xs opacity-75">Now {stadium.currentName}</p>}
               <p className="spurs-text text-xs opacity-75">{stadiumFacts(stadium).join(' · ')}</p>
             </>

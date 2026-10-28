@@ -43,6 +43,7 @@ function playable(n: number): GroundhopperStadium[] {
     openedYear: null,
     latitude: 51 + i / 10,
     longitude: -1 + i / 10,
+    spursWomen: i % 4 === 0,
   }));
 }
 
@@ -59,6 +60,7 @@ describe('toGroundhopperStadium', () => {
       openedYear: 1998,
       latitude: 51.422222,
       longitude: -0.982778,
+      spursWomen: true,
     });
     expect(toGroundhopperStadium(baseStadium, 'Madejski Stadium')?.currentName).toBeNull();
     expect(toGroundhopperStadium(baseStadium, null)?.currentName).toBeNull();
@@ -131,6 +133,33 @@ describe('dailyStadiums', () => {
     const today = dailyStadiums(pool, '2026-10-28').map(s => s.id);
     const tomorrow = dailyStadiums(pool, '2026-10-29').map(s => s.id);
     expect(tomorrow).not.toEqual(today);
+  });
+
+  it('always includes at least one Spurs Women ground, in varying rounds', () => {
+    const days = Array.from({ length: 60 }, (_, i) => `2026-11-${String((i % 28) + 1).padStart(2, '0')}-${i}`);
+    const positions = new Set<number>();
+    for (const day of days) {
+      const set = dailyStadiums(pool, day);
+      expect(set).toHaveLength(5);
+      expect(set.some(s => s.spursWomen)).toBe(true);
+      positions.add(set.findIndex(s => s.spursWomen));
+    }
+    // Not always round 1.
+    expect(positions.size).toBeGreaterThan(1);
+  });
+
+  it('still includes the one Spurs Women ground when it is the only one', () => {
+    const onlyOne = playable(12).map((s, i) => ({ ...s, spursWomen: i === 7 }));
+    for (const day of ['2026-10-28', '2026-10-29', '2026-10-30']) {
+      expect(dailyStadiums(onlyOne, day).map(s => s.id)).toContain('stadium-07');
+    }
+  });
+
+  it('falls back to the plain shuffle when there are no Spurs Women grounds', () => {
+    const none = playable(12).map(s => ({ ...s, spursWomen: false }));
+    const set = dailyStadiums(none, '2026-10-28');
+    expect(set).toHaveLength(5);
+    expect(new Set(set.map(s => s.id)).size).toBe(5);
   });
 
   it('uses every stadium available when there are fewer than five', () => {

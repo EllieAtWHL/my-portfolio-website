@@ -254,3 +254,16 @@
 .groundhopper-summary .spurs-accent-card p {
   margin-bottom: 0;
 }
+
+/* "Spurs Women ground" - one of each day's five, marked once revealed. */
+.groundhopper-badge {
+  border: 1px solid var(--spurs-dark-accent);
+  border-radius: 999px;
+  color: var(--spurs-dark-accent);
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin: 0.25rem 0;
+  padding: 0.05rem 0.5rem;
+}
