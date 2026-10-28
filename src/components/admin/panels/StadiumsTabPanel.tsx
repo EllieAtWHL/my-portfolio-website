@@ -11,6 +11,14 @@ import { SelectInput } from '@/components/admin/FormField';
 import { useStadiumsAdmin } from '@/hooks/admin/useStadiumsAdmin';
 import type { Team } from '@/types/spurs-women-admin';
 
+// Says which grounds the scope filter is showing - otherwise "All Stadiums"
+// would sit above a list with every Groundhopper-only ground hidden.
+const SCOPE_HEADINGS = {
+  'spurs-women': 'Spurs Women grounds',
+  'game-only': 'Groundhopper-only grounds',
+  all: 'All grounds',
+} as const;
+
 interface StadiumsTabPanelProps {
   stadiumsAdmin: ReturnType<typeof useStadiumsAdmin>;
   teams: Team[];
@@ -109,7 +117,7 @@ export function StadiumsTabPanel({ stadiumsAdmin, teams, loading }: StadiumsTabP
       <div className="mt-8 spurs-accent-card rounded-lg p-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="font-semibold spurs-text">
-            {stadiumSearch ? `All Stadiums (${filteredStadiumsCount} filtered)` : 'All Stadiums'}
+            {SCOPE_HEADINGS[stadiumScope]} ({filteredStadiumsCount}{stadiumSearch ? ' matching' : ''})
           </h3>
         </div>
         <div className="mb-4 flex flex-col gap-3 sm:flex-row">

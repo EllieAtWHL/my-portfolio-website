@@ -168,6 +168,9 @@ export function dailyStadiums(
   dateKey: string,
   count = ROUNDS_PER_DAY
 ): GroundhopperStadium[] {
+  if (count <= 0) {
+    return [];
+  }
   const pool = [...stadiums].sort((a, b) => a.id.localeCompare(b.id));
   const random = mulberry32(hashString(`groundhopper:${dateKey}`));
   const [featured] = shuffle(pool.filter(s => s.spursWomen), random);

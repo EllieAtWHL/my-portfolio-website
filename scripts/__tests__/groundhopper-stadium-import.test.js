@@ -73,29 +73,44 @@ const SCOTTISH_TABLE = `{|class="wikitable sortable" style="text-align:center"
 
 describe('parseStadiumTable', () => {
   it('reads one-cell-per-line tables, ignoring refs, efn notes and style attributes', () => {
-    expect(parseStadiumTable(PREMIER_LEAGUE_TABLE)).toEqual([
+    expect(parseStadiumTable(PREMIER_LEAGUE_TABLE).rows).toEqual([
       { club: 'Arsenal', city: 'London', stadiumTitle: 'Emirates Stadium' },
       { club: 'Aston Villa', city: 'Birmingham', stadiumTitle: 'Villa Park' },
       { club: 'Brentford', city: 'London', stadiumTitle: 'Brentford Community Stadium' },
     ]);
   });
 
-  it('reads single-line tables, finds a "Ground" column, and skips rows with no stadium link', () => {
-    expect(parseStadiumTable(WSL_TABLE)).toEqual([
+  it('reads single-line tables, finds a "Ground" column, and reports rows with no stadium link', () => {
+    const { rows, problems } = parseStadiumTable(WSL_TABLE);
+    expect(rows).toEqual([
       { club: 'Birmingham City', city: 'Birmingham', stadiumTitle: "St Andrew's (stadium)" },
       { club: 'Brighton & Hove Albion', city: 'Crawley', stadiumTitle: 'Broadfield Stadium' },
     ]);
+    expect(problems).toEqual([{ club: 'Placeholder FC', reason: 'no linked ground in "To be confirmed"' }]);
+  });
+
+  it('reports a row shifted by a rowspan instead of reading the wrong column', () => {
+    const table = `{| class="wikitable"
+! Team !! Location !! Stadium !! Capacity
+|-
+| [[Fulham F.C.|Fulham]] || rowspan="2" | [[London]] || [[Craven Cottage]] || 25,700
+|-
+| [[Chelsea F.C.|Chelsea]] || [[Stamford Bridge (stadium)|Stamford Bridge]] || 40,044
+|}`;
+    const { rows, problems } = parseStadiumTable(table);
+    expect(rows).toEqual([{ club: 'Fulham', city: 'London', stadiumTitle: 'Craven Cottage' }]);
+    expect(problems).toEqual([{ club: 'Chelsea', reason: 'row has 3 cells but the header has 4 (rowspan/colspan?)' }]);
   });
 
   it('reads row-header club cells and tables with no location column', () => {
-    expect(parseStadiumTable(SCOTTISH_TABLE)).toEqual([
+    expect(parseStadiumTable(SCOTTISH_TABLE).rows).toEqual([
       { club: 'Aberdeen', city: null, stadiumTitle: 'Pittodrie Stadium' },
       { club: 'Celtic', city: null, stadiumTitle: 'Celtic Park' },
     ]);
   });
 
   it('returns nothing when there is no table', () => {
-    expect(parseStadiumTable('No table here')).toEqual([]);
+    expect(parseStadiumTable('No table here')).toEqual({ rows: [], problems: [] });
   });
 });
 
@@ -236,6 +251,14 @@ describe('planImport', () => {
     // goes to Dens Park even though Tannadice is listed first.
     expect(updates.map((u) => u.ground.name)).toEqual(['Dens Park']);
     expect(inserts.map((i) => i.name)).toEqual(['Tannadice Park']);
+  });
+
+  it('flags, rather than inserts, a ground next to a row linked to a different Wikidata item', () => {
+    const existing = existingRow({ name: 'Villa Park', wikidata_qid: 'Q100', latitude: 52.509, longitude: -1.8848 });
+    const { inserts, skipped } = planImport([ground({ qid: 'Q200', name: 'Villa Park', latitude: 52.5091, longitude: -1.8849 })], [existing]);
+
+    expect(inserts).toEqual([]);
+    expect(skipped[0].reason).toBe('within 500 m of "Villa Park", which is linked to a different Wikidata item (Q100) - check by hand');
   });
 
   it('skips grounds with no coordinates, bad coordinates or no Wikidata ID', () => {

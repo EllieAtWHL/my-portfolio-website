@@ -165,6 +165,7 @@ describe('dailyStadiums', () => {
   it('uses every stadium available when there are fewer than five', () => {
     expect(dailyStadiums(playable(3), '2026-10-28')).toHaveLength(3);
     expect(dailyStadiums([], '2026-10-28')).toEqual([]);
+    expect(dailyStadiums(pool, '2026-10-28', 0)).toEqual([]);
   });
 });
 

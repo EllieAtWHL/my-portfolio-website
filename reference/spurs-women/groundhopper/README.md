@@ -56,7 +56,12 @@ than a separate table):
 - **Promotion is automatic:** saving a match at a Groundhopper-only ground
   sets `spurs_women = true` (the `matches_promote_stadium_to_spurs_women`
   trigger, WEB-224), so it moves onto the Spurs Women pages when Spurs Women
-  play there.
+  play there. The match routes also clear the `stadiums` cache tag. The admin
+  match form's dropdown keeps showing the old "Groundhopper only" label until
+  the admin page is reloaded.
+- **Demotion is guarded:** the stadia admin route refuses to untick "Spurs
+  Women ground" on a ground that has matches, since every match's stadium link
+  would 404.
 - **Admin:** the stadium form has the checkbox, and the stadiums list has a
   "Show" filter (Spurs Women grounds by default). The match form's stadium field
   has a type-to-filter box, lists Spurs Women grounds first, and marks the
@@ -67,6 +72,10 @@ than a separate table):
   layer. Current sponsor names (`getStadiumNames`/`getCurrentStadiumName`) are
   only looked up for Spurs Women grounds; imported ones have no name history.
   A failed names lookup just means no "now known as" line for that stadium.
+  Known limitation: name history added to a Groundhopper-only ground isn't
+  shown until it becomes a Spurs Women ground (one bulk names query would fix
+  this and the per-stadium lookups, see
+  [WEB-221](https://eleanormatthewman.atlassian.net/browse/WEB-221)).
   The page is statically rendered and revalidated with the stadium cache
   TTL/tags, like the Stadiums page.
 - `toGroundhopperStadium` drops anything without valid `latitude`/`longitude`,

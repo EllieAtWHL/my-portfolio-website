@@ -462,6 +462,26 @@ describe('useStadiumsAdmin', () => {
       expect(result.current.stadiumForm).toEqual(expectedPayload);
     });
 
+    it('shows the server\'s reason when an update is refused (WEB-222)', async () => {
+      mockCallAdminApi.mockResolvedValueOnce({ data: [] }); // related-names GET
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ error: 'This ground has 3 Spurs Women matches, so it has to stay a Spurs Women ground.' }),
+      });
+      const { result, showMessage } = setup();
+
+      await act(async () => {
+        await result.current.handleEditStadium(stadium);
+      });
+      act(() => result.current.setStadiumForm({ ...filledForm, spurs_women: false }));
+      await act(async () => {
+        await result.current.handleStadiumSubmit(fakeEvent);
+      });
+
+      expect(showMessage).toHaveBeenCalledWith('This ground has 3 Spurs Women matches, so it has to stay a Spurs Women ground.', 'error');
+      expect(result.current.isStadiumEditMode).toBe(true);
+    });
+
     it('still resets the form when the post-submit reload GET fails', async () => {
       mockCreateEntityAndReload.mockResolvedValueOnce(undefined);
       mockCallAdminApi.mockRejectedValueOnce(new Error('reload failed'));

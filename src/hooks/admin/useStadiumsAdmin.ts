@@ -142,6 +142,7 @@ export function useStadiumsAdmin({ recentStadiums, setStadiums, setRecentStadium
   const handleStadiumSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    let serverError: string | null = null;
     try {
       const payload = {
         name: stadiumForm.name,
@@ -165,6 +166,13 @@ export function useStadiumsAdmin({ recentStadiums, setStadiums, setRecentStadium
           body: JSON.stringify({ id: editingStadiumId, ...payload }),
         });
         if (!response.ok) {
+          // e.g. the stadia route refusing to untick "Spurs Women ground" on a
+          // ground that has matches - worth showing, not just "Error updating".
+          try {
+            serverError = (await response.json())?.error ?? null;
+          } catch {
+            // No JSON body - fall back to the generic message.
+          }
           throw new Error('Failed to update stadium');
         }
         showMessage('Stadium updated successfully', 'success');
@@ -185,7 +193,7 @@ export function useStadiumsAdmin({ recentStadiums, setStadiums, setRecentStadium
 
       handleCancelEditStadium();
     } catch (error) {
-      showMessage(isStadiumEditMode ? 'Error updating stadium' : 'Error creating stadium', 'error');
+      showMessage(serverError ?? (isStadiumEditMode ? 'Error updating stadium' : 'Error creating stadium'), 'error');
       console.error('Error saving stadium:', error);
     } finally {
       setLoading(false);

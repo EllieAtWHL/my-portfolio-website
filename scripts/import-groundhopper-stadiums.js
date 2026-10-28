@@ -104,8 +104,11 @@ async function fetchLeagueRows(league, season) {
     return [];
   }
   const { parse: sectionParse } = await wikipedia({ action: 'parse', page, prop: 'wikitext', section: section.index });
-  const rows = parseStadiumTable(sectionParse.wikitext);
+  const { rows, problems } = parseStadiumTable(sectionParse.wikitext);
   console.log(`  ${league.name}: ${rows.length} grounds from "${page}" § ${section.line}`);
+  for (const problem of problems) {
+    console.warn(`    ! couldn't read ${problem.club || 'a row'}: ${problem.reason} - add by hand if needed`);
+  }
   return rows.map((row) => ({ ...row, league: league.name }));
 }
 
@@ -277,22 +280,27 @@ async function main() {
     return;
   }
 
+  // Whatever happens below, revalidate if anything was written - a failure
+  // halfway through still leaves the earlier writes in production.
+  let updated = 0;
+  const fail = async (message) => {
+    console.error(message);
+    console.error(`${updated} existing ground(s) were already updated before this failure.`);
+    if (updated > 0) await revalidateSiteCache();
+    process.exit(1);
+  };
+
   for (const update of plan.updates) {
     const { error } = await supabase.from('stadia').update(update.patch).eq('id', update.id);
-    if (error) {
-      console.error(`Update of ${update.name} failed: ${error.message}`);
-      process.exit(1);
-    }
+    if (error) await fail(`Update of ${update.name} failed: ${error.message}`);
+    updated++;
   }
   if (plan.inserts.length > 0) {
     const { data: inserted, error } = await supabase.from('stadia').insert(plan.inserts).select('id');
-    if (error) {
-      console.error(`Insert failed (nothing inserted): ${error.message}`);
-      process.exit(1);
-    }
+    if (error) await fail(`Insert failed (no new grounds inserted - it's a single statement): ${error.message}`);
     console.log(`\nInserted ${inserted.length} ground(s).`);
   }
-  console.log(`Updated ${plan.updates.length} existing ground(s).`);
+  console.log(`Updated ${updated} existing ground(s).`);
 
   await revalidateSiteCache();
 }

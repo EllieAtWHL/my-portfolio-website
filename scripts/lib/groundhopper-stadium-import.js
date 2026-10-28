@@ -53,20 +53,25 @@ function cellValue(raw) {
 
 /**
  * Parses the first wikitable in a season article's "Stadiums and locations"
- * (or "Teams") section into { club, city, stadiumTitle } rows. Finds the
- * stadium and location columns by header text, so column order doesn't
- * matter. Rows whose stadium cell has no link are skipped - every current
- * league ground has a Wikipedia article, and the link is what ties the row
- * to a Wikidata item.
+ * (or "Teams") section into { rows: [{ club, city, stadiumTitle }], problems }.
+ * Finds the stadium and location columns by header text, so column order
+ * doesn't matter.
+ *
+ * Rows it can't read reliably go in `problems` rather than being guessed at:
+ * a row with a different number of cells from the header (a rowspan/colspan
+ * shifts every column after it), or a stadium cell with no link (the link is
+ * what ties the row to a Wikidata item). The import prints these so they can
+ * be added by hand.
  */
 function parseStadiumTable(wikitext) {
+  const rows = [];
+  const problems = [];
   const start = wikitext.indexOf('{|');
-  if (start === -1) return [];
+  if (start === -1) return { rows, problems };
   const end = wikitext.indexOf('\n|}', start);
   const table = stripRefs(wikitext.slice(start, end === -1 ? undefined : end));
 
   let header = null;
-  const rows = [];
   for (const block of table.split(/\n\|-[^\n]*/)) {
     const lines = block.split('\n').filter((line) => line.trim() && !line.startsWith('{|') && !line.startsWith('|+'));
     if (lines.length === 0) continue;
@@ -87,17 +92,25 @@ function parseStadiumTable(wikitext) {
     // Word boundaries: "capacity" contains "city".
     const locationIndex = header.findIndex((h) => /\b(?:location|city|town)\b/.test(h));
     const teamIndex = Math.max(0, header.findIndex((h) => /team|club/.test(h)));
-    if (stadiumIndex === -1 || cells.length <= stadiumIndex) continue;
+    if (stadiumIndex === -1) continue;
+    const club = cellText(cells[teamIndex] || '');
+    if (cells.length !== header.length) {
+      problems.push({ club, reason: `row has ${cells.length} cells but the header has ${header.length} (rowspan/colspan?)` });
+      continue;
+    }
 
     const stadium = firstLink(stripTemplates(cells[stadiumIndex]));
-    if (!stadium) continue;
+    if (!stadium) {
+      problems.push({ club, reason: `no linked ground in "${cellText(cells[stadiumIndex]) || cells[stadiumIndex]}"` });
+      continue;
+    }
     rows.push({
-      club: cellText(cells[teamIndex] || ''),
+      club,
       city: locationIndex === -1 ? null : cellText(cells[locationIndex] || '') || null,
       stadiumTitle: stadium.target,
     });
   }
-  return rows;
+  return { rows, problems };
 }
 
 // "St Andrew's (stadium)" -> "St Andrew's"; "Memorial Stadium (Bristol)" ->
@@ -217,7 +230,21 @@ function matchExisting(grounds, existing) {
     matches.set(index, { row, matchedBy: `${Math.round(km * 1000)} m away` });
     claimed.add(row.id);
   }
-  return matches;
+
+  // Still unmatched but right next to a row already linked to a *different*
+  // Wikidata item: most likely the same ground after a Wikidata merge or a
+  // re-pointed link, so flag it rather than insert a near-duplicate.
+  const linked = existing.filter((row) => row.wikidata_qid && row.latitude != null && row.longitude != null);
+  const conflicts = new Map();
+  grounds.forEach((ground, index) => {
+    if (matches.has(index)) return;
+    const near = linked.find(
+      (row) => row.wikidata_qid !== ground.qid &&
+        distanceKm(ground, { latitude: Number(row.latitude), longitude: Number(row.longitude) }) <= MATCH_RADIUS_KM
+    );
+    if (near) conflicts.set(index, near);
+  });
+  return { matches, conflicts };
 }
 
 /**
@@ -246,9 +273,17 @@ function planImport(imported, existing) {
     if (reason) skipped.push({ ground, reason });
     else valid.push(ground);
   }
-  const matches = matchExisting(valid, existing);
+  const { matches, conflicts } = matchExisting(valid, existing);
 
   valid.forEach((ground, index) => {
+    const conflict = conflicts.get(index);
+    if (conflict) {
+      skipped.push({
+        ground,
+        reason: `within ${MATCH_RADIUS_KM * 1000} m of "${conflict.name}", which is linked to a different Wikidata item (${conflict.wikidata_qid}) - check by hand`,
+      });
+      return;
+    }
     const found = matches.get(index);
     if (found) {
       const { row: match, matchedBy } = found;
