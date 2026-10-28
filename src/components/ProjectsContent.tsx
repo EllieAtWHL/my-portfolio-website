@@ -91,6 +91,14 @@ export default function ProjectsContent() {
           title: 'Bobbin',
           url: '/bobbin/play',
           isExternal: false
+        },
+        {
+          // Lives in the Spurs Women section (it plays on that site's stadium
+          // data), linked from here as one of the site's games.
+          id: 'groundhopper',
+          title: 'Groundhopper',
+          url: '/spurs-women/groundhopper',
+          isExternal: false
         }/*,
         {
           id: 'flappy',

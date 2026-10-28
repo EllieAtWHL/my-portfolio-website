@@ -7,14 +7,15 @@ test.describe('Stadiums page', () => {
     await expect(page).toHaveTitle('Stadiums - Tottenham Hotspur Women');
     await expect(page.getByRole('heading', { name: 'Stadiums', level: 1 })).toBeVisible();
 
-    const stadiumLinks = page.getByRole('main').getByRole('link');
+    const stadiumLinks = page.getByRole('main').locator('a[href^="/spurs-women/stadiums/"]');
     await expect(stadiumLinks.first()).toBeVisible();
   });
 
   test('clicking a stadium navigates to its detail page', async ({ page }) => {
     await page.goto('/spurs-women/stadiums');
 
-    const firstStadium = page.getByRole('main').getByRole('link').first();
+    // Scoped to stadium links - the page also links to Groundhopper.
+    const firstStadium = page.getByRole('main').locator('a[href^="/spurs-women/stadiums/"]').first();
     await firstStadium.click();
 
     await expect(page).toHaveURL(/\/spurs-women\/stadiums\/[^/]+$/, { timeout: 15000 });
