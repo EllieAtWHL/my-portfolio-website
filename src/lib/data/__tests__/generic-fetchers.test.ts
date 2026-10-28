@@ -241,7 +241,7 @@ describe('generic-fetchers', () => {
       expect(currentMockFrom).toHaveBeenCalledTimes(1);
     });
 
-    it('queries counts against the custom match table/columns, filtered by entity ids, when provided', async () => {
+    it('queries counts against the custom match table/columns when provided', async () => {
       currentMockFrom = mockSupabaseFrom({
         stadia: { data: [{ id: 1, name: 'Stadium A' }], error: null },
         appearances: [
@@ -264,8 +264,8 @@ describe('generic-fetchers', () => {
       expect(currentMockFrom).toHaveBeenNthCalledWith(3, 'appearances');
       const homeChain = currentMockFrom.mock.results[1].value;
       const awayChain = currentMockFrom.mock.results[2].value;
-      expect(homeChain.in).toHaveBeenCalledWith('home_stadium_id', [1]);
-      expect(awayChain.in).toHaveBeenCalledWith('away_stadium_id', [1]);
+      expect(homeChain.select).toHaveBeenCalledWith('home_stadium_id');
+      expect(awayChain.select).toHaveBeenCalledWith('away_stadium_id');
     });
   });
 
@@ -322,7 +322,7 @@ describe('generic-fetchers', () => {
       expect(result).toEqual([{ id: 1, name: 'Stadium A', match_count: 0 }]);
     });
 
-    it('filters the count query by the custom match column against all entity ids', async () => {
+    it('counts every match by the custom column without an id filter (no URL-length limit, WEB-168)', async () => {
       currentMockFrom = mockSupabaseFrom({
         stadia: { data: [{ id: 9, name: 'Stadium A' }], error: null },
         matches: { data: [{ stadium_id: 9 }], error: null },
@@ -332,7 +332,8 @@ describe('generic-fetchers', () => {
       // Call 0 = entities('stadia'); call 1 = counts('matches')
       const matchesChain = currentMockFrom.mock.results[1].value;
 
-      expect(matchesChain.in).toHaveBeenCalledWith('stadium_id', [9]);
+      expect(matchesChain.select).toHaveBeenCalledWith('stadium_id');
+      expect(matchesChain.in).not.toHaveBeenCalled();
     });
 
     it('returns an empty array when there are no entities (no count query attempted)', async () => {

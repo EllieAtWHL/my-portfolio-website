@@ -60,14 +60,15 @@ export async function fetchByIdFromDB<T>(
 }
 
 /**
- * Fetches one row per match count for the given column, filtered to the given entity ids,
- * and reduces it to a per-id count. A single query regardless of how many entities/ids there
- * are, rather than one query per entity.
+ * Fetches the given column for every match and reduces it to a per-id count, for the caller
+ * to look up its entities in. Deliberately not filtered with `.in(matchColumn, ids)`: the id
+ * list goes into the request URL, so a paginated entity list past a few hundred rows could
+ * exceed URL length limits - and counting every match is no more rows than the matches
+ * table itself, which this pages through anyway.
  */
 async function fetchColumnCounts(
   matchTableName: string,
-  matchColumn: string,
-  ids: (string | number)[]
+  matchColumn: string
 ): Promise<Map<string | number, number>> {
   const counts = new Map<string | number, number>();
 
@@ -77,7 +78,6 @@ async function fetchColumnCounts(
     supabase
       .from(matchTableName)
       .select(matchColumn)
-      .in(matchColumn, ids)
       .order('id', { ascending: true })
       .range(from, to)
   );
@@ -113,10 +113,9 @@ export async function fetchWithMatchCountFromDB<T extends { id: string | number 
     return [];
   }
 
-  const ids = entities.map((entity) => entity.id);
   const [counts1, counts2] = await Promise.all([
-    fetchColumnCounts(matchTableName, matchColumn1, ids),
-    fetchColumnCounts(matchTableName, matchColumn2, ids),
+    fetchColumnCounts(matchTableName, matchColumn1),
+    fetchColumnCounts(matchTableName, matchColumn2),
   ]);
 
   return entities.map((entity) => ({
@@ -141,8 +140,7 @@ export async function fetchWithSingleMatchCountFromDB<T extends { id: string | n
     return [];
   }
 
-  const ids = entities.map((entity) => entity.id);
-  const counts = await fetchColumnCounts(matchTableName, matchColumn, ids);
+  const counts = await fetchColumnCounts(matchTableName, matchColumn);
 
   return entities.map((entity) => ({
     ...entity,
