@@ -148,7 +148,7 @@ Bobbin (the offline puzzle game at `/bobbin` → `/bobbin/play`, a standalone Vi
 
 Run a single Jest test file: `npx jest path/to/file.test.tsx`. Run a single Playwright spec: `npx playwright test tests/home.spec.ts`.
 
-Other scripts (see `package.json`): `generate-external-manifest[:help]`, `init-external-local`, `validate-manifest` — all photo-gallery/storage-manifest tooling, documented in `reference/photo-gallery/README.md`. (`migrate-storage[:dry-run]` was the one-time migration script this list used to include - removed from `package.json` per WEB-123, now `scripts/migrate-storage-source.js`'s "doubly-inert" leftover, see that doc's "History" section.)
+Other scripts (see `package.json`): `generate-external-manifest[:help]`, `init-external-local`, `validate-manifest` — all photo-gallery/storage-manifest tooling, documented in `reference/photo-gallery/README.md`. `import-groundhopper-stadiums` (dry run by default, `-- --apply` writes to production) adds the current league grounds to `stadia` as Groundhopper-only grounds - re-run each season, see `reference/spurs-women/groundhopper/README.md`. (`migrate-storage[:dry-run]` was the one-time migration script this list used to include - removed from `package.json` per WEB-123, now `scripts/migrate-storage-source.js`'s "doubly-inert" leftover, see that doc's "History" section.)
 
 **Square-bracket routes**: quote paths in git commands for dynamic route files, e.g. `git add "src/app/spurs-women/matches/[matchId]/page.tsx"` — otherwise the shell treats `[matchId]` as a glob.
 

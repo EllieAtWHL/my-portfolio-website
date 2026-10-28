@@ -9,6 +9,7 @@
     "find-missing-player-stats": "node scripts/find-matches-missing-player-stats.js",
     "apply-player-stats": "node scripts/apply-player-stats.js",
     "publish-match-photos": "node scripts/publish-match-photos.js",
+    "import-groundhopper-stadiums": "node scripts/import-groundhopper-stadiums.js",
     "build": "npm run bobbin:build && next build",
     "start": "next start",
     "lint": "eslint",

@@ -200,9 +200,7 @@ export function MatchForm({
           </FormField>
 
           <FormField label="Stadium" required htmlFor="stadium">
-            {/* Enter in a text input submits the surrounding match form - not what
-                anyone typing a filter means. */}
-            <div className="mb-2" onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}>
+            <div className="mb-2">
               <SearchInput
                 id="stadium-filter"
                 label="Filter stadiums"
@@ -210,6 +208,9 @@ export function MatchForm({
                 placeholder="Type to filter stadiums..."
                 value={stadiumFilter}
                 onChange={setStadiumFilter}
+                // Enter in a text input submits the surrounding match form - not
+                // what anyone typing a filter means.
+                onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
               />
             </div>
             <SelectInput
