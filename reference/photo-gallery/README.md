@@ -267,11 +267,13 @@ uploaded, resized, and committed automatically:
 1. The browser compresses the photo client-side (capped at 2000px, JPEG)
    before sending it, to keep the upload itself fast on a mobile connection
    and under Vercel's ~4.5MB request-body limit. Each photo is decoded in
-   its own short-lived Web Worker that's terminated afterwards
-   (`src/lib/image-compression.ts`) - decoding on the main thread let a
-   phone's memory build up across a batch until every decode after the
-   ~5th photo failed, and Retry couldn't recover without a page reload
-   (WEB-173). The main-thread decode is kept only as a fallback.
+   its own short-lived Web Worker, and JPEGs are decoded straight to about
+   half size via `ImageDecoder` rather than at full resolution
+   (`src/lib/image-compression.worker.ts`). Full-resolution decodes (~48MB
+   each for a 12MP photo) built up in Android Chrome's memory across a
+   batch until every later decode failed, and Retry couldn't recover
+   without a page reload (WEB-173); terminating the worker alone didn't
+   release that memory. The main-thread decode is kept only as a fallback.
 2. `POST /api/admin/photo-upload` (one request per photo - keeps each
    request well clear of serverless duration limits and isolates a failure
    to one photo) resizes/compresses it server-side with `sharp` (WebP, 82%

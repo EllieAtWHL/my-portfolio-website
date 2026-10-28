@@ -20,17 +20,21 @@ import type { CompressionWorkerResponse } from './image-compression.worker';
 // identical to a normal successful case right up until the network error.
 //
 // WEB-173: decoding happens in a fresh Web Worker per photo, terminated
-// afterwards. Decoding a 12MP phone photo needs a ~48MB full-resolution
-// bitmap regardless of the 2000px output, and on mobile that memory isn't
-// reliably handed back between photos on the main thread even with
-// bitmap.close() and a shared canvas (WEB-149's fix) - a batch got ~5 photos
-// in before every later decode failed, and Retry failed identically until a
-// page reload. Terminating the worker discards its whole heap, so each photo
-// (and each retry) starts from a clean slate. The main-thread path below is
-// kept only for when the worker can't run at all (no Worker/OffscreenCanvas
-// support, or the worker script fails to load) - NOT after a decode error or
-// timeout inside a running worker, since those usually mean memory pressure
-// and retrying on the main thread would just recreate the WEB-173 failure.
+// afterwards, and for JPEGs the worker decodes at a reduced size (via
+// ImageDecoder) rather than full resolution - see image-compression.worker.ts.
+// A full-resolution decode of a 12MP phone photo needs a ~48MB bitmap
+// regardless of the 2000px output, and Android Chrome didn't hand that
+// memory back between photos: a batch got ~5 photos in before every later
+// decode failed, and Retry failed identically until a page reload.
+// Terminating the worker alone was NOT enough (a real-device batch still
+// failed after 3 photos with "The source image could not be decoded"), since
+// decoded image memory lives in the tab's renderer process rather than the
+// worker's heap - the reduced-size decode is the part that actually cuts
+// per-photo memory. The main-thread path below is kept only for when the
+// worker can't run at all (no Worker/OffscreenCanvas support, or the worker
+// script fails to load) - NOT after a decode error or timeout inside a
+// running worker, since those usually mean memory pressure and retrying on
+// the main thread would just recreate the WEB-173 failure.
 const MAX_DIMENSION = 2000;
 const JPEG_QUALITY = 0.85;
 
