@@ -27,6 +27,8 @@ const baseStadium: Stadium = {
   latitude: 51.422222,
   longitude: -0.982778,
   home_team_id: null,
+  spurs_women: true,
+  wikidata_qid: null,
 };
 
 function playable(n: number): GroundhopperStadium[] {

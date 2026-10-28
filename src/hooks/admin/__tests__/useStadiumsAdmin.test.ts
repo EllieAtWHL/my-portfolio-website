@@ -24,6 +24,8 @@ const stadium: Stadium = {
   latitude: null,
   longitude: null,
   home_team_id: 1,
+  spurs_women: true,
+  wikidata_qid: null,
 };
 
 // Distinct field values (no shared substrings) so search-filter tests can
@@ -41,6 +43,8 @@ const otherStadium: Stadium = {
   latitude: null,
   longitude: null,
   home_team_id: 2,
+  spurs_women: true,
+  wikidata_qid: null,
 };
 
 const stadiumName: StadiumName = {

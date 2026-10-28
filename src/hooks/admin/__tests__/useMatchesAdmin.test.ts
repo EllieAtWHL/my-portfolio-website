@@ -27,6 +27,8 @@ const stadiumA: Stadium = {
   latitude: null,
   longitude: null,
   home_team_id: 1,
+  spurs_women: true,
+  wikidata_qid: null,
 };
 
 const stadiumB: Stadium = {
@@ -42,6 +44,8 @@ const stadiumB: Stadium = {
   latitude: null,
   longitude: null,
   home_team_id: null,
+  spurs_women: true,
+  wikidata_qid: null,
 };
 
 const match: Match = {

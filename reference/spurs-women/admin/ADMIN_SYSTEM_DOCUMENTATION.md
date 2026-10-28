@@ -209,8 +209,8 @@ constraint, and index, not just the ones the admin UI touches - see
   - `latitude` (number, nullable)
   - `longitude` (number, nullable)
   - `home_team_id` (number, nullable)
-  - `spurs_women` (boolean, default `true`) - whether the ground belongs on the Spurs Women pages (stadiums list, detail pages, team grounds). `false` for grounds imported only for the Groundhopper game (WEB-222); saving a match at such a ground flips it to `true`. Added in WEB-224
-  - `wikidata_qid` (string, nullable, unique when set) - the Wikidata item the row was imported from or matched to by the Groundhopper stadium import, so re-running the import never duplicates. Added in WEB-224
+  - `spurs_women` (boolean, default `true`) - whether the ground belongs on the Spurs Women pages (stadiums list, detail pages, team grounds). `false` for grounds imported only for the Groundhopper game (WEB-222). A database trigger on `matches` (`matches_promote_stadium_to_spurs_women`) flips it to `true` whenever a match is saved at that ground, however the match is written. Added in WEB-224
+  - `wikidata_qid` (string, nullable, unique when set, bare `Q123` form enforced by a check constraint) - the Wikidata item the row was imported from or matched to by the Groundhopper stadium import, so re-running the import never duplicates. Added in WEB-224
 
 ### Stadium Name
 - **Table**: `stadium_names`
