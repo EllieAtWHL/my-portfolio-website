@@ -28,6 +28,7 @@ src/
 │   ├── teams/                   # All teams + [teamId] detail pages
 │   ├── players/                 # All players + [playerId] detail pages
 │   ├── stadiums/                # All stadiums + [stadiumSlug] detail pages
+│   ├── groundhopper/            # Daily stadium map game (see groundhopper/README.md)
 │   └── admin/                   # Admin UI (see admin/ADMIN_SYSTEM_DOCUMENTATION.md)
 ├── components/spurs-women/      # Section-specific components
 ├── lib/data/                    # Data access layer (see below)
@@ -49,6 +50,7 @@ src/
 | `/spurs-women/players/[playerId]` | Player profile: match history, career timeline |
 | `/spurs-women/stadiums` | Grid of all stadiums with match counts |
 | `/spurs-women/stadiums/[stadiumSlug]` | Stadium detail: historical names, match history, capacity/location |
+| `/spurs-women/groundhopper` | Groundhopper, a daily map game on the `stadia` data (see `groundhopper/README.md`) |
 
 ## Components
 
@@ -59,6 +61,7 @@ Key components under `src/components/spurs-women/`:
 - **Media**: `NewsCard`, `VideoCard`, `PodcastCard`, `LightboxGallery`, `SeasonReviewCard`, `MediaGallery` (see `reference/photo-gallery/README.md`)
 - **Players**: `PlayerTable` (with `PlayerRow`) - sortable by name, position, nationality, squad/legacy number, and career stats; shared between the team roster tabs and `/spurs-women/players` - `TeamLineup` (`MatchFilters` also exists under `src/components/spurs-women/` but is currently dead code - unimported anywhere, see `reference/TAILWIND_MIGRATION_PLAN.md`; `PlayerCard`, previously noted here in the same category, has since been deleted from the repo outright)
 - **Utility**: `TeamPill` (team-colored name pill), `InteractiveMap` (stadium location)
+- **Groundhopper**: `groundhopper/GroundhopperLoader`, `GroundhopperGame`, `GroundhopperMap` (see `groundhopper/README.md`)
 
 ## Data Layer
 

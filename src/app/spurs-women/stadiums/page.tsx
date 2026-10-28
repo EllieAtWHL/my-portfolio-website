@@ -37,8 +37,15 @@ export default async function StadiumsPage() {
 
   return (
     <main id="main-content" className="p-8 pb-footer-clearance">
-      <h1 className="spurs-text font-bold mb-6 text-center">Stadiums</h1>
-      
+      <h1 className="spurs-text font-bold mb-2 text-center">Stadiums</h1>
+      <p className="spurs-text text-center text-sm mb-6">
+        Know your grounds?{' '}
+        <Link href="/spurs-women/groundhopper" className="spurs-text underline underline-offset-2 hover:opacity-80">
+          Play Groundhopper
+        </Link>
+        , the daily map game.
+      </p>
+
       {stadiumsWithCurrentNames.length === 0 ? (
         <Card variant="spursAccent">
           <p className="text-center spurs-text">

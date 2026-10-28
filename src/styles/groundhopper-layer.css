@@ -1,0 +1,8 @@
+/* Same reason as spurs-theme-layer.css: a .tsx file can't import CSS with
+   `layer(...)`, so this wrapper does it at the CSS level. Imported by
+   src/app/spurs-women/groundhopper/page.tsx only, so Leaflet's stylesheet and
+   the game's styles load on that page and nowhere else. Never import
+   leaflet.css or groundhopper.css directly from a .tsx file - their rules
+   would land unlayered and beat every Tailwind utility. */
+@import "leaflet/dist/leaflet.css" layer(base);
+@import "./groundhopper.css" layer(base);
