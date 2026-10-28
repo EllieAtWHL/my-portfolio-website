@@ -2,11 +2,12 @@ import { render, screen, act } from '@testing-library/react';
 import CookieConsentProvider, { useCookieConsent } from '../CookieConsentProvider';
 
 function TestConsumer() {
-  const { consent, isBannerOpen, accept, reject, openPreferences } = useCookieConsent();
+  const { consent, isConsentKnown, isBannerOpen, accept, reject, openPreferences } = useCookieConsent();
   return (
     <div>
       <span data-testid="consent">{consent ?? 'null'}</span>
       <span data-testid="banner-open">{String(isBannerOpen)}</span>
+      <span data-testid="consent-known">{String(isConsentKnown)}</span>
       <button onClick={accept}>accept</button>
       <button onClick={reject}>reject</button>
       <button onClick={openPreferences}>reopen</button>
@@ -30,10 +31,12 @@ describe('CookieConsentProvider', () => {
 
     expect(await screen.findByTestId('banner-open')).toHaveTextContent('true');
     expect(screen.getByTestId('consent')).toHaveTextContent('null');
+    // Known, even though no choice was made - distinguishes "no choice" from "not read yet"
+    expect(screen.getByTestId('consent-known')).toHaveTextContent('true');
   });
 
   it('does not open the banner when a choice was already stored', async () => {
-    localStorage.setItem('cookie-consent', JSON.stringify({ status: 'accepted', version: 2 }));
+    localStorage.setItem('cookie-consent', JSON.stringify({ status: 'accepted', version: 3 }));
 
     render(
       <CookieConsentProvider>
@@ -61,7 +64,7 @@ describe('CookieConsentProvider', () => {
     expect(screen.getByTestId('banner-open')).toHaveTextContent('false');
     expect(JSON.parse(localStorage.getItem('cookie-consent')!)).toEqual({
       status: 'accepted',
-      version: 2,
+      version: 3,
     });
   });
 
@@ -80,14 +83,14 @@ describe('CookieConsentProvider', () => {
     expect(screen.getByTestId('consent')).toHaveTextContent('rejected');
     expect(JSON.parse(localStorage.getItem('cookie-consent')!)).toEqual({
       status: 'rejected',
-      version: 2,
+      version: 3,
     });
     expect(window.FS?.consent).toHaveBeenCalledWith(false);
     expect(window.FS?.shutdown).toHaveBeenCalled();
   });
 
   it('openPreferences() reopens the banner after a choice was already made', async () => {
-    localStorage.setItem('cookie-consent', JSON.stringify({ status: 'accepted', version: 2 }));
+    localStorage.setItem('cookie-consent', JSON.stringify({ status: 'accepted', version: 3 }));
 
     render(
       <CookieConsentProvider>
@@ -109,6 +112,10 @@ describe('CookieConsentProvider', () => {
     [
       'consent stored under the pre-Speed-Insights version (WEB-64)',
       JSON.stringify({ status: 'accepted', version: 1 }),
+    ],
+    [
+      'consent stored before Instagram embeds were gated (WEB-147)',
+      JSON.stringify({ status: 'accepted', version: 2 }),
     ],
     ['the pre-versioning bare string format', 'accepted'],
     ['malformed JSON', '{not json'],

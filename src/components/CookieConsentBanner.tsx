@@ -42,9 +42,10 @@ export function CookieConsentBanner() {
     >
       <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center gap-4">
         <p className="text-sm flex-1">
-          This site uses optional cookies to understand how visitors use the site and to help
-          keep the contact form free of spam. They stay off unless you accept, and you can change
-          your mind any time via &quot;Cookie preferences&quot; in the footer.
+          This site uses optional cookies to understand how visitors use the site, to help keep
+          the contact form free of spam, and to show embedded Instagram posts. They stay off unless
+          you accept, and you can change your mind any time via &quot;Cookie preferences&quot; in
+          the footer.
         </p>
         <div className="flex gap-2 flex-shrink-0">
           <Button

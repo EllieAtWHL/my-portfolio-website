@@ -9,7 +9,7 @@ const STORAGE_KEY = 'cookie-consent';
 // stored consent from an older version is treated as no consent at all, so
 // visitors who already chose under the old meaning are re-prompted rather
 // than silently carrying a choice that no longer reflects what they agreed to.
-const CONSENT_VERSION = 2;
+const CONSENT_VERSION = 3;
 
 interface StoredConsent {
   status: ConsentStatus;
@@ -18,6 +18,10 @@ interface StoredConsent {
 
 interface CookieConsentContextType {
   consent: ConsentStatus | null;
+  // False until the stored choice has been read on the client - consent is
+  // null both before that and when no choice has been made, and UI that
+  // tells the visitor to accept cookies shouldn't flash for one who already has.
+  isConsentKnown: boolean;
   isBannerOpen: boolean;
   accept: () => void;
   reject: () => void;
@@ -66,6 +70,7 @@ interface CookieConsentProviderProps {
 
 export default function CookieConsentProvider({ children }: CookieConsentProviderProps) {
   const [consent, setConsent] = useState<ConsentStatus | null>(null);
+  const [isConsentKnown, setIsConsentKnown] = useState(false);
   // Starts closed so the server render and first client render match; the
   // effect below opens it once we know (client-only) that no choice is stored.
   const [isBannerOpen, setIsBannerOpen] = useState(false);
@@ -74,6 +79,7 @@ export default function CookieConsentProvider({ children }: CookieConsentProvide
     function sync() {
       const stored = getStoredConsent();
       setConsent(stored);
+      setIsConsentKnown(true);
       setIsBannerOpen(stored === null);
     }
 
@@ -116,7 +122,7 @@ export default function CookieConsentProvider({ children }: CookieConsentProvide
   }, []);
 
   return (
-    <CookieConsentContext.Provider value={{ consent, isBannerOpen, accept, reject, openPreferences }}>
+    <CookieConsentContext.Provider value={{ consent, isConsentKnown, isBannerOpen, accept, reject, openPreferences }}>
       {children}
     </CookieConsentContext.Provider>
   );
