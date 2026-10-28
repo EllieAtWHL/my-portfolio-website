@@ -19,15 +19,18 @@ const scriptSrc = ["'self'", "'unsafe-inline'", ...(isDev ? ["'unsafe-eval'"] : 
 // the London 2012 Spotify embed, and the Lightning Rollout YouTube embeds - see
 // WEB-70 PR description for the checklist. Bluesky's embed.bsky.app script-src
 // entry added under WEB-146 - it was missing entirely, silently blocking every
-// Bluesky post embedded as match media.
+// Bluesky post embedded as match media. WEB-147 added Instagram post embeds
+// (www.instagram.com for embed.js and the iframe it renders) and Bluesky's
+// public AppView (public.api.bsky.app) for resolving a post author's handle to
+// the DID the Bluesky embed needs.
 const CSP_DIRECTIVES = [
   "default-src 'self'",
-  `script-src ${scriptSrc.join(" ")} https://edge.fullstory.com https://va.vercel-scripts.com https://embed.bsky.app`,
+  `script-src ${scriptSrc.join(" ")} https://edge.fullstory.com https://va.vercel-scripts.com https://embed.bsky.app https://www.instagram.com`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "connect-src 'self' https://*.supabase.co https://www.youtube.com https://noembed.com https://*.fullstory.com",
-  "frame-src https://www.youtube.com https://open.spotify.com https://www.openstreetmap.org https://embed.bsky.app",
+  "connect-src 'self' https://*.supabase.co https://www.youtube.com https://noembed.com https://*.fullstory.com https://public.api.bsky.app",
+  "frame-src https://www.youtube.com https://open.spotify.com https://www.openstreetmap.org https://embed.bsky.app https://www.instagram.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

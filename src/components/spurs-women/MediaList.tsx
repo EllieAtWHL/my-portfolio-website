@@ -1,5 +1,7 @@
 import BlueskyPost from './BlueskyPost';
+import InstagramPost from './InstagramPost';
 import { Media } from '@/types/media';
+import { getSocialPlatform } from '@/lib/social-embed';
 
 type MediaListProps = {
   items: Media[];
@@ -10,8 +12,13 @@ type MediaListProps = {
 export default function MediaList({ items, title, layout = 'full-width' }: MediaListProps) {
   if (!items || items.length === 0) return null;
 
-  const socialMediaItems = items.filter(item => item.type === 'social media');
-  const otherItems = items.filter(item => item.type !== 'social media');
+  // Social media posts on a platform we can embed render as embeds; anything
+  // else (including a social media post on an unsupported host) falls back to
+  // a plain link rather than silently rendering nothing.
+  const isEmbeddable = (item: Media) =>
+    item.type === 'social media' && getSocialPlatform(item.url) !== null;
+  const socialMediaItems = items.filter(isEmbeddable);
+  const otherItems = items.filter(item => !isEmbeddable(item));
 
   // Determine grid classes based on layout
   const socialMediaGridClasses = layout === 'two-column' 
@@ -27,7 +34,11 @@ export default function MediaList({ items, title, layout = 'full-width' }: Media
           <div className={socialMediaGridClasses}>
             {socialMediaItems.map((item) => (
               <div key={item.id} className={layout === 'two-column' ? '' : 'mb-4'}>
-                <BlueskyPost url={item.url} />
+                {getSocialPlatform(item.url) === 'instagram' ? (
+                  <InstagramPost url={item.url} />
+                ) : (
+                  <BlueskyPost url={item.url} />
+                )}
               </div>
             ))}
           </div>
