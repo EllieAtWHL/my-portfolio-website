@@ -97,4 +97,28 @@ describe('PhotoUploadModal', () => {
     fireEvent.click(screen.getByText('Done'));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
+
+  describe('browser support warning', () => {
+    afterEach(() => {
+      delete (global as unknown as { ImageDecoder?: unknown }).ImageDecoder;
+      delete (global as unknown as { Worker?: unknown }).Worker;
+      delete (global as unknown as { OffscreenCanvas?: unknown }).OffscreenCanvas;
+    });
+
+    it('warns to upload in small batches or switch to Chrome when reduced-size decoding is unavailable', () => {
+      // jsdom has no ImageDecoder, like Safari.
+      render(<PhotoUploadModal {...defaultProps} photoQueue={[]} />);
+
+      expect(screen.getByRole('note')).toHaveTextContent(/around 5 photos at a time, or switch to Chrome/);
+    });
+
+    it('shows no warning when the browser supports reduced-size decoding', () => {
+      (global as unknown as { ImageDecoder: unknown }).ImageDecoder = jest.fn();
+      (global as unknown as { Worker: unknown }).Worker = jest.fn();
+      (global as unknown as { OffscreenCanvas: unknown }).OffscreenCanvas = jest.fn();
+      render(<PhotoUploadModal {...defaultProps} photoQueue={[]} />);
+
+      expect(screen.queryByRole('note')).not.toBeInTheDocument();
+    });
+  });
 });

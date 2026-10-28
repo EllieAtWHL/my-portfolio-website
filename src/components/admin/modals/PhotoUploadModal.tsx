@@ -1,6 +1,7 @@
 import { useId, useRef } from 'react';
 import { Button } from '@/components/Button';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { supportsReducedSizeDecode } from '@/lib/image-compression';
 import type { FinalizeStatus, PhotoQueueItem } from '@/hooks/admin/usePhotoUploadModal';
 
 interface PhotoUploadModalProps {
@@ -41,6 +42,9 @@ export function PhotoUploadModal({
   const titleId = useId();
   const containerRef = useFocusTrap<HTMLDivElement>(true, onClose);
   const inputRef = useRef<HTMLInputElement>(null);
+  // Safe to check during render: this modal only mounts after a click
+  // (MatchesTabPanel's showPhotoUploadModal), never in server-rendered markup.
+  const showBrowserWarning = !supportsReducedSizeDecode();
 
   const doneCount = photoQueue.filter((item) => item.status === 'done').length;
   const errorCount = photoQueue.filter((item) => item.status === 'error').length;
@@ -65,6 +69,14 @@ export function PhotoUploadModal({
           dropped connection only affects the photo in progress - failed photos can be retried
           individually without re-uploading the rest.
         </p>
+
+        {showBrowserWarning && (
+          <p role="note" className="text-sm mb-4 p-3 rounded bg-amber-950 text-amber-200">
+            This browser can&apos;t use the memory-saving photo processing, so a large batch on a
+            phone may fail partway through. Upload around 5 photos at a time, or switch to Chrome
+            (or another Chromium browser such as Edge) for bigger albums.
+          </p>
+        )}
 
         <input
           ref={inputRef}

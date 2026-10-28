@@ -265,7 +265,28 @@ upload flow). Pick one or more photos from the camera roll; each is
 uploaded, resized, and committed automatically:
 
 1. The browser compresses the photo client-side (capped at 2000px, JPEG)
-   before sending it, to keep the upload itself fast on a mobile connection.
+   before sending it, to keep the upload itself fast on a mobile connection
+   and under Vercel's ~4.5MB request-body limit. Each photo is decoded in
+   its own short-lived Web Worker, and JPEGs are decoded straight to about
+   half size via `ImageDecoder` rather than at full resolution
+   (`src/lib/image-compression.worker.ts`). Full-resolution decodes (~48MB
+   each for a 12MP photo) built up in Android Chrome's memory across a
+   batch until every later decode failed, and Retry couldn't recover
+   without a page reload (WEB-173); terminating the worker alone didn't
+   release that memory. The main-thread decode is kept only as a fallback.
+
+   **Browser support:** the reduced-size decode needs `ImageDecoder` (plus
+   Worker/OffscreenCanvas). It's verified in Chromium-based browsers
+   (Chrome, Edge, etc., including Chrome on Android, where it was
+   device-tested). Safari has no `ImageDecoder`; it still uploads fine, but
+   decodes each photo at full size inside the worker, so a large batch on a
+   phone can still run out of memory partway through. Firefox is untested.
+   The Upload Photos modal checks for these capabilities itself (not the
+   browser name) and, when they're missing, shows a warning to upload
+   around 5 photos at a time or switch to Chrome. Uploading from a computer
+   is fine in any browser. JPEGs are recognised by their bytes, not the
+   file's declared type, and one ImageDecoder can't handle (e.g. CMYK)
+   falls back to the full-size decode.
 2. `POST /api/admin/photo-upload` (one request per photo - keeps each
    request well clear of serverless duration limits and isolates a failure
    to one photo) resizes/compresses it server-side with `sharp` (WebP, 82%

@@ -130,8 +130,16 @@ export function usePhotoUploadModal({
     }
   }, [autoRetryDelayMs]);
 
-  const attemptUpload = useCallback(async (item: PhotoQueueItem) => {
-    updateItem(item.id, { status: 'compressing', error: undefined });
+  const compressItem = useCallback(async (item: PhotoQueueItem) => {
+    // Clear the previous attempt's diagnostics, so a compression failure on
+    // a manual retry can't be reported with a stale "sent ..." from before.
+    updateItem(item.id, {
+      status: 'compressing',
+      error: undefined,
+      lastAttemptCompressed: undefined,
+      lastAttemptFallbackReason: undefined,
+      lastAttemptSizeBytes: undefined,
+    });
     // Compression can throw (ImageTooLargeError) rather than silently
     // falling back to a too-large original - a request over Vercel's
     // ~4.5MB body limit is rejected before this route ever runs, so
@@ -144,7 +152,10 @@ export function usePhotoUploadModal({
       lastAttemptFallbackReason: fallbackReason,
       lastAttemptSizeBytes: compressed.size,
     });
+    return compressed;
+  }, [updateItem]);
 
+  const sendPhoto = useCallback(async (item: PhotoQueueItem, compressed: File) => {
     const body = new FormData();
     body.append('photo', compressed, item.name);
     body.append('matchId', editingMatchId as string);
@@ -157,7 +168,7 @@ export function usePhotoUploadModal({
     }
 
     return result.data as { path: string; blobSha: string; optimisedSizeBytes: number };
-  }, [editingMatchId, updateItem]);
+  }, [editingMatchId]);
 
   const uploadOne = useCallback(async (item: PhotoQueueItem) => {
     if (!editingMatchId) {
@@ -168,22 +179,29 @@ export function usePhotoUploadModal({
     }
 
     try {
-      const { path, blobSha, optimisedSizeBytes } = await withOneAutoRetry(() => attemptUpload(item));
+      // Compressed once, outside the auto-retry: the retry is for transient
+      // network/session failures, and re-decoding a full-resolution photo
+      // just to resend the same bytes would add memory pressure on a phone
+      // for nothing (WEB-173).
+      const compressed = await compressItem(item);
+      const { path, blobSha, optimisedSizeBytes } = await withOneAutoRetry(() => sendPhoto(item, compressed));
       updateItem(item.id, { status: 'done', path, blobSha, optimisedSizeBytes });
     } catch (error) {
       // Append what was actually attempted client-side, since a "Failed to
       // fetch" that never reaches the server (see WEB-149 findings) leaves
       // no server-side trace to diagnose from otherwise.
       const latest = queueRef.current.find((q) => q.id === item.id);
-      const diagnostics = latest
+      // Only once something was actually sent - a compression failure
+      // already explains itself and never reached the network.
+      const diagnostics = latest?.lastAttemptSizeBytes !== undefined
         ? ` [sent ${latest.lastAttemptCompressed ? 'compressed' : 'UNCOMPRESSED'} ` +
-          `${Math.round((latest.lastAttemptSizeBytes ?? item.originalSizeBytes) / 1024)}KB` +
+          `${Math.round(latest.lastAttemptSizeBytes / 1024)}KB` +
           (latest.lastAttemptFallbackReason ? `, compression failed: ${latest.lastAttemptFallbackReason}` : '') +
           `; browser online=${typeof navigator !== 'undefined' ? navigator.onLine : 'unknown'}]`
         : '';
       updateItem(item.id, { status: 'error', error: `${(error as Error).message || 'Upload failed'}${diagnostics}` });
     }
-  }, [editingMatchId, updateItem, attemptUpload, withOneAutoRetry]);
+  }, [editingMatchId, updateItem, compressItem, sendPhoto, withOneAutoRetry]);
 
   const finalizeBatch = useCallback(async () => {
     const toPublish = queueRef.current.filter((item) => item.status === 'done' && !item.published && item.path && item.blobSha);
