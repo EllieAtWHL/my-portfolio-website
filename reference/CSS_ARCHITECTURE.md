@@ -18,6 +18,8 @@ src/styles/
 ├── blog.css              # Blog/Lightning Rollout page specific styles
 ├── spurs-theme.css       # Spurs Women section theme styles
 ├── spurs-theme-layer.css # One-line wrapper that gets spurs-theme.css into @layer base - see below
+├── groundhopper.css      # Groundhopper game (/spurs-women/groundhopper)
+├── groundhopper-layer.css # Layer wrapper for groundhopper.css + Leaflet's CSS, imported by that page only
 └── not-found.css         # 404 page specific styles
 ```
 
@@ -55,6 +57,11 @@ hand-written file was wrapped.
   `layout.tsx` imports that one-line wrapper instead. **Never import
   `spurs-theme.css` directly from a `.tsx` file** - always through the
   wrapper, or its rules land unlayered again.
+- `groundhopper.css` uses the same wrapper trick (`groundhopper-layer.css`,
+  imported only by `src/app/spurs-women/groundhopper/page.tsx`). The wrapper
+  also pulls in Leaflet's stylesheet (`leaflet/dist/leaflet.css`) with
+  `layer(base)`, so third-party CSS follows the rule too. Never import
+  `leaflet.css` straight from a `.tsx` file.
 
 **Layer ordering:** among named layers, the *later-declared* layer wins for a
 normal (non-`!important`) declaration - this is reversed for `!important`
