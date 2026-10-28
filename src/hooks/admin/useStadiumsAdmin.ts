@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useSearchPagination } from '@/hooks/useSearchPagination';
 import { callAdminApi, createEntityAndReload } from '@/lib/api-client';
 import type { Stadium, StadiumName } from '@/types/spurs-women-admin';
@@ -17,6 +17,7 @@ const emptyStadiumForm: Partial<Stadium> = {
   latitude: null,
   longitude: null,
   home_team_id: null,
+  spurs_women: true,
 };
 
 const emptyStadiumNameForm: Partial<StadiumName> = {
@@ -35,6 +36,10 @@ interface UseStadiumsAdminArgs {
   showMessage: (text: string, type: 'success' | 'error') => void;
 }
 
+// Which grounds the stadiums list shows. Defaults to the Spurs Women ones so
+// the (much larger) set imported only for Groundhopper doesn't bury them.
+export type StadiumScope = 'spurs-women' | 'game-only' | 'all';
+
 export function useStadiumsAdmin({ recentStadiums, setStadiums, setRecentStadiums, setStadiumNames, setLoading, showMessage }: UseStadiumsAdminArgs) {
   const stadiumFilterFn = useCallback((stadium: Stadium, search: string) => {
     const searchTerm = search.toLowerCase();
@@ -45,7 +50,19 @@ export function useStadiumsAdmin({ recentStadiums, setStadiums, setRecentStadium
       stadium.country?.toLowerCase().includes(searchTerm)
     );
   }, []);
-  const search = useSearchPagination(recentStadiums, stadiumFilterFn, STADIUMS_PER_PAGE);
+  const [stadiumScope, setStadiumScopeState] = useState<StadiumScope>('spurs-women');
+  const scopedStadiums = useMemo(
+    () => recentStadiums.filter(stadium =>
+      stadiumScope === 'all' || (stadiumScope === 'spurs-women') === (stadium.spurs_women !== false)
+    ),
+    [recentStadiums, stadiumScope]
+  );
+  const search = useSearchPagination(scopedStadiums, stadiumFilterFn, STADIUMS_PER_PAGE);
+  const { setCurrentPage } = search;
+  const setStadiumScope = useCallback((scope: StadiumScope) => {
+    setStadiumScopeState(scope);
+    setCurrentPage(1);
+  }, [setCurrentPage]);
 
   const [isStadiumEditMode, setIsStadiumEditMode] = useState(false);
   const [editingStadiumId, setEditingStadiumId] = useState<string | null>(null);
@@ -95,6 +112,7 @@ export function useStadiumsAdmin({ recentStadiums, setStadiums, setRecentStadium
       latitude: stadium.latitude,
       longitude: stadium.longitude,
       home_team_id: stadium.home_team_id,
+      spurs_women: stadium.spurs_women !== false,
     });
   }, []);
 
@@ -137,6 +155,7 @@ export function useStadiumsAdmin({ recentStadiums, setStadiums, setRecentStadium
         latitude: stadiumForm.latitude,
         longitude: stadiumForm.longitude,
         home_team_id: stadiumForm.home_team_id,
+        spurs_women: stadiumForm.spurs_women !== false,
       };
 
       if (isStadiumEditMode && editingStadiumId) {
@@ -268,6 +287,8 @@ export function useStadiumsAdmin({ recentStadiums, setStadiums, setRecentStadium
   return {
     ...search,
     perPage: STADIUMS_PER_PAGE,
+    stadiumScope,
+    setStadiumScope,
     isStadiumEditMode,
     editingStadiumId,
     showStadiumForm,

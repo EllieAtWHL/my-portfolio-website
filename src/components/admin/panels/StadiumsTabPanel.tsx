@@ -7,6 +7,7 @@ import { TabNav } from '@/components/admin/TabNav';
 import { Pagination } from '@/components/admin/Pagination';
 import { StadiumsTable } from '@/components/admin/tables/StadiumsTable';
 import SearchInput from '@/components/spurs-women/SearchInput';
+import { SelectInput } from '@/components/admin/FormField';
 import { useStadiumsAdmin } from '@/hooks/admin/useStadiumsAdmin';
 import type { Team } from '@/types/spurs-women-admin';
 
@@ -26,6 +27,8 @@ export function StadiumsTabPanel({ stadiumsAdmin, teams, loading }: StadiumsTabP
     filteredCount: filteredStadiumsCount,
     paginatedItems: paginatedStadiums,
     perPage: stadiumsPerPage,
+    stadiumScope,
+    setStadiumScope,
     isStadiumEditMode,
     editingStadiumId,
     showStadiumForm,
@@ -109,15 +112,31 @@ export function StadiumsTabPanel({ stadiumsAdmin, teams, loading }: StadiumsTabP
             {stadiumSearch ? `All Stadiums (${filteredStadiumsCount} filtered)` : 'All Stadiums'}
           </h3>
         </div>
-        <div className="mb-4">
-          <SearchInput
-            id="admin-stadiums-search"
-            label="Search stadiums"
-            srOnlyLabel
-            placeholder="Search stadiums by name, slug, city, or country..."
-            value={stadiumSearch}
-            onChange={setStadiumSearch}
-          />
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row">
+          <div className="flex-1">
+            <SearchInput
+              id="admin-stadiums-search"
+              label="Search stadiums"
+              srOnlyLabel
+              placeholder="Search stadiums by name, slug, city, or country..."
+              value={stadiumSearch}
+              onChange={setStadiumSearch}
+            />
+          </div>
+          <div className="sm:w-56">
+            <label htmlFor="admin-stadiums-scope" className="sr-only">Show</label>
+            <SelectInput
+              id="admin-stadiums-scope"
+              value={stadiumScope}
+              onChange={(value) => setStadiumScope((value || 'spurs-women') as typeof stadiumScope)}
+              placeholder="Show..."
+              options={[
+                { value: 'spurs-women', label: 'Spurs Women grounds' },
+                { value: 'game-only', label: 'Groundhopper-only grounds' },
+                { value: 'all', label: 'All grounds' },
+              ]}
+            />
+          </div>
         </div>
         <StadiumsTable stadiums={paginatedStadiums} onSelect={handleEditStadium} />
         <Pagination
