@@ -1,0 +1,256 @@
+/* Groundhopper (/spurs-women/groundhopper) - layered via groundhopper-layer.css.
+   Sits on top of spurs-theme.css (the page is inside .spurs-wrapper). */
+
+/* Phones: panel / map / actions stacked, so the lock-in button sits right
+   under the map. Desktop: panel and actions in a side column beside the map. */
+.groundhopper-layout {
+  display: grid;
+  gap: 1rem;
+  grid-template-areas: "panel" "map" "actions";
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.groundhopper-layout > .groundhopper-panel { grid-area: panel; }
+.groundhopper-layout > .groundhopper-map-frame { grid-area: map; }
+.groundhopper-layout > .groundhopper-actions { grid-area: actions; }
+
+@media (min-width: 1024px) {
+  .groundhopper-layout {
+    align-items: start;
+    grid-template-areas: "panel map" "actions map";
+    grid-template-columns: 20rem minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+  }
+}
+
+.groundhopper-skeleton {
+  background: var(--spurs-opacity-15);
+  border-radius: 16px;
+}
+
+.groundhopper-eyebrow {
+  color: var(--spurs-dark-accent);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.5;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.spurs-wrapper .groundhopper-stadium-name {
+  color: var(--spurs-dark-text);
+  font-size: clamp(1.4rem, 5vw, 1.75rem);
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0.35rem 0 0.75rem;
+}
+
+.spurs-wrapper .groundhopper-hint-button {
+  color: var(--spurs-dark-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.spurs-wrapper .groundhopper-hint-button:hover {
+  background: transparent;
+  color: var(--spurs-dark-accent-bright);
+}
+
+.groundhopper-result {
+  margin-bottom: 0.25rem;
+}
+
+.groundhopper-round-score {
+  color: var(--spurs-dark-accent);
+  font-size: 1.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.groundhopper-total {
+  color: var(--spurs-dark-text);
+  font-size: 3rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  margin-top: 0.25rem;
+}
+
+.groundhopper-total-max {
+  font-size: 1.25rem;
+  opacity: 0.6;
+}
+
+/* Round pips - played rounds show their score, the current one is outlined. */
+.groundhopper-pips {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 1rem;
+}
+
+.groundhopper-pip {
+  align-items: center;
+  border: 1px solid var(--spurs-opacity-40);
+  border-radius: 999px;
+  color: var(--spurs-dark-text);
+  display: flex;
+  flex: 1;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  height: 2rem;
+  justify-content: center;
+  opacity: 0.55;
+}
+
+.groundhopper-pip.is-done {
+  background: var(--spurs-opacity-20);
+  opacity: 1;
+}
+
+.groundhopper-pip.is-current {
+  border-color: var(--spurs-dark-accent);
+  border-width: 2px;
+  opacity: 1;
+}
+
+/* Map */
+.groundhopper-map-frame {
+  border-radius: 16px;
+  box-shadow: 0 2px 16px var(--shadow-dark);
+  height: min(60svh, 36rem);
+  min-height: 18rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.groundhopper-map {
+  background: var(--spurs-dark-bg-2);
+  height: 100%;
+  width: 100%;
+}
+
+.groundhopper-map-frame.is-interactive .groundhopper-map {
+  cursor: crosshair;
+}
+
+/* On the frame, not the map: an inset outline on the map itself is painted
+   underneath Leaflet's tile pane. */
+.groundhopper-map-frame:has(.groundhopper-map[data-keyboard]:focus) {
+  outline: 3px solid var(--spurs-dark-accent);
+  outline-offset: 2px;
+}
+
+/* Centre crosshair - only while the map is being driven by keyboard
+   (data-keyboard, see GroundhopperMap.tsx), since that's when Enter drops the
+   pin at the centre. */
+.groundhopper-crosshair {
+  height: 28px;
+  left: 50%;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.15s ease;
+  width: 28px;
+  z-index: 500;
+}
+
+.groundhopper-crosshair::before,
+.groundhopper-crosshair::after {
+  background: var(--spurs-dark-accent);
+  content: '';
+  position: absolute;
+}
+
+.groundhopper-crosshair::before {
+  height: 2px;
+  left: 0;
+  right: 0;
+  top: 13px;
+}
+
+.groundhopper-crosshair::after {
+  bottom: 0;
+  left: 13px;
+  top: 0;
+  width: 2px;
+}
+
+.groundhopper-map[data-keyboard]:focus ~ .groundhopper-crosshair {
+  opacity: 1;
+}
+
+/* Leaflet sets stroke/fill as SVG attributes; CSS beats presentation
+   attributes, which keeps the colours on the site's variables. */
+.groundhopper-map .groundhopper-guess-marker {
+  fill: var(--spurs-dark-accent);
+  fill-opacity: 0.9;
+  stroke: var(--spurs-primary-light);
+}
+
+.groundhopper-map .groundhopper-answer-marker {
+  fill: var(--accent-brand);
+  fill-opacity: 0.95;
+  stroke: var(--spurs-primary-light);
+}
+
+.groundhopper-map .groundhopper-line {
+  stroke: var(--spurs-primary-light);
+  stroke-opacity: 0.8;
+}
+
+.groundhopper-map .leaflet-control-attribution {
+  background: var(--spurs-dark-bg-1);
+  color: var(--spurs-dark-text);
+  opacity: 0.85;
+}
+
+.groundhopper-map .leaflet-control-attribution a {
+  color: var(--spurs-dark-accent);
+}
+
+.groundhopper-map .leaflet-bar a {
+  background: var(--spurs-dark-bg-1);
+  border-bottom-color: var(--spurs-opacity-40);
+  color: var(--spurs-dark-text);
+}
+
+.groundhopper-map .leaflet-bar a:hover {
+  background: var(--spurs-dark-nav);
+}
+
+/* Results */
+.groundhopper-summary {
+  display: grid;
+  gap: 1rem;
+  margin: 0 auto;
+  max-width: 40rem;
+}
+
+.groundhopper-summary-list {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.groundhopper-share-fallback {
+  background: var(--spurs-dark-bg-2);
+  border-radius: 8px;
+  color: var(--spurs-dark-text);
+  font-size: 0.85rem;
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  user-select: all;
+  white-space: pre-wrap;
+}
+
+/* spurs-theme.css gives every .spurs-accent-card paragraph a 1rem bottom
+   margin for prose; these panels are dense UI and space themselves with
+   Tailwind margin utilities instead. */
+.groundhopper-layout .spurs-accent-card p,
+.groundhopper-summary .spurs-accent-card p {
+  margin-bottom: 0;
+}
