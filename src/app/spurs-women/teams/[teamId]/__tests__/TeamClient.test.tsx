@@ -74,6 +74,8 @@ const stadium: Stadium = {
   latitude: null,
   longitude: null,
   home_team_id: 1,
+  spurs_women: true,
+  wikidata_qid: null,
 }
 
 const makeMatch = (overrides: Partial<Match> = {}): Match => ({

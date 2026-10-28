@@ -37,6 +37,8 @@ const stadium: Stadium = {
   latitude: null,
   longitude: null,
   home_team_id: null,
+  spurs_women: true,
+  wikidata_qid: null,
 };
 
 describe('StadiumClient', () => {

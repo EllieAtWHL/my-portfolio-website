@@ -24,6 +24,9 @@ export interface Stadium {
   latitude: number | null;
   longitude: number | null;
   home_team_id: number | null;
+  // WEB-224: see the column comments in its migration.
+  spurs_women: boolean;
+  wikidata_qid: string | null;
   home_team?: {
     id: number;
     name: string;
