@@ -2,11 +2,12 @@ import { render, screen, act } from '@testing-library/react';
 import CookieConsentProvider, { useCookieConsent } from '../CookieConsentProvider';
 
 function TestConsumer() {
-  const { consent, isBannerOpen, accept, reject, openPreferences } = useCookieConsent();
+  const { consent, isConsentKnown, isBannerOpen, accept, reject, openPreferences } = useCookieConsent();
   return (
     <div>
       <span data-testid="consent">{consent ?? 'null'}</span>
       <span data-testid="banner-open">{String(isBannerOpen)}</span>
+      <span data-testid="consent-known">{String(isConsentKnown)}</span>
       <button onClick={accept}>accept</button>
       <button onClick={reject}>reject</button>
       <button onClick={openPreferences}>reopen</button>
@@ -30,6 +31,8 @@ describe('CookieConsentProvider', () => {
 
     expect(await screen.findByTestId('banner-open')).toHaveTextContent('true');
     expect(screen.getByTestId('consent')).toHaveTextContent('null');
+    // Known, even though no choice was made - distinguishes "no choice" from "not read yet"
+    expect(screen.getByTestId('consent-known')).toHaveTextContent('true');
   });
 
   it('does not open the banner when a choice was already stored', async () => {

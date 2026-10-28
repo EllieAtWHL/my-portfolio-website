@@ -46,6 +46,7 @@ and Spurs Women, not re-asked when navigating between them.
 ```ts
 {
   consent: 'accepted' | 'rejected' | null;  // null = no choice made yet
+  isConsentKnown: boolean;  // false until the stored choice has been read client-side
   isBannerOpen: boolean;
   accept: () => void;
   reject: () => void;
@@ -143,7 +144,13 @@ just the spam-protection widget.
 `consent === 'accepted'`, because Meta's embed sets `instagram.com`/
 `facebook.com` cookies even for logged-out viewers. Like reCAPTCHA, it has a
 visible fallback rather than rendering nothing: a plain link to the post,
-plus a note that it only shows once cookies are accepted. The banner's copy
+plus a note that it only shows once cookies are accepted. It renders nothing
+at all while `isConsentKnown` is still false (`consent` is `null` both before
+the stored choice is read and when no choice exists), so a returning visitor
+who already accepted isn't briefly told to accept cookies. The fallback and
+embed elements are keyed apart so withdrawing consent replaces the element
+outright - otherwise React would reuse the container `div` and leave the
+iframe Meta's script injected into it alive. The banner's copy
 mentions embedded Instagram posts so "Accept" actually describes this.
 
 The site's other third-party embeds - Bluesky posts, YouTube videos, the

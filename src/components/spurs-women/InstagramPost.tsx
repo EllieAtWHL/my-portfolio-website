@@ -12,7 +12,7 @@ declare global {
 
 export default function InstagramPost({ url }: { url: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { consent } = useCookieConsent();
+  const { consent, isConsentKnown } = useCookieConsent();
   const hasConsent = consent === 'accepted';
 
   useEffect(() => {
@@ -47,9 +47,16 @@ export default function InstagramPost({ url }: { url: string }) {
     loadEmbedScript('https://www.instagram.com/embed.js', embeds && (() => embeds.process()));
   }, [url, hasConsent]);
 
+  // Until the stored choice has been read, render nothing rather than the
+  // fallback, so a visitor who already accepted isn't told to accept cookies.
+  if (!isConsentKnown) return null;
+
+  // The two branches are keyed apart so React swaps the element rather than
+  // reusing it - otherwise withdrawing consent would keep the iframe Meta's
+  // script injected (outside React's control) alive next to the fallback.
   if (!hasConsent) {
     return (
-      <div className="text-sm">
+      <div key="fallback" className="text-sm">
         <a
           href={url}
           target="_blank"
@@ -67,5 +74,5 @@ export default function InstagramPost({ url }: { url: string }) {
     );
   }
 
-  return <div ref={containerRef}></div>;
+  return <div key="embed" ref={containerRef}></div>;
 }

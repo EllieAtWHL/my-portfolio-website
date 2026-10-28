@@ -1,4 +1,9 @@
-import { getBlueskyEmbedUri, parseBlueskyPostUrl, resolveBlueskyDid } from '../bluesky';
+import {
+  clearBlueskyDidCache,
+  getBlueskyEmbedUri,
+  parseBlueskyPostUrl,
+  resolveBlueskyDid,
+} from '../bluesky';
 
 function jsonResponse(body: unknown, ok = true) {
   return {
@@ -23,7 +28,12 @@ describe('parseBlueskyPostUrl', () => {
     });
   });
 
-  it.each(['https://bsky.app/profile/someone', 'https://bsky.app/post/3abc', 'not a url'])(
+  it.each([
+    'https://bsky.app/profile/someone',
+    'https://bsky.app/post/3abc',
+    'https://bsky.app/profile/%E0%A4/post/3abc',
+    'not a url',
+  ])(
     'returns null for %s',
     (url) => {
       expect(parseBlueskyPostUrl(url)).toBeNull();
@@ -33,6 +43,7 @@ describe('parseBlueskyPostUrl', () => {
 
 describe('resolveBlueskyDid', () => {
   beforeEach(() => {
+    clearBlueskyDidCache();
     global.fetch = jest.fn();
     jest.spyOn(console, 'error').mockImplementation(() => {});
   });
@@ -68,6 +79,24 @@ describe('resolveBlueskyDid', () => {
     await expect(resolveBlueskyDid('someone.bsky.social')).resolves.toBeNull();
   });
 
+  it('shares one lookup between repeated and concurrent calls for the same handle', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue(jsonResponse({ did: 'did:plc:resolved' }));
+
+    await Promise.all([resolveBlueskyDid('someone.bsky.social'), resolveBlueskyDid('Someone.bsky.social')]);
+    await resolveBlueskyDid('someone.bsky.social');
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('retries a handle whose earlier lookup failed', async () => {
+    (global.fetch as jest.Mock)
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockResolvedValueOnce(jsonResponse({ did: 'did:plc:resolved' }));
+
+    await expect(resolveBlueskyDid('someone.bsky.social')).resolves.toBeNull();
+    await expect(resolveBlueskyDid('someone.bsky.social')).resolves.toBe('did:plc:resolved');
+  });
+
   it('returns null on a network error', async () => {
     (global.fetch as jest.Mock).mockRejectedValue(new Error('offline'));
 
@@ -78,6 +107,7 @@ describe('resolveBlueskyDid', () => {
 
 describe('getBlueskyEmbedUri', () => {
   beforeEach(() => {
+    clearBlueskyDidCache();
     global.fetch = jest.fn().mockResolvedValue(jsonResponse({ did: 'did:plc:resolved' }));
     jest.spyOn(console, 'error').mockImplementation(() => {});
   });

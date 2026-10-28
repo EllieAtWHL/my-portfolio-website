@@ -15,10 +15,12 @@ export default function MediaList({ items, title, layout = 'full-width' }: Media
   // Social media posts on a platform we can embed render as embeds; anything
   // else (including a social media post on an unsupported host) falls back to
   // a plain link rather than silently rendering nothing.
-  const isEmbeddable = (item: Media) =>
-    item.type === 'social media' && getSocialPlatform(item.url) !== null;
-  const socialMediaItems = items.filter(isEmbeddable);
-  const otherItems = items.filter(item => !isEmbeddable(item));
+  const socialMediaItems = items.flatMap(item => {
+    const platform = item.type === 'social media' ? getSocialPlatform(item.url) : null;
+    return platform ? [{ item, platform }] : [];
+  });
+  const embeddedIds = new Set(socialMediaItems.map(({ item }) => item.id));
+  const otherItems = items.filter(item => !embeddedIds.has(item.id));
 
   // Determine grid classes based on layout
   const socialMediaGridClasses = layout === 'two-column' 
@@ -32,9 +34,9 @@ export default function MediaList({ items, title, layout = 'full-width' }: Media
       {socialMediaItems.length > 0 && (
         <div className="mb-4">
           <div className={socialMediaGridClasses}>
-            {socialMediaItems.map((item) => (
+            {socialMediaItems.map(({ item, platform }) => (
               <div key={item.id} className={layout === 'two-column' ? '' : 'mb-4'}>
-                {getSocialPlatform(item.url) === 'instagram' ? (
+                {platform === 'instagram' ? (
                   <InstagramPost url={item.url} />
                 ) : (
                   <BlueskyPost url={item.url} />
