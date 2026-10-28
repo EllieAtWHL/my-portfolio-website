@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/admin-api';
 import { invalidateMatchCache, invalidateStadiumCache } from '@/lib/data/cache-invalidation';
+import { fetchAllPaginated } from '@/lib/utils/paginate';
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,16 +25,22 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    const { data, error } = await supabaseAdmin
-      .from('matches_with_stadium')
-      .select(`
-        *,
-        spurs_score_aet,
-        opponent_score_aet,
-        spurs_score_pens,
-        opponent_score_pens
-      `)
-      .order('date', { ascending: false });
+    // Paginated so this list can't be silently truncated at PostgREST's 1000-row
+    // response cap once the table grows past it (WEB-168) - see fetchAllPaginated.
+    const { data, error } = await fetchAllPaginated((from, to) =>
+      supabaseAdmin
+        .from('matches_with_stadium')
+        .select(`
+          *,
+          spurs_score_aet,
+          opponent_score_aet,
+          spurs_score_pens,
+          opponent_score_pens
+        `)
+        .order('date', { ascending: false })
+        .order('id', { ascending: true })
+        .range(from, to)
+    );
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });

@@ -1,4 +1,5 @@
 import { supabase } from '@/utils/supabase';
+import { fetchAllPaginated } from '@/lib/utils/paginate';
 import { createCachedFunction, CACHE_TAGS } from './cache-utils';
 import { Match } from './matches';
 import { fetchPlayerStatsAggregateForTeam, type PlayerWithStats as TeamPlayerWithStats } from './teams';
@@ -468,17 +469,21 @@ export const getPlayerMatchHistory = createCachedFunction(
 // number, since it may since have been reassigned); career stats come back
 // zero for anyone without a Tottenham stint; current_club still resolves via
 // their history with any team, reusing the same helper fetchPlayerByIdFromDB uses.
-// Unlike the player_stats fetch below, this query has no pagination - fine
-// while the whole players table is well under PostgREST's 1000-row page cap
-// (192 at last count), but the same silent-truncation bug fetchPlayerStatsAggregateForTeam's
-// comment describes fixing could recur here if that ever changes.
+// The players table grows every season, so like the player_stats fetch below
+// it's paginated via fetchAllPaginated rather than risking a silent cut-off at
+// PostgREST's 1000-row response cap (WEB-168), ordered by id so the row order
+// is deterministic across pages.
 async function fetchAllPlayersFromDB(): Promise<TeamPlayerWithStats[]> {
   // Independent reads (the players table and Tottenham's player_stats
   // aggregate), so run them concurrently rather than one after the other.
   const [{ data, error }, statsByPlayer] = await Promise.all([
-    supabase
-      .from('players')
-      .select(`*, ${PLAYER_HISTORY_WITH_TEAMS_SELECT}`),
+    fetchAllPaginated((from, to) =>
+      supabase
+        .from('players')
+        .select(`*, ${PLAYER_HISTORY_WITH_TEAMS_SELECT}`)
+        .order('id', { ascending: true })
+        .range(from, to)
+    ),
     fetchPlayerStatsAggregateForTeam(String(TOTTENHAM_TEAM_ID)),
   ]);
 
@@ -489,7 +494,7 @@ async function fetchAllPlayersFromDB(): Promise<TeamPlayerWithStats[]> {
 
   const noStats = { appearances: 0, goals: 0, assists: 0, yellow_cards: 0, red_cards: 0 };
 
-  return (data || []).map((player) => ({
+  return data.map((player) => ({
     ...player,
     squad_number: getSquadNumberFromHistory(player),
     current_club: getCurrentClubFromHistory(player),

@@ -263,6 +263,24 @@ describe('data/matches', () => {
       expect(chain.lt).not.toHaveBeenCalled();
     });
 
+    it('pages past the 1000-row response cap, keeping the date filter on every page (WEB-168)', async () => {
+      const firstPage = Array.from({ length: 1000 }, (_, i) => ({ id: String(i) }));
+      currentMockFrom = mockSupabaseFrom({
+        [TABLE]: [
+          { data: firstPage, error: null },
+          { data: [{ id: '1000' }], error: null },
+        ],
+      });
+
+      const result = await getAllMatches('previous');
+      const secondPage = currentMockFrom.mock.results[1].value;
+
+      expect(result).toHaveLength(1001);
+      expect(secondPage.range).toHaveBeenCalledWith(1000, 1999);
+      expect(secondPage.lt).toHaveBeenCalledWith('date', '2026-08-15T12:00:00.000Z');
+      expect(secondPage.order).toHaveBeenCalledWith('id', { ascending: true });
+    });
+
     it('with filter "upcoming": applies a gte date bound at the current instant', async () => {
       currentMockFrom = mockSupabaseFrom({ [TABLE]: { data: [], error: null } });
 
