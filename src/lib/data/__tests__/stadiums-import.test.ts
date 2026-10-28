@@ -1,4 +1,4 @@
-import { getCurrentStadiumName, StadiumName } from '../stadiums';
+import { getCurrentStadiumName, groupStadiumNamesByStadium, StadiumName } from '../stadiums';
 
 describe('getCurrentStadiumName', () => {
   it('returns null when stadium names array is empty', () => {
@@ -215,5 +215,38 @@ describe('getCurrentStadiumName', () => {
 
     const result = getCurrentStadiumName(stadiumNames, new Date('2025-01-01'))
     expect(result).toBe('Currently Valid Name')
+  })
+})
+
+describe('groupStadiumNamesByStadium', () => {
+  const name = (id: string, stadium_id: string, valid_from: string | null): StadiumName =>
+    ({ id, stadium_id, name: `Name ${id}`, valid_from, valid_to: null });
+
+  it('returns an empty object for no names', () => {
+    expect(groupStadiumNamesByStadium([])).toEqual({});
+  })
+
+  it('groups names by stadium_id, keeping their order within each stadium', () => {
+    const newer = name('1', 'stadium-1', '2020-01-01');
+    const other = name('2', 'stadium-2', '2015-01-01');
+    const older = name('3', 'stadium-1', '2000-01-01');
+
+    expect(groupStadiumNamesByStadium([newer, other, older])).toEqual({
+      'stadium-1': [newer, older],
+      'stadium-2': [other],
+    });
+  })
+
+  it('gives the same current name as a per-stadium lookup would', () => {
+    // getCurrentStadiumName falls back to the first name when none is valid,
+    // so the grouped lists have to stay most-recent-first.
+    const names = [
+      { ...name('1', 'stadium-1', '2020-01-01'), valid_to: '2021-01-01' },
+      { ...name('2', 'stadium-1', '2000-01-01'), valid_to: '2001-01-01' },
+    ];
+
+    const grouped = groupStadiumNamesByStadium(names);
+
+    expect(getCurrentStadiumName(grouped['stadium-1'], new Date('2025-01-01'))).toBe('Name 1');
   })
 })

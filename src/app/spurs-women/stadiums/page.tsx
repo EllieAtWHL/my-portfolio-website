@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { Card } from '@/components/Card';
-import { getStadiumsWithMatchCounts, StadiumWithMatchCount, getStadiumNames, getCurrentStadiumName } from '@/lib/data/stadiums';
+import { getStadiumsWithMatchCounts, StadiumWithMatchCount, StadiumName, getAllStadiumNames, getCurrentStadiumName } from '@/lib/data/stadiums';
 import Link from 'next/link';
 import { generatePageMetadata } from '@/lib/metadata';
 
@@ -12,25 +12,23 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function StadiumsPage() {
-  let stadiums: StadiumWithMatchCount[] = [];
-  
-  try {
-    stadiums = await getStadiumsWithMatchCounts();
-  } catch (error) {
-    console.error('Error fetching stadiums:', error);
-  }
+  // Every stadium's name history comes from one query; if it fails, stadiums
+  // just show their stadia name rather than taking the whole page down.
+  const [stadiums, namesByStadium] = await Promise.all([
+    getStadiumsWithMatchCounts().catch((error): StadiumWithMatchCount[] => {
+      console.error('Error fetching stadiums:', error);
+      return [];
+    }),
+    getAllStadiumNames().catch((error): Record<string, StadiumName[]> => {
+      console.error('Error fetching stadium names:', error);
+      return {};
+    }),
+  ]);
 
-  // Fetch stadium names for each stadium to get current names
-  const stadiumsWithCurrentNames = await Promise.all(
-    stadiums.map(async (stadium) => {
-      const stadiumNames = await getStadiumNames(stadium.id);
-      const currentName = getCurrentStadiumName(stadiumNames);
-      return {
-        ...stadium,
-        currentName: currentName || stadium.name
-      };
-    })
-  );
+  const stadiumsWithCurrentNames = stadiums.map((stadium) => ({
+    ...stadium,
+    currentName: getCurrentStadiumName(namesByStadium[stadium.id] ?? []) || stadium.name
+  }));
 
   // Sort alphabetically by current name
   stadiumsWithCurrentNames.sort((a, b) => a.currentName.localeCompare(b.currentName));

@@ -1,6 +1,7 @@
 import { supabase } from '@/utils/supabase';
 import { createCachedFunction, CACHE_TAGS, CACHE_TTL } from './cache-utils';
 import { fetchAllFromDB, fetchWithSingleMatchCountFromDB } from './generic-fetchers';
+import { fetchAllPaginated } from '@/lib/utils/paginate';
 
 export interface Team {
   id: number;
@@ -86,6 +87,27 @@ async function fetchStadiumNamesFromDB(stadiumId: string): Promise<StadiumName[]
   }
 
   return data as StadiumName[];
+}
+
+// Every stadium's name history in one read, so the list pages don't need a
+// stadium_names round trip per stadium (WEB-221). Paginated so it can't be
+// silently cut off at PostgREST's row cap (see fetchAllPaginated), with id as
+// a unique tiebreaker to keep page boundaries and same-date names stable.
+async function fetchAllStadiumNamesFromDB(): Promise<Record<string, StadiumName[]>> {
+  const { data, error } = await fetchAllPaginated<StadiumName>((from, to) =>
+    supabase
+      .from('stadium_names')
+      .select('*')
+      .order('valid_from', { ascending: false })
+      .order('id', { ascending: true })
+      .range(from, to)
+  );
+
+  if (error) {
+    throw error;
+  }
+
+  return groupStadiumNamesByStadium(data);
 }
 
 async function fetchAllStadiumsFromDB(): Promise<Stadium[]> {
@@ -207,6 +229,15 @@ export const getStadiumNames = createCachedFunction(
   }
 );
 
+export const getAllStadiumNames = createCachedFunction(
+  fetchAllStadiumNamesFromDB,
+  {
+    keyParts: ['stadium-names', 'all'],
+    tags: [CACHE_TAGS.STADIUM_NAMES],
+    revalidate: CACHE_TTL.STADIUM_DATA,
+  }
+);
+
 export const getMatchesAtStadium = createCachedFunction(
   fetchMatchesAtStadiumFromDB,
   {
@@ -215,6 +246,17 @@ export const getMatchesAtStadium = createCachedFunction(
     revalidate: CACHE_TTL.CURRENT_SEASON_MATCHES,
   }
 );
+
+// A plain object rather than a Map, since unstable_cache stores results as JSON.
+// Keeps each stadium's names in the order given, which getCurrentStadiumName
+// relies on (most recent valid_from first).
+export function groupStadiumNamesByStadium(stadiumNames: StadiumName[]): Record<string, StadiumName[]> {
+  const grouped: Record<string, StadiumName[]> = {};
+  for (const name of stadiumNames) {
+    (grouped[name.stadium_id] ??= []).push(name);
+  }
+  return grouped;
+}
 
 export function getCurrentStadiumName(stadiumNames: StadiumName[], date?: Date): string | null {
   if (!stadiumNames || stadiumNames.length === 0) {

@@ -4,7 +4,8 @@ import { mockSupabaseFrom } from '@/test-utils/supabase-query-mock';
 // NOTE: getCurrentStadiumName's date-range branching is already covered
 // thoroughly in stadiums-import.test.ts - this file focuses on the
 // Supabase-backed data fetchers (getStadiumBySlug, getAllStadiums,
-// getStadiumsWithMatchCounts, getStadiumNames, getMatchesAtStadium) to avoid
+// getStadiumsWithMatchCounts, getStadiumNames, getAllStadiumNames,
+// getMatchesAtStadium) to avoid
 // duplicating that coverage. Cache invalidation for stadium/stadium-name
 // writes now lives in cache-invalidation.ts, covered by its own test file.
 
@@ -113,6 +114,37 @@ describe('stadiums data layer', () => {
 
       const { getStadiumNames } = await import('@/lib/data/stadiums');
       await expect(getStadiumNames('s1')).rejects.toBeTruthy();
+    });
+  });
+
+  describe('getAllStadiumNames', () => {
+    it('fetches every stadium name in one paginated read, grouped by stadium', async () => {
+      const names = [
+        { id: '1', stadium_id: 's1', name: 'New Name', valid_from: '2020-01-01', valid_to: null },
+        { id: '2', stadium_id: 's2', name: 'Other Ground', valid_from: '2010-01-01', valid_to: null },
+        { id: '3', stadium_id: 's1', name: 'Old Name', valid_from: '2000-01-01', valid_to: '2020-01-01' },
+      ];
+      const mockFrom = mockSupabaseFrom({ stadium_names: { data: names, error: null } });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getAllStadiumNames } = await import('@/lib/data/stadiums');
+      const result = await getAllStadiumNames();
+
+      expect(result).toEqual({ s1: [names[0], names[2]], s2: [names[1]] });
+      expect(mockFrom).toHaveBeenCalledTimes(1);
+      const chain = mockFrom.mock.results[0].value;
+      expect(chain.eq).not.toHaveBeenCalled();
+      expect(chain.order).toHaveBeenCalledWith('valid_from', { ascending: false });
+      expect(chain.order).toHaveBeenCalledWith('id', { ascending: true });
+      expect(chain.range).toHaveBeenCalledWith(0, 999);
+    });
+
+    it('throws when the query errors', async () => {
+      const mockFrom = mockSupabaseFrom({ stadium_names: { data: null, error: { message: 'db down' } } });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getAllStadiumNames } = await import('@/lib/data/stadiums');
+      await expect(getAllStadiumNames()).rejects.toBeTruthy();
     });
   });
 

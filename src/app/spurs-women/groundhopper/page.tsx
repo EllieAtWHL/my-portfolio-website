@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { getGroundhopperStadiums, getStadiumNames, getCurrentStadiumName } from '@/lib/data/stadiums';
+import { getGroundhopperStadiums, getAllStadiumNames, getCurrentStadiumName, type StadiumName } from '@/lib/data/stadiums';
 import { toGroundhopperStadium, type GroundhopperStadium } from '@/lib/groundhopper';
 import { generatePageMetadata } from '@/lib/metadata';
 import GroundhopperLoader from '@/components/spurs-women/groundhopper/GroundhopperLoader';
@@ -16,18 +16,15 @@ export default async function GroundhopperPage() {
   let stadiums: GroundhopperStadium[] = [];
 
   try {
-    const allStadiums = await getGroundhopperStadiums();
-    const playable = await Promise.all(
-      allStadiums.map(async stadium => {
-        // The current name is a nice-to-have on the reveal - one failed
-        // lookup shouldn't take the whole game down with it. Only Spurs Women
-        // grounds have stadium_names history; imported ones are skipped
-        // rather than costing a query each.
-        const names = stadium.spurs_women ? await getStadiumNames(stadium.id).catch(() => []) : [];
-        return toGroundhopperStadium(stadium, getCurrentStadiumName(names));
-      })
-    );
-    stadiums = playable.filter((s): s is GroundhopperStadium => s !== null);
+    // The current name is a nice-to-have on the reveal - a failed names
+    // lookup shouldn't take the whole game down with it.
+    const [allStadiums, namesByStadium] = await Promise.all([
+      getGroundhopperStadiums(),
+      getAllStadiumNames().catch((): Record<string, StadiumName[]> => ({})),
+    ]);
+    stadiums = allStadiums
+      .map(stadium => toGroundhopperStadium(stadium, getCurrentStadiumName(namesByStadium[stadium.id] ?? [])))
+      .filter((s): s is GroundhopperStadium => s !== null);
   } catch (error) {
     console.error('Error fetching stadiums for Groundhopper:', error);
   }
