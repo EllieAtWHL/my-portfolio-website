@@ -1,3 +1,6 @@
+import { createCompressionWorker } from './image-compression-worker';
+import type { CompressionWorkerResponse } from './image-compression.worker';
+
 // Browser-only. Shrinks a phone photo before it goes over the (potentially
 // slow/flaky) mobile upload connection - the highest-leverage mitigation for
 // the screen-lock/dropped-connection risk found in WEB-148 (see
@@ -15,12 +18,28 @@
 // explain it either) can be diagnosed from what was actually attempted:
 // e.g. a photo whose compression silently failed would otherwise look
 // identical to a normal successful case right up until the network error.
+//
+// WEB-173: decoding happens in a fresh Web Worker per photo, terminated
+// afterwards. Decoding a 12MP phone photo needs a ~48MB full-resolution
+// bitmap regardless of the 2000px output, and on mobile that memory isn't
+// reliably handed back between photos on the main thread even with
+// bitmap.close() and a shared canvas (WEB-149's fix) - a batch got ~5 photos
+// in before every later decode failed, and Retry failed identically until a
+// page reload. Terminating the worker discards its whole heap, so each photo
+// (and each retry) starts from a clean slate. The main-thread path below is
+// kept as a fallback for browsers without Worker/OffscreenCanvas support, or
+// if the worker itself fails.
 const MAX_DIMENSION = 2000;
 const JPEG_QUALITY = 0.85;
 
 // Comfortably under Vercel's ~4.5MB hard limit, leaving room for
 // multipart/form-data overhead.
 const MAX_SAFE_UPLOAD_BYTES = 4 * 1024 * 1024;
+
+// A worker the browser kills outright (e.g. out of memory) may never post a
+// message or fire onerror - without a timeout the photo would sit at
+// "Compressing..." forever and block the rest of the queue.
+const WORKER_TIMEOUT_MS = 30_000;
 
 export class ImageTooLargeError extends Error {}
 
@@ -41,7 +60,36 @@ function getSharedCanvas(): HTMLCanvasElement {
   return sharedCanvas;
 }
 
-export async function compressImageForUpload(file: File): Promise<CompressionResult> {
+function canCompressInWorker(): boolean {
+  return typeof Worker !== 'undefined' && typeof OffscreenCanvas !== 'undefined';
+}
+
+async function compressInWorker(file: File): Promise<Blob> {
+  const worker = createCompressionWorker();
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await new Promise<Blob>((resolve, reject) => {
+      timeout = setTimeout(() => reject(new Error('compression worker timed out')), WORKER_TIMEOUT_MS);
+      worker.onmessage = (event: MessageEvent<CompressionWorkerResponse>) => {
+        if ('blob' in event.data) {
+          resolve(event.data.blob);
+        } else {
+          reject(new Error(event.data.error));
+        }
+      };
+      worker.onerror = (event) => {
+        event.preventDefault();
+        reject(new Error(event.message || 'compression worker failed'));
+      };
+      worker.postMessage({ file, maxDimension: MAX_DIMENSION, quality: JPEG_QUALITY });
+    });
+  } finally {
+    clearTimeout(timeout);
+    worker.terminate();
+  }
+}
+
+async function compressOnMainThread(file: File): Promise<Blob> {
   let bitmap: ImageBitmap | null = null;
   try {
     bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
@@ -64,9 +112,29 @@ export async function compressImageForUpload(file: File): Promise<CompressionRes
     if (!blob) {
       throw new Error('Canvas produced no image data');
     }
+    return blob;
+  } finally {
+    bitmap?.close();
+  }
+}
+
+export async function compressImageForUpload(file: File): Promise<CompressionResult> {
+  let workerReason: string | undefined;
+  if (canCompressInWorker()) {
+    try {
+      const blob = await compressInWorker(file);
+      return { file: new File([blob], file.name, { type: 'image/jpeg' }), compressed: true };
+    } catch (error) {
+      workerReason = (error as Error).message || 'unknown error';
+    }
+  }
+
+  try {
+    const blob = await compressOnMainThread(file);
     return { file: new File([blob], file.name, { type: 'image/jpeg' }), compressed: true };
   } catch (error) {
-    const reason = (error as Error).message || 'unknown error';
+    const mainThreadReason = (error as Error).message || 'unknown error';
+    const reason = workerReason ? `worker: ${workerReason}; main thread: ${mainThreadReason}` : mainThreadReason;
     if (file.size > MAX_SAFE_UPLOAD_BYTES) {
       throw new ImageTooLargeError(
         `Couldn't compress "${file.name}" (${reason}), and its original size ` +
@@ -76,7 +144,5 @@ export async function compressImageForUpload(file: File): Promise<CompressionRes
     // Small enough to upload uncompressed without hitting Vercel's body-size
     // limit - the server-side sharp resize is still the authoritative step.
     return { file, compressed: false, fallbackReason: reason };
-  } finally {
-    bitmap?.close();
   }
 }
