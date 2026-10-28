@@ -45,23 +45,28 @@ async function fetchMatchesForTeamFromDB(teamId: string): Promise<Match[]> {
     return [];
   }
 
-  const { data, error } = await supabase
-    .from('matches_with_stadium')
-    .select(`
-      *,
-      home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-      away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-      competitions:competition_id(name, icon_svg)
-    `)
-    .or(`home_team_id.eq.${numericTeamId},away_team_id.eq.${numericTeamId}`)
-    .order('date', { ascending: false });
+  // Paginated (WEB-168) - for Tottenham this is every match in the table.
+  const { data, error } = await fetchAllPaginated((from, to) =>
+    supabase
+      .from('matches_with_stadium')
+      .select(`
+        *,
+        home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
+        away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
+        competitions:competition_id(name, icon_svg)
+      `)
+      .or(`home_team_id.eq.${numericTeamId},away_team_id.eq.${numericTeamId}`)
+      .order('date', { ascending: false })
+      .order('id', { ascending: true })
+      .range(from, to)
+  );
 
   if (error) {
     console.error('Error fetching matches for team:', error);
     return [];
   }
 
-  return data || [];
+  return data;
 }
 
 export interface PlayerStatsAggregate {
@@ -120,14 +125,19 @@ export async function fetchPlayerStatsAggregateForTeam(teamId: string): Promise<
 }
 
 async function fetchPlayersForTeamFromDB(teamId: string): Promise<TeamPlayers> {
-  // Fetch player_history records for this team
-  const { data: playerHistory, error: historyError } = await supabase
-    .from('player_history')
-    .select(`
-      *,
-      player:players(*)
-    `)
-    .eq('team_id', teamId);
+  // Fetch player_history records for this team - paginated (WEB-168), since
+  // Tottenham's history grows with every season's signings.
+  const { data: playerHistory, error: historyError } = await fetchAllPaginated((from, to) =>
+    supabase
+      .from('player_history')
+      .select(`
+        *,
+        player:players(*)
+      `)
+      .eq('team_id', teamId)
+      .order('id', { ascending: true })
+      .range(from, to)
+  );
 
   if (historyError) {
     console.error('Error fetching player history for team:', historyError);

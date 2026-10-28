@@ -72,6 +72,32 @@ describe('generic-fetchers', () => {
       await expect(fetchAllFromDB('teams')).rejects.toEqual(dbError);
       expect(errorSpy).toHaveBeenCalledWith('Error fetching teams:', dbError);
     });
+
+    it('pages past the 1000-row response cap rather than truncating (WEB-168)', async () => {
+      const firstPage = Array.from({ length: 1000 }, (_, i) => ({ id: i, name: `Team ${i}` }));
+      currentMockFrom = mockSupabaseFrom({
+        teams: [
+          { data: firstPage, error: null },
+          { data: [{ id: 1000, name: 'Team 1000' }], error: null },
+        ],
+      });
+
+      const result = await fetchAllFromDB('teams');
+
+      expect(result).toHaveLength(1001);
+      expect(currentMockFrom.mock.results[0].value.range).toHaveBeenCalledWith(0, 999);
+      expect(currentMockFrom.mock.results[1].value.range).toHaveBeenCalledWith(1000, 1999);
+    });
+
+    it('orders by id after the caller\'s column so ties have a stable order across pages', async () => {
+      currentMockFrom = mockSupabaseFrom({ teams: { data: [], error: null } });
+
+      await fetchAllFromDB('teams');
+      const chain = currentMockFrom.mock.results[0].value;
+
+      expect(chain.order).toHaveBeenNthCalledWith(1, 'name', { ascending: true });
+      expect(chain.order).toHaveBeenNthCalledWith(2, 'id', { ascending: true });
+    });
   });
 
   describe('fetchByIdFromDB', () => {
@@ -190,6 +216,22 @@ describe('generic-fetchers', () => {
       expect(result).toEqual([{ id: 1, name: 'Spurs', match_count: 0 }]);
     });
 
+    it('pages the count query past the 1000-row response cap rather than undercounting (WEB-168)', async () => {
+      currentMockFrom = mockSupabaseFrom({
+        teams: { data: [{ id: 1, name: 'Spurs' }], error: null },
+        // Calls run in Promise.all order: home page 1, away page 1, then home page 2.
+        matches: [
+          { data: Array.from({ length: 1000 }, () => ({ home_team_id: 1 })), error: null },
+          { data: [{ away_team_id: 1 }], error: null },
+          { data: [{ home_team_id: 1 }], error: null },
+        ],
+      });
+
+      const result = await fetchWithMatchCountFromDB<{ id: number; name: string }>('teams');
+
+      expect(result).toEqual([{ id: 1, name: 'Spurs', match_count: 1002 }]);
+    });
+
     it('returns an empty array when there are no entities (no count queries attempted)', async () => {
       currentMockFrom = mockSupabaseFrom({ teams: { data: [], error: null } });
 
@@ -199,7 +241,7 @@ describe('generic-fetchers', () => {
       expect(currentMockFrom).toHaveBeenCalledTimes(1);
     });
 
-    it('queries counts against the custom match table/columns, filtered by entity ids, when provided', async () => {
+    it('queries counts against the custom match table/columns when provided', async () => {
       currentMockFrom = mockSupabaseFrom({
         stadia: { data: [{ id: 1, name: 'Stadium A' }], error: null },
         appearances: [
@@ -222,8 +264,8 @@ describe('generic-fetchers', () => {
       expect(currentMockFrom).toHaveBeenNthCalledWith(3, 'appearances');
       const homeChain = currentMockFrom.mock.results[1].value;
       const awayChain = currentMockFrom.mock.results[2].value;
-      expect(homeChain.in).toHaveBeenCalledWith('home_stadium_id', [1]);
-      expect(awayChain.in).toHaveBeenCalledWith('away_stadium_id', [1]);
+      expect(homeChain.select).toHaveBeenCalledWith('home_stadium_id');
+      expect(awayChain.select).toHaveBeenCalledWith('away_stadium_id');
     });
   });
 
@@ -280,7 +322,7 @@ describe('generic-fetchers', () => {
       expect(result).toEqual([{ id: 1, name: 'Stadium A', match_count: 0 }]);
     });
 
-    it('filters the count query by the custom match column against all entity ids', async () => {
+    it('counts every match by the custom column without an id filter (no URL-length limit, WEB-168)', async () => {
       currentMockFrom = mockSupabaseFrom({
         stadia: { data: [{ id: 9, name: 'Stadium A' }], error: null },
         matches: { data: [{ stadium_id: 9 }], error: null },
@@ -290,7 +332,8 @@ describe('generic-fetchers', () => {
       // Call 0 = entities('stadia'); call 1 = counts('matches')
       const matchesChain = currentMockFrom.mock.results[1].value;
 
-      expect(matchesChain.in).toHaveBeenCalledWith('stadium_id', [9]);
+      expect(matchesChain.select).toHaveBeenCalledWith('stadium_id');
+      expect(matchesChain.in).not.toHaveBeenCalled();
     });
 
     it('returns an empty array when there are no entities (no count query attempted)', async () => {

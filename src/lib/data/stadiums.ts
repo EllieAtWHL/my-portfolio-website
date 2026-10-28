@@ -138,40 +138,51 @@ async function fetchStadiumsForTeamFromDB(teamId: string): Promise<Stadium[]> {
 }
 
 // Every ground with coordinates, Spurs Women or not - the Groundhopper pool.
+// Grows each season as import-groundhopper-stadiums adds league grounds, so
+// paginated (WEB-168) rather than risking a silent cut-off at PostgREST's row cap.
 async function fetchGroundhopperStadiumsFromDB(): Promise<Stadium[]> {
-  const { data, error } = await supabase
-    .from('stadia')
-    .select('*')
-    .not('latitude', 'is', null)
-    .not('longitude', 'is', null)
-    .order('name');
+  const { data, error } = await fetchAllPaginated<Stadium>((from, to) =>
+    supabase
+      .from('stadia')
+      .select('*')
+      .not('latitude', 'is', null)
+      .not('longitude', 'is', null)
+      .order('name')
+      .order('id', { ascending: true })
+      .range(from, to)
+  );
 
   if (error) {
     throw error;
   }
 
-  return (data as Stadium[]) || [];
+  return data;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchMatchesAtStadiumFromDB(stadiumSlug: string): Promise<any[]> {
-  const { data, error } = await supabase
-    .from('matches_with_stadium')
-    .select(`
-      *,
-      home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-      away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
-      competitions:competition_id(name, icon_svg)
-    `)
-    .eq('stadium_slug', stadiumSlug)
-    .order('date', { ascending: false });
+  // Paginated (WEB-168) - a home ground's match list keeps growing every season.
+  const { data, error } = await fetchAllPaginated((from, to) =>
+    supabase
+      .from('matches_with_stadium')
+      .select(`
+        *,
+        home_team:home_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
+        away_team:away_team_id(id, name, short_name, primary_color, secondary_color, is_tottenham),
+        competitions:competition_id(name, icon_svg)
+      `)
+      .eq('stadium_slug', stadiumSlug)
+      .order('date', { ascending: false })
+      .order('id', { ascending: true })
+      .range(from, to)
+  );
 
   if (error) {
     console.error('Error fetching matches at stadium:', error.message || JSON.stringify(error));
     return [];
   }
 
-  return data || [];
+  return data;
 }
 
 // Cached functions for stadium data

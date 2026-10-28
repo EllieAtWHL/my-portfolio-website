@@ -1,5 +1,6 @@
 import { createCachedFunction, CACHE_TTL, CACHE_TAGS } from './cache-utils';
 import { buildMatchQuery, buildMatchNavQuery } from './query-builders';
+import { fetchAllPaginated } from '@/lib/utils/paginate';
 
 export interface Match {
   id: string;
@@ -139,26 +140,33 @@ async function fetchPreviousMatchesFromDB(limit: number = 3): Promise<Match[]> {
   return allMatches.slice(0, limit);
 }
 
+// Unbounded - the matches table grows every season - so paginated via fetchAllPaginated
+// rather than risking a silent cut-off at PostgREST's 1000-row response cap (WEB-168),
+// with id as a unique tiebreaker after date so the row order is deterministic.
 async function fetchAllMatchesFromDB(filter?: 'upcoming' | 'previous'): Promise<Match[]> {
-  let query = buildMatchQuery()
-    .order('date', { ascending: false });
-
   const now = new Date().toISOString();
-  
-  if (filter === 'upcoming') {
-    query = query.gte('date', now);
-  } else if (filter === 'previous') {
-    query = query.lt('date', now);
-  }
 
-  const { data, error } = await query;
+  const { data, error } = await fetchAllPaginated<Match>((from, to) => {
+    let query = buildMatchQuery();
+
+    if (filter === 'upcoming') {
+      query = query.gte('date', now);
+    } else if (filter === 'previous') {
+      query = query.lt('date', now);
+    }
+
+    return query
+      .order('date', { ascending: false })
+      .order('id', { ascending: true })
+      .range(from, to);
+  });
 
   if (error) {
     console.error('Error fetching all matches:', error);
     throw error;
   }
 
-  return data as Match[] || [];
+  return data;
 }
 
 async function fetchSeasonMatchesFromDB(seasonId: string): Promise<Match[]> {

@@ -1,4 +1,5 @@
 import { supabase } from '@/utils/supabase';
+import { fetchAllPaginated } from '@/lib/utils/paginate';
 
 /**
  * Equality filters applied to a generic fetch, e.g. `{ spurs_women: true }`
@@ -7,7 +8,11 @@ import { supabase } from '@/utils/supabase';
 export type EqualityFilters = Record<string, string | number | boolean>;
 
 /**
- * Generic function to fetch all records from a table with optional ordering
+ * Generic function to fetch all records from a table with optional ordering, paginated via
+ * fetchAllPaginated so a table that grows past PostgREST's 1000-row response cap isn't
+ * silently truncated (WEB-168). Ordered by `id` after the caller's column as a unique
+ * tiebreaker, so rows that tie on that column (e.g. two grounds with the same name) have a
+ * deterministic order and can't be skipped or duplicated at a page boundary within a single read.
  */
 export async function fetchAllFromDB<T>(
   tableName: string,
@@ -15,18 +20,22 @@ export async function fetchAllFromDB<T>(
   ascending: boolean = true,
   filters: EqualityFilters = {}
 ): Promise<T[]> {
-  const { data, error } = await supabase
-    .from(tableName)
-    .select('*')
-    .match(filters)
-    .order(orderByColumn, { ascending });
+  const { data, error } = await fetchAllPaginated<T>((from, to) =>
+    supabase
+      .from(tableName)
+      .select('*')
+      .match(filters)
+      .order(orderByColumn, { ascending })
+      .order('id', { ascending: true })
+      .range(from, to)
+  );
 
   if (error) {
     console.error(`Error fetching ${tableName}:`, error);
     throw error;
   }
 
-  return (data as T[]) || [];
+  return data;
 }
 
 /**
@@ -51,28 +60,34 @@ export async function fetchByIdFromDB<T>(
 }
 
 /**
- * Fetches one row per match count for the given column, filtered to the given entity ids,
- * and reduces it to a per-id count. A single query regardless of how many entities/ids there
- * are, rather than one query per entity.
+ * Fetches the given column for every match and reduces it to a per-id count, for the caller
+ * to look up its entities in. Deliberately not filtered with `.in(matchColumn, ids)`: the id
+ * list goes into the request URL, so a paginated entity list past a few hundred rows could
+ * exceed URL length limits - and counting every match is no more rows than the matches
+ * table itself, which this pages through anyway.
  */
 async function fetchColumnCounts(
   matchTableName: string,
-  matchColumn: string,
-  ids: (string | number)[]
+  matchColumn: string
 ): Promise<Map<string | number, number>> {
   const counts = new Map<string | number, number>();
 
-  const { data, error } = await supabase
-    .from(matchTableName)
-    .select(matchColumn)
-    .in(matchColumn, ids);
+  // One row per match, so this grows with the matches table rather than the (much smaller)
+  // entity table - paginated for the same reason as fetchAllFromDB.
+  const { data, error } = await fetchAllPaginated((from, to) =>
+    supabase
+      .from(matchTableName)
+      .select(matchColumn)
+      .order('id', { ascending: true })
+      .range(from, to)
+  );
 
   if (error) {
     console.error(`Error fetching ${matchColumn} counts from ${matchTableName}:`, error);
     return counts;
   }
 
-  for (const row of (data ?? []) as unknown as Record<string, string | number | null>[]) {
+  for (const row of data as unknown as Record<string, string | number | null>[]) {
     const id = row[matchColumn];
     if (id !== null && id !== undefined) {
       counts.set(id, (counts.get(id) ?? 0) + 1);
@@ -93,26 +108,14 @@ export async function fetchWithMatchCountFromDB<T extends { id: string | number 
   matchColumn2: string = 'away_team_id',
   orderByColumn: string = 'name'
 ): Promise<(T & { match_count: number })[]> {
-  // Fetch entities first
-  const { data: entitiesData, error: entitiesError } = await supabase
-    .from(tableName)
-    .select('*')
-    .order(orderByColumn);
-
-  if (entitiesError) {
-    console.error(`Error fetching ${tableName}:`, entitiesError);
-    throw entitiesError;
-  }
-
-  const entities = entitiesData as T[];
+  const entities = await fetchAllFromDB<T>(tableName, orderByColumn);
   if (entities.length === 0) {
     return [];
   }
 
-  const ids = entities.map((entity) => entity.id);
   const [counts1, counts2] = await Promise.all([
-    fetchColumnCounts(matchTableName, matchColumn1, ids),
-    fetchColumnCounts(matchTableName, matchColumn2, ids),
+    fetchColumnCounts(matchTableName, matchColumn1),
+    fetchColumnCounts(matchTableName, matchColumn2),
   ]);
 
   return entities.map((entity) => ({
@@ -132,25 +135,12 @@ export async function fetchWithSingleMatchCountFromDB<T extends { id: string | n
   orderByColumn: string = 'name',
   filters: EqualityFilters = {}
 ): Promise<(T & { match_count: number })[]> {
-  // Fetch entities first
-  const { data: entitiesData, error: entitiesError } = await supabase
-    .from(tableName)
-    .select('*')
-    .match(filters)
-    .order(orderByColumn);
-
-  if (entitiesError) {
-    console.error(`Error fetching ${tableName}:`, entitiesError);
-    throw entitiesError;
-  }
-
-  const entities = entitiesData as T[];
+  const entities = await fetchAllFromDB<T>(tableName, orderByColumn, true, filters);
   if (entities.length === 0) {
     return [];
   }
 
-  const ids = entities.map((entity) => entity.id);
-  const counts = await fetchColumnCounts(matchTableName, matchColumn, ids);
+  const counts = await fetchColumnCounts(matchTableName, matchColumn);
 
   return entities.map((entity) => ({
     ...entity,
