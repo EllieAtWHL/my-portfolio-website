@@ -130,7 +130,7 @@ export function usePhotoUploadModal({
     }
   }, [autoRetryDelayMs]);
 
-  const attemptUpload = useCallback(async (item: PhotoQueueItem) => {
+  const compressItem = useCallback(async (item: PhotoQueueItem) => {
     updateItem(item.id, { status: 'compressing', error: undefined });
     // Compression can throw (ImageTooLargeError) rather than silently
     // falling back to a too-large original - a request over Vercel's
@@ -144,7 +144,10 @@ export function usePhotoUploadModal({
       lastAttemptFallbackReason: fallbackReason,
       lastAttemptSizeBytes: compressed.size,
     });
+    return compressed;
+  }, [updateItem]);
 
+  const sendPhoto = useCallback(async (item: PhotoQueueItem, compressed: File) => {
     const body = new FormData();
     body.append('photo', compressed, item.name);
     body.append('matchId', editingMatchId as string);
@@ -157,7 +160,7 @@ export function usePhotoUploadModal({
     }
 
     return result.data as { path: string; blobSha: string; optimisedSizeBytes: number };
-  }, [editingMatchId, updateItem]);
+  }, [editingMatchId]);
 
   const uploadOne = useCallback(async (item: PhotoQueueItem) => {
     if (!editingMatchId) {
@@ -168,7 +171,12 @@ export function usePhotoUploadModal({
     }
 
     try {
-      const { path, blobSha, optimisedSizeBytes } = await withOneAutoRetry(() => attemptUpload(item));
+      // Compressed once, outside the auto-retry: the retry is for transient
+      // network/session failures, and re-decoding a full-resolution photo
+      // just to resend the same bytes would add memory pressure on a phone
+      // for nothing (WEB-173).
+      const compressed = await compressItem(item);
+      const { path, blobSha, optimisedSizeBytes } = await withOneAutoRetry(() => sendPhoto(item, compressed));
       updateItem(item.id, { status: 'done', path, blobSha, optimisedSizeBytes });
     } catch (error) {
       // Append what was actually attempted client-side, since a "Failed to
@@ -183,7 +191,7 @@ export function usePhotoUploadModal({
         : '';
       updateItem(item.id, { status: 'error', error: `${(error as Error).message || 'Upload failed'}${diagnostics}` });
     }
-  }, [editingMatchId, updateItem, attemptUpload, withOneAutoRetry]);
+  }, [editingMatchId, updateItem, compressItem, sendPhoto, withOneAutoRetry]);
 
   const finalizeBatch = useCallback(async () => {
     const toPublish = queueRef.current.filter((item) => item.status === 'done' && !item.published && item.path && item.blobSha);

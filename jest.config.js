@@ -37,6 +37,13 @@ const customJestConfig = {
     // Thin 4-line delegate to lib/supabase/middleware.ts#updateSession, which
     // holds the actual routing/auth logic and is unit tested directly.
     '!src/middleware.ts',
+    // Photo-upload compression worker + its 1-line factory: need a real
+    // Worker/OffscreenCanvas (jsdom has neither) and the bundler's
+    // import.meta.url handling. compressImageForUpload's side of the worker
+    // protocol is unit tested with a fake worker; the worker itself was
+    // verified in real Chromium/WebKit (WEB-173).
+    '!src/lib/image-compression.worker.ts',
+    '!src/lib/create-compression-worker.ts',
     // Bobbin (standalone Vite app, reference/bobbin/README.md). Excluded:
     // main.ts (DOM wiring entry point), render/canvas.ts (needs a real 2D
     // canvas, which jsdom lacks) and gen/worker.ts (a 5-line message shim) -

@@ -1,4 +1,4 @@
-import { createCompressionWorker } from './image-compression-worker';
+import { createCompressionWorker } from './create-compression-worker';
 import type { CompressionWorkerResponse } from './image-compression.worker';
 
 // Browser-only. Shrinks a phone photo before it goes over the (potentially
@@ -27,8 +27,10 @@ import type { CompressionWorkerResponse } from './image-compression.worker';
 // in before every later decode failed, and Retry failed identically until a
 // page reload. Terminating the worker discards its whole heap, so each photo
 // (and each retry) starts from a clean slate. The main-thread path below is
-// kept as a fallback for browsers without Worker/OffscreenCanvas support, or
-// if the worker itself fails.
+// kept only for when the worker can't run at all (no Worker/OffscreenCanvas
+// support, or the worker script fails to load) - NOT after a decode error or
+// timeout inside a running worker, since those usually mean memory pressure
+// and retrying on the main thread would just recreate the WEB-173 failure.
 const MAX_DIMENSION = 2000;
 const JPEG_QUALITY = 0.85;
 
@@ -38,10 +40,14 @@ const MAX_SAFE_UPLOAD_BYTES = 4 * 1024 * 1024;
 
 // A worker the browser kills outright (e.g. out of memory) may never post a
 // message or fire onerror - without a timeout the photo would sit at
-// "Compressing..." forever and block the rest of the queue.
-const WORKER_TIMEOUT_MS = 30_000;
+// "Compressing..." forever and block the rest of the queue. A phone decode
+// normally takes 1-2s.
+const WORKER_TIMEOUT_MS = 15_000;
 
 export class ImageTooLargeError extends Error {}
+
+/** The worker couldn't run at all, as opposed to failing to decode a photo. */
+class WorkerUnavailableError extends Error {}
 
 export interface CompressionResult {
   file: File;
@@ -77,9 +83,12 @@ async function compressInWorker(file: File): Promise<Blob> {
           reject(new Error(event.data.error));
         }
       };
+      worker.onmessageerror = () => reject(new Error('compression worker message could not be deserialized'));
+      // The worker catches its own decode errors and posts them back, so
+      // onerror firing means the worker script itself didn't load/run.
       worker.onerror = (event) => {
         event.preventDefault();
-        reject(new Error(event.message || 'compression worker failed'));
+        reject(new WorkerUnavailableError(event.message || 'compression worker failed to start'));
       };
       worker.postMessage({ file, maxDimension: MAX_DIMENSION, quality: JPEG_QUALITY });
     });
@@ -126,6 +135,9 @@ export async function compressImageForUpload(file: File): Promise<CompressionRes
       return { file: new File([blob], file.name, { type: 'image/jpeg' }), compressed: true };
     } catch (error) {
       workerReason = (error as Error).message || 'unknown error';
+      if (!(error instanceof WorkerUnavailableError)) {
+        return fallBackToOriginal(file, `worker: ${workerReason}`);
+      }
     }
   }
 
@@ -134,15 +146,18 @@ export async function compressImageForUpload(file: File): Promise<CompressionRes
     return { file: new File([blob], file.name, { type: 'image/jpeg' }), compressed: true };
   } catch (error) {
     const mainThreadReason = (error as Error).message || 'unknown error';
-    const reason = workerReason ? `worker: ${workerReason}; main thread: ${mainThreadReason}` : mainThreadReason;
-    if (file.size > MAX_SAFE_UPLOAD_BYTES) {
-      throw new ImageTooLargeError(
-        `Couldn't compress "${file.name}" (${reason}), and its original size ` +
-        `(${Math.round(file.size / 1024)}KB) is too large to upload as-is.`
-      );
-    }
-    // Small enough to upload uncompressed without hitting Vercel's body-size
-    // limit - the server-side sharp resize is still the authoritative step.
-    return { file, compressed: false, fallbackReason: reason };
+    return fallBackToOriginal(file, workerReason ? `worker: ${workerReason}; main thread: ${mainThreadReason}` : mainThreadReason);
   }
+}
+
+function fallBackToOriginal(file: File, reason: string): CompressionResult {
+  if (file.size > MAX_SAFE_UPLOAD_BYTES) {
+    throw new ImageTooLargeError(
+      `Couldn't compress "${file.name}" (${reason}), and its original size ` +
+      `(${Math.round(file.size / 1024)}KB) is too large to upload as-is.`
+    );
+  }
+  // Small enough to upload uncompressed without hitting Vercel's body-size
+  // limit - the server-side sharp resize is still the authoritative step.
+  return { file, compressed: false, fallbackReason: reason };
 }

@@ -169,6 +169,28 @@ describe('usePhotoUploadModal', () => {
       expect(result.current.photoQueue[0].status).toBe('done');
     });
     expect(result.current.photoQueue[0].optimisedSizeBytes).toBe(200);
+    // The retry resends the already-compressed photo rather than decoding it
+    // again (WEB-173 - a second full-resolution decode adds memory pressure).
+    expect(mockCompress).toHaveBeenCalledTimes(1);
+  });
+
+  it('marks a photo as error straight away when compression itself fails, without attempting the upload', async () => {
+    mockCompress.mockRejectedValueOnce(new Error('Couldn\'t compress "a.jpg" (worker: out of memory)'));
+    global.fetch = jest.fn();
+
+    const { result } = renderHook(() =>
+      usePhotoUploadModal({ editingMatchId: 'match-1', refreshRelatedMedia, showMessage, autoRetryDelayMs: TEST_RETRY_DELAY_MS })
+    );
+
+    act(() => {
+      result.current.addFiles([makeFile('a.jpg')] as unknown as FileList);
+    });
+
+    await waitFor(() => {
+      expect(result.current.photoQueue[0].status).toBe('error');
+    });
+    expect(result.current.photoQueue[0].error).toContain('worker: out of memory');
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 
   it('marks a photo as error only after both the initial attempt and the automatic retry fail', async () => {

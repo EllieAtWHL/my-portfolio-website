@@ -1,7 +1,7 @@
 import { compressImageForUpload, ImageTooLargeError } from '../image-compression';
-import { createCompressionWorker } from '../image-compression-worker';
+import { createCompressionWorker } from '../create-compression-worker';
 
-jest.mock('../image-compression-worker', () => ({
+jest.mock('../create-compression-worker', () => ({
   createCompressionWorker: jest.fn(),
 }));
 
@@ -94,6 +94,7 @@ describe('compressImageForUpload in a worker', () => {
   function fakeWorker(respond: (worker: Worker) => void) {
     const worker = {
       onmessage: null,
+      onmessageerror: null,
       onerror: null,
       terminate: jest.fn(),
       postMessage: jest.fn(() => respond(worker)),
@@ -149,8 +150,22 @@ describe('compressImageForUpload in a worker', () => {
     expect(workers[1].terminate).toHaveBeenCalled();
   });
 
-  it('falls back to the main thread when the worker reports an error', async () => {
-    const worker = fakeWorker((w) => reply(w, { error: 'decode failed in worker' }));
+  it('does not retry on the main thread when a running worker fails to decode the photo', async () => {
+    // A decode failure inside a working worker usually means memory pressure -
+    // repeating the decode on the main thread is exactly what WEB-173 removed.
+    const worker = fakeWorker((w) => reply(w, { error: 'out of memory' }));
+    mockCreateWorker.mockReturnValue(worker);
+    global.createImageBitmap = jest.fn();
+
+    await expect(compressImageForUpload(makeFile('photo.jpg', 5 * 1024 * 1024))).rejects.toThrow(
+      /Couldn't compress "photo.jpg" \(worker: out of memory\)/
+    );
+    expect(global.createImageBitmap).not.toHaveBeenCalled();
+    expect(worker.terminate).toHaveBeenCalled();
+  });
+
+  it('falls back to the main thread when the worker script itself fails to run', async () => {
+    const worker = fakeWorker((w) => w.onerror?.({ message: 'script load failed', preventDefault: jest.fn() } as unknown as ErrorEvent));
     mockCreateWorker.mockReturnValue(worker);
     global.createImageBitmap = jest.fn().mockResolvedValue({ width: 100, height: 100, close: jest.fn() });
     jest.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: jest.fn(), clearRect: jest.fn() } as unknown as CanvasRenderingContext2D);
@@ -163,37 +178,38 @@ describe('compressImageForUpload in a worker', () => {
     expect(worker.terminate).toHaveBeenCalled();
   });
 
-  it('includes both the worker and main-thread reasons when both fail', async () => {
-    mockCreateWorker.mockReturnValue(fakeWorker((w) => reply(w, { error: 'out of memory' })));
-    global.createImageBitmap = jest.fn().mockRejectedValue(new Error('decode failed'));
-
-    await expect(compressImageForUpload(makeFile('photo.jpg', 5 * 1024 * 1024))).rejects.toThrow(
-      'worker: out of memory; main thread: decode failed'
+  it('includes both the worker and main-thread reasons when the worker fails to run and the main thread fails too', async () => {
+    mockCreateWorker.mockReturnValue(
+      fakeWorker((w) => w.onerror?.({ message: 'script load failed', preventDefault: jest.fn() } as unknown as ErrorEvent))
     );
-  });
-
-  it('treats an uncaught worker error (e.g. the script failing to load) as a worker failure', async () => {
-    const worker = fakeWorker((w) => w.onerror?.({ message: 'script load failed', preventDefault: jest.fn() } as unknown as ErrorEvent));
-    mockCreateWorker.mockReturnValue(worker);
     global.createImageBitmap = jest.fn().mockRejectedValue(new Error('decode failed'));
 
     const result = await compressImageForUpload(makeFile('photo.jpg', 1024));
 
     expect(result.compressed).toBe(false);
     expect(result.fallbackReason).toBe('worker: script load failed; main thread: decode failed');
-    expect(worker.terminate).toHaveBeenCalled();
+  });
+
+  it('rejects promptly when the worker message cannot be deserialized', async () => {
+    mockCreateWorker.mockReturnValue(fakeWorker((w) => w.onmessageerror?.({} as MessageEvent)));
+
+    const result = await compressImageForUpload(makeFile('photo.jpg', 1024));
+
+    expect(result.compressed).toBe(false);
+    expect(result.fallbackReason).toBe('worker: compression worker message could not be deserialized');
   });
 
   it('times out a worker that never responds rather than leaving the photo stuck at "Compressing..."', async () => {
     jest.useFakeTimers();
     const worker = fakeWorker(() => {});
     mockCreateWorker.mockReturnValue(worker);
-    global.createImageBitmap = jest.fn().mockRejectedValue(new Error('decode failed'));
+    global.createImageBitmap = jest.fn();
 
     const result = compressImageForUpload(makeFile('photo.jpg', 5 * 1024 * 1024));
     const assertion = expect(result).rejects.toThrow('worker: compression worker timed out');
-    await jest.advanceTimersByTimeAsync(30_000);
+    await jest.advanceTimersByTimeAsync(15_000);
     await assertion;
     expect(worker.terminate).toHaveBeenCalled();
+    expect(global.createImageBitmap).not.toHaveBeenCalled();
   });
 });
