@@ -18,7 +18,8 @@ from the **Games** card on the main site's Projects page
   the date.
 - **Score:** `100 × e^(-km / 50)` per round, rounded. Within 1 km scores
   100, 35 km scores about 50, and 250 km scores about 1. The maximum is 500 a day.
-- **Hint:** reveals the stadium's city, and caps that round at 50.
+- **Hint:** reveals the stadium's city, and caps that round at 50. It's
+  saved the moment it's shown, so reloading can't hide it and lift the cap.
 - **Reveal:** the real location, a line to your guess, the distance, the
   current sponsor name (from `stadium_names`, when it differs from `name`),
   and the city, capacity and opening year.
@@ -27,17 +28,24 @@ from the **Games** card on the main site's Projects page
   stadium names. Day 1 is 2026-10-28 (`LAUNCH_DATE_KEY`).
 - **Streak:** consecutive UK days with a finished game. It shows as 0 once a
   day has been missed.
+- **Midnight:** a tab left open past UK midnight reloads into the new day
+  when it becomes visible again.
 
 ## Data
 
 The game plays on whatever is in the `stadia` table, so adding a stadium
-through the admin system adds it to the pool. No code change is needed.
+through the admin system adds it to the pool. No code change is needed. That
+includes stadiums with no matches yet, which is deliberate: the pool is
+whatever has been entered. The page copy says "grounds from the Spurs Women
+archive" rather than "grounds Spurs Women have played at" for that reason.
 
 - The page (`src/app/spurs-women/groundhopper/page.tsx`) reads
   `getAllStadiums` + `getStadiumNames`/`getCurrentStadiumName` through the
-  data layer. It is statically rendered and revalidated with the stadium cache
+  data layer. A failed names lookup just means no "now known as" line for
+  that stadium. It is statically rendered and revalidated with the stadium cache
   TTL/tags, like the Stadiums page.
-- `toGroundhopperStadium` drops anything without valid `latitude`/`longitude`.
+- `toGroundhopperStadium` drops anything without valid `latitude`/`longitude`,
+  including `(0, 0)`, which is an unfilled form rather than a real location.
   That excludes placeholder rows like "Behind closed doors", and real grounds
   that haven't had coordinates entered yet. Wrong coordinates mean wrong
   answers, so check them when adding a stadium. The known bad and missing rows
@@ -52,7 +60,7 @@ through the admin system adds it to the pool. No code change is needed.
 | File | Role |
 |------|------|
 | `src/lib/groundhopper.ts` | Pure logic: playable filter, distance (haversine), scoring, UK date key, daily selection, streak, share text |
-| `src/hooks/useGroundhopperGame.ts` | Game state and localStorage persistence (`groundhopper:v1:game`, `groundhopper:v1:streak`; every access is try/catch, so the game still plays without storage) |
+| `src/hooks/useGroundhopperGame.ts` | Game state and localStorage persistence (`groundhopper:v1:game`, `groundhopper:v1:streak`; every access is try/catch, so the game still plays without storage; anything read back is shape-checked, and corrupt entries are discarded) |
 | `src/components/spurs-women/groundhopper/GroundhopperLoader.tsx` | Loads the game client-only (`next/dynamic`, `ssr: false`), because it needs the visitor's date and localStorage on first render and Leaflet touches `window` on import |
 | `src/components/spurs-women/groundhopper/GroundhopperGame.tsx` | Round panel, actions, results summary |
 | `src/components/spurs-women/groundhopper/GroundhopperMap.tsx` | Leaflet map, imperatively managed in effects (no react-leaflet) |

@@ -58,7 +58,8 @@ export function toGroundhopperStadium(
   if (latitude === null || longitude === null || !Number.isFinite(latitude) || !Number.isFinite(longitude)) {
     return null;
   }
-  if (Math.abs(latitude) > 90 || Math.abs(longitude) > 180) {
+  // (0, 0) is an unfilled form, not a ground in the Gulf of Guinea.
+  if (Math.abs(latitude) > 90 || Math.abs(longitude) > 180 || (latitude === 0 && longitude === 0)) {
     return null;
   }
 
@@ -94,13 +95,18 @@ export function scoreForDistance(km: number, hintUsed = false): number {
 }
 
 // The UK calendar date, so the daily set rolls over at UK midnight for everyone.
+// Built from formatToParts rather than a locale's own date format (en-CA's
+// YYYY-MM-DD has changed between ICU versions before), since everything else
+// here parses this key.
 export function ukDateKey(date: Date = new Date()): string {
-  return new Intl.DateTimeFormat('en-CA', {
+  const parts = new Intl.DateTimeFormat('en-GB', {
     timeZone: 'Europe/London',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
-  }).format(date);
+  }).formatToParts(date);
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find(p => p.type === type)?.value ?? '';
+  return `${part('year')}-${part('month')}-${part('day')}`;
 }
 
 function shiftDateKey(dateKey: string, days: number): string {

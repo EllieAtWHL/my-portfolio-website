@@ -99,6 +99,33 @@ describe('GroundhopperGame', () => {
     expect(within(screen.getByRole('status')).getByText('50')).toBeInTheDocument();
   });
 
+  it('keeps the hint (and its 50 cap) across a reload', () => {
+    const { unmount } = render(<GroundhopperGame stadiums={stadiums} />);
+    fireEvent.click(screen.getByRole('button', { name: /Show the city/ }));
+    unmount();
+
+    render(<GroundhopperGame stadiums={stadiums} />);
+    expect(screen.queryByRole('button', { name: /Show the city/ })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Tap on target' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Lock in guess' }));
+    expect(within(screen.getByRole('status')).getByText('50')).toBeInTheDocument();
+  });
+
+  it('ignores corrupt saved data instead of crashing', () => {
+    window.localStorage.setItem(
+      'groundhopper:v1:game',
+      JSON.stringify({ dateKey: '2026-10-28', stadiumIds: ['stadium-0'], results: [{}] })
+    );
+    window.localStorage.setItem('groundhopper:v1:streak', JSON.stringify({ current: 'lots' }));
+    render(<GroundhopperGame stadiums={stadiums} />);
+
+    expect(screen.getByText('Ground 1 of 5')).toBeInTheDocument();
+    for (let i = 0; i < 5; i++) {
+      playRound();
+    }
+    expect(screen.getByText(/Streak 1 day · Best 1/)).toBeInTheDocument();
+  });
+
   it('picks up where you left off after a reload', () => {
     const { unmount } = render(<GroundhopperGame stadiums={stadiums} />);
     playRound();

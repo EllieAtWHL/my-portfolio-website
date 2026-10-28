@@ -146,7 +146,7 @@ export default function GroundhopperGame({ stadiums }: GroundhopperGameProps) {
         {game.phase === 'guessing' ? (
           game.hintUsed ? (
             <p className="spurs-text text-sm">
-              It&apos;s in <strong>{stadium.city ?? 'an unlisted city'}</strong>
+              It&apos;s in <strong>{stadium.city}</strong>
               <span className="opacity-75"> · worth up to {HINT_SCORE_CAP}</span>
             </p>
           ) : (

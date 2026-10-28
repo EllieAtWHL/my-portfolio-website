@@ -67,6 +67,7 @@ describe('toGroundhopperStadium', () => {
     expect(toGroundhopperStadium({ ...baseStadium, longitude: null }, null)).toBeNull();
     expect(toGroundhopperStadium({ ...baseStadium, longitude: 200 }, null)).toBeNull();
     expect(toGroundhopperStadium({ ...baseStadium, latitude: Number.NaN }, null)).toBeNull();
+    expect(toGroundhopperStadium({ ...baseStadium, latitude: 0, longitude: 0 }, null)).toBeNull();
   });
 
   it('treats a missing opened date as unknown', () => {

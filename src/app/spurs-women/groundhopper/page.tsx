@@ -19,7 +19,9 @@ export default async function GroundhopperPage() {
     const allStadiums = await getAllStadiums();
     const playable = await Promise.all(
       allStadiums.map(async stadium => {
-        const names = await getStadiumNames(stadium.id);
+        // The current name is a nice-to-have on the reveal - one failed
+        // lookup shouldn't take the whole game down with it.
+        const names = await getStadiumNames(stadium.id).catch(() => []);
         return toGroundhopperStadium(stadium, getCurrentStadiumName(names));
       })
     );
@@ -32,7 +34,7 @@ export default async function GroundhopperPage() {
     <main id="main-content" className="p-4 sm:p-8 pb-footer-clearance">
       <h1 className="spurs-text font-bold mb-2 text-center">Groundhopper</h1>
       <p className="spurs-text text-center text-sm opacity-75 mb-6">
-        Five grounds Spurs Women have played at, every day. Find each one on the map - the closer you tap, the more you score.
+        Five grounds from the Spurs Women archive, every day. Find each one on the map - the closer you tap, the more you score.
       </p>
       <GroundhopperLoader stadiums={stadiums} />
     </main>

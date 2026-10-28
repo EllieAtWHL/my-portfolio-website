@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   activeStreak,
   dailyStadiums,
@@ -21,6 +21,9 @@ interface SavedGame {
   dateKey: string;
   stadiumIds: string[];
   results: RoundResult[];
+  // Saved as soon as the hint is shown, so reloading can't un-see the city
+  // and lift the round's 50-point cap.
+  hintForRound?: number;
 }
 
 const EMPTY_STREAK: StreakState = { lastPlayed: null, current: 0, best: 0 };
@@ -48,6 +51,33 @@ interface InitialState {
   dateKey: string;
   rounds: GroundhopperStadium[];
   results: RoundResult[];
+  hintUsed: boolean;
+}
+
+const isFiniteNumber = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
+
+// Anything read back from storage is checked rather than trusted - a corrupt
+// or older-shaped entry just means starting today (or the streak) afresh.
+function isRoundResult(value: unknown): value is RoundResult {
+  const r = value as RoundResult | null;
+  return (
+    typeof r === 'object' && r !== null &&
+    typeof r.stadiumId === 'string' &&
+    isFiniteNumber(r.guess?.latitude) && isFiniteNumber(r.guess?.longitude) &&
+    isFiniteNumber(r.distanceKm) && isFiniteNumber(r.score) &&
+    typeof r.hintUsed === 'boolean'
+  );
+}
+
+function readStreak(): StreakState {
+  const saved = readJson<StreakState>(STREAK_KEY);
+  if (
+    saved && (saved.lastPlayed === null || typeof saved.lastPlayed === 'string') &&
+    isFiniteNumber(saved.current) && isFiniteNumber(saved.best)
+  ) {
+    return saved;
+  }
+  return EMPTY_STREAK;
 }
 
 // A game already started today keeps its own stadiums, even if a stadium has
@@ -56,14 +86,22 @@ interface InitialState {
 function loadInitialState(stadiums: GroundhopperStadium[]): InitialState {
   const dateKey = ukDateKey();
   const saved = readJson<SavedGame>(GAME_KEY);
-  if (saved?.dateKey === dateKey && Array.isArray(saved.stadiumIds) && Array.isArray(saved.results)) {
+  if (
+    saved?.dateKey === dateKey && Array.isArray(saved.stadiumIds) &&
+    Array.isArray(saved.results) && saved.results.every(isRoundResult)
+  ) {
     const byId = new Map(stadiums.map(s => [s.id, s]));
     const rounds = saved.stadiumIds.map(id => byId.get(id));
     if (rounds.length > 0 && rounds.every(Boolean) && saved.results.length <= rounds.length) {
-      return { dateKey, rounds: rounds as GroundhopperStadium[], results: saved.results };
+      return {
+        dateKey,
+        rounds: rounds as GroundhopperStadium[],
+        results: saved.results,
+        hintUsed: saved.hintForRound === saved.results.length,
+      };
     }
   }
-  return { dateKey, rounds: dailyStadiums(stadiums, dateKey), results: [] };
+  return { dateKey, rounds: dailyStadiums(stadiums, dateKey), results: [], hintUsed: false };
 }
 
 export type GroundhopperPhase = 'guessing' | 'revealed' | 'finished';
@@ -76,8 +114,20 @@ export function useGroundhopperGame(stadiums: GroundhopperStadium[]) {
   const [results, setResults] = useState<RoundResult[]>(initial.results);
   const [revealed, setRevealed] = useState(false);
   const [pendingGuess, setPendingGuess] = useState<LatLng | null>(null);
-  const [hintUsed, setHintUsed] = useState(false);
-  const [streak, setStreak] = useState<StreakState>(() => readJson<StreakState>(STREAK_KEY) ?? EMPTY_STREAK);
+  const [hintUsed, setHintUsed] = useState(initial.hintUsed);
+  const [streak, setStreak] = useState<StreakState>(readStreak);
+
+  // A tab left open past UK midnight would otherwise keep showing (and
+  // sharing) yesterday's set - reload into today's when the player comes back.
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible' && ukDateKey() !== dateKey) {
+        window.location.reload();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [dateKey]);
 
   const finished = !revealed && rounds.length > 0 && results.length === rounds.length;
   const phase: GroundhopperPhase = finished ? 'finished' : revealed ? 'revealed' : 'guessing';
@@ -97,8 +147,14 @@ export function useGroundhopperGame(stadiums: GroundhopperStadium[]) {
   const revealHint = useCallback(() => {
     if (phase === 'guessing') {
       setHintUsed(true);
+      writeJson(GAME_KEY, {
+        dateKey,
+        stadiumIds: rounds.map(s => s.id),
+        results,
+        hintForRound: results.length,
+      } satisfies SavedGame);
     }
-  }, [phase]);
+  }, [phase, dateKey, rounds, results]);
 
   const submitGuess = useCallback(() => {
     if (phase !== 'guessing' || !pendingGuess || !currentStadium) {
