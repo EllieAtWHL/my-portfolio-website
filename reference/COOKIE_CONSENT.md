@@ -3,8 +3,8 @@
 Site-wide cookie consent gate (WEB-102, split from WEB-71 "GDPR compliance").
 Nothing that sets a non-essential cookie loads until the visitor actively
 accepts: **FullStory** (session recording), **Vercel Analytics** and
-**Vercel Speed Insights** (WEB-64), and Google **reCAPTCHA** on the contact
-form. See `fullstory/README.md` for FullStory's own integration details -
+**Vercel Speed Insights** (WEB-64), Google **reCAPTCHA** on the contact
+form, and **Instagram post embeds** on Spurs Women match pages (WEB-147). See `fullstory/README.md` for FullStory's own integration details -
 this doc covers the consent layer that gates it (and the other trackers)
 rather than duplicating that content.
 
@@ -17,6 +17,7 @@ rather than duplicating that content.
 | `src/components/FullStoryLoader.tsx` | Loads `/public/fullstory-init.js` only once `consent === 'accepted'`. |
 | `src/components/ConsentGatedVercelScripts.tsx` | Renders `@vercel/analytics/next`'s `<Analytics />` and `@vercel/speed-insights/next`'s `<SpeedInsights />` only once `consent === 'accepted'`. |
 | `src/app/contact-me/page.tsx` | Gates the Google reCAPTCHA script the same way (see "reCAPTCHA" below). |
+| `src/components/spurs-women/InstagramPost.tsx` | Gates Meta's Instagram embed script the same way (see "Instagram embeds" below). |
 | `src/components/Footer.tsx` / `src/components/spurs-women/SpursFooter.tsx` | Render a "Cookie preferences" icon control that reopens the banner. |
 | `src/components/CookieIcon.tsx` | The icon used by that control. |
 
@@ -69,7 +70,8 @@ This is deliberate: a visitor who already chose under an old meaning of
 "accept" gets re-prompted rather than silently having their stale choice
 carried forward to cover something new they never agreed to. `CONSENT_VERSION`
 was bumped from 1 to 2 in WEB-64 when Vercel Speed Insights was added to the
-gate - a worked example of this rule, not just a hypothetical.
+gate - a worked example of this rule, not just a hypothetical - and from 2
+to 3 in WEB-147 when Instagram embeds were added.
 
 `accept()`/`reject()` persist the choice and close the banner.
 `openPreferences()` (wired to the footer's "Cookie preferences" control)
@@ -134,6 +136,22 @@ rather than silently rendering a broken widget. The form itself still
 submits without it - rejecting cookies doesn't block using the contact form,
 just the spam-protection widget.
 
+## Instagram embeds
+
+`InstagramPost.tsx` (Spurs Women match media - see "Social post embeds" in
+`spurs-women/README.md`) only injects Meta's `embed.js` once
+`consent === 'accepted'`, because Meta's embed sets `instagram.com`/
+`facebook.com` cookies even for logged-out viewers. Like reCAPTCHA, it has a
+visible fallback rather than rendering nothing: a plain link to the post,
+plus a note that it only shows once cookies are accepted. The banner's copy
+mentions embedded Instagram posts so "Accept" actually describes this.
+
+The site's other third-party embeds - Bluesky posts, YouTube videos, the
+London 2012 Spotify embed, OpenStreetMap - load ungated. That's an existing
+convention rather than a reviewed decision; gating Instagram was a deliberate
+choice for WEB-147 given it's Meta, and whether the others should follow is
+tracked separately in WEB-226 rather than changed as a side effect.
+
 ## Reopening the banner ("Cookie preferences")
 
 Both footers render a small icon-only button (`CookieIcon`, no visible text,
@@ -188,6 +206,8 @@ that variant gets a real transparent background, not just this button.
   version, so the non-localhost case is covered via a
   `@jest-environment-options` URL docblock instead, matching
   `src/lib/__tests__/fullstory.non-localhost.test.ts`'s existing pattern).
+- `src/components/spurs-women/__tests__/InstagramPost.test.tsx` - the
+  Instagram embed's gating and fallback link.
 - `src/components/__tests__/Footer.test.tsx` /
   `src/components/spurs-women/__tests__/SpursFooter.test.tsx` - the
   "Cookie preferences" control reopens the banner.
