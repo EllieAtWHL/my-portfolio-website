@@ -12,22 +12,18 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function StadiumsPage() {
-  let stadiums: StadiumWithMatchCount[] = [];
-  
-  try {
-    stadiums = await getStadiumsWithMatchCounts();
-  } catch (error) {
-    console.error('Error fetching stadiums:', error);
-  }
-
-  // Every stadium's name history in one query; without it, stadiums just show
-  // their stadia name rather than taking the whole page down.
-  let namesByStadium: Record<string, StadiumName[]> = {};
-  try {
-    namesByStadium = await getAllStadiumNames();
-  } catch (error) {
-    console.error('Error fetching stadium names:', error);
-  }
+  // Every stadium's name history comes from one query; if it fails, stadiums
+  // just show their stadia name rather than taking the whole page down.
+  const [stadiums, namesByStadium] = await Promise.all([
+    getStadiumsWithMatchCounts().catch((error): StadiumWithMatchCount[] => {
+      console.error('Error fetching stadiums:', error);
+      return [];
+    }),
+    getAllStadiumNames().catch((error): Record<string, StadiumName[]> => {
+      console.error('Error fetching stadium names:', error);
+      return {};
+    }),
+  ]);
 
   const stadiumsWithCurrentNames = stadiums.map((stadium) => ({
     ...stadium,

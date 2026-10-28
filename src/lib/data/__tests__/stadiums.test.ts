@@ -118,7 +118,7 @@ describe('stadiums data layer', () => {
   });
 
   describe('getAllStadiumNames', () => {
-    it('fetches every stadium name in one query, grouped by stadium', async () => {
+    it('fetches every stadium name in one paginated read, grouped by stadium', async () => {
       const names = [
         { id: '1', stadium_id: 's1', name: 'New Name', valid_from: '2020-01-01', valid_to: null },
         { id: '2', stadium_id: 's2', name: 'Other Ground', valid_from: '2010-01-01', valid_to: null },
@@ -135,6 +135,8 @@ describe('stadiums data layer', () => {
       const chain = mockFrom.mock.results[0].value;
       expect(chain.eq).not.toHaveBeenCalled();
       expect(chain.order).toHaveBeenCalledWith('valid_from', { ascending: false });
+      expect(chain.order).toHaveBeenCalledWith('id', { ascending: true });
+      expect(chain.range).toHaveBeenCalledWith(0, 999);
     });
 
     it('throws when the query errors', async () => {

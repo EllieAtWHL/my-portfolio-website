@@ -1,6 +1,7 @@
 import { supabase } from '@/utils/supabase';
 import { createCachedFunction, CACHE_TAGS, CACHE_TTL } from './cache-utils';
 import { fetchAllFromDB, fetchWithSingleMatchCountFromDB } from './generic-fetchers';
+import { fetchAllPaginated } from '@/lib/utils/paginate';
 
 export interface Team {
   id: number;
@@ -88,19 +89,25 @@ async function fetchStadiumNamesFromDB(stadiumId: string): Promise<StadiumName[]
   return data as StadiumName[];
 }
 
-// One query for every stadium's name history, so the list pages don't need a
-// stadium_names round trip per stadium (WEB-221).
+// Every stadium's name history in one read, so the list pages don't need a
+// stadium_names round trip per stadium (WEB-221). Paginated so it can't be
+// silently cut off at PostgREST's row cap (see fetchAllPaginated), with id as
+// a unique tiebreaker to keep page boundaries and same-date names stable.
 async function fetchAllStadiumNamesFromDB(): Promise<Record<string, StadiumName[]>> {
-  const { data, error } = await supabase
-    .from('stadium_names')
-    .select('*')
-    .order('valid_from', { ascending: false });
+  const { data, error } = await fetchAllPaginated<StadiumName>((from, to) =>
+    supabase
+      .from('stadium_names')
+      .select('*')
+      .order('valid_from', { ascending: false })
+      .order('id', { ascending: true })
+      .range(from, to)
+  );
 
   if (error) {
     throw error;
   }
 
-  return groupStadiumNamesByStadium((data as StadiumName[]) || []);
+  return groupStadiumNamesByStadium(data);
 }
 
 async function fetchAllStadiumsFromDB(): Promise<Stadium[]> {

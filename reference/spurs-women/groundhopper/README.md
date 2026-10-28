@@ -73,8 +73,8 @@ than a separate table):
   (every ground's `stadium_names` history, grouped by stadium) passed through
   `getCurrentStadiumName`, so a Groundhopper-only ground with name history
   added in admin shows its current name too. A failed names lookup just means
-  no "now known as" line on any reveal. The page is statically rendered and revalidated with the stadium cache
-  TTL/tags, like the Stadiums page.
+  no "now known as" line on any reveal. The page is statically rendered and
+  revalidated with the stadium cache TTL/tags, like the Stadiums page.
 - `toGroundhopperStadium` drops anything without valid `latitude`/`longitude`,
   including `(0, 0)`, which is an unfilled form rather than a real location.
   That excludes placeholder rows like "Behind closed doors", and real grounds
