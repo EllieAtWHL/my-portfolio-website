@@ -275,15 +275,18 @@ uploaded, resized, and committed automatically:
    without a page reload (WEB-173); terminating the worker alone didn't
    release that memory. The main-thread decode is kept only as a fallback.
 
-   **Browser support:** the reduced-size decode needs `ImageDecoder`, which
-   only Chromium-based browsers (Chrome, Edge, etc., including Chrome on
-   Android) have. Safari, and any other browser without it, still uploads
-   fine, but decodes each photo at full size inside the worker, so a large
-   batch on a phone can still run out of memory partway through. The
-   Upload Photos modal checks for `ImageDecoder` itself (not the browser
-   name) and, when it's missing, shows a warning to upload around 5 photos
-   at a time or switch to Chrome. Uploading from a computer is fine in any
-   browser.
+   **Browser support:** the reduced-size decode needs `ImageDecoder` (plus
+   Worker/OffscreenCanvas). It's verified in Chromium-based browsers
+   (Chrome, Edge, etc., including Chrome on Android, where it was
+   device-tested). Safari has no `ImageDecoder`; it still uploads fine, but
+   decodes each photo at full size inside the worker, so a large batch on a
+   phone can still run out of memory partway through. Firefox is untested.
+   The Upload Photos modal checks for these capabilities itself (not the
+   browser name) and, when they're missing, shows a warning to upload
+   around 5 photos at a time or switch to Chrome. Uploading from a computer
+   is fine in any browser. JPEGs are recognised by their bytes, not the
+   file's declared type, and one ImageDecoder can't handle (e.g. CMYK)
+   falls back to the full-size decode.
 2. `POST /api/admin/photo-upload` (one request per photo - keeps each
    request well clear of serverless duration limits and isolates a failure
    to one photo) resizes/compresses it server-side with `sharp` (WebP, 82%

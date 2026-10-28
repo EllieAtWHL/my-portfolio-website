@@ -191,6 +191,8 @@ describe('usePhotoUploadModal', () => {
     });
     expect(result.current.photoQueue[0].error).toContain('worker: out of memory');
     expect(global.fetch).not.toHaveBeenCalled();
+    // Nothing was sent, so no "[sent ...]" upload diagnostics.
+    expect(result.current.photoQueue[0].error).not.toContain('[sent');
   });
 
   it('marks a photo as error only after both the initial attempt and the automatic retry fail', async () => {

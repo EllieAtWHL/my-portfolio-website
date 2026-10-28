@@ -178,6 +178,18 @@ describe('compressImageForUpload in a worker', () => {
     expect(worker.terminate).toHaveBeenCalled();
   });
 
+  it('falls back to the main thread when the worker cannot even be constructed', async () => {
+    mockCreateWorker.mockImplementation(() => {
+      throw new Error('SecurityError');
+    });
+    global.createImageBitmap = jest.fn().mockRejectedValue(new Error('decode failed'));
+
+    const result = await compressImageForUpload(makeFile('photo.jpg', 1024));
+
+    expect(result.compressed).toBe(false);
+    expect(result.fallbackReason).toBe('worker: SecurityError; main thread: decode failed');
+  });
+
   it('includes both the worker and main-thread reasons when the worker fails to run and the main thread fails too', async () => {
     mockCreateWorker.mockReturnValue(
       fakeWorker((w) => w.onerror?.({ message: 'script load failed', preventDefault: jest.fn() } as unknown as ErrorEvent))
@@ -219,9 +231,21 @@ describe('supportsReducedSizeDecode', () => {
     delete (global as unknown as { ImageDecoder?: unknown }).ImageDecoder;
   });
 
-  it('is false without ImageDecoder (e.g. Safari) and true with it', () => {
+  afterEach(() => {
+    delete (global as unknown as { Worker?: unknown }).Worker;
+    delete (global as unknown as { OffscreenCanvas?: unknown }).OffscreenCanvas;
+  });
+
+  it('is false without ImageDecoder (e.g. Safari) and true with it plus worker support', () => {
+    (global as unknown as { Worker: unknown }).Worker = jest.fn();
+    (global as unknown as { OffscreenCanvas: unknown }).OffscreenCanvas = jest.fn();
     expect(supportsReducedSizeDecode()).toBe(false);
     (global as unknown as { ImageDecoder: unknown }).ImageDecoder = jest.fn();
     expect(supportsReducedSizeDecode()).toBe(true);
+  });
+
+  it('is false with ImageDecoder but no worker support, since the scaled decode runs in the worker', () => {
+    (global as unknown as { ImageDecoder: unknown }).ImageDecoder = jest.fn();
+    expect(supportsReducedSizeDecode()).toBe(false);
   });
 });

@@ -40,10 +40,15 @@ interface DecodedPhoto {
 // Verified in Chromium that the frame's coded size really is the reduced
 // size, and that drawing the frame applies EXIF orientation (frame.rotation)
 // the same way createImageBitmap's imageOrientation: 'from-image' does.
+// Returns null (so the caller decodes at full size instead) for anything
+// this path can't handle - including a JPEG variant ImageDecoder rejects
+// that createImageBitmap may still manage (e.g. CMYK).
 async function decodeJpegScaled(file: File, maxDimension: number): Promise<DecodedPhoto | null> {
-  if (typeof ImageDecoder === 'undefined' || file.type !== 'image/jpeg') return null;
+  if (typeof ImageDecoder === 'undefined') return null;
   if (!(await ImageDecoder.isTypeSupported('image/jpeg'))) return null;
 
+  // Identified by its bytes rather than file.type, which some Android
+  // pickers leave empty or set to a non-standard value.
   const header = new Uint8Array(await file.slice(0, JPEG_HEADER_BYTES).arrayBuffer());
   const dimensions = readJpegDimensions(header);
   if (!dimensions) return null;
@@ -64,9 +69,9 @@ async function decodeJpegScaled(file: File, maxDimension: number): Promise<Decod
         decoder.close();
       },
     };
-  } catch (error) {
+  } catch {
     decoder.close();
-    throw error;
+    return null;
   }
 }
 

@@ -78,7 +78,7 @@ function getSharedCanvas(): HTMLCanvasElement {
  * through - the upload modal warns about this.
  */
 export function supportsReducedSizeDecode(): boolean {
-  return typeof ImageDecoder !== 'undefined';
+  return typeof ImageDecoder !== 'undefined' && canCompressInWorker();
 }
 
 function canCompressInWorker(): boolean {
@@ -86,7 +86,12 @@ function canCompressInWorker(): boolean {
 }
 
 async function compressInWorker(file: File): Promise<Blob> {
-  const worker = createCompressionWorker();
+  let worker: Worker;
+  try {
+    worker = createCompressionWorker();
+  } catch (error) {
+    throw new WorkerUnavailableError((error as Error).message || 'compression worker failed to start');
+  }
   let timeout: ReturnType<typeof setTimeout> | undefined;
   try {
     return await new Promise<Blob>((resolve, reject) => {

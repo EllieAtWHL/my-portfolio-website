@@ -131,7 +131,15 @@ export function usePhotoUploadModal({
   }, [autoRetryDelayMs]);
 
   const compressItem = useCallback(async (item: PhotoQueueItem) => {
-    updateItem(item.id, { status: 'compressing', error: undefined });
+    // Clear the previous attempt's diagnostics, so a compression failure on
+    // a manual retry can't be reported with a stale "sent ..." from before.
+    updateItem(item.id, {
+      status: 'compressing',
+      error: undefined,
+      lastAttemptCompressed: undefined,
+      lastAttemptFallbackReason: undefined,
+      lastAttemptSizeBytes: undefined,
+    });
     // Compression can throw (ImageTooLargeError) rather than silently
     // falling back to a too-large original - a request over Vercel's
     // ~4.5MB body limit is rejected before this route ever runs, so
@@ -183,9 +191,11 @@ export function usePhotoUploadModal({
       // fetch" that never reaches the server (see WEB-149 findings) leaves
       // no server-side trace to diagnose from otherwise.
       const latest = queueRef.current.find((q) => q.id === item.id);
-      const diagnostics = latest
+      // Only once something was actually sent - a compression failure
+      // already explains itself and never reached the network.
+      const diagnostics = latest?.lastAttemptSizeBytes !== undefined
         ? ` [sent ${latest.lastAttemptCompressed ? 'compressed' : 'UNCOMPRESSED'} ` +
-          `${Math.round((latest.lastAttemptSizeBytes ?? item.originalSizeBytes) / 1024)}KB` +
+          `${Math.round(latest.lastAttemptSizeBytes / 1024)}KB` +
           (latest.lastAttemptFallbackReason ? `, compression failed: ${latest.lastAttemptFallbackReason}` : '') +
           `; browser online=${typeof navigator !== 'undefined' ? navigator.onLine : 'unknown'}]`
         : '';
