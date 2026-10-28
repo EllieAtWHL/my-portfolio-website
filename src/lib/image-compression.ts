@@ -70,6 +70,17 @@ function getSharedCanvas(): HTMLCanvasElement {
   return sharedCanvas;
 }
 
+/**
+ * Whether this browser can do the reduced-size JPEG decode that keeps a
+ * large batch within mobile memory (Chromium-based browsers, as of WEB-173).
+ * Without it, compression still works but decodes each photo at full
+ * resolution, so a big batch on a phone can run out of memory partway
+ * through - the upload modal warns about this.
+ */
+export function supportsReducedSizeDecode(): boolean {
+  return typeof ImageDecoder !== 'undefined';
+}
+
 function canCompressInWorker(): boolean {
   return typeof Worker !== 'undefined' && typeof OffscreenCanvas !== 'undefined';
 }

@@ -1,4 +1,4 @@
-import { compressImageForUpload, ImageTooLargeError } from '../image-compression';
+import { compressImageForUpload, ImageTooLargeError, supportsReducedSizeDecode } from '../image-compression';
 import { createCompressionWorker } from '../create-compression-worker';
 
 jest.mock('../create-compression-worker', () => ({
@@ -211,5 +211,17 @@ describe('compressImageForUpload in a worker', () => {
     await assertion;
     expect(worker.terminate).toHaveBeenCalled();
     expect(global.createImageBitmap).not.toHaveBeenCalled();
+  });
+});
+
+describe('supportsReducedSizeDecode', () => {
+  afterEach(() => {
+    delete (global as unknown as { ImageDecoder?: unknown }).ImageDecoder;
+  });
+
+  it('is false without ImageDecoder (e.g. Safari) and true with it', () => {
+    expect(supportsReducedSizeDecode()).toBe(false);
+    (global as unknown as { ImageDecoder: unknown }).ImageDecoder = jest.fn();
+    expect(supportsReducedSizeDecode()).toBe(true);
   });
 });
