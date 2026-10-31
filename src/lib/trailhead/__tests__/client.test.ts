@@ -2,6 +2,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import {
   BADGES_QUERY,
+  LOOKUP_DEADLINE_MS,
   MAX_PAGES_PER_TYPE,
   PAGE_SIZE,
   REQUEST_TIMEOUT_MS,
@@ -122,6 +123,36 @@ describe('fetchEarnedAwards', () => {
     expect(result.incomplete).toBe(true);
   });
 
+  it('stops starting new pages at the deadline and flags the result incomplete', async () => {
+    let clock = 0;
+    const fetchImpl = jest.fn(async () => {
+      clock += 6000;
+      return jsonResponse(pageWith([{ id: 'a', title: 'x', type: 'EVENT' }], { hasNextPage: true, endCursor: 'next' }));
+    });
+
+    const result = await fetchEarnedAwards('elliematthewman', { fetchImpl, now: () => clock });
+
+    // Pages start at 0s, 6s, 12s and 18s; at 24s it's past the 20s deadline.
+    expect(LOOKUP_DEADLINE_MS).toBe(20_000);
+    expect(fetchImpl).toHaveBeenCalledTimes(4);
+    expect(result.incomplete).toBe(true);
+    expect(result.awards).toHaveLength(4);
+  });
+
+  it('always fetches the first page, however late it starts', async () => {
+    let clock = 0;
+    const fetchImpl = jest.fn(async () => {
+      clock += 60_000;
+      return jsonResponse(pageWith([], { hasNextPage: true, endCursor: 'next' }));
+    });
+
+    const result = await fetchEarnedAwards('elliematthewman', { fetchImpl, now: () => clock });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(result.profile.name).toBe('Test Trailblazer');
+    expect(result.incomplete).toBe(true);
+  });
+
   it('fails the whole lookup on any award: null, rather than skipping it', async () => {
     const error = await expectFailure(
       fetchEarnedAwards('elliematthewman', { fetchImpl: respondWith(jsonResponse(nullAwardPage)) }),
@@ -214,9 +245,17 @@ describe('fetchEarnedAwards', () => {
     );
   });
 
-  it('reports a valid body with an unexpected error status as UPSTREAM_CHANGED', async () => {
+  it.each([400, 404, 422])('reports a non-GraphQL HTTP %s as UPSTREAM_CHANGED, logging the status', async (status) => {
     await expectFailure(
-      fetchEarnedAwards('elliematthewman', { fetchImpl: respondWith(jsonResponse(pageWith([]), 403)) }),
+      fetchEarnedAwards('elliematthewman', { fetchImpl: respondWith(jsonResponse({ message: 'nope' }, status)) }),
+      'UPSTREAM_CHANGED'
+    );
+    expect(consoleErrorSpy).toHaveBeenCalledWith(`Trailhead response failed validation: unexpected HTTP ${status}`);
+  });
+
+  it('does not accept a valid-looking body with an error status', async () => {
+    await expectFailure(
+      fetchEarnedAwards('elliematthewman', { fetchImpl: respondWith(jsonResponse(pageWith([]), 404)) }),
       'UPSTREAM_CHANGED'
     );
   });
@@ -224,6 +263,9 @@ describe('fetchEarnedAwards', () => {
   it.each([
     ['a 5xx', new Response('Bad gateway', { status: 502 })],
     ['a 5xx with a non-GraphQL JSON body', jsonResponse({ message: 'Internal error' }, 500)],
+    ['a 5xx with an empty errors array', jsonResponse({ data: null, errors: [] }, 503)],
+    ['a 401 block', jsonResponse({ message: 'Unauthorized' }, 401)],
+    ['a 403 block (e.g. of Vercel IPs)', jsonResponse({ message: 'Forbidden' }, 403)],
     ['a network error', new TypeError('fetch failed')],
   ])('reports %s as UPSTREAM_UNAVAILABLE', async (_label, response) => {
     await expectFailure(

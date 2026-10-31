@@ -33,11 +33,16 @@ export async function lookupTrickOrTrailhead(
   }
 }
 
-// Found and not-found results are values, so they're cached. Every other
-// outcome (private profile, rate limited, Trailhead down or changed) is a
-// thrown TrailheadError, which unstable_cache doesn't store - so someone who
-// makes their profile public can retry straight away - and `rethrow` stops
-// createCachedFunction's fallback from repeating the upstream calls.
+// Found and not-found results are values, so they're cached (an `incomplete`
+// one too: re-running a scan that hit the cap or deadline would just spend the
+// same upstream budget again). Every other outcome (private profile, rate
+// limited, Trailhead down or changed) is a thrown TrailheadError, which
+// unstable_cache doesn't store - so someone who makes their profile public can
+// retry straight away.
+//
+// `rethrow` opts out of createCachedFunction's fallback for every error, not
+// just TrailheadErrors: the fallback re-runs the function, which here means a
+// second full Trailhead scan inside the same 30s request.
 //
 // The username is an argument, not a key part, so unstable_cache keys on it
 // but createCachedFunction's logs (which print only keyParts) never show it.
@@ -50,6 +55,6 @@ export const getTrickOrTrailheadResult = createCachedFunction(
     keyParts: ['trick-or-trailhead', RESULT_VERSION, catalogueVersion()],
     tags: [CACHE_TAGS.TRICK_OR_TRAILHEAD],
     revalidate: CACHE_TTL.STATIC_CONTENT,
-    rethrow: isTrailheadError,
+    rethrow: () => true,
   }
 );

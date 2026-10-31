@@ -19,15 +19,19 @@ function usernameFromProfileUrl(candidate: string): string | null {
     return null;
   }
 
-  const host = url.hostname.toLowerCase();
-  const [prefix, slug, ...rest] = url.pathname.split('/').filter(Boolean);
-  if (!slug || rest.length > 0) {
+  const host = url.hostname.toLowerCase().replace(/^www\./, '');
+  const parts = url.pathname.split('/').filter(Boolean);
+  // salesforce.com profile URLs can carry a locale: /uk/trailblazer/<slug>.
+  if (host === 'salesforce.com' && parts.length === 3 && /^[a-z]{2}(-[a-z]{2})?$/i.test(parts[0])) {
+    parts.shift();
+  }
+  if (parts.length !== 2) {
     return null;
   }
 
+  const [prefix, slug] = parts;
   const isTrailblazerMe = host === 'trailblazer.me' && prefix.toLowerCase() === 'id';
-  const isSalesforce =
-    (host === 'salesforce.com' || host === 'www.salesforce.com') && prefix.toLowerCase() === 'trailblazer';
+  const isSalesforce = host === 'salesforce.com' && prefix.toLowerCase() === 'trailblazer';
   if (!isTrailblazerMe && !isSalesforce) {
     return null;
   }
@@ -40,9 +44,9 @@ function usernameFromProfileUrl(candidate: string): string | null {
 }
 
 /**
- * Returns the username from a bare username or a pasted
- * `trailblazer.me/id/…` / `salesforce.com/trailblazer/…` profile URL, or null
- * if the input is empty or can't be a Trailhead username.
+ * Returns the lowercased username from a bare username or a pasted
+ * `trailblazer.me/id/…` / `salesforce.com/(<locale>/)trailblazer/…` profile
+ * URL, or null if the input is empty or can't be a Trailhead username.
  */
 export function parseTrailheadUsername(input: string): string | null {
   const trimmed = input.trim();
@@ -59,5 +63,8 @@ export function parseTrailheadUsername(input: string): string | null {
   if (!username || !USERNAME_PATTERN.test(username)) {
     return null;
   }
-  return username;
+  // Trailhead resolves slugs case-insensitively and returns them lowercase
+  // (checked live, Oct 31 2026), so lowercasing gives each profile one cache
+  // entry, and one upstream scan, however it was typed.
+  return username.toLowerCase();
 }

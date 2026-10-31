@@ -13,6 +13,11 @@ export const PAGE_SIZE = 50;
 // than a wrong score.
 export const MAX_PAGES_PER_TYPE = 40;
 export const REQUEST_TIMEOUT_MS = 8000;
+// No new page is started after this, so a lookup ends within about
+// LOOKUP_DEADLINE_MS + REQUEST_TIMEOUT_MS - inside the route's 30s
+// maxDuration - with an `incomplete` result instead of a bare 504 that would
+// leave nothing cached and get retried at full cost.
+export const LOOKUP_DEADLINE_MS = 20_000;
 
 // The only award types Trick or Trailhead badges have been issued as.
 export const AWARD_TYPES = ['EVENT', 'MODULE'] as const;
@@ -37,7 +42,7 @@ export const BADGES_QUERY = `query GetTrailheadBadges($slug: String, $count: Int
 export interface EarnedAwards {
   profile: TrailheadProfile;
   awards: TrailheadAward[];
-  /** True if a type hit MAX_PAGES_PER_TYPE before Trailhead ran out of pages. */
+  /** True if paging stopped at MAX_PAGES_PER_TYPE or LOOKUP_DEADLINE_MS before Trailhead ran out of pages. */
   incomplete: boolean;
 }
 
@@ -49,6 +54,7 @@ export interface FetchEarnedAwardsOptions {
    */
   isComplete?: (type: AwardType, awards: TrailheadAward[]) => boolean;
   fetchImpl?: typeof fetch;
+  now?: () => number;
 }
 
 async function requestPage(
@@ -77,6 +83,8 @@ async function requestPage(
     // No Retry-After is sent, and retrying would only spend more of the
     // shared per-IP budget, so a 429 ends the lookup.
     if (response.status === 429) {
+      // Free the connection now rather than at GC, since 429s come in bursts.
+      response.body?.cancel().catch(() => {});
       throw new TrailheadError('RATE_LIMITED', 'Trailhead rate limit reached');
     }
     body = await response.json().catch(() => undefined);
@@ -96,20 +104,23 @@ async function requestPage(
 
   // GraphQL errors (NOT_FOUND, TOO_MANY_REQUESTS, undefinedField) can come
   // with any status, so they take priority over the status code.
-  const hasGraphqlErrors = typeof body === 'object' && body !== null && 'errors' in body;
-  if (response.status >= 500 && !hasGraphqlErrors) {
-    throw new TrailheadError('UPSTREAM_UNAVAILABLE', `Trailhead returned HTTP ${response.status}`);
+  const errors = typeof body === 'object' && body !== null ? (body as { errors?: unknown }).errors : undefined;
+  const hasGraphqlErrors = Array.isArray(errors) && errors.length > 0;
+  if (!response.ok && !hasGraphqlErrors) {
+    const { status } = response;
+    // Other 4xxs mean the request itself is wrong, i.e. the API moved under
+    // us. 401/403 are a block (e.g. of Vercel's shared IPs), and 5xx an outage.
+    if (status < 500 && status !== 401 && status !== 403) {
+      console.error(`Trailhead response failed validation: unexpected HTTP ${status}`);
+      throw new TrailheadError('UPSTREAM_CHANGED', `Trailhead returned HTTP ${status}`);
+    }
+    throw new TrailheadError('UPSTREAM_UNAVAILABLE', `Trailhead returned HTTP ${status}`);
   }
   if (body === undefined) {
     console.error(`Trailhead response failed validation: HTTP ${response.status} body is not JSON`);
     throw new TrailheadError('UPSTREAM_CHANGED', `Trailhead returned HTTP ${response.status} without JSON`);
   }
-  const page = parseBadgePage(body);
-  if (!response.ok) {
-    console.error(`Trailhead response failed validation: unexpected HTTP ${response.status}`);
-    throw new TrailheadError('UPSTREAM_CHANGED', `Trailhead returned HTTP ${response.status}`);
-  }
-  return page;
+  return parseBadgePage(body);
 }
 
 /**
@@ -119,8 +130,9 @@ async function requestPage(
  */
 export async function fetchEarnedAwards(
   username: string,
-  { isComplete = () => false, fetchImpl = fetch }: FetchEarnedAwardsOptions = {}
+  { isComplete = () => false, fetchImpl = fetch, now = Date.now }: FetchEarnedAwardsOptions = {}
 ): Promise<EarnedAwards> {
+  const startedAt = now();
   let profile: TrailheadProfile | null = null;
   const awards: TrailheadAward[] = [];
   let incomplete = false;
@@ -130,9 +142,13 @@ export async function fetchEarnedAwards(
     let after: string | null = null;
 
     for (let pageNumber = 1; ; pageNumber++) {
+      if (profile && now() - startedAt >= LOOKUP_DEADLINE_MS) {
+        return { profile, awards, incomplete: true };
+      }
       const page = await requestPage(fetchImpl, username, type, after);
       profile ??= page.profile;
       typeAwards.push(...page.awards);
+      awards.push(...page.awards);
 
       if (!page.hasNextPage || isComplete(type, typeAwards)) {
         break;
@@ -143,8 +159,6 @@ export async function fetchEarnedAwards(
       }
       after = page.endCursor;
     }
-
-    awards.push(...typeAwards);
   }
 
   // AWARD_TYPES is non-empty, so at least one page was parsed.
