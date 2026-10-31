@@ -146,7 +146,7 @@ design, so applying the same rule to them would be a false positive.
 - **Purpose:** Salesforce section landing page (`/salesforce`) styles
 - **Contains:**
   - `.salesforce-container`, `.salesforce-projects-grid`, `.salesforce-project-card`
-  - `.salesforce-project-image`, `.salesforce-project-link`, `.salesforce-project-cta`
+  - `.salesforce-project-image`, `.salesforce-project-link` (stretched over the card with `::after`), `.salesforce-project-cta`
   - Dark mode variants
   - Responsive breakpoints
 - **Rule:** Only styles used on the `/salesforce` landing page. The pages under it keep their own files (`blog.css` for Lightning Rollout)

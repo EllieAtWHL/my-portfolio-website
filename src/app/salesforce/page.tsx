@@ -12,6 +12,8 @@ export const metadata = {
     images: [
       {
         url: 'https://ellieatwhl.co.uk/img/salesforce.png',
+        width: 1134,
+        height: 794,
         alt: 'Salesforce projects',
       },
     ],

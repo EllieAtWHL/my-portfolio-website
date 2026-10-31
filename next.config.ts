@@ -142,16 +142,15 @@ const nextConfig: NextConfig = {
     //
     // The Salesforce pages moved under /salesforce (WEB-229); their old URLs
     // are shared in blog posts and social links, so they redirect permanently
-    // (308). Each Lightning Rollout part is listed individually rather than
-    // with a wildcard, so nothing else under the old prefix is caught.
+    // (308). Their public/ assets moved with them, so each old prefix also
+    // forwards everything under it: that covers each Lightning Rollout part
+    // (to its own new URL) and any hotlinked image or video.
     return [
       { source: "/bobbin", destination: "/bobbin/play", permanent: false },
       { source: "/salesforce-orgs", destination: "/salesforce/free-and-trial-orgs", permanent: true },
-      { source: "/lightning-rollout", destination: "/salesforce/lightning-rollout", permanent: true },
-      { source: "/lightning-rollout/part-1", destination: "/salesforce/lightning-rollout/part-1", permanent: true },
-      { source: "/lightning-rollout/part-2", destination: "/salesforce/lightning-rollout/part-2", permanent: true },
-      { source: "/lightning-rollout/part-3", destination: "/salesforce/lightning-rollout/part-3", permanent: true },
-      { source: "/ghl", destination: "/salesforce/fantasy-football-draft", permanent: true },
+      { source: "/img/orgsPreview.png", destination: "/salesforce/free-and-trial-orgs/orgsPreview.png", permanent: true },
+      { source: "/lightning-rollout/:path*", destination: "/salesforce/lightning-rollout/:path*", permanent: true },
+      { source: "/ghl/:path*", destination: "/salesforce/fantasy-football-draft/:path*", permanent: true },
     ];
   },
 };

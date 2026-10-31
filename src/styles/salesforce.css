@@ -33,10 +33,18 @@
 
 .salesforce-project-card {
   /* Card component handles the base styling, this is just for layout overrides */
+  position: relative;
   overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.salesforce-project-card:hover {
+  transform: translateY(-4px);
 }
 
 .salesforce-project-image-container {
+  /* next/image's fill mode sizes the image to this box */
+  position: relative;
   width: 100%;
   height: 200px;
   overflow: hidden;
@@ -44,9 +52,8 @@
 }
 
 .salesforce-project-image {
-  width: 100%;
-  height: 100%;
   object-fit: cover;
+  object-position: top;
 }
 
 .salesforce-project-content {
@@ -66,8 +73,21 @@
   transition: color 0.3s ease;
 }
 
-.salesforce-project-link:hover,
-.salesforce-project-cta:hover {
+/* Stretch the title link over the whole card, so the card is one link.
+   globals.css gives every <a> position: relative, which would trap the
+   ::after inside the title, so this link opts back out. */
+.salesforce-project-link {
+  position: static;
+}
+
+.salesforce-project-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.salesforce-project-card:hover .salesforce-project-link,
+.salesforce-project-card:hover .salesforce-project-cta {
   color: var(--brand-primary-darker);
 }
 
@@ -87,8 +107,8 @@
   color: var(--dark-accent);
 }
 
-.dark .salesforce-project-link:hover,
-.dark .salesforce-project-cta:hover {
+.dark .salesforce-project-card:hover .salesforce-project-link,
+.dark .salesforce-project-card:hover .salesforce-project-cta {
   color: var(--dark-accent-bright);
 }
 

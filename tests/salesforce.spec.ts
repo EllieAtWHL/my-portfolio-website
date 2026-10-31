@@ -12,6 +12,13 @@ const MOVED_PAGES = [
   { from: '/ghl', to: '/salesforce/fantasy-football-draft' },
 ];
 
+// Their public/ assets moved too; old asset URLs (hotlinks) follow them.
+const MOVED_ASSETS = [
+  { from: '/img/orgsPreview.png', to: '/salesforce/free-and-trial-orgs/orgsPreview.png' },
+  { from: '/lightning-rollout/lightning.jpeg', to: '/salesforce/lightning-rollout/lightning.jpeg' },
+  { from: '/ghl/GHLdataModel.png', to: '/salesforce/fantasy-football-draft/GHLdataModel.png' },
+];
+
 test.describe('Salesforce section', () => {
   test('landing page lists the Salesforce projects', async ({ page }) => {
     await page.goto('/salesforce');
@@ -34,6 +41,15 @@ test.describe('Salesforce section', () => {
       const pageResponse = await page.goto(from);
       await expect(page).toHaveURL(new RegExp(`${to}$`));
       expect(pageResponse?.ok()).toBe(true);
+    });
+  }
+
+  for (const { from, to } of MOVED_ASSETS) {
+    test(`${from} permanently redirects to ${to}`, async ({ request }) => {
+      const response = await request.get(from, { maxRedirects: 0 });
+      expect(response.status()).toBe(308);
+      expect(response.headers()['location']).toBe(to);
+      expect((await request.get(to)).ok()).toBe(true);
     });
   }
 });

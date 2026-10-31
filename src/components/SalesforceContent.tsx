@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { Card } from '@/components/Card';
 
 // The Free and Trial Orgs page (/salesforce/free-and-trial-orgs) is
@@ -36,23 +37,25 @@ export default function SalesforceContent() {
         {salesforceProjects.map((project) => (
           <Card key={project.id} variant="accent" padding="sm" className="salesforce-project-card">
             <div className="salesforce-project-image-container">
-              <img
+              <Image
                 src={project.image}
                 alt={project.imageAlt}
+                fill
+                sizes="(min-width: 768px) 560px, 100vw"
                 className="salesforce-project-image"
               />
             </div>
 
             <div className="salesforce-project-content">
+              {/* The title link stretches over the whole card (see salesforce.css),
+                  so the card has one link and the call to action below is text. */}
               <h2 className="salesforce-project-title">
                 <a href={project.url} className="salesforce-project-link">
                   {project.title}
                 </a>
               </h2>
               <p className="salesforce-project-description">{project.description}</p>
-              <a href={project.url} className="salesforce-project-cta" aria-hidden="true" tabIndex={-1}>
-                {project.linkLabel}
-              </a>
+              <span className="salesforce-project-cta">{project.linkLabel}</span>
             </div>
           </Card>
         ))}
