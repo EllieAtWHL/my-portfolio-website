@@ -38,6 +38,7 @@ export const CACHE_TAGS = {
   PLAYERS: 'players',
   PLAYER_STATS: 'player-stats',
   TEAMS: 'teams',
+  TRICK_OR_TRAILHEAD: 'trick-or-trailhead',
 } as const;
 
 export type CacheTag = typeof CACHE_TAGS[keyof typeof CACHE_TAGS];
@@ -59,6 +60,12 @@ export interface CacheOptions {
   tags: CacheTag[];
   revalidate?: number;
   ttl?: CacheTTLDuration;
+  // Errors for which this returns true are rethrown as-is: not logged as a
+  // cache error and not retried by the fallback fetch. For expected outcomes
+  // the caller deliberately throws so unstable_cache won't store them (e.g.
+  // Trailhead's "profile is private"), where a fallback would just repeat the
+  // same upstream call.
+  rethrow?: (error: unknown) => boolean;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -86,6 +93,10 @@ export function createCachedFunction<T extends (...args: any[]) => Promise<any>>
         return result;
       }
     } catch (error) {
+      if (options.rethrow?.(error)) {
+        throw error;
+      }
+
       const duration = Date.now() - startTime;
       console.error(`Cache ERROR: ${cacheKey} after ${duration}ms:`, error);
       

@@ -16,7 +16,8 @@ calls the live API. Every file is the full JSON body for one request using
 Not recorded: a private profile (`profile.__typename === "PrivateProfile"`;
 needs a known private username) and a rate-limited response (HTTP 429 with no
 `Retry-After`, or HTTP 200 with `extensions.code === "TOO_MANY_REQUESTS"`).
-Build those by hand in tests. The shapes are from nabondance/Trailhead-Banner's
+Build those by hand in tests (`src/test-utils/trailhead-fetch.ts` serves these
+fixtures as a fake endpoint and has helpers for hand-built pages). The shapes are from nabondance/Trailhead-Banner's
 handling of the same API.
 
 All the data is from Ellie's own public profile.

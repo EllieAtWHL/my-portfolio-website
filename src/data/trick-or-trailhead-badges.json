@@ -1,0 +1,110 @@
+[
+  {
+    "year": 2026,
+    "title": "Trick or Trailhead: Tell Us S’more Campfire Stories",
+    "awardType": "MODULE",
+    "matchIds": ["03188f1d-5165-69ca-68b7-b70a2900301a"],
+    "matchTitles": ["Trick or Trailhead: Tell Us S’more Campfire Stories"],
+    "imageUrl": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/trick-or-trailhead-tell-us-smore-campfire-stories/6a39be7ebdd2a9ad6215df377ee8af54_badge.png",
+    "sourceUrl": "https://trailhead.salesforce.com/content/learn/modules/trick-or-trailhead-tell-us-smore-campfire-stories"
+  },
+  {
+    "year": 2025,
+    "title": "Trick or Trailhead 2025: A Ghost at Sillicorn Valley Inn",
+    "awardType": "MODULE",
+    "matchIds": ["02fe2109-00fd-8f0f-a396-ee9150133b59"],
+    "matchTitles": ["Trick or Trailhead 2025: A Ghost at Sillicorn Valley Inn"],
+    "imageUrl": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/trick-or-trailhead-2025-a-ghost-at-sillicorn-valley-inn/8305d537bc299d0522010327b5016ab3_badge.png",
+    "sourceUrl": "https://trailhead.salesforce.com/content/learn/modules/trick-or-trailhead-2025-a-ghost-at-sillicorn-valley-inn"
+  },
+  {
+    "year": 2024,
+    "title": "Trick or Trailhead: Escape from Flow Manor",
+    "awardType": "MODULE",
+    "matchIds": ["02e189ac-5cfc-b2ef-e304-c565bc2d50b8"],
+    "matchTitles": ["Trick or Trailhead: Escape from Flow Manor"],
+    "imageUrl": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/trick-or-trailhead-2024/d22f1dadbfe86f69bcb6b9dedd48c1ef_badge.png",
+    "sourceUrl": "https://www.salesforce.com/blog/trick-or-trailhead/"
+  },
+  {
+    "year": 2023,
+    "title": "Trick or Trailhead at AI Manor",
+    "awardType": "MODULE",
+    "matchIds": ["02c5006c-cf63-0388-2457-83715bbdb922"],
+    "matchTitles": ["Trick or Trailhead at AI Manor"],
+    "imageUrl": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/trick-or-trailhead-at-ai-manor/73fac32b1c390b35fc36c7ca1fd2e4e4_badge.png",
+    "sourceUrl": "https://www.salesforce.com/blog/trick-or-trailhead/"
+  },
+  {
+    "year": 2022,
+    "title": "Trick or Trailhead VIII",
+    "awardType": "EVENT",
+    "matchIds": ["02a890f5-4d00-0369-eb92-9339b0b9a1b8"],
+    "matchTitles": ["Trick or Trailhead VIII"],
+    "imageUrl": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_trick_or_trailhead_viii.png",
+    "sourceUrl": "https://www.salesforce.com/blog/trick-or-trailhead-viii/"
+  },
+  {
+    "year": 2021,
+    "title": "Trick or Trailhead VII",
+    "awardType": "EVENT",
+    "matchIds": ["028be35b-30c6-447c-0d1c-7d064a89108a"],
+    "matchTitles": ["Trick or Trailhead VII"],
+    "imageUrl": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_trick_or_trailhead_vii.png",
+    "sourceUrl": "https://www.salesforce.com/blog/trick-or-trailhead-vii/"
+  },
+  {
+    "year": 2020,
+    "title": "Trick or Trailhead VI",
+    "awardType": "EVENT",
+    "matchIds": ["026ecba4-04a5-19ba-7343-ce257bd336b9"],
+    "matchTitles": ["Trick or Trailhead VI"],
+    "imageUrl": "https://res.cloudinary.com/hy4kyit2a/image/upload/2020-10-trickortrailhead-badges-v1.png",
+    "sourceUrl": "https://medium.com/trailhead/time-for-a-candy-coated-trick-or-trailhead-vi-7ca261fc0503"
+  },
+  {
+    "year": 2019,
+    "title": "Trick or Trailhead V",
+    "awardType": "EVENT",
+    "matchIds": ["0252d7ea-8d50-7038-0dd3-050893aad361"],
+    "matchTitles": ["Trick or Trailhead V"],
+    "imageUrl": "https://developer.salesforce.com/resource/images/trailhead/badges/community/trailhead_community_trick_or_trailhead_v.png",
+    "sourceUrl": "https://medium.com/trailhead/trick-or-trailhead-v-tales-from-the-80s-8d37256772fd"
+  },
+  {
+    "year": 2018,
+    "title": "Trick or Trailhead IV",
+    "awardType": "EVENT",
+    "matchIds": ["02363d20-cf81-3edd-3533-dbdf4b041b17"],
+    "matchTitles": ["Trick or Trailhead IV"],
+    "imageUrl": "https://developer.salesforce.com/resource/images/trailhead/badges/community/trailhead_community_trick_or_trailhead_iv.png",
+    "sourceUrl": "https://medium.com/trailhead/the-fur-midable-tail-of-trick-or-trailhead-iv-7f36fa618fa3"
+  },
+  {
+    "year": 2017,
+    "title": "Trick or Trailhead III",
+    "awardType": "EVENT",
+    "matchIds": ["0217d811-f369-717c-abc6-b38fceb87f55"],
+    "matchTitles": ["Trick or Trailhead III"],
+    "imageUrl": "https://developer.salesforce.com/resource/images/trailhead/badges/community/trailhead_community_trickortrailhead.png",
+    "sourceUrl": "https://medium.com/trailhead/beware-of-trick-or-trailhead-iii-5d950fdf9b14"
+  },
+  {
+    "year": 2016,
+    "title": "Trick or Trailhead II",
+    "awardType": "EVENT",
+    "matchIds": ["01fcb715-23eb-38bc-a9de-21c37d0260a2"],
+    "matchTitles": ["Trick or Trailhead II"],
+    "imageUrl": "https://developer.salesforce.com/resource/images/trailhead/badges/community/trailhead_community_trick_or_trailhead_2016.png",
+    "sourceUrl": null
+  },
+  {
+    "year": 2015,
+    "title": "Trick or Trailhead",
+    "awardType": "EVENT",
+    "matchIds": ["01e05c0a-789b-80d4-9510-f809bb5defc9"],
+    "matchTitles": ["Trick or Trailhead"],
+    "imageUrl": "https://s3.amazonaws.com/dfc-static-production/resource/images/trailhead/badges/community/trick-or-trailhead.png",
+    "sourceUrl": null
+  }
+]

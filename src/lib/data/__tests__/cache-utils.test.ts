@@ -208,5 +208,33 @@ describe('Cache Utils', () => {
 
       expect(result).toBe('fallback-result');
     });
+
+    it('rethrows errors matching rethrow without logging or a fallback call', async () => {
+      const expected = new Error('expected outcome');
+      mockFn.mockRejectedValue(expected);
+
+      const cachedFn = createCachedFunction(mockFn, {
+        keyParts: ['test', 'key'],
+        tags: [CACHE_TAGS.MATCHES],
+        rethrow: (error) => error === expected,
+      });
+
+      await expect(cachedFn()).rejects.toBe(expected);
+      expect(mockFn).toHaveBeenCalledTimes(1);
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
+    });
+
+    it('still falls back for errors rethrow does not match', async () => {
+      mockFn.mockRejectedValueOnce(new Error('cache broke')).mockResolvedValueOnce('fallback-result');
+
+      const cachedFn = createCachedFunction(mockFn, {
+        keyParts: ['test', 'key'],
+        tags: [CACHE_TAGS.MATCHES],
+        rethrow: () => false,
+      });
+
+      await expect(cachedFn()).resolves.toBe('fallback-result');
+      expect(mockFn).toHaveBeenCalledTimes(2);
+    });
   });
 });

@@ -120,6 +120,7 @@ explicitly).
 - Cache failures fall back to a direct database fetch
 - Falls back to fresh data on error rather than serving broken state
 - Throws a descriptive `CacheError` when both cache and fallback fail (never silently returns an empty array to mask a failure)
+- `rethrow` (optional `CacheOptions` predicate): errors it matches skip the fallback and the `Cache ERROR` log and are rethrown as-is. For outcomes a caller throws on purpose so `unstable_cache` won't store them, or for an expensive upstream call where the fallback would just repeat it. The Trick or Trailhead lookup (`src/lib/trailhead/lookup.ts`, not Spurs Women) passes `() => true`, since its fallback would be a second full Trailhead scan
 - All cache operations are logged with timing
 
 ### Monitoring
