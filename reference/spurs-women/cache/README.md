@@ -120,6 +120,7 @@ explicitly).
 - Cache failures fall back to a direct database fetch
 - Falls back to fresh data on error rather than serving broken state
 - Throws a descriptive `CacheError` when both cache and fallback fail (never silently returns an empty array to mask a failure)
+- `rethrow` (optional `CacheOptions` predicate): errors it matches skip the fallback and the `Cache ERROR` log and are rethrown as-is. For outcomes a caller throws on purpose so `unstable_cache` won't store them, where a fallback would only repeat the same upstream call (used by the Trick or Trailhead lookup for private profiles and rate limits)
 - All cache operations are logged with timing
 
 ### Monitoring
