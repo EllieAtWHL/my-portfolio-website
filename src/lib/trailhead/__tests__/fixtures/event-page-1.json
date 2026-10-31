@@ -1,0 +1,667 @@
+{
+  "data": {
+    "profile": {
+      "__typename": "PublicProfile",
+      "name": "Ellie Matthewman",
+      "avatarUrl": "https://profile.digital.salesforce.com/images/p/0051I000004qV7TQAU/1723545610/F",
+      "earnedAwards": {
+        "edges": [
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "03093d5c-9ac9-ac17-19e1-9664fd67c24b",
+              "award": {
+                "id": "03078030-d3ca-fe43-789e-baf68bb6a81e",
+                "title": "Explore the Future of Digital Labor Quest",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.us-east-1.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_ExploreFutureofDigitalLabor_quest2025.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "03078033-0ef6-48eb-b68f-959a569eb52e",
+              "award": {
+                "id": "0307802a-820b-7774-34d2-e84a0f3d4f1e",
+                "title": "Super Quest: Data Quality and Validation",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.us-east-1.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_dataqualityandvalidationsuperquest_2025.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02f3b4ae-fd66-c245-d5fc-6f057b464f1d",
+              "award": {
+                "id": "02f3b4ab-dc96-55b3-7b2a-234c542592df",
+                "title": "Admin Core Responsibilities Quest: Agentforce Era",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.us-east-1.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_admincoreresponsbilitiesfortheAIera2025.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02f3b405-6964-9fea-f406-615308bec533",
+              "award": {
+                "id": "02f3b3c7-7d69-ca92-a103-6ac2f3154624",
+                "title": "Super Quest: Flow Fundamentals",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.us-east-1.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_flowfundamentalssuperbadge_quest2025.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02eed3be-3ec5-b0f4-f2de-0e1303e014f5",
+              "award": {
+                "id": "02eed3ab-47e9-478c-81d8-6fac8c086f50",
+                "title": "Super Quest: Prompt Builder Templates",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.us-east-1.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_promptbuildersuperbadge_quest2025.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02ecb087-41e8-9a93-38e9-78811d7526c7",
+              "award": {
+                "id": "02ecb06f-d6e0-b2c8-6cc8-14df1a0b02e4",
+                "title": "Road To TDX25 Quest",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.us-east-1.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_roadtoTDX_2025.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02e58fe0-3121-8ab3-3e5b-00d98638e016",
+              "award": {
+                "id": "02e58f9a-d72b-5daa-3c5e-ad3c3ef4e98a",
+                "title": "10 Years with Trailhead Quest",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_trailhead10_2024.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02e3d278-d6f3-d222-1d19-640d8b1a220a",
+              "award": {
+                "id": "02e337d9-f150-4dbd-f938-d9643fbc605b",
+                "title": "#BuiltWithAgentforce Quest",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_builtwithagentforce_2024.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02e337a3-5c35-1627-17f7-6ef13112c356",
+              "award": {
+                "id": "02e3376a-359e-e3da-2927-bcf44fb6c7b4",
+                "title": "The Future is Well-Architected Quest",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_df24_architectquest.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02e3377d-2214-650b-89a3-5d0e164682f7",
+              "award": {
+                "id": "02e33754-767c-f28d-1af1-4fc5a778205a",
+                "title": "Dream Quest 2024",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_df24_dreamquest.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02d72b0a-772d-3de9-178b-67caff1440de",
+              "award": {
+                "id": "02d23516-8dfd-ee58-662c-2b472d565a89",
+                "title": "Tableau Hands-on Challenges Quest",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/2024-2-Get-Hands-On-With-Tableau_Badge.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02d0ba5c-23a4-097c-213e-89dae3bc4cb8",
+              "award": {
+                "id": "02d0ba31-7661-b119-8859-1c856f84fea4",
+                "title": "Road to TrailblazerDX Quest 2024",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/2024-1-Community_Badge-tdx-road-to-quest.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02ce981c-167d-21a1-ae5f-9ad4aa1e134f",
+              "award": {
+                "id": "02ce97ff-0b6c-5354-c3ad-95264215a6ee",
+                "title": "Seize the Trail 2024",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_trailheadquest_seize_the_trail_2023.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02ce8632-054e-a0ee-9f99-53363bc92f2e",
+              "award": {
+                "id": "02ce862e-d62a-396d-c393-c92ffdfa9896",
+                "title": "Learn MOAR Winter '24 for Admins",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_admin_winter_release_2024.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02cd858b-a84c-10f5-996c-41e7dca30acf",
+              "award": {
+                "id": "02cd8587-496b-cde5-46d1-63f207e74ac8",
+                "title": "Trailblazer Career Marketplace Quest",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_tbcareermarketplace_quest2023.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02cb12dd-2e32-9e33-db2f-b50e599b5b0b",
+              "award": {
+                "id": "02cb12c9-d4b1-370a-9d57-5ba23e558083",
+                "title": "Quest For Data Literacy",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_quest_data_literacy.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02cb12a7-e96d-ecf4-1af2-cfbf3d3580bd",
+              "award": {
+                "id": "02c1d156-2003-c633-11f3-53232cd7d0d0",
+                "title": "Get Hands-on with Learning Quest",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_handsonchallenges_quest2023.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02c65d98-2bbe-45c5-ff6a-f857d1ea4098",
+              "award": {
+                "id": "02c65d55-3296-bed0-e74b-1dcf712191a8",
+                "title": "Tableau Community Kick-Off Quest",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_tableaukickoff_quest2023.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02c4b451-a6c0-2322-c51f-64653e250f03",
+              "award": {
+                "id": "02c2e7bf-6092-9eaa-62c0-75f0d02f0b74",
+                "title": "Happy Birthday Trailhead 2023",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_trailhead_birthday_2023.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02c38764-8b82-5d8e-571f-477cf1f29799",
+              "award": {
+                "id": "02c3874a-1105-9d90-7a81-50b750023b14",
+                "title": "Learn MOAR Summer '23 for Devs Quest ",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_dev_summer_release_2023.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02c3875e-e03b-e857-c559-7f3f0c5c4c2c",
+              "award": {
+                "id": "02c38743-bf0f-b71f-84f3-ad514ca43b4a",
+                "title": "Learn MOAR Summer '23 for Admins Quest ",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_admin_summer_release_2023.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02c2bf78-be78-1573-770e-cf5569a51383",
+              "award": {
+                "id": "02c2bf5c-b0b1-48ba-f37d-ea405b7b21d1",
+                "title": "Road To Dreamforce 2023 Quest",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/2023-07-Community_Badge-road-to-dreamforce.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02c1d148-2317-ad7d-d7a4-aa0b142cd241",
+              "award": {
+                "id": "02bced73-2d3b-287e-2aba-99587fcb7e3c",
+                "title": "Be A Trailblazer with AI Skills Quest",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_aiquest_2023.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02ba79ff-c398-ad09-b649-26283bd701e9",
+              "award": {
+                "id": "02ba79ca-bbbc-a5ab-2648-50140dc3d898",
+                "title": "Einstein Quest",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_einsteingptquest_2023.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02bcedc2-56e8-771d-0155-85bd3fe8375f",
+              "award": {
+                "id": "02bced88-03be-4345-b632-504eed2cce75",
+                "title": "Quest for Inclusivity",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_inclusivityquest_2023.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02bc5587-9090-91ef-90d7-82f232f173f8",
+              "award": {
+                "id": "02bc4320-ef80-6cca-44e4-7dc07f83e0e6",
+                "title": "FY24 World Tour London (6/29/23)",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_SWT_LDN23.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02ba8ed5-c669-57c2-c96e-8a74fed164a0",
+              "award": {
+                "id": "02ba8eb3-3811-9569-eb4b-86b19ac194a7",
+                "title": "Iron Viz '23 Quest",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_ironviz_tableau23.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02ba8ec2-284b-8137-900f-8691d6bd61e4",
+              "award": {
+                "id": "02ba8e99-97b8-3e11-f9f4-740528367a45",
+                "title": "Become An Accessibility Champion Quest",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_accessibilitychampion_quest2023.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02ba7a0f-aa82-fd3f-7ee2-4381185b1caa",
+              "award": {
+                "id": "02ba79d0-e08a-e1c2-4fdd-5911f4cc3c9f",
+                "title": "Data Cloud Quest",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_datacloudquest_2023.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02ba79e5-3f9c-3aa1-f404-ce1807342e4a",
+              "award": {
+                "id": "02ba79c2-997a-5eae-c7a0-7f830c78d44e",
+                "title": "Automation Quest",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_automationquest_2023.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02b7e498-252d-f22a-e0cf-51bdf47bc9dc",
+              "award": {
+                "id": "02b7e497-199f-ff7f-c15a-bb6ae09e9fc6",
+                "title": "Re-Discover B2C Solution Architect Certification Quest",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_b2cSolutionArchitectCertifcationPrep_2023.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02b7d6a0-8ec3-dc61-d183-e7e6b7986f67",
+              "award": {
+                "id": "02b30a08-85bb-6142-d84e-7cdb8b8bf6a8",
+                "title": "#AskTheTrailblazer Quest",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_ask_the_trailblazer_2023.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02b5ae80-ce13-31c4-cd43-c78d92f5572e",
+              "award": {
+                "id": "02b5ae72-c19f-58d0-6610-d7af008b0a23",
+                "title": "Solution Like An Integration Architect Quest",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_solution_like_an_integration_architect_quest.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02b5ae62-cb22-8c9c-3dfb-8c07816b52c3",
+              "award": {
+                "id": "02b5ae5b-5d21-eb2d-fac7-72ec1a6d4477",
+                "title": "Learn MOAR Spring '23 for Devs",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_dev_spring_release_2023.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02b5ae5c-298e-25da-f01b-3cc1dd4f2977",
+              "award": {
+                "id": "02b5ae56-68ae-8bed-a49e-a4a649fdf856",
+                "title": "Learn MOAR Spring '23 for Admins",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_admin_spring_release_2023.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02b5ae42-b754-6b96-7669-cdc4d953dac2",
+              "award": {
+                "id": "02ac4728-4ab4-6948-45ca-b646bfadcb8a",
+                "title": "Ready for Research Quest",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_ready_for_research_quest_2022.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02b5add4-1cef-4204-b51f-601d80232f02",
+              "award": {
+                "id": "02b277e6-1684-95d3-00b7-9cfd4d889522",
+                "title": "TrailblazerDX 2023 Quest",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_tdx_2023_quest.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02ae788d-6cdb-4b82-7fde-1ae35b47099d",
+              "award": {
+                "id": "02ae788c-5056-2cd4-8126-46b0a98a3d30",
+                "title": "Learn With Video Quest",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_trailheadquest_video_based_badges_2022.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02ac4724-1296-92c2-6cac-61b4b081dfb1",
+              "award": {
+                "id": "02ac4722-2e68-04f0-48d5-ff8bd6349bd1",
+                "title": "Discover Sharing and Visibility Architect Concepts Quest ",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_discover_sharing_and_visibility_architect_concepts_2022.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02ac30bb-6177-2eae-d6b4-d376d53632c3",
+              "award": {
+                "id": "02ac30b5-e2c9-e508-a650-2dd07ae00d35",
+                "title": "Learn MOAR Winter '23 for Developers",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_dev_winter_release_2023.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02ac30ba-b8e2-4e41-1b8a-42b4491be647",
+              "award": {
+                "id": "02ac30af-feb6-4055-e6ff-48e90dd50f67",
+                "title": "Learn MOAR Winter '23 for Admins",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_admin_winter_release_2023.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02a9fabb-eac9-0644-44aa-f1637c1eb47f",
+              "award": {
+                "id": "02a9fa81-7863-0686-12d4-8434dba52f37",
+                "title": "Dream Quest 2022: Trailhead Throwback",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_df22_quest_th_throwback.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02a9faa7-9a9d-f53d-c856-79e043681ca9",
+              "award": {
+                "id": "02a9fa75-c8ff-9a89-56bb-481cb49a1380",
+                "title": "Dream Quest 2022: Future of Work",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_df22_quest_future_of_work.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02a9fa40-a256-47e6-b9cb-23a62584e18c",
+              "award": {
+                "id": "02a9fa28-8c22-5f02-fd89-eb9ad8f8df86",
+                "title": "Data Skills Quest",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_data_skills_quest_badge_2022.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02a8ef56-a035-757e-bc10-135f6562629c",
+              "award": {
+                "id": "02a890f5-4d00-0369-eb92-9339b0b9a1b8",
+                "title": "Trick or Trailhead VIII",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_trick_or_trailhead_viii.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02a7cb57-561c-d2df-89d4-57afc88198e8",
+              "award": {
+                "id": "02a7cb55-29d7-cdd7-68b1-ef0e1363ef63",
+                "title": "Dreamforce2022 Trailblazer Bootcamp",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/2022-DF-bootcamp_trailhead_community_badge.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02a73d24-227d-2969-8c60-93dd9cac3900",
+              "award": {
+                "id": "02a73d1b-0675-cd07-6b73-8933dcb44daa",
+                "title": "Salesforce On Salesforce Quest",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_salesforce_best_practices_2022.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02a73d10-9e43-ed3b-78c9-52a1e0bd23c7",
+              "award": {
+                "id": "02a24d5a-f50c-3c4b-6241-9b5db589957d",
+                "title": "Climb The Ranks Quest",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_climbing_the_ranks_2022.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02a73cdd-b144-fc1a-4133-ce49902efdad",
+              "award": {
+                "id": "02a73cdb-792e-972a-1b03-accd1279322f",
+                "title": "Become A Trailblazer Mentor Quest",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_community_become_a_trailblazer_mentor_2022.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02a6368d-93b6-c4e5-64a3-873f6978e2de",
+              "award": {
+                "id": "02a6368c-970e-6ec6-198a-1134ed92c79c",
+                "title": "Explore Becoming A Data Architect Quest",
+                "type": "EVENT",
+                "icon": "https://dfc-static-production.s3.amazonaws.com/resource/images/trailhead/badges/community/trailhead_explore_becoming_a_data_architect_2022.png",
+                "content": null
+              }
+            }
+          }
+        ],
+        "pageInfo": {
+          "hasNextPage": true,
+          "endCursor": "eyJzIjoiMDJhNjM2OGQtOTNiNi1jNGU1LTY0YTMtODczZjY5NzhlMmRlIiwicHAiOjUwLCJwbiI6MX0"
+        }
+      }
+    }
+  }
+}

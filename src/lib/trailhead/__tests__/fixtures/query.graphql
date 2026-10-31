@@ -1,0 +1,13 @@
+query GetTrailheadBadges($slug: String, $count: Int, $after: String, $filter: AwardTypeFilter) {
+  profile(slug: $slug) {
+    __typename
+    ... on PublicProfile {
+      name
+      avatarUrl
+      earnedAwards(first: $count, after: $after, awardType: $filter) {
+        edges { node { __typename id ... on EarnedAwardBase { award { id title type icon content { webUrl } } } } }
+        pageInfo { hasNextPage endCursor }
+      }
+    }
+  }
+}

@@ -1,0 +1,741 @@
+{
+  "data": {
+    "profile": {
+      "__typename": "PublicProfile",
+      "name": "Ellie Matthewman",
+      "avatarUrl": "https://profile.digital.salesforce.com/images/p/0051I000004qV7TQAU/1723545610/F",
+      "earnedAwards": {
+        "edges": [
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "031c3c3c-adfe-d64d-75a4-cfe28c387d26",
+              "award": {
+                "id": "030d8754-b0fc-4c10-e3ff-6dc87ee32f80",
+                "title": "Introduction to AIforce",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/salesforce-headless-360-quick-look/1418ecdab6312f9b9c5cf8222939d0f1_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/salesforce-headless-360-quick-look"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "031c3c05-0167-f48a-548b-f08da86680aa",
+              "award": {
+                "id": "03188f1d-5165-69ca-68b7-b70a2900301a",
+                "title": "Trick or Trailhead: Tell Us S’more Campfire Stories",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/trick-or-trailhead-tell-us-smore-campfire-stories/6a39be7ebdd2a9ad6215df377ee8af54_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/trick-or-trailhead-tell-us-smore-campfire-stories"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "0319cb46-9245-c5df-7aeb-30f93fec366d",
+              "award": {
+                "id": "030ba7d7-93ac-973a-eabf-00d84e2f4d6a",
+                "title": "Agent Behavior Basics",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/agent-behavior-basics/5547e9e28e82f45cbd200c1f0bdbe803_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/agent-behavior-basics"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "03159ffe-1204-e89f-7e71-350c78c4992a",
+              "award": {
+                "id": "030e5761-f53f-54e0-04c1-bb0c1dc77cde",
+                "title": "Agentforce Revenue Management: Quick Look",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/agentforce-revenue-management-quick-look/fd31ee12023f90836882810a40336b49_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/agentforce-revenue-management-quick-look"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "03119935-a58a-d0dd-36f4-da4a8e21edaa",
+              "award": {
+                "id": "03118934-9b6e-6fbf-0b83-ea5e51df8c55",
+                "title": "Headless Use Case: Use a Conversation to Build an Agent",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/headless-360-use-a-conversation-to-build-an-agent/520dc709d6cddf93537bfa4817593d67_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/headless-360-use-a-conversation-to-build-an-agent"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "030e7de4-7bf7-e0e1-fab2-b4bd651c0007",
+              "award": {
+                "id": "02c90350-7042-570b-b1c3-496a08e4e893",
+                "title": "Trailhead in Your Language",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/trailhead-in-your-language/233ac5fec8fcb30f9eb6091afc2ee200_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/trailhead-in-your-language"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "030dc3d4-6ce0-433d-68cf-53860c3ae290",
+              "award": {
+                "id": "030ace20-5555-6d8f-3be9-069d00a3f9da",
+                "title": "Technical Debt",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/technical-debt/4e29503cf800f22e65aecc764d54333c_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/technical-debt"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "030612b4-808a-8562-7161-0efc7ec9a894",
+              "award": {
+                "id": "02fe37cb-7823-4893-bfcb-1da5d0d1111b",
+                "title": "Agentforce Voice",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/agentforce-voice-quick-look/cfc55dcec423ecfa99b3e7ab33e37647_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/agentforce-voice-quick-look"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "030612b1-02bd-a0a6-37ac-921fd5d621d5",
+              "award": {
+                "id": "02faed4f-5dbb-f325-2dfd-a7fea84bfae6",
+                "title": "Agentforce Deployment for Service Agents",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/agentforce-deployment-quick-look/628d4f1f3939d0ee6d01ef2456194228_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/agentforce-deployment-quick-look"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "030612a4-44ad-de24-0784-706d6307b3c5",
+              "award": {
+                "id": "03032946-ca25-a597-772a-a11a2534b6b4",
+                "title": "Threat Modeling for AI Agents",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/threat-modeling-for-ai-agents/d90ecba0b052e9dffcec3076e573115a_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/threat-modeling-for-ai-agents"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "0306127d-2142-cbee-3397-7c60a5f3387f",
+              "award": {
+                "id": "0305483c-a912-22fa-afde-2a4928445287",
+                "title": "Use Employee Agents to Get Work Done",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/use-employee-agents-to-get-work-done/595fc08f6c5e6a0f58d2473a1da44171_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/use-employee-agents-to-get-work-done"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "03061078-aa79-390d-d4bd-349ca129b9f8",
+              "award": {
+                "id": "02faed4f-5dbb-f31c-8625-5aef9e246c4f",
+                "title": "Reasoning in Artificial Intelligence",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/reasoning-in-artificial-intelligence/01e298915c561131b5931e3fc82a6383_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/reasoning-in-artificial-intelligence"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "0305bca6-0993-d964-d37e-bec48226f9a5",
+              "award": {
+                "id": "03050b73-9e85-2798-9eb2-d7147886306e",
+                "title": "Spring ’26 Release Highlights",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/spring-26-release-highlights/5b77569ef33462eb6c26342447525695_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/spring-26-release-highlights"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "0304e562-e028-3967-3c7c-66cdb4fe7b63",
+              "award": {
+                "id": "02fde3c0-db78-c821-5a60-fea28870563b",
+                "title": "Becoming an Agentblazer",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/becoming-an-agentblazer-quick-look/feee9b4581882c0863118946cabd747d_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/becoming-an-agentblazer-quick-look"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "03042cfe-0532-12f6-65c0-a96a9900659c",
+              "award": {
+                "id": "02c8dbe8-2681-aa32-3941-b7460f20d360",
+                "title": "Generative AI for Images",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/image-generation-and-diffusion-models/dd562bf44f4be448b29e5ac8393b20d8_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/image-generation-and-diffusion-models"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "03042cfa-df25-f3f5-3cf7-a4fab60bdfc6",
+              "award": {
+                "id": "02a9a87a-1715-1234-a178-a55624c5b23b",
+                "title": "Loyalty and Agentforce Commerce Integration: Quick Look",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/loyalty-and-commerce-cloud-integration-quick-look/1f1b20b3e727fdc6b7ae06fe11c9b0da_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/loyalty-and-commerce-cloud-integration-quick-look"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "03042c9b-c161-03c4-c6d1-47202e726deb",
+              "award": {
+                "id": "028c7213-cac5-bbcd-edce-af1cc2ab0f69",
+                "title": "Loyalty Marketing Campaigns",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/loyalty-marketing-campaigns/a883de4c90704fe169e31597320ad421_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/loyalty-marketing-campaigns"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "03041ffa-dcd2-ee32-7165-c52e32dcc731",
+              "award": {
+                "id": "02b5d609-b862-d823-51b0-1ab459dca0fc",
+                "title": "CRM Analytics for Loyalty Administrators",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/crm-analytics-for-loyalty-administrators/a50dab13a6e49e610dc4722af85b637f_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/crm-analytics-for-loyalty-administrators"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "03041fe4-f97f-c70d-af40-51c8bf944e85",
+              "award": {
+                "id": "028f2ec2-45ae-cbc5-8daa-b1e30b5886d8",
+                "title": "Loyalty Rules Management and Processing",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/loyalty-rules-management-and-processing/1b07fc20be34cba9c380c2ace41703be_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/loyalty-rules-management-and-processing"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "03041d68-f2df-5be3-d6db-a1bfd2dfd44d",
+              "award": {
+                "id": "02792d94-ffe4-bf2d-ae47-dd3e83a778a4",
+                "title": "Loyalty Management in Marketing Cloud Next: Basics",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/loyalty-management-basics/00a52e5e893f23c204d24376184e4de0_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/loyalty-management-basics"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "03041d35-9e35-db63-eb30-013b38fc9a1e",
+              "award": {
+                "id": "0288097c-0a78-08eb-3f35-45e08c745a92",
+                "title": "Loyalty Programs and Loyalty Management",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/loyalty-programs-and-loyalty-management/dc223479f5ea6c9a15d12542ae7bf8a5_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/loyalty-programs-and-loyalty-management"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "03041a3c-fe70-de13-2a5e-f74ec3bea97b",
+              "award": {
+                "id": "026832de-34de-8eca-f570-fcab0b82e87c",
+                "title": "Cybersecurity Principles for Leaders",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/cybersecurity-risk-management/cba064e10491f9de1177f515590e4b03_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/cybersecurity-risk-management"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "03040807-9e07-75c7-0d8e-4f34cbfb77da",
+              "award": {
+                "id": "0302c442-ce84-fbcf-6f31-51db927cad39",
+                "title": "Salesforce Architect Certification Maintenance (Winter '26)",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/salesforce-architect-certification-maintenance-winter-26/060fb93fcca559bcf525269813c2842e_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/salesforce-architect-certification-maintenance-winter-26"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "030407b8-d222-0cc3-f007-98fd1434c17c",
+              "award": {
+                "id": "0302c442-ce84-fb03-191e-95a5abceb633",
+                "title": "Platform Developer Certification Maintenance (Winter '26)",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/platform-developer-certification-maintenance-winter-26/49198b5e4f078b8841c155a2b3f997fc_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/platform-developer-certification-maintenance-winter-26"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "0304075c-f372-b63c-0b58-84fbe84d85ed",
+              "award": {
+                "id": "0302c442-ce84-fbf4-f116-cd954b21cdbc",
+                "title": "Platform App Builder Certification Maintenance (Winter '26)",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/platform-app-builder-certification-maintenance-winter-26/93342867d5d845cfe68ce841bccd5724_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/platform-app-builder-certification-maintenance-winter-26"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "0304074d-00da-f84a-f8b1-08c574c54739",
+              "award": {
+                "id": "02fa82ff-543c-d583-2c54-5eed1fe1f914",
+                "title": "JavaScript Developer Certification Maintenance (Summer '25)",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/javascript-developer-certification-maintenance-summer-25/17d180c93cb7a7986fb282000ea3ba30_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/javascript-developer-certification-maintenance-summer-25"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02ff8bee-aa08-d4bb-634a-d6bb3917fffb",
+              "award": {
+                "id": "02fe2109-00fd-8f0f-a396-ee9150133b59",
+                "title": "Trick or Trailhead 2025: A Ghost at Sillicorn Valley Inn",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/trick-or-trailhead-2025-a-ghost-at-sillicorn-valley-inn/8305d537bc299d0522010327b5016ab3_badge.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02fe889c-a6d2-e97f-704f-cf6df914c072",
+              "award": {
+                "id": "02eb6fe8-4f04-9926-eeb1-52975075ada3",
+                "title": "Cert Prep: Agentforce Specialist",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/cert-prep-agentforce-specialist/e36e64d09fd130e6c7c56134d391632c_badge.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02f5f2a5-dc91-b07a-2cb0-ed647dd31ad0",
+              "award": {
+                "id": "02f3c0f6-82ea-6e43-58b8-55fdf4cd53ac",
+                "title": "Salesforce Channels",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/salesforce-channels/10caf4a5b7314063c05921d012ebd18f_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/salesforce-channels"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02f39abc-c407-e980-0e5f-fca3a70ece09",
+              "award": {
+                "id": "026832dd-c837-b2c4-0a46-1a484f052524",
+                "title": "Community Project Development with CumulusCI",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/community-project-development-with-cumulusci/12c462a31a660fcfc62a2e47ec2a9a43_badge.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02f39a64-6833-782c-0629-b8b4a63881cb",
+              "award": {
+                "id": "026832dd-c89a-7486-ad14-a9328079d81d",
+                "title": "CumulusCI Setup",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/cumulusci-setup/ea6994db4907f7027e7b48f9c8c7006d_badge.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02f39a19-fd9a-fc24-f09f-be55c378ad18",
+              "award": {
+                "id": "026832dd-c8ba-4482-ad1f-162ea5508626",
+                "title": "CumulusCI Basics",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/cumulusci-basics/5ea03e82f787ae29285e18d45368eab8_badge.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02f1564e-ba98-1563-2c12-c6e95a2c6e1b",
+              "award": {
+                "id": "02f00f90-e5ac-bdc5-1b96-2e8b2a5705ab",
+                "title": "Marketing Cloud Email Specialist Certification Maintenance (Spring '25)",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/marketing-cloud-email-specialist-certification-maintenance-spring-25/c3f6dff8e3dd95efe6eb6d3acccd874a_badge.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02f15644-db1a-d792-e352-aa4ed44527e2",
+              "award": {
+                "id": "02f00f90-e5ac-bdf6-8bae-0523ab3b105c",
+                "title": "Platform Administrator Certification Maintenance (Spring '25)",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/administrator-certification-maintenance-spring-25/ef5e392cd7a8dda54fa242084b800c8b_badge.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02f15629-e11d-9283-4e01-b91395e1f3ec",
+              "award": {
+                "id": "02e629a4-9fe9-28fa-7c8e-b2b93309f1b3",
+                "title": "Salesforce Architect Certification Maintenance (Winter '25)",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/salesforce-architect-certification-maintenance-winter-25/2014d7fb8d34621c55c3a9b01fdade0e_badge.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02f1560d-e15f-2305-7968-9561abf4df6a",
+              "award": {
+                "id": "02e629a4-9fe9-28b0-9f48-0c2ab3d116c6",
+                "title": "Platform App Builder Certification Maintenance (Winter '25)",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/platform-app-builder-certification-maintenance-winter-25/d36f195b7f272b4f8aa21811d934c9b1_badge.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02f155f8-58ee-d124-29c9-798b6d5690b1",
+              "award": {
+                "id": "02e629a4-9fe9-28e1-e31d-1f618c1ae68b",
+                "title": "Platform Developer Certification Maintenance (Winter ’25)",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/platform-developer-i-certification-maintenance-winter-25/ba92f3dfe1ef21193cf6a0b7f7d3c89c_badge.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02ef38e7-126a-b72e-9314-54f091d898e1",
+              "award": {
+                "id": "02ec871c-107e-b7e9-b095-243edc2e6a15",
+                "title": "Agentforce Configuration for Slack Deployment",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/agentforce-configuration-for-slack-deployment/47b907b4e7bb6e9add9436e25b14cfdb_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/agentforce-configuration-for-slack-deployment"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02ef37f0-1437-2c25-f588-6a5454ef6b3a",
+              "award": {
+                "id": "02dcbbd0-1ced-c560-e986-731ae9c49c59",
+                "title": "Agentforce Sales Actions for Sellers: Quick Look",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/einstein-copilot-sales-actions-for-sellers-quick-look/a7d0de29f8ae53610606c2c7146be36e_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/einstein-copilot-sales-actions-for-sellers-quick-look"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02ef37e7-1f91-faeb-b8ad-f92f2235e34c",
+              "award": {
+                "id": "02df53f6-9b24-a1ed-64f9-d746bb7b56a8",
+                "title": "Agentforce Vibes Extension",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/einstein-for-developers/ecb8eb309adeb768d4140bec2d21c2f6_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/einstein-for-developers"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02ef37d6-bd2a-ef72-8446-b97709f32a22",
+              "award": {
+                "id": "02ec8a83-f732-6d49-5c98-4095c3a532d0",
+                "title": "Agentforce Service Assistant: Quick Look",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/agentforce-service-planner-quick-look/9d6a71223db6745afcd18246358fa70b_badge.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02ef37cf-67c2-0b3f-92ba-2493a3f771da",
+              "award": {
+                "id": "02cf9d81-19c5-d2da-3a07-b5690b2c4f9d",
+                "title": "Einstein Pricing: Quick Look",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/einstein-pricing-quick-look/b0805696387d47475341f82cf854a6f8_badge.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02ecdaca-f8d0-a144-3fdd-3a648ba4194d",
+              "award": {
+                "id": "02eb0f97-ab6f-007b-1d5b-ad80582b02a6",
+                "title": "Agentforce on the Salesforce Mobile App: Quick Look",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/agentforce-on-the-salesforce-mobile-app-quick-look/19de4717297d77de9f0b2679abda3c4e_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/agentforce-on-the-salesforce-mobile-app-quick-look"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02ec8cfd-68bf-2e42-de66-d382c93f7bfc",
+              "award": {
+                "id": "02ec871c-107e-b778-250e-2b398aaa1a41",
+                "title": "Agents for Customer Engagement at Scale",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/agentforce-sdr-setup-and-customization/05c65baea931c346a1c226f0da9b478d_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/agentforce-sdr-setup-and-customization"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02ec8cf1-7092-0345-56fe-70137fac159d",
+              "award": {
+                "id": "02ec871c-107e-b73d-ba71-dd1470449d36",
+                "title": "Agentforce Sales Coach Setup and Customization",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/agentforce-for-sales-coaching-setup-and-customization/531c862ae8f61c01f44f4d3d562bb796_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/agentforce-for-sales-coaching-setup-and-customization"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02ec8c0a-95d4-24c1-01fc-3d9252c4a08d",
+              "award": {
+                "id": "02ec871c-107e-b7d0-d121-562911518a55",
+                "title": "Agentforce Builder Basics",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/agent-builder-basics/15b12a498c4227e264b03235a61a0bfe_badge.png",
+                "content": null
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02ec8b10-67ef-48fc-6c98-864f8c89b7f8",
+              "award": {
+                "id": "02ec871c-107e-b7cb-8b92-56e33606cc51",
+                "title": "Trusted Agentic AI",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/trusted-agentic-ai/2af1d30f7d1ba22c477c202dd0a12b2f_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/trusted-agentic-ai"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02ec8af3-4641-c8b1-9a35-6534465ba2a9",
+              "award": {
+                "id": "02ec871c-107e-b734-7035-39a428693325",
+                "title": "Agentforce: Agent Planning",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/agentforce-agent-planning/1e7b1be2d83a6be8d42d178e3ffb3c07_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/agentforce-agent-planning"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02ec852c-ed7a-d048-d21b-5a8b5954418c",
+              "award": {
+                "id": "027e21a0-f7ac-b60c-d1a7-ec1422abebb3",
+                "title": "Threat Modeling for Developers",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/threat-modeling-fundamentals/bb446aaf9fbc0c8ce63e4cafeeb7209d_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/threat-modeling-fundamentals"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "EarnedAwardBase",
+              "id": "02ec851b-dddd-03a1-45d2-2f463c4f78d0",
+              "award": {
+                "id": "027e21a0-f5f8-509c-9115-98eb8033b9fb",
+                "title": "Secure Development Lifecycle",
+                "type": "MODULE",
+                "icon": "https://res.cloudinary.com/hy4kyit2a/f_auto/fl_lossy/q_70/learn/modules/secure-development-lifecycle/07b8c449f4d8086c9eaf9be9acf7760b_badge.png",
+                "content": {
+                  "webUrl": "https://trailhead.salesforce.com/content/learn/modules/secure-development-lifecycle"
+                }
+              }
+            }
+          }
+        ],
+        "pageInfo": {
+          "hasNextPage": true,
+          "endCursor": "eyJzIjoiMDJlYzg1MWItZGRkZC0wM2ExLTQ1ZDItMmY0NjNjNGY3OGQwIiwicHAiOjUwLCJwbiI6MX0"
+        }
+      }
+    }
+  }
+}
