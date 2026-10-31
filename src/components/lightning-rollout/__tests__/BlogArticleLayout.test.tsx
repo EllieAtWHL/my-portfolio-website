@@ -2,8 +2,8 @@ import { render, screen } from '@testing-library/react';
 import { BlogArticleLayout } from '../BlogArticleLayout';
 
 describe('BlogArticleLayout', () => {
-  const navLeft = { label: '← Back', href: '/lightning-rollout' };
-  const navRight = { label: 'Next →', href: '/lightning-rollout/part-2' };
+  const navLeft = { label: '← Back', href: '/salesforce/lightning-rollout' };
+  const navRight = { label: 'Next →', href: '/salesforce/lightning-rollout/part-2' };
 
   it('renders the title, hero image, and children', () => {
     render(
@@ -17,7 +17,7 @@ describe('BlogArticleLayout', () => {
     // so assert on the underlying url param rather than the raw src.
     const heroSrc = screen.getByAltText('Lightning Strike').getAttribute('src') || '';
     const heroUrl = new URL(heroSrc, 'http://localhost').searchParams.get('url');
-    expect(heroUrl).toBe('/lightning-rollout/lightning.jpeg');
+    expect(heroUrl).toBe('/salesforce/lightning-rollout/lightning.jpeg');
     expect(screen.getByText('Article body')).toBeInTheDocument();
   });
 
@@ -56,7 +56,7 @@ describe('BlogArticleLayout', () => {
       </BlogArticleLayout>
     );
 
-    expect(screen.getByRole('link', { name: '← Back' })).toHaveAttribute('href', '/lightning-rollout');
-    expect(screen.getByRole('link', { name: 'Next →' })).toHaveAttribute('href', '/lightning-rollout/part-2');
+    expect(screen.getByRole('link', { name: '← Back' })).toHaveAttribute('href', '/salesforce/lightning-rollout');
+    expect(screen.getByRole('link', { name: 'Next →' })).toHaveAttribute('href', '/salesforce/lightning-rollout/part-2');
   });
 });

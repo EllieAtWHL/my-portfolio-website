@@ -7,7 +7,7 @@ export const metadata = {
   openGraph: {
     title: 'EllieAtWHL - Salesforce Lightning Rollout Series',
     description: 'A comprehensive 3-part guide to successfully migrating from Salesforce Classic to Lightning, from business buy-in to post-migration adoption.',
-    url: 'https://ellieatwhl.co.uk/lightning-rollout',
+    url: 'https://ellieatwhl.co.uk/salesforce/lightning-rollout',
     type: 'website',
     images: [
       {

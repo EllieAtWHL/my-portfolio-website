@@ -7,8 +7,8 @@ export default function LightningRolloutPart3() {
   return (
     <BlogArticleLayout
       title="We've Migrated to Lightning, Now What?"
-      navLeft={{ label: '← Part 2', href: '/lightning-rollout/part-2' }}
-      navRight={{ label: '← Back to Series', href: '/lightning-rollout' }}
+      navLeft={{ label: '← Part 2', href: '/salesforce/lightning-rollout/part-2' }}
+      navRight={{ label: '← Back to Series', href: '/salesforce/lightning-rollout' }}
     >
       <Card variant="highlight" padding="lg">
         <p>In the final part of my series where I talk about what to do after the migration has been completed. How to keep your users engaged and ensure that it not only gets fully adopted, but continues improvements.</p>

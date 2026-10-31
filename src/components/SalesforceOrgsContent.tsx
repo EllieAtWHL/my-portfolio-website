@@ -205,7 +205,7 @@ export default function SalesforceOrgsContent() {
 
         <div className="blog-image">
           <img 
-            src="/img/orgsPreview.png" 
+            src="/salesforce/free-and-trial-orgs/orgsPreview.png" 
             alt="Salesforce Orgs Preview"
             className="content-image"
           />

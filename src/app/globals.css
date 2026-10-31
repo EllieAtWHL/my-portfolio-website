@@ -137,6 +137,7 @@
 @import "../styles/experience.css" layer(base);
 @import "../styles/projects.css" layer(base);
 @import "../styles/blog.css" layer(base);
+@import "../styles/salesforce.css" layer(base);
 @import "../styles/not-found.css" layer(base);
 
 /* This whole block, through to the next @layer base { below, was left
@@ -248,7 +249,7 @@ html {
 }
 
 /* .scrollable's own 120px bottom buffer exists for pages that use it without
-   .content-with-footer (e.g. salesforce-orgs). Every page that nests
+   .content-with-footer (e.g. salesforce/free-and-trial-orgs). Every page that nests
    .scrollable inside .content-with-footer already gets that wrapper's own
    96px buffer - stacking both added up to 216px of empty space below the
    footer's actual ~66px height. Higher specificity than either .scrollable

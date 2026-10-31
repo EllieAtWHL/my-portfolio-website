@@ -213,7 +213,7 @@ Also in scope:
 - Update `reference/CSS_ARCHITECTURE.md`, which mentions the old paths.
 - The Quick Tips and community blog posts on the projects page link to external sites, so they stay as they are.
 
-Slugs are renamed to match each page's title, since redirects are being added anyway. Asset folders under `public/` can move to match (`public/salesforce/…`), or stay where they are; decide in the refactor PR.
+Slugs are renamed to match each page's title, since redirects are being added anyway. Asset folders under `public/` moved to match (`public/salesforce/<page>/`, done in WEB-229), so the old top-level prefixes now exist only as redirects. The Fantasy Football share image had the same broken path as the orgs one (`/ghl/images/…`) and was fixed alongside it.
 
 ## Delivery plan
 

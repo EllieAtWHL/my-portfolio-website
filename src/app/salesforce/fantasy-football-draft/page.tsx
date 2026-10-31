@@ -7,13 +7,13 @@ export const metadata = {
   openGraph: {
     title: 'EllieAtWHL - Fantasy Football Draft Application',
     description: 'How I used Salesforce to create a draft application for our Fantasy Football league',
-    url: 'https://ellieatwhl.co.uk/ghl',
+    url: 'https://ellieatwhl.co.uk/salesforce/fantasy-football-draft',
     type: 'website',
     images: [
       {
-        url: 'https://ellieatwhl.co.uk/ghl/images/GHLdataModel.png',
-        width: 1200,
-        height: 630,
+        url: 'https://ellieatwhl.co.uk/salesforce/fantasy-football-draft/GHLdataModel.png',
+        width: 751,
+        height: 685,
         alt: 'Fantasy Football Draft Application',
       },
     ],
@@ -22,7 +22,7 @@ export const metadata = {
     card: 'summary_large_image',
     title: 'EllieAtWHL - Fantasy Football Draft Application',
     description: 'How I used Salesforce to create a draft application for our Fantasy Football league',
-    images: ['https://ellieatwhl.co.uk/ghl/images/GHLdataModel.png'],
+    images: ['https://ellieatwhl.co.uk/salesforce/fantasy-football-draft/GHLdataModel.png'],
   },
 };
 

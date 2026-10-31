@@ -16,6 +16,7 @@ src/styles/
 ├── experience.css        # Experience page specific styles
 ├── projects.css          # Projects page specific styles
 ├── blog.css              # Blog/Lightning Rollout page specific styles
+├── salesforce.css        # Salesforce section landing page (/salesforce)
 ├── spurs-theme.css       # Spurs Women section theme styles
 ├── spurs-theme-layer.css # One-line wrapper that gets spurs-theme.css into @layer base - see below
 ├── groundhopper.css      # Groundhopper game (/spurs-women/groundhopper)
@@ -43,7 +44,7 @@ hand-written file was wrapped.
 **How each file gets layered:**
 - `globals.css` wraps its own rules directly in `@layer base { ... }` blocks.
 - The other `src/styles/*.css` files (`main-theme.css`, `about-me.css`,
-  `experience.css`, `projects.css`, `blog.css`, `not-found.css`) do **not**
+  `experience.css`, `projects.css`, `blog.css`, `salesforce.css`, `not-found.css`) do **not**
   wrap their own content in `@layer` - they're plain CSS. They only become
   layered because `globals.css` imports each one with `@import "../styles/X.css" layer(base);`.
   This means these files must only ever be imported that way; a stray direct
@@ -140,6 +141,15 @@ design, so applying the same rule to them would be a false positive.
   - Dark mode variants
   - Responsive breakpoints
 - **Rule:** Only styles used exclusively on blog pages
+
+### `salesforce.css`
+- **Purpose:** Salesforce section landing page (`/salesforce`) styles
+- **Contains:**
+  - `.salesforce-container`, `.salesforce-projects-grid`, `.salesforce-project-card`
+  - `.salesforce-project-image`, `.salesforce-project-link`, `.salesforce-project-cta`
+  - Dark mode variants
+  - Responsive breakpoints
+- **Rule:** Only styles used on the `/salesforce` landing page. The pages under it keep their own files (`blog.css` for Lightning Rollout)
 
 ### `spurs-theme.css`
 - **Purpose:** Spurs Women section theme styles

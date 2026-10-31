@@ -139,7 +139,20 @@ const nextConfig: NextConfig = {
     // itself can't be the page, because Next redirects "/bobbin/" to
     // "/bobbin" - so the friendly /bobbin URL forwards here instead.
     // Temporary (307) so the target can still change.
-    return [{ source: "/bobbin", destination: "/bobbin/play", permanent: false }];
+    //
+    // The Salesforce pages moved under /salesforce (WEB-229); their old URLs
+    // are shared in blog posts and social links, so they redirect permanently
+    // (308). Each Lightning Rollout part is listed individually rather than
+    // with a wildcard, so nothing else under the old prefix is caught.
+    return [
+      { source: "/bobbin", destination: "/bobbin/play", permanent: false },
+      { source: "/salesforce-orgs", destination: "/salesforce/free-and-trial-orgs", permanent: true },
+      { source: "/lightning-rollout", destination: "/salesforce/lightning-rollout", permanent: true },
+      { source: "/lightning-rollout/part-1", destination: "/salesforce/lightning-rollout/part-1", permanent: true },
+      { source: "/lightning-rollout/part-2", destination: "/salesforce/lightning-rollout/part-2", permanent: true },
+      { source: "/lightning-rollout/part-3", destination: "/salesforce/lightning-rollout/part-3", permanent: true },
+      { source: "/ghl", destination: "/salesforce/fantasy-football-draft", permanent: true },
+    ];
   },
 };
 

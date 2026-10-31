@@ -19,6 +19,14 @@ test.describe('Accessibility smoke checks', () => {
     expect(results.violations).toEqual([]);
   });
 
+  test('Salesforce landing page has no automatically detectable WCAG 2.1 AA violations', async ({ page }) => {
+    await page.goto('/salesforce');
+
+    const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
+
+    expect(results.violations).toEqual([]);
+  });
+
   test('Spurs Women home page has no automatically detectable WCAG 2.1 AA violations', async ({ page }) => {
     await page.goto('/spurs-women');
     // Matches/news/videos load asynchronously after navigation; without

@@ -10,8 +10,8 @@ export default function LightningRolloutPart2() {
       title="Running the Migration Project"
       mediumUrl="https://medium.com/@eleanormatthewman/salesforce-lightning-rollout-4db412e6682f"
       mediumDate="May 2020"
-      navLeft={{ label: '← Part 1', href: '/lightning-rollout/part-1' }}
-      navRight={{ label: 'Part 3 →', href: '/lightning-rollout/part-3' }}
+      navLeft={{ label: '← Part 1', href: '/salesforce/lightning-rollout/part-1' }}
+      navRight={{ label: 'Part 3 →', href: '/salesforce/lightning-rollout/part-3' }}
     >
       <Card variant="highlight" padding="lg">
         <p>This is the second in my series to help you manage the completion of your Lighting roll-out successfully. I am currently working on my third roll-out of Lightning and so am sharing some of my learnings to help ensure yours goes smoothly. Everything I speak about below are things that have worked for me, however, that doesn&apos;t mean it is the only way to do it. As with most things Salesforce, there are multiple ways of doing things, these are the way I found to be successful.</p>
@@ -96,7 +96,7 @@ export default function LightningRolloutPart2() {
               <h5 className="subtopic-title">Why is my List View empty?</h5>
               <div className="blog-image">
                 <Image
-                  src="/lightning-rollout/empty-list-view.png"
+                  src="/salesforce/lightning-rollout/empty-list-view.png"
                   alt="Empty List View"
                   width={875}
                   height={296}
@@ -110,7 +110,7 @@ export default function LightningRolloutPart2() {
               <h5 className="subtopic-title">Where are all my reports?</h5>
               <div className="blog-image">
                 <Image
-                  src="/lightning-rollout/no-reports.png"
+                  src="/salesforce/lightning-rollout/no-reports.png"
                   alt="No Reports"
                   width={875}
                   height={369}
