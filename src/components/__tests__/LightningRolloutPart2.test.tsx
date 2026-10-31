@@ -11,8 +11,8 @@ describe('LightningRolloutPart2', () => {
       'https://medium.com/@eleanormatthewman/salesforce-lightning-rollout-4db412e6682f'
     );
     expect(screen.getByText(/May 2020/)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '← Part 1' })).toHaveAttribute('href', '/lightning-rollout/part-1');
-    expect(screen.getByRole('link', { name: 'Part 3 →' })).toHaveAttribute('href', '/lightning-rollout/part-3');
+    expect(screen.getByRole('link', { name: '← Part 1' })).toHaveAttribute('href', '/salesforce/lightning-rollout/part-1');
+    expect(screen.getByRole('link', { name: 'Part 3 →' })).toHaveAttribute('href', '/salesforce/lightning-rollout/part-3');
   });
 
   it('renders distinctive sections from its content', () => {

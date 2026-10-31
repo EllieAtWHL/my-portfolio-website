@@ -7,7 +7,7 @@ export const metadata = {
   openGraph: {
     title: 'EllieAtWHL - Salesforce Lightning Rollout | Part 3',
     description: "We've Migrated to Lightning, Now What? This guide walks you through the steps you can take after migration to ensure that it is adopted by users successfully.",
-    url: 'https://ellieatwhl.co.uk/lightning-rollout/part-3',
+    url: 'https://ellieatwhl.co.uk/salesforce/lightning-rollout/part-3',
     type: 'website',
     images: [
       {

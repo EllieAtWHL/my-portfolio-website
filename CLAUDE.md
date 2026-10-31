@@ -162,7 +162,7 @@ CSS lint (`npm run lint:css`) runs a single custom Stylelint rule (`stylelint-ru
 ## Architecture
 
 ### Two sections, one app
-- `/` and siblings (`about-me`, `experience`, `projects`, `contact-me`, `london-2012`, `regicide`, `lightning-rollout`, etc.) — the personal site.
+- `/` and siblings (`about-me`, `experience`, `projects`, `contact-me`, `london-2012`, `regicide`, `salesforce` (Lightning Rollout, Fantasy Football Draft, Free and Trial Orgs), etc.) — the personal site.
 - `/spurs-women` and everything under it — the fan site, with its own layout, theme CSS, and data layer. See `reference/spurs-women/README.md` for its full page/component/schema map.
 
 Server components are the default; client components (`'use client'`) only where interaction or browser APIs are required. Nested layouts share global nav/metadata while letting `/spurs-women` override.
@@ -193,7 +193,7 @@ Match score/stat fields must be saved as `null` when blank, never `0` — a blan
 - **Input validation on admin write payloads** is a known gap, tracked separately in WEB-83 (not yet implemented) rather than fixed as part of the WEB-70 security audit that added the above — admin POST/PUT bodies are passed to Supabase largely unvalidated.
 
 ### Styling
-Modular CSS under `src/styles/` (not one monolithic `globals.css`) — `variables.css` (CSS custom properties), `main-theme.css` (global/shared: buttons, navbar, footer, page headers — only for styles used on 3+ pages), and one file per page/section (`about-me.css`, `experience.css`, `projects.css`, `blog.css`, `spurs-theme.css`, `not-found.css`). `spurs-theme.css` is imported by `src/app/spurs-women/layout.tsx` directly, not by `globals.css`, so it only loads for that route tree. Full conventions, anti-patterns, and dark-mode/responsive patterns are in `reference/CSS_ARCHITECTURE.md` — read it before adding styles.
+Modular CSS under `src/styles/` (not one monolithic `globals.css`) — `variables.css` (CSS custom properties), `main-theme.css` (global/shared: buttons, navbar, footer, page headers — only for styles used on 3+ pages), and one file per page/section (`about-me.css`, `experience.css`, `projects.css`, `blog.css`, `salesforce.css`, `spurs-theme.css`, `not-found.css`). `spurs-theme.css` is imported by `src/app/spurs-women/layout.tsx` directly, not by `globals.css`, so it only loads for that route tree. Full conventions, anti-patterns, and dark-mode/responsive patterns are in `reference/CSS_ARCHITECTURE.md` — read it before adding styles.
 
 Rules worth internalizing: colors always via CSS variables (never hardcoded hex — note `rgba()` can't consume a CSS variable, so transparent variants need their own variable or plain `opacity`), no `!important` unless unavoidable, page-specific styles never go in `main-theme.css` and vice versa.
 

@@ -54,7 +54,7 @@ export default function FantasyFootballContent() {
 
           <div className="p-4">
             <img 
-              src="/ghl/GHLdataModel.png" 
+              src="/salesforce/fantasy-football-draft/GHLdataModel.png" 
               alt="Data Model"
               className="content-image w-full rounded-lg"
             />
@@ -104,7 +104,7 @@ export default function FantasyFootballContent() {
           <div className="p-4 video-container">
             {/* eslint-disable-next-line jsx-a11y/media-has-caption -- no caption track exists for this screen-recording demo; a real transcript needs authoring separately rather than faking compliance with an empty/wrong track */}
             <video controls className="video-iframe w-full rounded-lg">
-              <source src="/ghl/videos/GHLDraft_watermarked.mkv" type="video/webm" />
+              <source src="/salesforce/fantasy-football-draft/videos/GHLDraft_watermarked.mkv" type="video/webm" />
               Your browser does not support the video tag.
             </video>
           </div>
@@ -146,7 +146,7 @@ export default function FantasyFootballContent() {
           <div className="p-4 video-container">
             {/* eslint-disable-next-line jsx-a11y/media-has-caption -- see the caption note on the other demo video above */}
             <video controls className="video-iframe w-full rounded-lg">
-              <source src="/ghl/videos/GHLController_watermarked.mkv" type="video/webm" />
+              <source src="/salesforce/fantasy-football-draft/videos/GHLController_watermarked.mkv" type="video/webm" />
               Your browser does not support the video tag.
             </video>
           </div>
@@ -170,7 +170,7 @@ export default function FantasyFootballContent() {
           
           <div className="p-4 blog-image">
             <img 
-              src="/ghl/GHLControlPanel.png" 
+              src="/salesforce/fantasy-football-draft/GHLControlPanel.png" 
               alt="Control Panel"
               className="content-image w-full rounded-lg"
             />

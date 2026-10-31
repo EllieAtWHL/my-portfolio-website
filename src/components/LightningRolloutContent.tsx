@@ -9,7 +9,7 @@ export default function LightningRolloutContent() {
       title: 'How To Persuade Your Business To Let Lightning Strike',
       subtitle: 'Part 1: Discovery Phase',
       description: 'Before starting the Salesforce migration from Classic to Lightning, you need buy-in from all levels of the business. This guide can provide ideas on how to achieve that.',
-      image: '/lightning-rollout/lightning.jpeg',
+      image: '/salesforce/lightning-rollout/lightning.jpeg',
       originalPostDate: 'April 2020',
       originalUrl: 'https://medium.com/@eleanormatthewman/salesforce-lightning-rollout-dbe57d8d3670',
       slug: 'part-1'
@@ -19,7 +19,7 @@ export default function LightningRolloutContent() {
       title: 'Running the Migration Project',
       subtitle: 'Part 2: Implementation Phase',
       description: 'This guide can provide you with the information you need to successfully complete the steps needed to migrate from Salesforce Classic to Lightning.',
-      image: '/lightning-rollout/lightningReadinessReport.gif',
+      image: '/salesforce/lightning-rollout/lightningReadinessReport.gif',
       originalPostDate: 'April 2020',
       slug: 'part-2'
     },
@@ -28,7 +28,7 @@ export default function LightningRolloutContent() {
       title: "We've Migrated to Lightning, Now What?",
       subtitle: 'Part 3: Post-Migration Phase',
       description: 'This guide walks you through the steps you can take after migration to ensure that it is adopted by users successfully.',
-      image: '/lightning-rollout/lightning.jpeg',
+      image: '/salesforce/lightning-rollout/lightning.jpeg',
       originalPostDate: 'April 2020',
       slug: 'part-3'
     }
@@ -62,7 +62,7 @@ export default function LightningRolloutContent() {
               </div>
               
               <h2 className="post-title">
-                <a href={`/lightning-rollout/${post.slug}`} className="post-link">
+                <a href={`/salesforce/lightning-rollout/${post.slug}`} className="post-link">
                   {post.title}
                 </a>
               </h2>
@@ -70,7 +70,7 @@ export default function LightningRolloutContent() {
               <p className="post-description">{post.description}</p>
               
               <div className="post-footer">
-                <a href={`/lightning-rollout/${post.slug}`} className="read-more-link">
+                <a href={`/salesforce/lightning-rollout/${post.slug}`} className="read-more-link">
                   Read Part {post.id.split('-')[1]} →
                 </a>
               </div>

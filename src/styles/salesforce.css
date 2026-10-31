@@ -1,0 +1,117 @@
+/* Salesforce section landing page (/salesforce) */
+
+.salesforce-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .salesforce-container {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .salesforce-container {
+    padding: 0.75rem;
+  }
+}
+
+.salesforce-projects-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+@media (min-width: 768px) {
+  .salesforce-projects-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.salesforce-project-card {
+  /* Card component handles the base styling, this is just for layout overrides */
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.salesforce-project-card:hover {
+  transform: translateY(-4px);
+}
+
+.salesforce-project-image-container {
+  /* next/image's fill mode sizes the image to this box */
+  position: relative;
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.salesforce-project-image {
+  object-fit: cover;
+  object-position: top;
+}
+
+.salesforce-project-content {
+  padding: 1rem 0.5rem 0.5rem;
+}
+
+.salesforce-project-title {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.salesforce-project-link,
+.salesforce-project-cta {
+  color: var(--brand-primary-dark);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+/* Stretch the title link over the whole card, so the card is one link.
+   globals.css gives every <a> position: relative, which would trap the
+   ::after inside the title, so this link opts back out. */
+.salesforce-project-link {
+  position: static;
+}
+
+.salesforce-project-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.salesforce-project-card:hover .salesforce-project-link,
+.salesforce-project-card:hover .salesforce-project-cta {
+  color: var(--brand-primary-darker);
+}
+
+.salesforce-project-description {
+  color: var(--brand-primary-darkest);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.salesforce-project-cta {
+  font-weight: 600;
+}
+
+/* Dark mode */
+.dark .salesforce-project-link,
+.dark .salesforce-project-cta {
+  color: var(--dark-accent);
+}
+
+.dark .salesforce-project-card:hover .salesforce-project-link,
+.dark .salesforce-project-card:hover .salesforce-project-cta {
+  color: var(--dark-accent-bright);
+}
+
+.dark .salesforce-project-description {
+  color: var(--dark-text);
+}

@@ -24,7 +24,7 @@ export function BlogArticleLayout({ title, mediumUrl, mediumDate, navLeft, navRi
 
         <div className="blog-hero-image">
           <Image
-            src="/lightning-rollout/lightning.jpeg"
+            src="/salesforce/lightning-rollout/lightning.jpeg"
             alt="Lightning Strike"
             width={1400}
             height={933}

@@ -7,13 +7,13 @@ export const metadata = {
   openGraph: {
     title: 'EllieAtWHL - Salesforce Free and Trial Orgs',
     description: 'A table of the available free and trial orgs for Salesforce products.',
-    url: 'https://ellieatwhl.co.uk/salesforce-orgs',
+    url: 'https://ellieatwhl.co.uk/salesforce/free-and-trial-orgs',
     type: 'website',
     images: [
       {
-        url: 'https://ellieatwhl.co.uk/salesforce-orgs/imgs/orgsPreview.png',
-        width: 1200,
-        height: 630,
+        url: 'https://ellieatwhl.co.uk/salesforce/free-and-trial-orgs/orgsPreview.png',
+        width: 1221,
+        height: 690,
         alt: 'Salesforce Free and Trial Orgs',
       },
     ],
@@ -22,7 +22,7 @@ export const metadata = {
     card: 'summary_large_image',
     title: 'EllieAtWHL - Salesforce Free and Trial Orgs',
     description: 'A table of the available free and trial orgs for Salesforce products.',
-    images: ['https://ellieatwhl.co.uk/salesforce-orgs/imgs/orgsPreview.png'],
+    images: ['https://ellieatwhl.co.uk/salesforce/free-and-trial-orgs/orgsPreview.png'],
   },
 };
 

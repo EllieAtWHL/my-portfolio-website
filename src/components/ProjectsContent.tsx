@@ -20,7 +20,7 @@ export default function ProjectsContent() {
         {
           id: 'sf-org',
           title: 'Salesforce Free and Trial Orgs',
-          url: '/salesforce-orgs',
+          url: '/salesforce/free-and-trial-orgs',
           isExternal: false
         },
   */
@@ -33,15 +33,21 @@ export default function ProjectsContent() {
       description: 'Salesforce projects and applications.',
       links: [
         {
+          id: 'salesforce-section',
+          title: 'All Salesforce projects',
+          url: '/salesforce',
+          isExternal: false
+        },
+        {
           id: 'lightning',
           title: 'Lightning Rollout',
-          url: '/lightning-rollout',
+          url: '/salesforce/lightning-rollout',
           isExternal: false
         },
         {
           id: 'ghl',
           title: 'Fantasy Football Draft Application',
-          url: '/ghl',
+          url: '/salesforce/fantasy-football-draft',
           isExternal: false
         },
         {

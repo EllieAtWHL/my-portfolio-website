@@ -9,8 +9,8 @@ export default function LightningRolloutPart1() {
       title="How To Persuade Your Business To Let Lightning Strike"
       mediumUrl="https://medium.com/@eleanormatthewman/salesforce-lightning-rollout-dbe57d8d3670"
       mediumDate="April 2020"
-      navLeft={{ label: '← Back to Series', href: '/lightning-rollout' }}
-      navRight={{ label: 'Next: Part 2 →', href: '/lightning-rollout/part-2' }}
+      navLeft={{ label: '← Back to Series', href: '/salesforce/lightning-rollout' }}
+      navRight={{ label: 'Next: Part 2 →', href: '/salesforce/lightning-rollout/part-2' }}
     >
       <Card variant="highlight" padding="lg" className="blog-intro">
         <p>This is the first in my series to help you complete your Lighting roll-out successfully. I am currently working on my third roll-out of Lightning and so am sharing some of my learnings to help ensure yours goes smoothly. Everything I speak about below are things that have worked for me, however, that doesn&apos;t mean it is the only way to do it. As with most things Salesforce, there are multiple ways of doing things, these are the way I found to be successful.</p>
@@ -38,7 +38,7 @@ export default function LightningRolloutPart1() {
                   https://github.com/vercel/next.js/discussions/18628. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/lightning-rollout/lightningReadinessReport.gif"
+                src="/salesforce/lightning-rollout/lightningReadinessReport.gif"
                 alt="Lightning Readiness Report"
                 className="content-image"
               />
