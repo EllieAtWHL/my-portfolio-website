@@ -70,7 +70,7 @@ Two sources are needed: an unofficial API for what a user has earned, and a hand
 - Reference implementations:
   - [meruff/go-trailhead-leaderboard-api](https://github.com/meruff/go-trailhead-leaderboard-api) (its `trailhead/queries.go` holds the full query).
   - [nabondance/Trailhead-Banner](https://github.com/nabondance/Trailhead-Banner) (BSD-3-Clause, actively maintained, Next.js on Vercel): `src/graphql/queries/getTrailheadBadges.js` for the query, `src/utils/graphqlUtils.js` and `src/utils/companyFetchUtils.js` for error and rate-limit handling, `src/utils/usernameValidation.js` for username parsing. Its error handling and username parsing are worth reusing, credited under its licence.
-- Verified live from a local machine on Oct 31, 2026. Still to verify from Vercel in the Phase 0 spike.
+- Verified live on Oct 31, 2026, both from a local machine and from a Vercel preview deployment (WEB-230 spike).
 
 **Live API findings (Oct 31, 2026)**
 
@@ -79,6 +79,8 @@ Tested against `elliematthewman` (871 badges: 123 `EVENT`, 628 `MODULE`).
 - **Pages over ~50 silently drop awards.** With `first: 100`, 50 of 123 `EVENT` awards came back as `award: null` with no error, and Trick or Trailhead VIII disappeared. At 75, 25 of the first page were null. At 25, 30, 40 and 50, none were. With `first: 200` or more, the request is rejected outright ("Query has complexity of 2207, which exceeds max complexity of 2000"). **Use a page size of 50**, and treat any null award as a failure.
 - **Pages can't be fetched in parallel.** The cursor is base64 JSON `{"s": <last node id>, "pp": <page size>, "pn": <page number>}`, i.e. keyset pagination, so each page needs the previous page's last ID.
 - **Lookups are slow.** Paging through every `EVENT` and `MODULE` award took 16 requests and 18s (about 1s per page). Paging through every award type at a page size of 25 took 35 requests and 32s. Recent editions are `MODULE` awards, so a lookup has to page through a user's modules until it finds them or runs out.
+- **From Vercel (preview deployment, region `iad1`, page size 50):** works with no extra headers or tokens. A full `EVENT` + `MODULE` lookup of `elliematthewman` took 16 requests and 11.5s (EVENT 3 pages, 1.6s; MODULE 13 pages, 9.9s; 0.4–0.9s per page), with no null awards and all 7 Trick or Trailhead badges found. A route `maxDuration` of 30s gives enough headroom for profiles about twice that size.
+- **Stopping early pays off.** Awards come newest first, and all three Trick or Trailhead modules (2024–2026) were in the first 2 of 13 module pages. A lookup that stops once every catalogue badge of a type is found takes ~2–3s for someone holding the recent badges. Only profiles missing at least one badge need the full scan.
 - **Introspection is disabled** (`__type` doesn't exist on `Query`), so the schema can only be learned from working queries.
 - **Responses (from Trailhead-Banner, to confirm in the spike):**
   - Unknown username: HTTP 200 with an error whose `extensions.code` is `NOT_FOUND`.
@@ -135,7 +137,7 @@ The browser only ever talks to our own route. The badge service merges what Trai
 | --- | --- | --- |
 | Production gate | `src/lib/trailhead/availability.ts` | `isTrickOrTrailheadEnabled()`, same pattern as `src/lib/microbrew/availability.ts`: on in local dev and Vercel previews, off in production unless `TRICK_OR_TRAILHEAD_ENABLED=true`. When off, the page and API route 404 (the route before any Trailhead call) and links to the page aren't rendered |
 | Page | `src/app/salesforce/trick-or-trailhead/page.tsx` + client lookup component | Server component shell; client component for the form and results |
-| API route | `src/app/api/trick-or-trailhead/route.ts` | `GET ?username=`; returns `{ profile, earned[], missing[], unmatched[], total }`. Sets `maxDuration` high enough for a 10–20s cold lookup |
+| API route | `src/app/api/trick-or-trailhead/route.ts` | `GET ?username=`; returns `{ profile, earned[], missing[], unmatched[], total }`. Sets `maxDuration = 30` (a full scan measured 11.5s from Vercel) |
 | Trailhead client | `src/lib/trailhead/client.ts` | GraphQL query, pagination (page size 50, cap 40 per type, early exit), per-request timeout, null-award detection, typed errors |
 | Response schema | `src/lib/trailhead/schema.ts` | Validates upstream shape (hand-written type guards, or zod if already a dependency) |
 | Matcher | `src/lib/trailhead/match.ts` | Pure function: catalogue + earned awards → result |
@@ -248,7 +250,7 @@ Dependencies (Jira "blocks" links): WEB-230 → WEB-231 → WEB-232 → WEB-233 
 | Badge artwork | Decide during the Phase 2 build |
 | Profile avatar and name | Show them |
 | Cache TTL and rate limit | 24 hours (changed from 1 hour after the live findings) and 10 lookups per IP per minute; revisit after launch |
-| Lookup speed | Cold lookups of 10–20s accepted, with a loading state that explains the wait (replaces the earlier 3s target) |
+| Lookup speed | Cold lookups of 10–20s accepted, with a loading state that explains the wait (replaces the earlier 3s target). Measured from Vercel: 11.5s for a full scan, ~2–3s when stopping early. Route `maxDuration` is 30s |
 | Page size and cap | 50 per page, 40 pages per award type, stop early once all badges are found |
 | Terms of use (go/no-go) | Oct 31, 2026: keep building, but don't launch until Salesforce gives written permission or Ellie decides to accept the risk. Gated off production meanwhile ([WEB-234](https://eleanormatthewman.atlassian.net/browse/WEB-234)) |
 | Trailhead-Banner code | Reuse its error handling and username parsing where it fits, credited under BSD-3-Clause |
@@ -260,6 +262,5 @@ Moved pages are renamed: `/salesforce/free-and-trial-orgs`, `/salesforce/lightni
 Still open:
 
 - [ ] Exact titles, IDs and award types for 2015–2018 and 2023: need a profile that holds them (Phase 0 spike).
-- [ ] Does a cold lookup fit within the Vercel function time limit, and how fast is it from Vercel?
 - [ ] What does a private profile return? Needs a known private username.
 - [ ] Permission from Salesforce, or a decision to accept the risk ([WEB-234](https://eleanormatthewman.atlassian.net/browse/WEB-234)).
