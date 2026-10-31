@@ -8,7 +8,7 @@ A public page on the portfolio where anyone types a Trailhead username and sees 
 
 It lives at `/salesforce/trick-or-trailhead`, in a new `/salesforce` section that the existing Salesforce pages move into first (see Salesforce section move below).
 
-Status: Jira issues raised under epic [WEB-228](https://eleanormatthewman.atlassian.net/browse/WEB-228) (see Delivery plan). **Being built but not launched:** the Salesforce Program Agreement prohibits automated retrieval without written consent (see "Terms of use" below). The feature is kept off production until Ellie has permission or decides to accept the risk ([WEB-234](https://eleanormatthewman.atlassian.net/browse/WEB-234)). Nothing is built yet. The Trailhead endpoint was tested live on Oct 31, 2026 from a local machine (not yet from Vercel); the findings are in "Live API findings" below and change several earlier targets.
+Status: Jira issues raised under epic [WEB-228](https://eleanormatthewman.atlassian.net/browse/WEB-228) (see Delivery plan). **Being built but not launched:** the Salesforce Program Agreement prohibits automated retrieval without written consent (see "Terms of use" below). The feature is kept off production until Ellie has permission or decides to accept the risk ([WEB-234](https://eleanormatthewman.atlassian.net/browse/WEB-234)). The Phase 0 spike (WEB-230) and the Phase 1 data layer and API route ([WEB-231](https://eleanormatthewman.atlassian.net/browse/WEB-231)) are built; the page (WEB-232) is next. The Trailhead endpoint was tested live on Oct 31, 2026 from a local machine and from Vercel; the findings are in "Live API findings" below and change several earlier targets.
 
 ## Goals and non-goals
 
@@ -47,7 +47,7 @@ Status: Jira issues raised under epic [WEB-228](https://eleanormatthewman.atlass
 | Area | Requirement |
 | --- | --- |
 | Server-side only | All Trailhead calls run in a Next.js API route, never in the browser. Avoids CORS, keeps the query shape out of client code, and needs no new browser CSP entry. |
-| Caching | Results cached per username via the existing `createCachedFunction` / `unstable_cache` pattern. TTL: 24 hours (badges rarely change, and a cold lookup is expensive; was 1 hour before the live findings). Expected outcomes (found, not found, private) are returned as values, not thrown, because `unstable_cache` doesn't cache thrown errors. Found and not-found results are cached; private and rate-limited results are **not** cached (or cached for at most a minute), so someone who makes their profile public can retry straight away. Badge artwork cached by the browser/CDN. |
+| Caching | Results cached per username via the existing `createCachedFunction` / `unstable_cache` pattern. TTL: 24 hours (badges rarely change, and a cold lookup is expensive; was 1 hour before the live findings). Found and not-found results are returned as values, so they're cached. Private, rate-limited and upstream failures are thrown, so `unstable_cache` doesn't store them and someone who makes their profile public can retry straight away; `createCachedFunction`'s `rethrow` option stops its fallback from repeating the upstream calls. The cache key includes a hash of the catalogue, because Vercel's data cache survives deploys: a catalogue change would otherwise be hidden behind up to 24h of old results. Badge artwork cached by the browser/CDN. |
 | Rate limiting | Route uses `rateLimitResponse` from `src/lib/rate-limit.ts`, like `/api/podcasts`. 10 lookups per IP per minute (agreed; revisit after launch). Trailhead's own limit (~200 requests/min per IP) is shared by every lookup, because Vercel functions share a few outbound IPs; see Live API findings. |
 | Upstream politeness | At most one full paginated fetch per username per TTL. Page size 50 (larger pages silently drop awards). Page cap 40 per award type (2,000 awards). Stop early once every catalogue badge of that type is found. Per-request timeout 8s. On a 429 or `TOO_MANY_REQUESTS`, stop and report "too many requests" rather than retrying in a loop. |
 | Resilience | Upstream response validated against a schema. Shape mismatch → logged and reported as "Trailhead changed something", never a crash or a silently empty grid. Any `award: null` node is treated as a failure (it means awards were dropped), never skipped, because skipping it would silently mark an earned badge as missing. Catalogue gallery still renders when the API is down. |
@@ -98,12 +98,12 @@ A JSON file in the repo, one entry per badge. Proposed fields:
 | Field | Example | Purpose |
 | --- | --- | --- |
 | `year` | 2025 | Sorting and display |
-| `title` | A Ghost at Sillicorn Valley Inn | Display name |
-| `matchIds` | `["trick-or-trailhead-2025-…"]` | Trailhead API name(s)/IDs used to match earned awards |
-| `matchTitles` | `["Trick or Trailhead 2025…"]` | Fallback match on title if IDs change |
+| `title` | Trick or Trailhead 2025: A Ghost at Sillicorn Valley Inn | Display name: the official badge title, as profiles show it |
+| `matchIds` | `["02fe2109-00fd-8f0f-a396-ee9150133b59"]` | Trailhead award IDs used to match earned awards |
+| `matchTitles` | `["Trick or Trailhead 2025: A Ghost at Sillicorn Valley Inn"]` | Fallback match on title if IDs change |
 | `awardType` | `MODULE` or `EVENT` | Which API filter returns it |
 | `imageUrl` | Trailhead CDN URL | Badge artwork |
-| `sourceUrl` | event blog post or module page | Provenance |
+| `sourceUrl` | event blog post or module page, or `null` | Provenance |
 
 The full catalogue, confirmed live on Oct 31, 2026: 2019–2022 and 2024–2026 from Ellie's profile, and 2015–2018 and 2023 from a second public profile that holds all 12. Award IDs are the same on both profiles, so matching by ID works across users.
 
@@ -122,7 +122,7 @@ The full catalogue, confirmed live on Oct 31, 2026: 2019–2022 and 2024–2026 
 | 2016 | Trick or Trailhead II (badge image file is named `..._2016.png`) | `EVENT` | `01fcb715-23eb-38bc-a9de-21c37d0260a2` | API only |
 | 2015 | Trick or Trailhead (the first edition has no numeral) | `EVENT` | `01e05c0a-789b-80d4-9510-f809bb5defc9` | API only |
 
-Image URLs are on several hosts (`res.cloudinary.com`, `dfc-static-production.s3.amazonaws.com`, `s3.amazonaws.com/dfc-static-production`, `developer.salesforce.com`), which matters for the hot-link vs mirror decision. Title matching must trim whitespace and normalise apostrophes.
+Image URLs (in the catalogue file, `src/data/trick-or-trailhead-badges.json`; 2015–2018 and 2023 looked up from the second profile in WEB-231) are on several hosts (`res.cloudinary.com`, `dfc-static-production.s3.amazonaws.com`, `s3.amazonaws.com/dfc-static-production`, `developer.salesforce.com`), which matters for the hot-link vs mirror decision. Title matching must trim whitespace and normalise apostrophes.
 
 Bootstrapping: done in the WEB-230 spike. Ellie's profile was checked exhaustively (871 awards) and holds 2019–2022 and 2024–2026; the second profile (1,238 awards, 25 pages at size 50) holds all 12. Every title contains "Trick or Trailhead", so that case-insensitive match is the FR-8 heuristic.
 
@@ -138,11 +138,12 @@ The browser only ever talks to our own route. The badge service merges what Trai
 | --- | --- | --- |
 | Production gate | `src/lib/trailhead/availability.ts` | `isTrickOrTrailheadEnabled()`, same pattern as `src/lib/microbrew/availability.ts`: on in local dev and Vercel previews, off in production unless `TRICK_OR_TRAILHEAD_ENABLED=true`. When off, the page and API route 404 (the route before any Trailhead call) and links to the page aren't rendered |
 | Page | `src/app/salesforce/trick-or-trailhead/page.tsx` + client lookup component | Server component shell; client component for the form and results |
-| API route | `src/app/api/trick-or-trailhead/route.ts` | `GET ?username=`; returns `{ profile, earned[], missing[], unmatched[], total }`. Sets `maxDuration = 30` (a full scan measured 11.5s from Vercel) |
+| API route | `src/app/api/trick-or-trailhead/route.ts` | `GET ?username=` (bare username or profile URL); 200 returns `{ status: 'found', profile, earned[], missing[], unmatched[], total, incomplete }`. Errors are `{ error: <code> }`: `INVALID_USERNAME` 400, `PRIVATE_PROFILE` 403, `NOT_FOUND` 404, `RATE_LIMITED` 429, `UPSTREAM_UNAVAILABLE` / `UPSTREAM_CHANGED` 502 (our own per-IP limit is also a 429). Sets `maxDuration = 30` (a full scan measured 11.5s from Vercel) |
+| Lookup service | `src/lib/trailhead/lookup.ts` | Wires the catalogue into the client's early exit, scores the result, and wraps it in the 24h cache. Typed errors are in `errors.ts`, username parsing in `username.ts` |
 | Trailhead client | `src/lib/trailhead/client.ts` | GraphQL query, pagination (page size 50, cap 40 per type, early exit), per-request timeout, null-award detection, typed errors |
 | Response schema | `src/lib/trailhead/schema.ts` | Validates upstream shape (hand-written type guards, or zod if already a dependency) |
 | Matcher | `src/lib/trailhead/match.ts` | Pure function: catalogue + earned awards → result |
-| Catalogue | `src/data/trick-or-trailhead-badges.json` | Hand-curated; validated by a Jest test |
+| Catalogue | `src/data/trick-or-trailhead-badges.json` | Hand-curated, newest first; validated by a Jest test. Loaded and typed by `src/lib/trailhead/catalogue.ts` |
 | Styles | `src/styles/trick-or-trailhead.css` | Imported via `globals.css` with `layer(base)`, like other page CSS |
 | Docs | `reference/trick-or-trailhead/README.md` | How it works, adding a badge, what to do when Trailhead changes |
 
