@@ -144,13 +144,18 @@ const nextConfig: NextConfig = {
     // are shared in blog posts and social links, so they redirect permanently
     // (308). Their public/ assets moved with them, so each old prefix also
     // forwards everything under it: that covers each Lightning Rollout part
-    // (to its own new URL) and any hotlinked image or video.
+    // (to its own new URL) and any hotlinked image or video. The bare
+    // prefixes get their own entries and the wildcards use :path+ (not
+    // :path*): on Vercel an empty :path* left a trailing slash on the
+    // destination, costing a second redirect hop (WEB-236).
     return [
       { source: "/bobbin", destination: "/bobbin/play", permanent: false },
       { source: "/salesforce-orgs", destination: "/salesforce/free-and-trial-orgs", permanent: true },
       { source: "/img/orgsPreview.png", destination: "/salesforce/free-and-trial-orgs/orgsPreview.png", permanent: true },
-      { source: "/lightning-rollout/:path*", destination: "/salesforce/lightning-rollout/:path*", permanent: true },
-      { source: "/ghl/:path*", destination: "/salesforce/fantasy-football-draft/:path*", permanent: true },
+      { source: "/lightning-rollout", destination: "/salesforce/lightning-rollout", permanent: true },
+      { source: "/lightning-rollout/:path+", destination: "/salesforce/lightning-rollout/:path+", permanent: true },
+      { source: "/ghl", destination: "/salesforce/fantasy-football-draft", permanent: true },
+      { source: "/ghl/:path+", destination: "/salesforce/fantasy-football-draft/:path+", permanent: true },
     ];
   },
 };
