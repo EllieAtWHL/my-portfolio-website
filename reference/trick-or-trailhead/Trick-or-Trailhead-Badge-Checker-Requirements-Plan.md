@@ -112,18 +112,18 @@ What's known so far. Rows with an award ID were confirmed live from Ellie's prof
 | 2026 | Trick or Trailhead: Tell Us S’more Campfire Stories (curly apostrophe) | `MODULE` | `03188f1d-5165-69ca-68b7-b70a2900301a` | [module page](https://trailhead.salesforce.com/content/learn/modules/trick-or-trailhead-tell-us-smore-campfire-stories) |
 | 2025 | Trick or Trailhead 2025: A Ghost at Sillicorn Valley Inn | `MODULE` | `02fe2109-00fd-8f0f-a396-ee9150133b59` | [module page](https://trailhead.salesforce.com/content/learn/modules/trick-or-trailhead-2025-a-ghost-at-sillicorn-valley-inn) |
 | 2024 | Trick or Trailhead: Escape from Flow Manor (10th annual) | `MODULE` | `02e189ac-5cfc-b2ef-e304-c565bc2d50b8` | [Salesforce blog](https://www.salesforce.com/blog/trick-or-trailhead/) |
-| 2023 | Unknown, probably IX | ? | ? | not found; not on Ellie's profile |
+| 2023 | Trick or Trailhead at AI Manor (9th annual; hands-on mystery module, open Oct 17 – Nov 30, 2023). Exact badge title unconfirmed | probably `MODULE` | ? | [Salesforce blog](https://www.salesforce.com/blog/trick-or-trailhead/); module page now 404s (retired); not on Ellie's profile |
 | 2022 | Trick or Trailhead VIII | `EVENT` | `02a890f5-4d00-0369-eb92-9339b0b9a1b8` | [Salesforce blog](https://www.salesforce.com/blog/trick-or-trailhead-viii/) |
 | 2021 | Trick or Trailhead VII | `EVENT` | `028be35b-30c6-447c-0d1c-7d064a89108a` | [Salesforce blog](https://www.salesforce.com/blog/trick-or-trailhead-vii/) |
 | 2020 | Trick or Trailhead VI (the API title has a leading space) | `EVENT` | `026ecba4-04a5-19ba-7343-ce257bd336b9` | [Trailhead blog](https://medium.com/trailhead/time-for-a-candy-coated-trick-or-trailhead-vi-7ca261fc0503) |
 | 2019 | Trick or Trailhead V | `EVENT` | `0252d7ea-8d50-7038-0dd3-050893aad361` | [Trailhead blog](https://medium.com/trailhead/trick-or-trailhead-v-tales-from-the-80s-8d37256772fd) |
 | 2018 | Trick or Trailhead IV | probably `EVENT` | ? | [Trailhead blog](https://medium.com/trailhead/the-fur-midable-tail-of-trick-or-trailhead-iv-7f36fa618fa3) |
 | 2017 | Trick or Trailhead III | probably `EVENT` | ? | [Trailhead blog](https://medium.com/trailhead/beware-of-trick-or-trailhead-iii-5d950fdf9b14) |
-| 2015–2016 | Probably I and II, unconfirmed | ? | ? | not found |
+| 2015–2016 | Trick or Trailhead I and II (the numbering confirms them: VII was 2021 and 2024 was the 10th annual) | probably `EVENT` | ? | no blog post found |
 
 Image URLs are on several hosts (`res.cloudinary.com`, `dfc-static-production.s3.amazonaws.com`, `developer.salesforce.com`), which matters for the hot-link vs mirror decision. Title matching must trim whitespace and normalise apostrophes.
 
-Bootstrapping: Ellie's profile covers 2019–2022 and 2024–2026. In the Phase 0 spike, record it as fixtures, then fill 2015–2018 and 2023 from an alternative profile Ellie will suggest at the time.
+Bootstrapping: Ellie's profile covers 2019–2022 and 2024–2026. It was checked exhaustively on Oct 31, 2026: all 871 awards of every type, with no nulls, searched for Halloween-related words in titles and image URLs. It holds no 2015–2018 or 2023 badge. Its earliest `EVENT` award is from 2017 and the next is from 2019, and the event list shows nothing Halloween-themed in Oct–Nov 2023. In the Phase 0 spike, record it as fixtures, then fill 2015–2018 and 2023 from an alternative profile Ellie will suggest at the time.
 
 ## Proposed architecture
 
