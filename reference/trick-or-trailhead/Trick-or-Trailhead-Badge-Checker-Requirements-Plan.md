@@ -8,7 +8,7 @@ A public page on the portfolio where anyone types a Trailhead username and sees 
 
 It lives at `/salesforce/trick-or-trailhead`, in a new `/salesforce` section that the existing Salesforce pages move into first (see Salesforce section move below).
 
-Status: Jira issues raised under epic [WEB-228](https://eleanormatthewman.atlassian.net/browse/WEB-228) (see Delivery plan). Nothing is built yet. The Trailhead endpoint was tested live on Oct 31, 2026 from a local machine (not yet from Vercel); the findings are in "Live API findings" below and change several earlier targets.
+Status: Jira issues raised under epic [WEB-228](https://eleanormatthewman.atlassian.net/browse/WEB-228) (see Delivery plan). **Being built but not launched:** the Salesforce Program Agreement prohibits automated retrieval without written consent (see "Terms of use" below). The feature is kept off production until Ellie has permission or decides to accept the risk ([WEB-234](https://eleanormatthewman.atlassian.net/browse/WEB-234)). Nothing is built yet. The Trailhead endpoint was tested live on Oct 31, 2026 from a local machine (not yet from Vercel); the findings are in "Live API findings" below and change several earlier targets.
 
 ## Goals and non-goals
 
@@ -85,6 +85,8 @@ Tested against `elliematthewman` (871 badges: 123 `EVENT`, 628 `MODULE`).
   - Private profile: `profile.__typename === 'PrivateProfile'`.
   - Rate limited: HTTP 429 with no `Retry-After` header, **or** HTTP 200 with `extensions.code` `TOO_MANY_REQUESTS`.
   - Trailhead limits by IP at about 200 requests/min, and Vercel functions share a few outbound IPs, so every lookup draws on one shared budget. At ~16 requests per cold lookup, that's roughly 12 cold lookups a minute across all visitors before Trailhead starts refusing.
+- **Confirmed live:** an unknown username returns HTTP 200, `data: null`, and an error with `extensions.code: "NOT_FOUND"` (`statusCode: 404`, "profile could not be found"). A removed or unknown field returns `extensions.code: "undefinedField"`. `PublicProfile` has `name`, `givenName`, `familyName`, `avatarUrl`, `slug`, `title`, `companyName` and `bio` (not `fullName` or `photoUrl`), so name and avatar can come with the first badge page.
+- **No direct per-module query:** Trailhead's own profile UI (`@devforce/th-profile-ui` v1.57.0) also only uses `earnedAwards(first, after, awardType)`, with filter values `MODULE`, `PROJECT`, `SUPERBADGE`, `EVENT` and `STANDALONE`.
 - **Other endpoints:** `mobile.api.trailhead.com/graphql` (`earnedStamps`) returns event-attendance stamps (Dreamforce, TDX, World Tour), not Trick or Trailhead badges, so it isn't useful here. `community.api.trailhead.com` goes read-only on Oct 30, 2026.
 
 **2. All badges: curated catalogue (in repo)**
@@ -131,6 +133,7 @@ The browser only ever talks to our own route. The badge service merges what Trai
 
 | Piece | Proposed location | Notes |
 | --- | --- | --- |
+| Production gate | `src/lib/trailhead/availability.ts` | `isTrickOrTrailheadEnabled()`, same pattern as `src/lib/microbrew/availability.ts`: on in local dev and Vercel previews, off in production unless `TRICK_OR_TRAILHEAD_ENABLED=true`. When off, the page and API route 404 (the route before any Trailhead call) and links to the page aren't rendered |
 | Page | `src/app/salesforce/trick-or-trailhead/page.tsx` + client lookup component | Server component shell; client component for the form and results |
 | API route | `src/app/api/trick-or-trailhead/route.ts` | `GET ?username=`; returns `{ profile, earned[], missing[], unmatched[], total }`. Sets `maxDuration` high enough for a 10–20s cold lookup |
 | Trailhead client | `src/lib/trailhead/client.ts` | GraphQL query, pagination (page size 50, cap 40 per type, early exit), per-request timeout, null-award detection, typed errors |
@@ -182,7 +185,8 @@ API routes aren't covered by Jest in this repo (see `reference/testing/README.md
 | Cold lookups take 10–20s | Confirmed | Medium: feels broken, or hits the function time limit | Loading state that explains the wait; `maxDuration` set on the route; 24h cache so repeat visits are instant |
 | Catalogue incomplete or wrong (2015–2018 and 2023 not yet confirmed) | High | Medium: wrong score | FR-8 surfaces unmatched event badges; label the catalogue "as complete as we know"; invite corrections |
 | Old event badges retired from profiles or renamed | Medium | Medium | Match on IDs and titles; test against a profile that holds old badges |
-| Terms of use / branding concerns | Low–Medium | Medium | Review Trailhead terms first; public data only; caching keeps load low; clear unofficial disclaimer; no Trailhead logo as page branding |
+| Terms of use: the Salesforce Program Agreement (updated Oct 14, 2026) prohibits "any robot, spider… or other manual or automatic device to retrieve… or otherwise gather any information… available in or through the Program… without Salesforce's express prior written consent" | Confirmed | High: account or reputational risk | Built but gated off production until permission or an accepted-risk decision ([WEB-234](https://eleanormatthewman.atlassian.net/browse/WEB-234)). If refused, fall back to the catalogue gallery or a manual checklist with no Trailhead calls |
+| Branding concerns | Low–Medium | Medium | Public data only; caching keeps load low; clear unofficial disclaimer; no Trailhead logo as page branding |
 | Abuse or heavy traffic around Halloween | Low | Low | Rate limiting + 24h cache; page cap per lookup |
 | Badge images hot-linked from Trailhead CDN break | Medium | Low | Fallback placeholder image; optionally mirror artwork into `public/` if licence allows |
 
@@ -217,6 +221,7 @@ Five steps, each its own PR. The section move and the Phase 0 spike don't depend
 3. **Phase 1, data layer.** Username parser, Trailhead client (pagination, timeout, schema validation, typed errors), catalogue JSON + matcher, cached wrapper, thin API route with rate limiting. Jest tests with fixtures.
 4. **Phase 2, page.** `/salesforce/trick-or-trailhead` with all five states, page CSS, links from `/salesforce` and `/projects`. Decide badge artwork (hot-link vs mirror) here. RTL + Playwright tests.
 5. **Phase 3, polish and docs.** Accessibility pass, metadata/OG image for shared links, `reference/trick-or-trailhead/README.md` (architecture + "adding next year's badge"), `reference/README.md` index entry.
+6. **Launch (blocked).** Once Ellie has Salesforce's written permission or decides to accept the risk, set `TRICK_OR_TRAILHEAD_ENABLED=true` in Vercel production and redeploy. Until then everything above ships to `main` but stays hidden in production.
 
 Proposed Jira breakdown (`WEB` project, label `core-site`):
 
@@ -228,8 +233,9 @@ Proposed Jira breakdown (`WEB` project, label `core-site`):
 | [WEB-231](https://eleanormatthewman.atlassian.net/browse/WEB-231) Trailhead client, catalogue and API route | Story | WEB-228 | `feature/WEB-231-trailhead-badge-api` |
 | [WEB-232](https://eleanormatthewman.atlassian.net/browse/WEB-232) Trick or Trailhead checker page | Story | WEB-228 | `feature/WEB-232-trick-or-trailhead-page` |
 | [WEB-233](https://eleanormatthewman.atlassian.net/browse/WEB-233) Docs, accessibility and share metadata | Task | WEB-228 | `docs/WEB-233-trick-or-trailhead-docs` |
+| [WEB-234](https://eleanormatthewman.atlassian.net/browse/WEB-234) Launch (needs Salesforce permission or an accepted-risk decision); status Blocked | Task | WEB-228 | none (a Vercel env var change) |
 
-Dependencies (Jira "blocks" links): WEB-230 → WEB-231 → WEB-232 → WEB-233, and WEB-229 → WEB-232. Each PR runs `/code-review` before it's raised, per CLAUDE.md.
+Dependencies (Jira "blocks" links): WEB-230 → WEB-231 → WEB-232 → WEB-233 → WEB-234, and WEB-229 → WEB-232. Each PR runs `/code-review` before it's raised, per CLAUDE.md.
 
 ## Decisions
 
@@ -244,6 +250,7 @@ Dependencies (Jira "blocks" links): WEB-230 → WEB-231 → WEB-232 → WEB-233,
 | Cache TTL and rate limit | 24 hours (changed from 1 hour after the live findings) and 10 lookups per IP per minute; revisit after launch |
 | Lookup speed | Cold lookups of 10–20s accepted, with a loading state that explains the wait (replaces the earlier 3s target) |
 | Page size and cap | 50 per page, 40 pages per award type, stop early once all badges are found |
+| Terms of use (go/no-go) | Oct 31, 2026: keep building, but don't launch until Salesforce gives written permission or Ellie decides to accept the risk. Gated off production meanwhile ([WEB-234](https://eleanormatthewman.atlassian.net/browse/WEB-234)) |
 | Trailhead-Banner code | Reuse its error handling and username parsing where it fits, credited under BSD-3-Clause |
 | How-it-was-built write-up | No |
 | Scheduled live check | Not for now |
@@ -254,4 +261,5 @@ Still open:
 
 - [ ] Exact titles, IDs and award types for 2015–2018 and 2023: need a profile that holds them (Phase 0 spike).
 - [ ] Does a cold lookup fit within the Vercel function time limit, and how fast is it from Vercel?
-- [ ] Is there a query that checks one module's completion directly, avoiding paging through every module?
+- [ ] What does a private profile return? Needs a known private username.
+- [ ] Permission from Salesforce, or a decision to accept the risk ([WEB-234](https://eleanormatthewman.atlassian.net/browse/WEB-234)).
