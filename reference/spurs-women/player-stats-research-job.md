@@ -365,7 +365,7 @@ Runs every Monday at 08:00 UTC. Routine:
 `https://claude.ai/code/routines/trig_01PFuWYkHULYADSMTRjSQnxz` - see it
 there to disable/update the schedule or prompt.
 
-Depends on `scripts/find-matches-missing-player-stats.js` being merged to
-`main` (PR #84) - if it isn't yet by the next Monday run, the routine posts
-a comment on WEB-114 saying so and does nothing else, rather than failing
-silently.
+`scripts/find-matches-missing-player-stats.js` merged to `main` via PR #84 -
+the dependency that previously gated the routine's first run (the routine
+posted a comment on WEB-114 and did nothing else on any run before this
+landed) is resolved; the script is on `main` now.

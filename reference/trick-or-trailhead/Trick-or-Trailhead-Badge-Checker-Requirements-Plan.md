@@ -8,7 +8,7 @@ A public page on the portfolio where anyone types a Trailhead username and sees 
 
 It lives at `/salesforce/trick-or-trailhead`, in a new `/salesforce` section that the existing Salesforce pages move into first (see Salesforce section move below).
 
-Status: Jira issues raised under epic [WEB-228](https://eleanormatthewman.atlassian.net/browse/WEB-228) (see Delivery plan). **Being built but not launched:** the Salesforce Program Agreement prohibits automated retrieval without written consent (see "Terms of use" below). The feature is kept off production until Ellie has permission or decides to accept the risk ([WEB-234](https://eleanormatthewman.atlassian.net/browse/WEB-234)). Nothing is built yet. The Trailhead endpoint was tested live on Oct 31, 2026 from a local machine (not yet from Vercel); the findings are in "Live API findings" below and change several earlier targets.
+Status: Jira issues raised under epic [WEB-228](https://eleanormatthewman.atlassian.net/browse/WEB-228) (see Delivery plan). **Being built but not launched:** the Salesforce Program Agreement prohibits automated retrieval without written consent (see "Terms of use" below). The feature is kept off production until Ellie has permission or decides to accept the risk ([WEB-234](https://eleanormatthewman.atlassian.net/browse/WEB-234)). As of Nov 2026, [WEB-229](https://eleanormatthewman.atlassian.net/browse/WEB-229) (the Salesforce section move, step 1 below) has merged - the three existing Salesforce pages now live under `/salesforce`, with redirects and a Playwright spec (`tests/salesforce.spec.ts`) covering the old URLs. The checker itself (steps 2-6: spike, data layer, page, polish, launch) is still nothing-built. The Trailhead endpoint was tested live on Oct 31, 2026 from a local machine (not yet from Vercel); the findings are in "Live API findings" below and change several earlier targets.
 
 ## Goals and non-goals
 
@@ -195,7 +195,7 @@ API routes aren't covered by Jest in this repo (see `reference/testing/README.md
 
 ## Salesforce section move
 
-The existing Salesforce pages move under `/salesforce` as a separate refactor, done before the checker so the checker PR stays focused. Old URLs get permanent (308) redirects in `next.config.ts` so external links, search results and shared posts keep working.
+**Done** ([WEB-229](https://eleanormatthewman.atlassian.net/browse/WEB-229), merged - PR #218). The existing Salesforce pages moved under `/salesforce` as a separate refactor, ahead of the checker so the checker PR stays focused. Old URLs get permanent (308) redirects in `next.config.ts` so external links, search results and shared posts keep working.
 
 | Current URL | New URL | Files to move |
 | --- | --- | --- |
@@ -205,13 +205,13 @@ The existing Salesforce pages move under `/salesforce` as a separate refactor, d
 | (new) | `/salesforce` | Landing page listing the Salesforce projects |
 | (new) | `/salesforce/trick-or-trailhead` | This tool |
 
-Also in scope:
+Also done as part of this move:
 
-- Update every internal link: `ProjectsContent.tsx`, the Lightning Rollout blog navigation, page metadata (`openGraph.url`, image URLs) and the matching Jest component tests.
-- Fix a bug found along the way: `/salesforce-orgs`'s share image points to `/salesforce-orgs/imgs/orgsPreview.png`, which doesn't exist. The file is at `public/img/orgsPreview.png`.
-- No Playwright spec references these paths today; add one checking each old URL redirects to its new one.
-- Update `reference/CSS_ARCHITECTURE.md`, which mentions the old paths.
-- The Quick Tips and community blog posts on the projects page link to external sites, so they stay as they are.
+- Updated every internal link: `ProjectsContent.tsx`, the Lightning Rollout blog navigation, page metadata (`openGraph.url`, image URLs) and the matching Jest component tests.
+- Fixed a bug found along the way: `/salesforce-orgs`'s share image pointed to `/salesforce-orgs/imgs/orgsPreview.png`, which didn't exist. The file was at `public/img/orgsPreview.png`; it now lives at `public/salesforce/free-and-trial-orgs/orgsPreview.png`.
+- Added `tests/salesforce.spec.ts`, a Playwright spec checking each old URL (and each moved asset URL) permanently redirects to its new one.
+- `reference/CSS_ARCHITECTURE.md` did not reference the old paths, so no change was needed there.
+- The Quick Tips and community blog posts on the projects page link to external sites, so they stayed as they were.
 
 Slugs are renamed to match each page's title, since redirects are being added anyway. Asset folders under `public/` moved to match (`public/salesforce/<page>/`, done in WEB-229), and each old prefix (`/lightning-rollout/*`, `/ghl/*`, plus `/img/orgsPreview.png`) redirects everything under it, assets included. The Fantasy Football share image had the same broken path as the orgs one (`/ghl/images/…`) and was fixed alongside it.
 
@@ -219,7 +219,7 @@ Slugs are renamed to match each page's title, since redirects are being added an
 
 Five steps, each its own PR. The section move and the Phase 0 spike don't depend on each other and can run in parallel; the checker build only starts once a real lookup works from Vercel.
 
-1. **Salesforce section move (refactor).** Move the three existing Salesforce pages under `/salesforce`, add redirects and the landing page, fix the orgs share image (see above).
+1. **Salesforce section move (refactor). Done** (WEB-229, merged). Moved the three existing Salesforce pages under `/salesforce`, added redirects and the landing page, fixed the orgs share image (see above).
 2. **Phase 0, spike (go/no-go).** A throwaway script plus a temporary route proving `GetTrailheadBadges` works server-side from Vercel with `EVENT` and `MODULE` filters at a page size of 50, timing a full cold lookup there. Look for a direct per-module completion query. Confirm the error and rate-limit shapes. Record fixture JSON from `elliematthewman`. Read the Trailhead terms of use. Fill the catalogue's 2015–2018 and 2023 gaps.
 3. **Phase 1, data layer.** Username parser, Trailhead client (pagination, timeout, schema validation, typed errors), catalogue JSON + matcher, cached wrapper, thin API route with rate limiting. Jest tests with fixtures.
 4. **Phase 2, page.** `/salesforce/trick-or-trailhead` with all five states, page CSS, links from `/salesforce` and `/projects`. Decide badge artwork (hot-link vs mirror) here. RTL + Playwright tests.
@@ -230,7 +230,7 @@ Proposed Jira breakdown (`WEB` project, label `core-site`):
 
 | Issue | Type | Epic | Branch |
 | --- | --- | --- | --- |
-| [WEB-229](https://eleanormatthewman.atlassian.net/browse/WEB-229) Move Salesforce pages under /salesforce (also fixes [WEB-190](https://eleanormatthewman.atlassian.net/browse/WEB-190)) | Task | Component Consistency & Standardization (WEB-38) | `refactor/WEB-229-salesforce-section` |
+| [WEB-229](https://eleanormatthewman.atlassian.net/browse/WEB-229) Move Salesforce pages under /salesforce (also fixes [WEB-190](https://eleanormatthewman.atlassian.net/browse/WEB-190)) - **Done, merged** | Task | Component Consistency & Standardization (WEB-38) | `refactor/WEB-229-salesforce-section` |
 | [WEB-228](https://eleanormatthewman.atlassian.net/browse/WEB-228) Trick or Trailhead Badge Checker | Epic | — | — |
 | [WEB-230](https://eleanormatthewman.atlassian.net/browse/WEB-230) Spike: verify Trailhead profile GraphQL from Vercel + bootstrap catalogue | Task | WEB-228 | `chore/WEB-230-trailhead-api-spike` |
 | [WEB-231](https://eleanormatthewman.atlassian.net/browse/WEB-231) Trailhead client, catalogue and API route | Story | WEB-228 | `feature/WEB-231-trailhead-badge-api` |
