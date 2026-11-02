@@ -55,7 +55,7 @@ These considerations may influence design, styling, and content decisions and sh
   - ✅ RSS parser integration for content feeds
 
 **Technical Implementation:**
-  - ✅ Feature-based organization implemented
+  - ⚠️ Organization by *type* (routes/components/lib), not by a literal `features/` tree - see the note under "Target Architecture" below; no `src/features/` directory exists
   - ✅ Server components used by default
   - ✅ Proper TypeScript typing throughout
   - ✅ Tailwind design tokens and CSS variables established
@@ -371,7 +371,7 @@ Decision (superseded):
   - That decision no longer holds: Jest + React Testing Library are now installed and automated testing is mandatory for new components/utilities (see "Testing Strategy" above and `reference/testing/README.md`).
 
 Current state:
-  - E2E testing with Playwright is now implemented: 13 spec files under `tests/` (personal-site pages, `tests/accessibility.spec.ts`, plus `tests/spurs-women/*`), run via `npx playwright test` and in CI via `.github/workflows/playwright.yml` across chromium/firefox/webkit.
+  - E2E testing with Playwright is now implemented: 16 spec files under `tests/` (personal-site pages, `tests/accessibility.spec.ts`, `tests/bobbin.spec.ts`, plus `tests/spurs-women/*`), run via `npx playwright test` and in CI via `.github/workflows/playwright.yml` across chromium/firefox/webkit.
 
 ### Deployment Pipeline
 
@@ -492,6 +492,16 @@ Current state:
     above. Treat this as a point-in-time baseline, not a live mirror - it
     will drift from the real schema as new migrations are added on top, the
     same way any snapshot does.
+  - Five further migrations have landed on top of the baseline since (as of
+    2026-11): `20260826180844_drop_unused_stoarge_source_type.sql`,
+    `20260901180607_document_is_neutral_venue_column.sql`,
+    `20260902180000_add_player_legacy_number.sql`,
+    `20260914123000_player_history_loan_direction.sql`, and
+    `20261028011415_add_stadia_spurs_women_flag.sql` - each following the
+    same workflow described above. `supabase/migrations/` (not the two files
+    named above in isolation) is the current authoritative list; re-check
+    `ls supabase/migrations/` rather than trusting this snapshot to stay
+    current.
   - For field-level documentation of what each table/column means (not just
     its DDL), see `reference/spurs-women/admin/ADMIN_SYSTEM_DOCUMENTATION.md`'s
     "Data Entities" section - that doc explains purpose and usage, the
@@ -660,9 +670,7 @@ The Spurs Women photo gallery uses an external repository (`spurs-women-photo-ga
   4. Commits and pushes manifest to `my-portfolio-website` main branch
 
 **Local Development:**
-- **Commit Hook**: Automatically runs `generate-external-manifest` when committing changes
-- **Purpose**: Ensures local development has latest manifest
-- **Note**: This is a backup mechanism - primary updates should come from GitHub Action
+- **No commit hook exists** - there is no `.husky/`, `simple-git-hooks`, or other git-hooks config in this repo (`.git/hooks/` contains only Git's default `.sample` files), so `generate-external-manifest` does **not** run automatically on commit. Run it manually (`npm run generate-external-manifest`) if you need to refresh the manifest locally; primary updates come from the GitHub Action below.
 
 ### Common Scenarios & Solutions
 
@@ -683,9 +691,7 @@ git pull origin main
 ```
 
 #### Scenario 2: "Why does my local commit regenerate the manifest?"
-**Cause**: Commit hook runs `generate-external-manifest` for any commit
-**Expected Behavior**: This is normal - it's a backup mechanism
-**When to Worry**: Only if the manifest content is actually different from remote
+**It doesn't automatically** - no commit hook is configured in this repo (see "Local Development" above), and `npm run build`/`npm run dev` don't run it either (`build` only runs `bobbin:build` then `next build`). If the manifest file shows as changed locally, it was either run manually (`npm run generate-external-manifest`) or the GitHub Action already pushed an update that a `git pull` brought in - check which, rather than assuming a hook fired.
 
 #### Scenario 3: "GitHub Action failed to update manifest"
 **Troubleshooting**:
@@ -775,7 +781,7 @@ For implementation detail on specific systems, see:
 
 The backlog/TODO list lives in Jira, not in this repo - see the "Jira is the source of truth" section in CLAUDE.md. The `WEB` project covers both the core site (`core-site` label) and Spurs Women (`spurs-women` label); every issue (not just epics) carries the label(s) for the section(s) it touches, both where work spans the whole site. The board's quick filters are built on these labels and on epic parenting - see "Labels and board filters" in CLAUDE.md.
 
-Known open tech debt at time of writing: Button migration is incomplete (14
+Known open tech debt at time of writing: Button migration is incomplete (15
 files still render raw `<button>` elements outside the shared component - see
 BUTTON_MIGRATION.md for the current list), and cache hit-rate monitoring/
 metrics collection has not been implemented (see the Technical Debt & Performance epic in Jira).

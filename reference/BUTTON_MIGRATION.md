@@ -142,9 +142,10 @@ Your new Button component consolidates all button patterns into a single, reusab
 
 ### ⚠️ Migration Incomplete
 
-Migration is **not** complete. As of the last audit (2026-09), 14 production files still render raw `<button>` elements instead of the shared `Button` component (in addition to `Button.tsx` itself, `spurs-women/SpursTabButton.tsx` — a shared Spurs Women tab-button component, same exemption as `Button.tsx`: it legitimately renders a native `<button>` internally so its own two consumers don't have to — and `regicide/StatsIconButton.tsx`, same exemption again: it deliberately does *not* look like a `Button` at all, restoring the original site's low-opacity icon-only stats trigger rather than a filled/labelled button):
+Migration is **not** complete. As of the last audit (2026-11), 15 production files still render raw `<button>` elements instead of the shared `Button` component (in addition to `Button.tsx` itself, `spurs-women/SpursTabButton.tsx` — a shared Spurs Women tab-button component, same exemption as `Button.tsx`: it legitimately renders a native `<button>` internally so its own two consumers don't have to — and `regicide/StatsIconButton.tsx`, same exemption again: it deliberately does *not* look like a `Button` at all, restoring the original site's low-opacity icon-only stats trigger rather than a filled/labelled button):
 
 - `src/components/admin/TabNav.tsx` (generic tab switcher, used for the admin page's matches/teams/players/stadiums tabs and edit sub-tabs — since the admin page decomposition, `src/app/spurs-women/admin/page.tsx` itself no longer renders any raw `<button>` directly)
+- `src/components/microbrew/Copper.tsx` (Microbrew board's clickable hex token slots - each playable slot is a raw `<button>` so it gets native keyboard/focus semantics; added with the WEB-180 Copper board work)
 - `src/components/Modal.tsx` (close button)
 - `src/components/UpdateBanner.tsx` (dismiss button)
 - `src/components/ExperienceContent.tsx` (tab switcher)
@@ -164,7 +165,7 @@ Migration is **not** complete. As of the last audit (2026-09), 14 production fil
 Most of these are small icon-only or tab-toggle buttons with bespoke styling (not the `.button primary`/`.button secondary` CSS classes this guide was originally written to migrate away from), so they may be a lower priority than the original `.button` class cleanup — but they are still raw `<button>` elements outside the shared component, and this list should be treated as the current source of truth rather than the "100% complete" claim below.
 
 ### 📊 Migration Progress
-**Not 100% complete** — the original `.button primary`/`.button secondary` CSS-class migration described above is done, but 14 files still use native `<button>` elements outside the `Button` component (see list above). Re-run `grep -rn "<button" src --include='*.tsx'` (excluding `Button.tsx`, `SpursTabButton.tsx`, and `__tests__/`) to get a current count.
+**Not 100% complete** — the original `.button primary`/`.button secondary` CSS-class migration described above is done, but 15 files still use native `<button>` elements outside the `Button` component (see list above). Re-run `grep -rn "<button" src --include='*.tsx'` (excluding `Button.tsx`, `SpursTabButton.tsx`, `StatsIconButton.tsx`, and `__tests__/`) to get a current count.
 
 ## Benefits
 
