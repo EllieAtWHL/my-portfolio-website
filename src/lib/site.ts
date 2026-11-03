@@ -42,6 +42,7 @@ export function buildHomeStructuredData() {
         jobTitle: 'Salesforce Developer',
         description: SITE_DESCRIPTION,
         knowsAbout: ['Salesforce', 'Salesforce development', 'Mentoring'],
+        award: ['Salesforce Golden Hoodie (2026)'],
         sameAs: [...PROFILE_URLS],
       },
       {

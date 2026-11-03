@@ -22,6 +22,7 @@ describe('Home page (server)', () => {
     expect(person.name).toBe('Ellie Matthewman');
     expect(person.url).toBe(SITE_URL);
     expect(person.sameAs).toEqual([...PROFILE_URLS]);
+    expect(person.award).toContain('Salesforce Golden Hoodie (2026)');
   });
 
   it('has a name-first absolute title and a canonical URL', () => {
