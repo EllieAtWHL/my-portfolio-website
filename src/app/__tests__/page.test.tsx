@@ -1,95 +1,31 @@
-import React from 'react'
-import { render, screen } from '@testing-library/react'
-import Home from '../page'
-import { trackPageView } from '@/lib/fullstory'
+import React from 'react';
+import { render } from '@testing-library/react';
+import Home, { metadata } from '../page';
+import { PROFILE_URLS, SITE_URL } from '@/lib/site';
 
-// Mock the fullstory module
-jest.mock('@/lib/fullstory', () => ({
-  trackEvent: jest.fn(),
-  trackPageView: jest.fn()
-}))
+jest.mock('@/components/HomeHero', () => {
+  return function MockHomeHero() {
+    return <div data-testid="home-hero" />;
+  };
+});
 
-// Mock Next.js Link component
-jest.mock('next/link', () => {
-  return function MockLink({ children, href }: { children: React.ReactNode; href: string }) {
-    return <a href={href}>{children}</a>
-  }
-})
+describe('Home page (server)', () => {
+  it('renders Person structured data with the sameAs profiles', () => {
+    const { container, getByTestId } = render(<Home />);
+    expect(getByTestId('home-hero')).toBeInTheDocument();
 
-// Mock MainSitePage component
-jest.mock('@/components/MainSitePage', () => {
-  return function MockMainSitePage({ children }: { children: React.ReactNode }) {
-    return <div data-testid="main-site-page">{children}</div>
-  }
-})
+    const script = container.querySelector('script[type="application/ld+json"]');
+    expect(script).not.toBeNull();
+    const data = JSON.parse(script!.innerHTML);
+    const person = data['@graph'].find((node: { '@type': string }) => node['@type'] === 'Person');
 
-describe('Home Page', () => {
-  beforeEach(() => {
-    jest.clearAllMocks()
-  })
+    expect(person.name).toBe('Ellie Matthewman');
+    expect(person.url).toBe(SITE_URL);
+    expect(person.sameAs).toEqual([...PROFILE_URLS]);
+  });
 
-  it('renders the main headings', () => {
-    render(<Home />)
-    
-    expect(screen.getByText('Trailblazer.')).toBeInTheDocument()
-    expect(screen.getByText('Mentor.')).toBeInTheDocument()
-    expect(screen.getByText('Champion.')).toBeInTheDocument()
-  })
-
-  it('renders the contact button', () => {
-    render(<Home />)
-    
-    const contactButton = screen.getByRole('link', { name: 'Contact Me' })
-    expect(contactButton).toBeInTheDocument()
-    expect(contactButton).toHaveAttribute('href', '/contact-me')
-  })
-
-  it('tracks page view on mount', () => {
-    render(<Home />)
-    
-    expect(trackPageView).toHaveBeenCalledWith('/', 'Home')
-    expect(trackPageView).toHaveBeenCalledTimes(1)
-  })
-
-  it('renders contact button with correct props', () => {
-    render(<Home />)
-    
-    const contactButton = screen.getByRole('link', { name: 'Contact Me' })
-    expect(contactButton).toBeInTheDocument()
-    expect(contactButton).toHaveAttribute('href', '/contact-me')
-    
-    // Verify the button container has the correct class
-    const buttonContainer = screen.getByText('Contact Me').closest('.contactMe')
-    expect(buttonContainer).toBeInTheDocument()
-    expect(buttonContainer).toHaveClass('fadeIn')
-  })
-
-  it('has correct CSS classes for animations', () => {
-    render(<Home />)
-    
-    const trailblazerHeading = screen.getByText('Trailblazer.')
-    const mentorHeading = screen.getByText('Mentor.')
-    const championHeading = screen.getByText('Champion.')
-    
-    expect(trailblazerHeading).toHaveClass('slideLeft')
-    expect(mentorHeading).toHaveClass('slideRight')
-    expect(championHeading).toHaveClass('slideDown')
-  })
-
-  it('renders within MainSitePage wrapper', () => {
-    render(<Home />)
-    
-    const mainSitePage = screen.getByTestId('main-site-page')
-    expect(mainSitePage).toBeInTheDocument()
-  })
-
-  it('has proper content structure', () => {
-    render(<Home />)
-    
-    const content = screen.getByText('Trailblazer.').closest('.content-with-footer')
-    const scrollable = screen.getByText('Trailblazer.').closest('.scrollable')
-    
-    expect(content).toBeInTheDocument()
-    expect(scrollable).toBeInTheDocument()
-  })
-})
+  it('has a name-first absolute title and a canonical URL', () => {
+    expect(metadata.title).toEqual({ absolute: expect.stringContaining('Ellie Matthewman') });
+    expect(metadata.alternates?.canonical).toBe('/');
+  });
+});

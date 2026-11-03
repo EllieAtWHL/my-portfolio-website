@@ -5,7 +5,7 @@ export const metadata = {
   title: 'Regicide',
   description: 'Regicide is a challenging, card game based on a standard 52 card deck.',
   openGraph: {
-    title: 'EllieAtWHL - Regicide',
+    title: 'Regicide | Ellie Matthewman',
     description: 'Regicide is a challenging, card game based on a standard 52 card deck.',
     url: 'https://ellieatwhl.co.uk/regicide',
     type: 'website',
@@ -20,7 +20,7 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'EllieAtWHL - Regicide',
+    title: 'Regicide | Ellie Matthewman',
     description: 'Regicide is a challenging, card game based on a standard 52 card deck.',
     images: ['https://ellieatwhl.co.uk/regicide/regicide.png'],
   },

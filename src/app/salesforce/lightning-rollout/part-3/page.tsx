@@ -5,7 +5,7 @@ export const metadata = {
   title: 'Salesforce Lightning Rollout | Part 3',
   description: "We've Migrated to Lightning, Now What? This guide walks you through the steps you can take after migration to ensure that it is adopted by users successfully.",
   openGraph: {
-    title: 'EllieAtWHL - Salesforce Lightning Rollout | Part 3',
+    title: 'Salesforce Lightning Rollout | Part 3 | Ellie Matthewman',
     description: "We've Migrated to Lightning, Now What? This guide walks you through the steps you can take after migration to ensure that it is adopted by users successfully.",
     url: 'https://ellieatwhl.co.uk/salesforce/lightning-rollout/part-3',
     type: 'website',
@@ -20,7 +20,7 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'EllieAtWHL - Salesforce Lightning Rollout | Part 3',
+    title: 'Salesforce Lightning Rollout | Part 3 | Ellie Matthewman',
     description: "We've Migrated to Lightning, Now What? This guide walks you through the steps you can take after migration to ensure that it is adopted by users successfully.",
     images: ['https://ellieatwhl.co.uk/favicon.ico'],
   },

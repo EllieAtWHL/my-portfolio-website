@@ -4,10 +4,10 @@ import London2012Gallery from '@/components/London2012Gallery';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'EllieAtWHL - London 2012',
+  title: 'London 2012',
   description: 'My journey as a volunteer performer at the London 2012 Olympic Games',
   openGraph: {
-    title: 'EllieAtWHL - Volunteering at London 2012',
+    title: 'Volunteering at London 2012 | Ellie Matthewman',
     description: 'My journey as a volunteer performer at the London 2012 Olympic Games',
     url: '/london-2012',
     type: 'website',

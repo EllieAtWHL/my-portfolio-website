@@ -5,7 +5,7 @@ export const metadata = {
   title: 'Projects',
   description: 'Links to my various projects, from Salesforce and general web development, to blogs on some of my exciting volunteering experiences.',
   openGraph: {
-    title: 'EllieAtWHL - Projects',
+    title: 'Projects | Ellie Matthewman',
     description: 'Links to my various projects, from Salesforce and general web development, to blogs on some of my exciting volunteering experiences.',
     url: 'https://ellieatwhl.co.uk/projects',
     type: 'website',
@@ -20,7 +20,7 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'EllieAtWHL - Projects',
+    title: 'Projects | Ellie Matthewman',
     description: 'Links to my various projects, from Salesforce and general web development, to blogs on some of my exciting volunteering experiences.',
     images: ['https://ellieatwhl.co.uk/favicon.ico'],
   },

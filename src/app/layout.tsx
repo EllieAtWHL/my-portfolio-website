@@ -9,6 +9,7 @@ import CookieConsentProvider from "../components/CookieConsentProvider";
 import { CookieConsentBanner } from "../components/CookieConsentBanner";
 import { FullStoryLoader } from "../components/FullStoryLoader";
 import { ConsentGatedVercelScripts } from "../components/ConsentGatedVercelScripts";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
 
 const nokora = Nokora({
   subsets: ["khmer", "latin"],
@@ -17,9 +18,26 @@ const nokora = Nokora({
   display: "swap",
 });
 
+// Name-first titles/description so the site ranks for "Ellie Matthewman"
+// (WEB-238). The template appends the name to every page's own title; the
+// Spurs Women layout overrides it with its own so fan-site pages aren't
+// branded with Ellie's name. No `alternates.canonical` here - it would be
+// inherited by every page and point them all at the home page.
 export const metadata: Metadata = {
-  title: "EllieAtWHL",
-  description: "Trailblazing Salesforce Developer & Supermum Mentor",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: SITE_TITLE,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  authors: [{ name: SITE_NAME, url: SITE_URL }],
+  creator: SITE_NAME,
+  openGraph: {
+    type: 'website',
+    siteName: SITE_NAME,
+    locale: 'en_GB',
+  },
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon.ico',

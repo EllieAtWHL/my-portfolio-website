@@ -3,10 +3,10 @@ import London2012Layout from '@/components/London2012Layout';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'EllieAtWHL - Costume Fittings & Goodbye to 3 Mills',
+  title: 'Costume Fittings & Goodbye to 3 Mills',
   description: 'The journey of a volunteer performer at the Olympic Ceremonies',
   openGraph: {
-    title: 'EllieAtWHL - My Olympic Journey',
+    title: 'My Olympic Journey | Ellie Matthewman',
     description: 'The journey of a volunteer performer at the Olympic Ceremonies',
     url: '/london-2012/costume-fitting',
     type: 'website',

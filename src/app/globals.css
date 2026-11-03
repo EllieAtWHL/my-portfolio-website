@@ -317,16 +317,16 @@ html {
 @layer base {
 
 /* Animations - more subtle and modern */
-h1.slideLeft {
+.slideLeft {
   animation: slide-left 1.5s ease-out;
 }
 
-h1.slideRight {
+.slideRight {
   opacity: 0;
   animation: slide-right 1.5s ease-out 0.5s forwards;
 }
 
-h1.slideDown {
+.slideDown {
   opacity: 0;
   animation: slide-down 1.5s ease-out 1s forwards;
 }

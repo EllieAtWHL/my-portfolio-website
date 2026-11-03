@@ -5,18 +5,18 @@ import MainSitePage from '@/components/MainSitePage';
 
 export const metadata = {
   title: 'About Me',
-  description: 'A little bit about me',
+  description: 'About Ellie Matthewman - Salesforce developer, community group leader, mentor and London 2012 volunteer.',
   openGraph: {
-    title: 'EllieAtWHL - About Me',
-    description: 'A little bit about me',
+    title: 'About Me | Ellie Matthewman',
+    description: 'About Ellie Matthewman - Salesforce developer, community group leader, mentor and London 2012 volunteer.',
     url: 'https://ellieatwhl.co.uk/about-me',
-    images: ['/about-me/img/EllieMatthewman(Square).jpg'],
+    images: ['/img/EllieMatthewman(Square).jpg'],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'EllieAtWHL - About Me',
-    description: 'A little bit about me',
-    images: ['/about-me/img/EllieMatthewman(Square).jpg'],
+    title: 'About Me | Ellie Matthewman',
+    description: 'About Ellie Matthewman - Salesforce developer, community group leader, mentor and London 2012 volunteer.',
+    images: ['/img/EllieMatthewman(Square).jpg'],
   },
 };
 
@@ -36,7 +36,7 @@ export default function AboutMe() {
                   <Image 
                     className="profile"
                     src="/img/EllieProfile.jpg"
-                    alt="Brown hair woman with glasses"
+                    alt="Ellie Matthewman"
                     width={200}
                     height={200}
                     priority
@@ -49,7 +49,7 @@ export default function AboutMe() {
                 
                 <article className="intro-text">
                   <Card variant="highlight" padding="md" className="mb-6">
-                    <h2 className="heading-2">Hi there! I&apos;m Ellie</h2>
+                    <h2 className="heading-2">Hi there! I&apos;m Ellie Matthewman</h2>
                     <p>
                       A highly skilled and experienced Salesforce professional with a passion for technology and helping businesses succeed.
                     </p>

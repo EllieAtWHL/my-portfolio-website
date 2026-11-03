@@ -5,7 +5,7 @@ export const metadata = {
   title: 'Salesforce Lightning Rollout Series',
   description: 'A comprehensive 3-part guide to successfully migrating from Salesforce Classic to Lightning, from business buy-in to post-migration adoption.',
   openGraph: {
-    title: 'EllieAtWHL - Salesforce Lightning Rollout Series',
+    title: 'Salesforce Lightning Rollout Series | Ellie Matthewman',
     description: 'A comprehensive 3-part guide to successfully migrating from Salesforce Classic to Lightning, from business buy-in to post-migration adoption.',
     url: 'https://ellieatwhl.co.uk/salesforce/lightning-rollout',
     type: 'website',
@@ -20,7 +20,7 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'EllieAtWHL - Salesforce Lightning Rollout Series',
+    title: 'Salesforce Lightning Rollout Series | Ellie Matthewman',
     description: 'A comprehensive 3-part guide to successfully migrating from Salesforce Classic to Lightning, from business buy-in to post-migration adoption.',
     images: ['https://ellieatwhl.co.uk/favicon.ico'],
   },

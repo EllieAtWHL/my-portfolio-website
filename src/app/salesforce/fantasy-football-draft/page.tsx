@@ -5,7 +5,7 @@ export const metadata = {
   title: 'Fantasy Football Draft Application',
   description: 'How I used Salesforce to create a draft application for our Fantasy Football league',
   openGraph: {
-    title: 'EllieAtWHL - Fantasy Football Draft Application',
+    title: 'Fantasy Football Draft Application | Ellie Matthewman',
     description: 'How I used Salesforce to create a draft application for our Fantasy Football league',
     url: 'https://ellieatwhl.co.uk/salesforce/fantasy-football-draft',
     type: 'website',
@@ -20,7 +20,7 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'EllieAtWHL - Fantasy Football Draft Application',
+    title: 'Fantasy Football Draft Application | Ellie Matthewman',
     description: 'How I used Salesforce to create a draft application for our Fantasy Football league',
     images: ['https://ellieatwhl.co.uk/salesforce/fantasy-football-draft/GHLdataModel.png'],
   },

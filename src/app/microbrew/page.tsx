@@ -13,14 +13,14 @@ export const metadata = {
   title: 'Microbrew',
   description,
   openGraph: {
-    title: 'EllieAtWHL - Microbrew',
+    title: 'Microbrew | Ellie Matthewman',
     description,
     url: 'https://ellieatwhl.co.uk/microbrew',
     type: 'website',
   },
   twitter: {
     card: 'summary',
-    title: 'EllieAtWHL - Microbrew',
+    title: 'Microbrew | Ellie Matthewman',
     description,
   },
 };
