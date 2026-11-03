@@ -4,10 +4,11 @@ test.describe('Home page', () => {
   test('loads with expected title and hero content', async ({ page }) => {
     await page.goto('/');
 
-    await expect(page).toHaveTitle('EllieAtWHL');
-    await expect(page.getByRole('heading', { name: 'Trailblazer.' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Mentor.' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Champion.' })).toBeVisible();
+    await expect(page).toHaveTitle('Ellie Matthewman | Salesforce Developer & Mentor');
+    await expect(page.getByRole('heading', { name: 'Ellie Matthewman', level: 1 })).toBeVisible();
+    await expect(page.getByText('Trailblazer.', { exact: true })).toBeVisible();
+    await expect(page.getByText('Mentor.', { exact: true })).toBeVisible();
+    await expect(page.getByText('Champion.', { exact: true })).toBeVisible();
   });
 
   test('contact me CTA navigates to the contact page', async ({ page }) => {

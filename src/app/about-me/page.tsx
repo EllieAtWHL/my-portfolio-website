@@ -2,6 +2,7 @@ import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import Image from 'next/image';
 import MainSitePage from '@/components/MainSitePage';
+import { SITE_IMAGE } from '@/lib/site';
 
 export const metadata = {
   title: 'About Me',
@@ -10,13 +11,13 @@ export const metadata = {
     title: 'About Me | Ellie Matthewman',
     description: 'About Ellie Matthewman - Salesforce developer, community group leader, mentor and London 2012 volunteer.',
     url: 'https://ellieatwhl.co.uk/about-me',
-    images: ['/img/EllieMatthewman(Square).jpg'],
+    images: [SITE_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'About Me | Ellie Matthewman',
     description: 'About Ellie Matthewman - Salesforce developer, community group leader, mentor and London 2012 volunteer.',
-    images: ['/img/EllieMatthewman(Square).jpg'],
+    images: [SITE_IMAGE],
   },
 };
 

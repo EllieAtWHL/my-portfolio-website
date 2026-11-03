@@ -1,6 +1,12 @@
 import type { Metadata } from 'next';
 import HomeHero from '@/components/HomeHero';
-import { SITE_DESCRIPTION, SITE_TITLE, buildHomeStructuredData } from '@/lib/site';
+import {
+  SITE_DESCRIPTION,
+  SITE_IMAGE,
+  SITE_NAME,
+  SITE_TITLE,
+  buildHomeStructuredData,
+} from '@/lib/site';
 
 export const metadata: Metadata = {
   // absolute: the root layout's template would otherwise turn this into
@@ -13,13 +19,15 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     url: '/',
     type: 'profile',
-    images: ['/img/EllieMatthewman(Square).jpg'],
+    siteName: SITE_NAME,
+    locale: 'en_GB',
+    images: [SITE_IMAGE],
   },
   twitter: {
     card: 'summary',
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
-    images: ['/img/EllieMatthewman(Square).jpg'],
+    images: [SITE_IMAGE],
   },
 };
 

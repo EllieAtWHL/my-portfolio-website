@@ -14,6 +14,9 @@ export const SITE_TITLE = 'Ellie Matthewman | Salesforce Developer & Mentor';
 export const SITE_DESCRIPTION =
   'Ellie Matthewman (EllieAtWHL) - 11x certified Salesforce developer with 14+ years in the Salesforce ecosystem, co-leader of the London Salesforce Developer Group and RAD Women mentor.';
 
+/** Profile photo: home page share image and the schema.org Person image. */
+export const SITE_IMAGE = '/img/EllieMatthewman(Square).jpg';
+
 /** External profiles that belong to Ellie, for schema.org `sameAs`. */
 export const PROFILE_URLS = [
   'https://www.linkedin.com/in/elliematthewman',
@@ -35,7 +38,7 @@ export function buildHomeStructuredData() {
         name: SITE_NAME,
         alternateName: ['Eleanor Matthewman', 'EllieAtWHL'],
         url: SITE_URL,
-        image: `${SITE_URL}/img/EllieProfile.jpg`,
+        image: `${SITE_URL}${SITE_IMAGE}`,
         jobTitle: 'Salesforce Developer',
         description: SITE_DESCRIPTION,
         knowsAbout: ['Salesforce', 'Salesforce development', 'Mentoring'],

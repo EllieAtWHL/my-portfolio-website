@@ -23,7 +23,7 @@ test.describe('Salesforce section', () => {
   test('landing page lists the Salesforce projects', async ({ page }) => {
     await page.goto('/salesforce');
 
-    await expect(page).toHaveTitle('Salesforce');
+    await expect(page).toHaveTitle('Salesforce | Ellie Matthewman');
     await expect(page.getByRole('heading', { name: 'Salesforce', level: 1 })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Lightning Rollout' })).toHaveAttribute('href', '/salesforce/lightning-rollout');
     await expect(page.getByRole('link', { name: 'Fantasy Football Draft Application' })).toHaveAttribute(

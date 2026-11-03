@@ -22,7 +22,10 @@ const nokora = Nokora({
 // (WEB-238). The template appends the name to every page's own title; the
 // Spurs Women layout overrides it with its own so fan-site pages aren't
 // branded with Ellie's name. No `alternates.canonical` here - it would be
-// inherited by every page and point them all at the home page.
+// inherited by every page and point them all at the home page. No root
+// openGraph/applicationName either: openGraph is replaced wholesale by any
+// page that sets its own (nearly all do), and both would otherwise brand the
+// Spurs Women pages, which set none, as "Ellie Matthewman".
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
@@ -30,14 +33,7 @@ export const metadata: Metadata = {
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
-  applicationName: SITE_NAME,
   authors: [{ name: SITE_NAME, url: SITE_URL }],
-  creator: SITE_NAME,
-  openGraph: {
-    type: 'website',
-    siteName: SITE_NAME,
-    locale: 'en_GB',
-  },
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon.ico',
