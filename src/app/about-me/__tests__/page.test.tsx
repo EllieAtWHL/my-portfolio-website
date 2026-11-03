@@ -33,7 +33,7 @@ describe('About Me page', () => {
     render(<AboutMe />);
 
     expect(
-      screen.getByText(/Salesforce Golden Hoodie at the AiForce London World Tour/)
+      screen.getByText(/Salesforce Golden Hoodie at the AIForce World Tour London/)
     ).toBeInTheDocument();
   });
 

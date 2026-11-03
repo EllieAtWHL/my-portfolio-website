@@ -83,7 +83,7 @@ export default function AboutMe() {
                       I am also passionate about coaching and mentoring through RAD Women, helping empower and support women in their personal and professional development journeys.
                     </p>
                     <p>
-                      In October 2026 I was proud to receive a Salesforce Golden Hoodie at the AiForce London World Tour, recognising my contributions to the Developer and Women in Technology communities.
+                      In October 2026 I was proud to receive a Salesforce Golden Hoodie at the AIForce World Tour London, recognising my contributions to the Developer and Women in Technology communities.
                     </p>
                     <p>
                       I also enjoy playing games and spending time with my family. My passion of games led me to combine my passions by developing a digital version of the card game{' '}
