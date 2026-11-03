@@ -3,10 +3,10 @@ import London2012Layout from '@/components/London2012Layout';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'EllieAtWHL - My First Rehearsal',
+  title: 'My First Rehearsal',
   description: 'The journey of a volunteer performer at the Olympic Ceremonies',
   openGraph: {
-    title: 'EllieAtWHL - My Olympic Journey',
+    title: 'My Olympic Journey | Ellie Matthewman',
     description: 'The journey of a volunteer performer at the Olympic Ceremonies',
     url: '/london-2012/my-first-rehearsal',
     type: 'website',

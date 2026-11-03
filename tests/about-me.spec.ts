@@ -4,7 +4,7 @@ test.describe('About Me page', () => {
   test('loads with expected title and heading', async ({ page }) => {
     await page.goto('/about-me');
 
-    await expect(page).toHaveTitle('About Me');
+    await expect(page).toHaveTitle('About Me | Ellie Matthewman');
     await expect(page.getByRole('heading', { name: 'About Me', level: 1 })).toBeVisible();
     await expect(page.getByText('Trailblazer. Mentor. Champion.')).toBeVisible();
   });

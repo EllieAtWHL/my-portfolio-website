@@ -2,21 +2,22 @@ import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import Image from 'next/image';
 import MainSitePage from '@/components/MainSitePage';
+import { SITE_IMAGE } from '@/lib/site';
 
 export const metadata = {
   title: 'About Me',
-  description: 'A little bit about me',
+  description: 'About Ellie Matthewman - Salesforce developer, community group leader, mentor and London 2012 volunteer.',
   openGraph: {
-    title: 'EllieAtWHL - About Me',
-    description: 'A little bit about me',
+    title: 'About Me | Ellie Matthewman',
+    description: 'About Ellie Matthewman - Salesforce developer, community group leader, mentor and London 2012 volunteer.',
     url: 'https://ellieatwhl.co.uk/about-me',
-    images: ['/about-me/img/EllieMatthewman(Square).jpg'],
+    images: [SITE_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'EllieAtWHL - About Me',
-    description: 'A little bit about me',
-    images: ['/about-me/img/EllieMatthewman(Square).jpg'],
+    title: 'About Me | Ellie Matthewman',
+    description: 'About Ellie Matthewman - Salesforce developer, community group leader, mentor and London 2012 volunteer.',
+    images: [SITE_IMAGE],
   },
 };
 
@@ -36,7 +37,7 @@ export default function AboutMe() {
                   <Image 
                     className="profile"
                     src="/img/EllieProfile.jpg"
-                    alt="Brown hair woman with glasses"
+                    alt="Ellie Matthewman"
                     width={200}
                     height={200}
                     priority
@@ -49,7 +50,7 @@ export default function AboutMe() {
                 
                 <article className="intro-text">
                   <Card variant="highlight" padding="md" className="mb-6">
-                    <h2 className="heading-2">Hi there! I&apos;m Ellie</h2>
+                    <h2 className="heading-2">Hi there! I&apos;m Ellie Matthewman</h2>
                     <p>
                       A highly skilled and experienced Salesforce professional with a passion for technology and helping businesses succeed.
                     </p>
@@ -80,6 +81,9 @@ export default function AboutMe() {
                     </p>
                     <p>
                       I am also passionate about coaching and mentoring through RAD Women, helping empower and support women in their personal and professional development journeys.
+                    </p>
+                    <p>
+                      In October 2026 I was proud to receive a Salesforce Golden Hoodie at the AIForce World Tour London, recognising my contributions to the Developer and Women in Technology communities.
                     </p>
                     <p>
                       I also enjoy playing games and spending time with my family. My passion of games led me to combine my passions by developing a digital version of the card game{' '}

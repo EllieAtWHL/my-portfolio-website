@@ -5,7 +5,7 @@ export const metadata = {
   title: 'Salesforce Lightning Rollout | Part 1',
   description: 'How To Persuade Your Business To Let Lightning Strike. Before starting the Salesforce migration from Classic to Lightning, you need buy-in from all levels of the business.',
   openGraph: {
-    title: 'EllieAtWHL - Salesforce Lightning Rollout | Part 1',
+    title: 'Salesforce Lightning Rollout | Part 1 | Ellie Matthewman',
     description: 'How To Persuade Your Business To Let Lightning Strike. Before starting the Salesforce migration from Classic to Lightning, you need buy-in from all levels of the business.',
     url: 'https://ellieatwhl.co.uk/salesforce/lightning-rollout/part-1',
     type: 'website',
@@ -20,7 +20,7 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'EllieAtWHL - Salesforce Lightning Rollout | Part 1',
+    title: 'Salesforce Lightning Rollout | Part 1 | Ellie Matthewman',
     description: 'How To Persuade Your Business To Let Lightning Strike. Before starting the Salesforce migration from Classic to Lightning, you need buy-in from all levels of the business.',
     images: ['https://ellieatwhl.co.uk/favicon.ico'],
   },

@@ -4,10 +4,10 @@ import Image from 'next/image';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'EllieAtWHL - It Begins...',
+  title: 'It Begins...',
   description: 'The journey of a volunteer performer at the Olympic Ceremonies',
   openGraph: {
-    title: 'EllieAtWHL - My Olympic Journey',
+    title: 'My Olympic Journey | Ellie Matthewman',
     description: 'The journey of a volunteer performer at the Olympic Ceremonies',
     url: '/london-2012/it-begins',
     type: 'website',

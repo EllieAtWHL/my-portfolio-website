@@ -5,7 +5,7 @@ export const metadata = {
   title: 'Salesforce',
   description: 'My Salesforce projects, guides and applications, from a Lightning migration series to a Fantasy Football draft app.',
   openGraph: {
-    title: 'EllieAtWHL - Salesforce',
+    title: 'Salesforce | Ellie Matthewman',
     description: 'My Salesforce projects, guides and applications, from a Lightning migration series to a Fantasy Football draft app.',
     url: 'https://ellieatwhl.co.uk/salesforce',
     type: 'website',
@@ -20,7 +20,7 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'EllieAtWHL - Salesforce',
+    title: 'Salesforce | Ellie Matthewman',
     description: 'My Salesforce projects, guides and applications, from a Lightning migration series to a Fantasy Football draft app.',
     images: ['https://ellieatwhl.co.uk/img/salesforce.png'],
   },

@@ -5,16 +5,16 @@ export const metadata = {
   title: 'Experience',
   description: 'My Salesforce experience and certifications',
   openGraph: {
-    title: 'EllieAtWHL - Experience',
+    title: 'Experience | Ellie Matthewman',
     description: 'My Salesforce experience and certifications',
     url: 'https://ellieatwhl.co.uk/experience',
-    images: ['/experience/img/SF-Certified_Platform-Developer-II.png'],
+    images: ['/img/SF-Certified_Platform-Developer-II.png'],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'EllieAtWHL - Experience',
+    title: 'Experience | Ellie Matthewman',
     description: 'My Salesforce experience and certifications',
-    images: ['/experience/img/SF-Certified_Platform-Developer-II.png'],
+    images: ['/img/SF-Certified_Platform-Developer-II.png'],
   },
 };
 

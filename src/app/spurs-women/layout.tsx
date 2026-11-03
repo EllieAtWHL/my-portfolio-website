@@ -7,7 +7,13 @@ import { SpursWrapper } from "../../components/SpursWrapper";
 import { SkipLink } from "../../components/SkipLink";
 
 export const metadata: Metadata = {
-  title: "Tottenham Hotspur Women",
+  // Own template so the root layout's "%s | Ellie Matthewman" doesn't get
+  // appended to fan-site pages - their titles (via src/lib/metadata.ts)
+  // already carry the section name.
+  title: {
+    absolute: "Tottenham Hotspur Women",
+    template: "%s",
+  },
   description: "Latest news, matches, and updates for Tottenham Hotspur Women FC",
   manifest: '/spurs-women/manifest.webmanifest',
   icons: {

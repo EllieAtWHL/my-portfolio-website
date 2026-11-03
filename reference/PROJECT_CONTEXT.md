@@ -338,7 +338,33 @@ Scope:
   - Page-level titles and descriptions.
   - Open Graph metadata for key pages.
   - Semantic HTML.
-  - Sitemap and robots.txt if/when useful.
+  - Sitemap and robots.txt.
+
+Current implementation (WEB-238 - ranking the core site for "Ellie Matthewman"):
+  - `src/lib/site.ts` is the single source for the site URL, name, default
+    title/description and the external profile URLs (`PROFILE_URLS`).
+  - Root layout sets `metadataBase`, a name-first default title and the
+    `%s | Ellie Matthewman` title template, so core-site pages only set their
+    own short title (e.g. `'Experience'`) - don't prefix titles with
+    "EllieAtWHL - " or the name. Open Graph/Twitter titles don't go through the
+    template, so those spell out `'X | Ellie Matthewman'` themselves.
+  - Spurs Women opts out of the template: its layout has its own `%s`
+    template, and `src/lib/metadata.ts`'s helpers return `absolute` titles (a
+    layout's template doesn't reach the `page.tsx` beside it).
+  - The home page (`src/app/page.tsx`, a server component wrapping the client
+    `HomeHero`) has the page's only `<h1>` ("Ellie Matthewman"), a canonical
+    URL, and schema.org `Person` + `WebSite` JSON-LD with `sameAs` links to
+    `PROFILE_URLS`. Update that list when a profile is added or removed.
+  - No canonical in the root layout - it would be inherited by every page.
+    Set `alternates.canonical` per page instead.
+  - `src/app/robots.ts` / `src/app/sitemap.ts` serve `/robots.txt` and
+    `/sitemap.xml`. The sitemap is an explicit list of core-site routes;
+    `src/app/__tests__/sitemap.test.ts` fails if a core-site `page.tsx` is
+    neither listed nor in `EXCLUDED_ROUTES`. Spurs Women's data-driven routes
+    aren't in it yet (WEB-58).
+  - Off-site (manual, not code): Google Search Console / Bing Webmaster Tools
+    verification and sitemap submission, and keeping the `PROFILE_URLS`
+    profiles linking back to the site.
 
 Explicitly out of scope:
   - Advanced keyword tracking

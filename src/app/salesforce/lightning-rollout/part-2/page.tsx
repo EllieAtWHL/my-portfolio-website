@@ -5,7 +5,7 @@ export const metadata = {
   title: 'Salesforce Lightning Rollout | Part 2',
   description: 'Running the Migration Project. This guide can provide you with the information you need to successfully complete the steps needed to migrate from Salesforce Classic to Lightning.',
   openGraph: {
-    title: 'EllieAtWHL - Salesforce Lightning Rollout | Part 2',
+    title: 'Salesforce Lightning Rollout | Part 2 | Ellie Matthewman',
     description: 'Running the Migration Project. This guide can provide you with the information you need to successfully complete the steps needed to migrate from Salesforce Classic to Lightning.',
     url: 'https://ellieatwhl.co.uk/salesforce/lightning-rollout/part-2',
     type: 'website',
@@ -20,7 +20,7 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'EllieAtWHL - Salesforce Lightning Rollout | Part 2',
+    title: 'Salesforce Lightning Rollout | Part 2 | Ellie Matthewman',
     description: 'Running the Migration Project. This guide can provide you with the information you need to successfully complete the steps needed to migrate from Salesforce Classic to Lightning.',
     images: ['https://ellieatwhl.co.uk/favicon.ico'],
   },
