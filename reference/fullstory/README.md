@@ -80,10 +80,19 @@ declare global {
 
 ## Environment Detection
 
-FullStory records on every domain, including `localhost:3000` in development.
-There's no environment gating in code today - if you want to separate
-data by environment, create segments in FullStory based on
-`window.location.hostname` on the dashboard side, e.g.:
+There IS environment gating in code: every tracking helper in
+`src/lib/fullstory.ts` (`trackEvent`, `setUserVars`, and everything built on
+`trackEvent` - `trackPageView`, `trackButtonClick`, `trackFormInteraction`,
+`trackNavigation`, `trackError`) checks
+`window.location.hostname !== 'localhost'` and no-ops otherwise, so none of
+these custom events fire in local development. This doesn't stop the
+FullStory *script itself* from loading and recording the session on
+`localhost:3000` once consent is accepted (the `hostname` check only lives
+inside the tracking helpers, not in `FullStoryLoader.tsx` or
+`fullstory-init.js`) - so a local session can still appear in the dashboard,
+just without any of the custom events above. If you want to separate
+recordings by environment on the dashboard side, segment in FullStory based
+on `window.location.hostname`, e.g.:
 
 ```javascript
 const isProduction = window.location.hostname !== 'localhost';
