@@ -51,6 +51,9 @@ src/
 | `/spurs-women/stadiums` | Grid of all stadiums with match counts |
 | `/spurs-women/stadiums/[stadiumSlug]` | Stadium detail: historical names, match history, capacity/location |
 | `/spurs-women/groundhopper` | Groundhopper, a daily map game on the `stadia` data (see `groundhopper/README.md`) |
+| `/spurs-women/login` | Google OAuth sign-in for the admin (`src/app/spurs-women/login/page.tsx`), redirects to `/spurs-women/profile` |
+| `/spurs-women/profile` | Signed-in user's profile/sign-out page (WEB-176); redirects to `/spurs-women/login` if not authenticated |
+| `/spurs-women/unauthorised` | Shown when a signed-in user isn't the configured `ADMIN_EMAIL` |
 
 ## Components
 
