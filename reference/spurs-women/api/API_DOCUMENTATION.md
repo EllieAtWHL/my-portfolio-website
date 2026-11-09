@@ -125,7 +125,7 @@ Fetches upcoming Tottenham Hotspur Women matches. Despite the `/cache/` path seg
 {
   "matches": [
     {
-      "id": "482",
+      "id": "7c3b2e1a-9f4d-4c8a-9e2b-1a2b3c4d5e6f",
       "date": "2026-08-20T19:00:00.000Z",
       "kickoff_time": "19:00",
       "home_team": {
@@ -153,13 +153,13 @@ Fetches upcoming Tottenham Hotspur Women matches. Despite the `/cache/` path seg
       "attended": false,
       "is_home_match": true,
       "is_neutral_venue": false,
-      "stadium_id": "12",
+      "stadium_id": "9b1f6a2c-5d3e-4f7a-8b6c-2e1d9f0a3c4b",
       "stadium_display_name": "Brisbane Road",
       "stadium_slug": "brisbane-road",
       "attendance": null,
       "notes": null,
       "competitions": { "name": "Women's Super League", "icon_svg": null },
-      "season_id": 12,
+      "season_id": "3f9e7c1a-6b2d-4a8e-9c1f-4d5e6a7b8c9d",
       "home_possession": null,
       "away_possession": null,
       "home_total_shots": null,
@@ -206,12 +206,12 @@ Fetches all seasons with match counts.
 {
   "seasons": [
     {
-      "id": 1,
+      "id": "1a2b3c4d-5e6f-4a1b-8c2d-3e4f5a6b7c8d",
       "name": "2018-19",
       "match_count": 20
     },
     {
-      "id": 2,
+      "id": "2b3c4d5e-6f7a-4b2c-9d3e-4f5a6b7c8d9e",
       "name": "2019-20",
       "match_count": 22
     }
@@ -224,7 +224,7 @@ Fetches all seasons with match counts.
 - **Cache**: 24 hours (server-side, tag-based revalidation)
 - **Data**: All seasons with a count of matches recorded for each
 - **Sorting**: Oldest season first, ascending by `start_date` (`getSeasonsWithMatchCounts` in `src/lib/data/seasons.ts` orders ascending — this is not reversed anywhere before the response is returned)
-- **Note**: There is no "is this the active season" flag in the response — infer the current season by the most recent `id`/start date
+- **Note**: `id` is a UUID string (the `seasons` table uses UUID primary keys, not integers - see `supabase/migrations/20260826175328_baseline_schema.sql`). There is no "is this the active season" flag in the response — infer the current season by the most recent `start_date`
 
 ---
 
