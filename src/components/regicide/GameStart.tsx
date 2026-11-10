@@ -11,13 +11,22 @@ interface GameStartProps {
   onShowRules: () => void;
 }
 
-const RELEASES = [
+// A release lists its notes either as one flat list (`notes`) or, from
+// v0.5 on, split into new features and bug fixes.
+type Release = { version: string; date: string } & (
+  | { notes: string[] }
+  | { features: string[]; fixes: string[] }
+);
+
+const RELEASES: Release[] = [
   {
     version: 'v0.5',
     date: '10th November 2026',
-    notes: [
+    features: [
       'Added an in-app "How to play" guide to the solo rules',
       'Wins now earn a Gold, Silver or Bronze medal depending on how many Jesters you used, tracked in your stats',
+    ],
+    fixes: [
       'Pairs of 5s and pairs of Aces can now be played, as the official rules allow',
       'Jesters can now only be used before choosing a card or before discarding, as the official solo rules require',
     ],
@@ -47,6 +56,19 @@ const RELEASES = [
     notes: ['Initial build of game'],
   },
 ];
+
+function ReleaseNotes({ notes }: { notes: string[] }) {
+  return (
+    <ul className="space-y-1 text-gray-600 dark:text-gray-400 pb-3">
+      {notes.map((note) => (
+        <li key={note} className="flex items-baseline gap-2">
+          <span className="text-green-600 dark:text-green-400 text-sm">▸</span>
+          <span>{note}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 export function GameStart({ onStartGame, onShowStats, onShowRules }: GameStartProps) {
   return (
@@ -206,14 +228,16 @@ export function GameStart({ onStartGame, onShowStats, onShowRules }: GameStartPr
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </summary>
-              <ul className="space-y-1 text-gray-600 dark:text-gray-400 pb-3">
-                {release.notes.map((note) => (
-                  <li key={note} className="flex items-baseline gap-2">
-                    <span className="text-green-600 dark:text-green-400 text-sm">▸</span>
-                    <span>{note}</span>
-                  </li>
-                ))}
-              </ul>
+              {'notes' in release ? (
+                <ReleaseNotes notes={release.notes} />
+              ) : (
+                <>
+                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">New features</h4>
+                  <ReleaseNotes notes={release.features} />
+                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Bug fixes</h4>
+                  <ReleaseNotes notes={release.fixes} />
+                </>
+              )}
             </details>
           ))}
         </UniversalCard>
