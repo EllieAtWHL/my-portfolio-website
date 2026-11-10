@@ -17,8 +17,11 @@ jest.mock('@vercel/speed-insights/next', () => ({
 const mockUseCookieConsent = useCookieConsent as jest.Mock;
 
 describe('ConsentGatedVercelScripts', () => {
-  it.each(['rejected', null] as const)('renders nothing when consent is %s', (consent) => {
-    mockUseCookieConsent.mockReturnValue({ consent });
+  it.each([
+    ['nothing is allowed', () => false],
+    ['every other category is allowed', (category: string) => category !== 'analytics'],
+  ])('renders nothing when %s', (_label, hasConsent) => {
+    mockUseCookieConsent.mockReturnValue({ hasConsent });
 
     render(<ConsentGatedVercelScripts />);
 
@@ -26,8 +29,8 @@ describe('ConsentGatedVercelScripts', () => {
     expect(screen.queryByTestId('vercel-speed-insights')).not.toBeInTheDocument();
   });
 
-  it('renders Analytics and SpeedInsights once consent is accepted', () => {
-    mockUseCookieConsent.mockReturnValue({ consent: 'accepted' });
+  it('renders Analytics and SpeedInsights once analytics is allowed', () => {
+    mockUseCookieConsent.mockReturnValue({ hasConsent: (category: string) => category === 'analytics' });
 
     render(<ConsentGatedVercelScripts />);
 

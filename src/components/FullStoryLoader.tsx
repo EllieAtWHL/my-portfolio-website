@@ -5,12 +5,13 @@ import { useCookieConsent } from './CookieConsentProvider';
 
 // FullStory session recording sets cookies and starts capturing as soon as
 // this script runs, so it must not load until the visitor has actively
-// accepted (WEB-102) - unlike the original unconditional beforeInteractive
-// <Script> in layout.tsx, this only ever renders once consent === 'accepted'.
+// allowed it (WEB-102) - unlike the original unconditional beforeInteractive
+// <Script> in layout.tsx, this only ever renders once the visitor has allowed
+// the session recording category (WEB-104).
 export function FullStoryLoader() {
-  const { consent } = useCookieConsent();
+  const { hasConsent } = useCookieConsent();
 
-  if (consent !== 'accepted') return null;
+  if (!hasConsent('sessionRecording')) return null;
 
   return <Script src="/fullstory-init.js" strategy="afterInteractive" />;
 }

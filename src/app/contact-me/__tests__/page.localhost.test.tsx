@@ -19,11 +19,11 @@ const mockUseCookieConsent = useCookieConsent as jest.Mock;
 
 describe('ContactMe reCAPTCHA consent gating (localhost)', () => {
   it('skips both the captcha and the consent message on localhost regardless of consent', () => {
-    mockUseCookieConsent.mockReturnValue({ consent: null });
+    mockUseCookieConsent.mockReturnValue({ hasConsent: () => false });
 
     render(<ContactMe />);
 
     expect(document.querySelector('.g-recaptcha')).not.toBeInTheDocument();
-    expect(screen.queryByText(/accept cookies/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/spam protection" cookies/i)).not.toBeInTheDocument();
   });
 });

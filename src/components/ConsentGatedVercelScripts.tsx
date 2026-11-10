@@ -5,9 +5,9 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import { useCookieConsent } from './CookieConsentProvider';
 
 export function ConsentGatedVercelScripts() {
-  const { consent } = useCookieConsent();
+  const { hasConsent } = useCookieConsent();
 
-  if (consent !== 'accepted') return null;
+  if (!hasConsent('analytics')) return null;
 
   return (
     <>

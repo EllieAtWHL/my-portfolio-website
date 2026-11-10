@@ -24,21 +24,24 @@ jest.mock('@/components/MainSitePage', () => {
 const mockUseCookieConsent = useCookieConsent as jest.Mock;
 
 describe('ContactMe reCAPTCHA consent gating (non-localhost)', () => {
-  it('shows a message asking for cookie consent instead of the captcha when not accepted', () => {
-    mockUseCookieConsent.mockReturnValue({ consent: 'rejected' });
+  it('shows a message asking for spam protection consent instead of the captcha when it is not allowed', () => {
+    // Every other category allowed - only spam protection should matter here
+    mockUseCookieConsent.mockReturnValue({
+      hasConsent: (category: string) => category !== 'spamProtection',
+    });
 
     render(<ContactMe />);
 
-    expect(screen.getByText(/accept cookies/i)).toBeInTheDocument();
+    expect(screen.getByText(/allow "spam protection" cookies/i)).toBeInTheDocument();
     expect(document.querySelector('.g-recaptcha')).not.toBeInTheDocument();
   });
 
-  it('renders the captcha widget once cookies are accepted', () => {
-    mockUseCookieConsent.mockReturnValue({ consent: 'accepted' });
+  it('renders the captcha widget once spam protection is allowed', () => {
+    mockUseCookieConsent.mockReturnValue({ hasConsent: (category: string) => category === 'spamProtection' });
 
     render(<ContactMe />);
 
     expect(document.querySelector('.g-recaptcha')).toBeInTheDocument();
-    expect(screen.queryByText(/accept cookies/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/spam protection" cookies/i)).not.toBeInTheDocument();
   });
 });
