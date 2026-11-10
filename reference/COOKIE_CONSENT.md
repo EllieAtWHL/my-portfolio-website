@@ -57,6 +57,7 @@ and Spurs Women, not re-asked when navigating between them.
   hasConsent: (category: ConsentCategory) => boolean;  // false while choices is null
   isConsentKnown: boolean;  // false until the stored choice has been read client-side
   isBannerOpen: boolean;
+  shouldFocusBanner: boolean;  // true only when openPreferences() opened it
   acceptAll: () => void;
   rejectAll: () => void;
   saveChoices: (choices: ConsentChoices) => void;
@@ -104,9 +105,11 @@ banner. `openPreferences()` (wired to the footer's "Cookie preferences"
 control) reopens it without clearing the stored choice, so the current
 choices stay in effect until the visitor saves new ones.
 
-Multiple open tabs are kept in sync via a `storage` event listener - a choice
-made in one tab closes the banner (and applies the new choices, including
-the FullStory stop below) in another already-open tab too.
+Multiple open tabs are kept in sync via a `storage` event listener. A
+choice made in one tab applies its new choices in every other open tab
+(including the FullStory stop/restart below), and closes a *first-visit*
+banner there. A banner the visitor deliberately reopened in another tab
+stays open, so their unsaved ticks aren't thrown away mid-edit.
 
 ## The banner
 
@@ -133,7 +136,12 @@ Whenever a choice with `sessionRecording: false` is applied - `rejectAll()`,
 `saveChoices()` with it unticked, or the same arriving from another tab - the
 provider also calls `window.FS.consent(false)` and `window.FS.shutdown()` (if
 FullStory is loaded) as a best-effort stop, since it may already be recording
-by that point. This can't undo
+by that point. If session recording is then turned back on in the same page
+session, the provider calls `window.FS.consent(true)` and
+`window.FS.restart()`. It has to: `FullStoryLoader`'s `<Script>` won't re-run
+an already-loaded `src`, so re-rendering it alone wouldn't resume recording.
+A ref tracks whether the provider stopped FullStory, so `restart()` is only
+called after its own `shutdown()`. This can't undo
 anything already captured before the call - there's no way to un-capture data
 already sent - but it does stop further capture within the current session
 without needing a page reload. Vercel Analytics, Vercel Speed Insights, and
@@ -200,9 +208,12 @@ banner. `theme="spurs"` switches the link and button to Spurs Women styling.
 ### YouTube and Spotify (`ConsentGatedEmbed`)
 
 The Lightning Rollout YouTube videos (`LightningRolloutPart1.tsx`,
-`LightningRolloutPart2.tsx`) and the London 2012 Spotify track
-(`src/app/london-2012/my-first-audition/page.tsx`) wrap their iframe wrapper
-in `<ConsentGatedEmbed service href linkLabel>`. The iframe isn't rendered at
+`LightningRolloutPart2.tsx`) use `<YouTubeEmbed videoId />`
+(`src/components/YouTubeEmbed.tsx`). It wraps the iframe in
+`ConsentGatedEmbed` and builds both the embed URL and the fallback's watch
+link from the one ID, so the two can't drift apart. The London 2012
+Spotify track (`src/app/london-2012/my-first-audition/page.tsx`) wraps its
+iframe in `<ConsentGatedEmbed service href linkLabel>` directly. The iframe isn't rendered at
 all until `embeds` is allowed, so nothing is requested from YouTube or
 Spotify before then. Like `InstagramPost`, it renders nothing while
 `isConsentKnown` is false.
@@ -281,14 +292,19 @@ that variant gets a real transparent background, not just this button.
   order. Keyboard users reach the banner's buttons (and checkboxes) as the
   very first focusable elements on the page, instead of only after tabbing through the entire
   page (nav, content, footer).
-- `role="region" aria-label="Cookie consent" aria-live="polite"`
-  announces the banner to screen reader users when it appears, without
-  forcibly moving focus into it - it isn't a modal dialog, the rest of the
-  page stays usable while it's open, and grabbing focus is normally reserved
-  for actual modals. It used to also set `aria-atomic="true"`; that was
-  dropped in WEB-104, because with an expandable checkbox list it would
-  re-read the whole banner every time the content changed, rather than just
-  announcing the newly revealed list.
+- The banner is a `role="region" aria-label="Cookie consent"`, and only its
+  summary sentence is `aria-live="polite"`. That announces the banner when it
+  appears, without forcibly moving focus into it on a first visit: it isn't
+  a modal dialog, and the rest of the page stays usable while it's open.
+  Before WEB-104 the whole region was the live region (with
+  `aria-atomic="true"`). With a checkbox list inside, that would have read
+  every category description out the moment Manage choices was pressed.
+- When the visitor opens the banner on purpose, through either a footer
+  "Cookie preferences" control or the button under a blocked embed,
+  `openPreferences()` sets `shouldFocusBanner` and the banner focuses its
+  region (`tabIndex={-1}`). Without that, a keyboard user pressing the
+  button mid-article would get no feedback, and the controls could be a
+  long way off in tab order. The next Tab reaches the first checkbox.
 - The checkboxes sit in a `<fieldset>` with a visually hidden `<legend>`;
   each has a real `<label>` (the category name) and its description wired up
   via `aria-describedby`. When Manage choices is swapped for Save choices,
@@ -301,11 +317,14 @@ that variant gets a real transparent background, not just this button.
   read/write for accept all / reject all / mixed choices,
   versioning/migration behavior (every older version including v3's single
   status, missing or non-boolean categories, pre-versioning bare string,
-  malformed JSON all treated as no consent), multi-tab sync, and the
-  FullStory shutdown whenever session recording ends up off.
+  malformed JSON all treated as no consent), multi-tab sync (first-visit
+  banner closes, a reopened one stays open), the FullStory shutdown whenever
+  session recording ends up off and restart when it's turned back on, and
+  `shouldFocusBanner` only being set by `openPreferences()`.
 - `src/components/__tests__/CookieConsentBanner.test.tsx` - open/closed
   rendering, summary vs. detail view, Save choices passing exactly the
-  ticked categories, pre-filled choices on reopen, per-section
+  ticked categories, pre-filled choices on reopen, focus only when asked
+  for, the checkbox list staying outside the live region, per-section
   (`usePathname`) theming.
 - `src/components/__tests__/FullStoryLoader.test.tsx` /
   `ConsentGatedVercelScripts.test.tsx` - each loads only for its own
@@ -317,6 +336,8 @@ that variant gets a real transparent background, not just this button.
   version, so the non-localhost case is covered via a
   `@jest-environment-options` URL docblock instead, matching
   `src/lib/__tests__/fullstory.non-localhost.test.ts`'s existing pattern).
+- `src/components/__tests__/YouTubeEmbed.test.tsx` - embed URL and fallback
+  link both derived from the video ID.
 - `src/components/__tests__/ConsentGatedEmbed.test.tsx` - the iframe gate
   (nothing until consent is known, fallback until `embeds` is allowed, even
   when everything else is) and the fallback's link, button and theming.

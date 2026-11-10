@@ -19,6 +19,7 @@ function mockConsent(overrides: Partial<ReturnType<typeof useCookieConsent>> = {
   const value = {
     choices: null,
     isBannerOpen: true,
+    shouldFocusBanner: false,
     acceptAll: jest.fn(),
     rejectAll: jest.fn(),
     saveChoices: jest.fn(),
@@ -116,6 +117,32 @@ describe('CookieConsentBanner', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Save choices' }));
 
     expect(saveChoices).toHaveBeenCalledWith({ ...choices, embeds: false });
+  });
+
+  it('moves focus into the banner when it was opened via Cookie preferences', () => {
+    mockConsent({ shouldFocusBanner: true });
+
+    render(<CookieConsentBanner />);
+
+    expect(screen.getByRole('region', { name: 'Cookie consent' })).toHaveFocus();
+  });
+
+  it('leaves focus alone when the banner opens by itself on a first visit', () => {
+    mockConsent({ shouldFocusBanner: false });
+
+    render(<CookieConsentBanner />);
+
+    expect(screen.getByRole('region', { name: 'Cookie consent' })).not.toHaveFocus();
+  });
+
+  it('keeps the checkbox list out of the live region', () => {
+    mockConsent({ choices: { sessionRecording: false, analytics: false, spamProtection: false, embeds: false } });
+
+    render(<CookieConsentBanner />);
+
+    expect(screen.getByRole('region', { name: 'Cookie consent' })).not.toHaveAttribute('aria-live');
+    expect(screen.getByRole('group').closest('[aria-live]')).toBeNull();
+    expect(screen.getByText(/This site uses optional cookies/)).toHaveAttribute('aria-live', 'polite');
   });
 
   it('uses the main-site button styling outside /spurs-women', () => {

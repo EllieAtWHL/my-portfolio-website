@@ -29,6 +29,7 @@ function TestConsumer() {
     hasConsent,
     isConsentKnown,
     isBannerOpen,
+    shouldFocusBanner,
     acceptAll,
     rejectAll,
     saveChoices,
@@ -44,6 +45,7 @@ function TestConsumer() {
       ))}
       <span data-testid="banner-open">{String(isBannerOpen)}</span>
       <span data-testid="consent-known">{String(isConsentKnown)}</span>
+      <span data-testid="focus-banner">{String(shouldFocusBanner)}</span>
       <button onClick={acceptAll}>accept all</button>
       <button onClick={rejectAll}>reject all</button>
       <button onClick={() => saveChoices(ANALYTICS_ONLY)}>save analytics only</button>
@@ -74,7 +76,7 @@ describe('CookieConsentProvider', () => {
   beforeEach(() => {
     localStorage.clear();
     // @ts-expect-error - test double, not a full FullStoryAPI
-    window.FS = { consent: jest.fn(), shutdown: jest.fn() };
+    window.FS = { consent: jest.fn(), shutdown: jest.fn(), restart: jest.fn() };
   });
 
   it('opens the banner on first visit when no choice is stored', async () => {
@@ -144,6 +146,43 @@ describe('CookieConsentProvider', () => {
     expect(window.FS?.shutdown).toHaveBeenCalled();
   });
 
+  it('restarts FullStory if session recording is turned back on after being turned off', async () => {
+    storeChoices(ALL_ON);
+    renderProvider();
+    await screen.findByTestId('choices');
+
+    click('save analytics only');
+    expect(window.FS?.shutdown).toHaveBeenCalledTimes(1);
+    expect(window.FS?.restart).not.toHaveBeenCalled();
+
+    click('reopen');
+    click('accept all');
+
+    expect(window.FS?.consent).toHaveBeenLastCalledWith(true);
+    expect(window.FS?.restart).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not restart FullStory on accept when it was never stopped', async () => {
+    renderProvider();
+    await screen.findByTestId('banner-open');
+
+    click('accept all');
+
+    expect(window.FS?.restart).not.toHaveBeenCalled();
+  });
+
+  it('only asks the banner to take focus when openPreferences() opened it', async () => {
+    renderProvider();
+    // First-visit banner opens by itself and must not steal focus
+    expect(await screen.findByTestId('banner-open')).toHaveTextContent('true');
+    expect(screen.getByTestId('focus-banner')).toHaveTextContent('false');
+
+    click('accept all');
+    click('reopen');
+
+    expect(screen.getByTestId('focus-banner')).toHaveTextContent('true');
+  });
+
   it('openPreferences() reopens the banner after a choice was already made', async () => {
     storeChoices(ALL_ON);
     renderProvider();
@@ -170,6 +209,32 @@ describe('CookieConsentProvider', () => {
     expect(screen.getByTestId('has-sessionRecording')).toHaveTextContent('false');
     expect(screen.getByTestId('has-analytics')).toHaveTextContent('true');
     expect(window.FS?.shutdown).toHaveBeenCalled();
+  });
+
+  it('closes a first-visit banner when a choice is made in another tab', async () => {
+    renderProvider();
+    expect(await screen.findByTestId('banner-open')).toHaveTextContent('true');
+
+    act(() => {
+      storeChoices(ALL_ON);
+      window.dispatchEvent(new StorageEvent('storage', { key: 'cookie-consent' }));
+    });
+
+    expect(screen.getByTestId('banner-open')).toHaveTextContent('false');
+  });
+
+  it('keeps a banner reopened for editing open when another tab saves a choice', async () => {
+    storeChoices(ALL_ON);
+    renderProvider();
+    await screen.findByTestId('choices');
+    click('reopen');
+
+    act(() => {
+      storeChoices(ANALYTICS_ONLY);
+      window.dispatchEvent(new StorageEvent('storage', { key: 'cookie-consent' }));
+    });
+
+    expect(screen.getByTestId('banner-open')).toHaveTextContent('true');
   });
 
   it.each([

@@ -18,8 +18,9 @@ export default function InstagramPost({ url }: { url: string }) {
 
   useEffect(() => {
     // Meta's embed sets instagram.com/facebook.com cookies even for
-    // logged-out viewers, so unlike the Bluesky/YouTube/Spotify embeds it
-    // stays behind cookie consent (WEB-147) - see the fallback below.
+    // logged-out viewers, so like the YouTube/Spotify embeds (and unlike
+    // Bluesky/OpenStreetMap, which set none) it stays behind the "Embedded
+    // content" consent category (WEB-147, WEB-104) - see the fallback below.
     if (!url || !hasConsent) return;
 
     // Clear previous embed if it exists

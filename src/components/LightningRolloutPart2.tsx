@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { Card } from '@/components/Card';
-import { ConsentGatedEmbed } from '@/components/ConsentGatedEmbed';
+import { YouTubeEmbed } from '@/components/YouTubeEmbed';
 import { BlogArticleLayout } from '@/components/lightning-rollout/BlogArticleLayout';
 
 export default function LightningRolloutPart2() {
@@ -35,22 +35,7 @@ export default function LightningRolloutPart2() {
 
           <p>The video below goes into a bit more detail about planning your rollout.</p>
 
-          <ConsentGatedEmbed
-            service="YouTube"
-            href="https://www.youtube.com/watch?v=LB36V95IEJQ"
-            linkLabel="Watch this video on YouTube"
-          >
-            <div className="video-container">
-              <iframe
-                src="https://www.youtube.com/embed/LB36V95IEJQ"
-                title="YouTube video player"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="video-iframe"
-              ></iframe>
-            </div>
-          </ConsentGatedEmbed>
+          <YouTubeEmbed videoId="LB36V95IEJQ" />
 
           <p>Once these are agreed, your work is split into two categories: Change Management and Technical Implementation. Depending on the size of your company you may need to manage both aspects of these yourself, so make sure you plan carefully.</p>
         </Card>
@@ -172,22 +157,7 @@ export default function LightningRolloutPart2() {
 
             <p>Watch the below video for more information on how to make your Visualforce pages Lightning ready.</p>
 
-            <ConsentGatedEmbed
-              service="YouTube"
-              href="https://www.youtube.com/watch?v=TVGm-XttiAM"
-              linkLabel="Watch this video on YouTube"
-            >
-              <div className="video-container">
-                <iframe
-                  src="https://www.youtube.com/embed/TVGm-XttiAM"
-                  title="YouTube video player"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="video-iframe"
-                ></iframe>
-              </div>
-            </ConsentGatedEmbed>
+            <YouTubeEmbed videoId="TVGm-XttiAM" />
           </Card>
 
           <Card variant="accent" padding="md"  className="topic-block">
@@ -198,22 +168,7 @@ export default function LightningRolloutPart2() {
 
             <p>Watch the video below for more information on converting JavaScript buttons.</p>
 
-            <ConsentGatedEmbed
-              service="YouTube"
-              href="https://www.youtube.com/watch?v=vJqtFcOX17c"
-              linkLabel="Watch this video on YouTube"
-            >
-              <div className="video-container">
-                <iframe
-                  src="https://www.youtube.com/embed/vJqtFcOX17c"
-                  title="YouTube video player"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="video-iframe"
-                ></iframe>
-              </div>
-            </ConsentGatedEmbed>
+            <YouTubeEmbed videoId="vJqtFcOX17c" />
           </Card>
         </div>
       </section>

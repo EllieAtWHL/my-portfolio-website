@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 // One category per distinct purpose, rather than per tracker or one bundled
 // toggle (WEB-104): session recording is far more invasive than the
@@ -25,7 +25,7 @@ interface StoredConsent {
   version: number;
 }
 
-function allChoices(value: boolean): ConsentChoices {
+export function allChoices(value: boolean): ConsentChoices {
   return Object.fromEntries(CONSENT_CATEGORIES.map((category) => [category, value])) as ConsentChoices;
 }
 
@@ -38,6 +38,8 @@ interface CookieConsentContextType {
   // tells the visitor to allow cookies shouldn't flash for one who already has.
   isConsentKnown: boolean;
   isBannerOpen: boolean;
+  // True only when openPreferences() opened the banner - see the provider.
+  shouldFocusBanner: boolean;
   acceptAll: () => void;
   rejectAll: () => void;
   saveChoices: (choices: ConsentChoices) => void;
@@ -86,15 +88,23 @@ function setStoredChoices(choices: ConsentChoices) {
   }
 }
 
-// Best-effort: if FullStory was already recording (the visitor is turning
-// session recording off via the reopened banner, or did so in another tab),
-// tell it to stop. This can't undo anything already captured before this
-// call. The other categories have no runtime "stop" API - their gated
-// components just stop rendering.
-function stopSessionRecordingIfDeclined(choices: ConsentChoices | null) {
-  if (choices && !choices.sessionRecording && typeof window !== 'undefined' && window.FS) {
+// FullStory is only loaded once (FullStoryLoader's <Script> doesn't re-run
+// an already-loaded src), so turning session recording off and on again in
+// one page session has to go through its runtime API. Stopping is
+// best-effort: it can't undo anything already captured before the call.
+// The other categories have no runtime "stop" API - their gated components
+// just stop rendering.
+function applySessionRecording(choices: ConsentChoices | null, stopped: { current: boolean }) {
+  if (!choices || typeof window === 'undefined' || !window.FS) return;
+
+  if (!choices.sessionRecording && !stopped.current) {
     window.FS.consent(false);
     window.FS.shutdown();
+    stopped.current = true;
+  } else if (choices.sessionRecording && stopped.current) {
+    window.FS.consent(true);
+    window.FS.restart();
+    stopped.current = false;
   }
 }
 
@@ -108,23 +118,35 @@ export default function CookieConsentProvider({ children }: CookieConsentProvide
   // Starts closed so the server render and first client render match; the
   // effect below opens it once we know (client-only) that no choice is stored.
   const [isBannerOpen, setIsBannerOpen] = useState(false);
+  // True when the banner was opened on purpose ("Cookie preferences"), so it
+  // should take focus - not when it opens by itself on a first visit.
+  const [shouldFocusBanner, setShouldFocusBanner] = useState(false);
+  const fullStoryStopped = useRef(false);
+  const hasStoredChoice = useRef(false);
 
   useEffect(() => {
-    function sync() {
+    function sync({ fromOtherTab }: { fromOtherTab: boolean }) {
       const stored = getStoredChoices();
       setChoices(stored);
       setIsConsentKnown(true);
-      setIsBannerOpen(stored === null);
-      stopSessionRecordingIfDeclined(stored);
+      setShouldFocusBanner(false);
+      // A choice made in another tab closes this tab's first-visit prompt
+      // (accepting in one tab shouldn't leave another tab asking). But a
+      // banner this visitor reopened here to edit stays open, so their
+      // unsaved ticks aren't thrown away mid-edit.
+      const hadChoice = hasStoredChoice.current;
+      setIsBannerOpen((open) =>
+        stored === null ? true : fromOtherTab && open && hadChoice ? open : false
+      );
+      hasStoredChoice.current = stored !== null;
+      applySessionRecording(stored, fullStoryStopped);
     }
 
-    sync();
+    sync({ fromOtherTab: false });
 
-    // Keeps multiple open tabs in sync if the choice changes in one of them
-    // (e.g. accepting in one tab shouldn't leave another tab's banner open).
     function handleStorage(event: StorageEvent) {
       if (event.key === STORAGE_KEY) {
-        sync();
+        sync({ fromOtherTab: true });
       }
     }
 
@@ -136,7 +158,9 @@ export default function CookieConsentProvider({ children }: CookieConsentProvide
     setStoredChoices(next);
     setChoices(next);
     setIsBannerOpen(false);
-    stopSessionRecordingIfDeclined(next);
+    setShouldFocusBanner(false);
+    hasStoredChoice.current = true;
+    applySessionRecording(next, fullStoryStopped);
   }, []);
 
   const acceptAll = useCallback(() => saveChoices(allChoices(true)), [saveChoices]);
@@ -149,6 +173,7 @@ export default function CookieConsentProvider({ children }: CookieConsentProvide
 
   const openPreferences = useCallback(() => {
     setIsBannerOpen(true);
+    setShouldFocusBanner(true);
   }, []);
 
   return (
@@ -158,6 +183,7 @@ export default function CookieConsentProvider({ children }: CookieConsentProvide
         hasConsent,
         isConsentKnown,
         isBannerOpen,
+        shouldFocusBanner,
         acceptAll,
         rejectAll,
         saveChoices,

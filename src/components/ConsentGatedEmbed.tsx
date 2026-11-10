@@ -35,8 +35,9 @@ export function EmbedConsentFallback({ service, href, linkLabel, theme = 'main' 
         ↗
       </span>
       <p className="mt-1">
-        {/* One string rather than "{service} sets ..." - this repo's JSX
-            transform dropped the space after the expression. */}
+        {/* One string rather than "{service} sets ..." across two JSX lines:
+            written that way, the space after {service} went missing in the
+            Jest render (textContent "YouTubesets cookies"). */}
         {`${service} sets cookies, so this only shows here once you allow "Embedded content" cookies.`}
       </p>
       <Button
