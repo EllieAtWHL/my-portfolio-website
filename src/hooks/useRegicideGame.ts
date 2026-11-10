@@ -41,20 +41,30 @@ export interface GameData {
   victory: boolean;
 }
 
-interface GameStats {
+// Solo-play victory grading from the rulebook: a win using no Jesters is
+// Gold, one is Silver, both is Bronze.
+export type VictoryMedal = 'gold' | 'silver' | 'bronze';
+
+export interface GameStats {
   gamesStarted: number;
   gamesWon: number;
   gamesLost: number;
+  goldWins: number;
+  silverWins: number;
+  bronzeWins: number;
   lastPlayed: string;
 }
 
 const SUITS: Suit[] = ['hearts', 'diamonds', 'clubs', 'spades'];
 const RANKS: Rank[] = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
-const HAND_LIMIT = 8;
-const TOTAL_JESTERS = 2;
+// Exported (along with SET_LIMITS and ROYAL_STATS) so the in-app rules
+// reference (RulesModal) shows the numbers the engine actually plays by,
+// rather than a hand-typed copy that could drift from them.
+export const HAND_LIMIT = 8;
+export const TOTAL_JESTERS = 2;
 // Same-rank combos: how many cards of that rank may be chosen together
-// (their values must sum to 10 or less - 4x2, 3x3 or 2x4).
-const SET_LIMITS: Partial<Record<Rank, number>> = { '2': 4, '3': 3, '4': 2 };
+// (their values must sum to 10 or less - 4x2, 3x3, 2x4 or 2x5).
+export const SET_LIMITS: Partial<Record<Rank, number>> = { '2': 4, '3': 3, '4': 2, '5': 2 };
 
 export const SUIT_SYMBOL: Record<Suit, string> = {
   spades: '♠',
@@ -84,17 +94,50 @@ export function compareHandCards(a: PlayingCard, b: PlayingCard): number {
   );
 }
 
-const ROYAL_STATS: Record<'J' | 'Q' | 'K', { attack: number; health: number }> = {
+export const ROYAL_STATS: Record<'J' | 'Q' | 'K', { attack: number; health: number }> = {
   J: { attack: 10, health: 20 },
   Q: { attack: 15, health: 30 },
   K: { attack: 20, health: 40 },
 };
 
-const DEFAULT_STATS: GameStats = {
+export const DEFAULT_STATS: GameStats = {
   gamesStarted: 0,
   gamesWon: 0,
   gamesLost: 0,
+  goldWins: 0,
+  silverWins: 0,
+  bronzeWins: 0,
   lastPlayed: 'Never',
+};
+
+const STATS_KEY = 'regicide-stats';
+
+// Merged over DEFAULT_STATS so stats saved before a field existed (e.g. the
+// per-medal win counts, added in WEB-78) still load with that field at 0.
+// Shared by the hook and StatsScreen so there's one reader of this key.
+export function loadStats(): GameStats {
+  if (typeof window === 'undefined') return { ...DEFAULT_STATS };
+  const saved = localStorage.getItem(STATS_KEY);
+  return saved ? { ...DEFAULT_STATS, ...JSON.parse(saved) } : { ...DEFAULT_STATS };
+}
+
+export function saveStats(stats: GameStats) {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+  }
+}
+
+export function victoryMedal(jestersRemaining: number): VictoryMedal {
+  const jestersUsed = TOTAL_JESTERS - jestersRemaining;
+  if (jestersUsed <= 0) return 'gold';
+  if (jestersUsed === 1) return 'silver';
+  return 'bronze';
+}
+
+const MEDAL_STAT: Record<VictoryMedal, 'goldWins' | 'silverWins' | 'bronzeWins'> = {
+  gold: 'goldWins',
+  silver: 'silverWins',
+  bronze: 'bronzeWins',
 };
 
 const EMPTY_GAME_DATA: GameData = {
@@ -181,16 +224,16 @@ function buildStandardDeck() {
   return { tavern, jacks, queens, kings };
 }
 
-// A combo is: a single card; a single non-Ace card paired with a single Ace
-// (in either order, as its "companion"); or a same-rank set of 2s/3s/4s up
-// to SET_LIMITS[rank].
+// A combo is: a single card; an Ace (Animal Companion) paired with exactly
+// one other card - which may itself be another Ace - in either order; or a
+// same-rank set of 2s/3s/4s/5s up to SET_LIMITS[rank]. An Ace can never
+// join a same-rank set.
 export function isValidSelection(chosenCards: PlayingCard[], candidate: PlayingCard): boolean {
   if (chosenCards.length === 0) return true;
 
   if (chosenCards.length === 1) {
     const [only] = chosenCards;
-    const exactlyOneIsAce = (only.rank === 'A') !== (candidate.rank === 'A');
-    if (exactlyOneIsAce) return true;
+    if (only.rank === 'A' || candidate.rank === 'A') return true;
   }
 
   if (candidate.rank === 'A') return false;
@@ -200,16 +243,51 @@ export function isValidSelection(chosenCards: PlayingCard[], candidate: PlayingC
   return allSameRank && chosenCards.length < limit;
 }
 
-function checkHandExhausted(data: GameData): GameData {
+// Solo Jester timing: only at the start of Step 1 (before any card is
+// chosen) or the start of Step 4 (before any damage has been discarded).
+// defenceRemaining starts equal to the royal's (shield-reduced) attack and
+// every discard lowers it by at least 1, so equality means nothing has been
+// discarded yet. Without this, a Jester could be flipped with cards already
+// chosen - keeping them in play while also dealing a fresh hand.
+export function isJesterTiming(data: GameData): boolean {
+  if (data.chosenCards.length > 0) return false;
+  if (data.phase === 'defend') return data.defenceRemaining === data.royalCard?.attack;
+  return true;
+}
+
+function handValue(hand: PlayingCard[]): number {
+  return hand.reduce((sum, card) => sum + cardValue(card.rank), 0);
+}
+
+function lose(data: GameData, reason: string): GameData {
+  return {
+    ...data,
+    gameOver: true,
+    victory: false,
+    isPlaying: false,
+    message: { text: `Sorry, you lost - ${reason}`, tone: 'error' },
+  };
+}
+
+// Run after every action that changes the hand. Two ways to lose:
+// - out of cards and jesters (nothing left to play), or
+// - in the defend phase, the hand can't cover the damage still owed and a
+//   Jester can't rescue it - either none are left, or discarding has
+//   already started (see isJesterTiming). The rulebook says you lose as
+//   soon as you can't cover the damage; without this second check, the
+//   Jester timing rule would leave a player who'd started discarding stuck
+//   with an empty hand and no legal move.
+export function checkForLoss(data: GameData): GameData {
   if (data.gameOver) return data;
   if (data.playerHand.length === 0 && data.jestersRemaining === 0) {
-    return {
-      ...data,
-      gameOver: true,
-      victory: false,
-      isPlaying: false,
-      message: { text: 'Sorry, you lost - out of cards and jesters', tone: 'error' },
-    };
+    return lose(data, 'out of cards and jesters');
+  }
+  if (
+    data.phase === 'defend' &&
+    handValue(data.playerHand) < data.defenceRemaining &&
+    !(data.jestersRemaining > 0 && isJesterTiming(data))
+  ) {
+    return lose(data, `your hand can't cover the ${data.defenceRemaining} damage still owed`);
   }
   return data;
 }
@@ -219,36 +297,25 @@ export function useRegicideGame() {
   const [gameData, setGameData] = useState<GameData>(EMPTY_GAME_DATA);
   const [history, setHistory] = useState<GameData[]>([]);
 
-  const loadStats = useCallback((): GameStats => {
-    if (typeof window === 'undefined') return { ...DEFAULT_STATS };
-    const saved = localStorage.getItem('regicide-stats');
-    return saved ? JSON.parse(saved) : { ...DEFAULT_STATS };
-  }, []);
-
-  const saveStats = useCallback((stats: GameStats) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('regicide-stats', JSON.stringify(stats));
-    }
-  }, []);
-
-  const winGame = useCallback(() => {
+  const winGame = useCallback((medal: VictoryMedal) => {
     const stats = loadStats();
     stats.gamesWon += 1;
+    stats[MEDAL_STAT[medal]] += 1;
     saveStats(stats);
-  }, [loadStats, saveStats]);
+  }, []);
 
   const loseGame = useCallback(() => {
     const stats = loadStats();
     stats.gamesLost += 1;
     saveStats(stats);
-  }, [loadStats, saveStats]);
+  }, []);
 
   const recordGameStarted = useCallback(() => {
     const stats = loadStats();
     stats.gamesStarted += 1;
     stats.lastPlayed = new Date().toISOString();
     saveStats(stats);
-  }, [loadStats, saveStats]);
+  }, []);
 
   const initializeGame = useCallback(() => {
     setIsLoading(true);
@@ -321,17 +388,18 @@ export function useRegicideGame() {
             ? null
             : { text: `Current defence needed is ${remainingDefence}`, tone: 'info' },
       };
-      next = checkHandExhausted({ ...next, playerHand: remainingHand });
+      next = checkForLoss(next);
 
+      // A discard can only ever end the game as a loss (out of cards and
+      // jesters) - victory only comes from attack() defeating the last royal.
       if (next.gameOver && !prev.gameOver) {
-        if (next.victory) winGame();
-        else loseGame();
+        loseGame();
       }
 
       setHistory((h) => [prev, ...h]);
       setGameData(next);
     },
-    [gameData, winGame, loseGame]
+    [gameData, loseGame]
   );
 
   const attack = useCallback(() => {
@@ -413,7 +481,7 @@ export function useRegicideGame() {
         defenceRemaining: royalAttack > 0 ? royalAttack : 0,
         message: { text: messages.join(' · '), tone: 'info' },
       };
-      next = checkHandExhausted(next);
+      next = checkForLoss(next);
 
       if (next.gameOver && !prev.gameOver) {
         loseGame();
@@ -464,11 +532,11 @@ export function useRegicideGame() {
         message: { text: 'You won the game!', tone: 'info' },
       };
     } else {
-      next = checkHandExhausted(next);
+      next = checkForLoss(next);
     }
 
     if (next.gameOver && !prev.gameOver) {
-      if (next.victory) winGame();
+      if (next.victory) winGame(victoryMedal(next.jestersRemaining));
       else loseGame();
     }
 
@@ -482,6 +550,17 @@ export function useRegicideGame() {
 
     if (prev.jestersRemaining < 1) {
       setGameData({ ...prev, message: { text: 'No jesters remaining', tone: 'error' } });
+      return;
+    }
+
+    if (!isJesterTiming(prev)) {
+      setGameData({
+        ...prev,
+        message: {
+          text: 'A Jester can only be used before you choose a card, or before you start discarding',
+          tone: 'error',
+        },
+      });
       return;
     }
 
@@ -500,7 +579,7 @@ export function useRegicideGame() {
       jestersRemaining: prev.jestersRemaining - 1,
       message: null,
     };
-    next = checkHandExhausted(next);
+    next = checkForLoss(next);
 
     if (next.gameOver && !prev.gameOver) {
       loseGame();
