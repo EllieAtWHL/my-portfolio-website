@@ -2,11 +2,13 @@
 
 import { Card as UniversalCard } from '@/components/Card';
 import { Button } from '@/components/Button';
+import { RulesIconButton } from './RulesIconButton';
 import { StatsIconButton } from './StatsIconButton';
 
 interface GameStartProps {
   onStartGame: () => void;
   onShowStats: () => void;
+  onShowRules: () => void;
 }
 
 const RELEASES = [
@@ -36,7 +38,7 @@ const RELEASES = [
   },
 ];
 
-export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
+export function GameStart({ onStartGame, onShowStats, onShowRules }: GameStartProps) {
   return (
     <div className="text-center py-8">
       {/* Title Section */}
@@ -78,7 +80,8 @@ export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
         >
           Play Game
         </Button>
-        <div className="flex justify-end">
+        <div className="flex justify-end items-center gap-2">
+          <RulesIconButton onClick={onShowRules} />
           <StatsIconButton onClick={onShowStats} />
         </div>
       </div>
@@ -109,7 +112,7 @@ export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
             variant="highlight"
             hover={true}
             clickable={true}
-            onClick={() => window.open('https://www.badgersfrommars.com/regicide/', '_blank')}
+            onClick={onShowRules}
           >
             <div className="flex items-center gap-4">
               <svg className="w-8 h-8 flex-shrink-0 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -117,7 +120,7 @@ export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
               </svg>
               <div className="flex-1">
                 <div className="font-semibold text-gray-800 dark:text-gray-200 text-lg">Learn to Play</div>
-                <div className="text-gray-600 dark:text-gray-400">Official rules & guide</div>
+                <div className="text-gray-600 dark:text-gray-400">How the solo game works</div>
               </div>
               <span className="text-green-600 dark:text-green-400 group-hover:text-green-700 dark:group-hover:text-green-300 group-hover:translate-x-2 transition-all text-2xl">→</span>
             </div>
