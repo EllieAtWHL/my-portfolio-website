@@ -8,6 +8,8 @@ jest.mock('../../CookieConsentProvider', () => ({
 
 const mockUseCookieConsent = useCookieConsent as jest.Mock;
 const POST_URL = 'https://www.instagram.com/p/C1abcDEF/';
+const ALLOWED = { hasConsent: (category: string) => category === 'embeds', isConsentKnown: true };
+const DECLINED = { hasConsent: (category: string) => category !== 'embeds', isConsentKnown: true };
 
 describe('InstagramPost', () => {
   afterEach(() => {
@@ -15,10 +17,13 @@ describe('InstagramPost', () => {
     document.querySelectorAll('script').forEach((script) => script.remove());
   });
 
-  it.each(['rejected', null] as const)(
-    'shows a plain link and loads no Instagram script when consent is %s',
-    (consent) => {
-      mockUseCookieConsent.mockReturnValue({ consent, isConsentKnown: true });
+  it.each([
+    ['nothing is allowed', () => false],
+    ['every other category is allowed', DECLINED.hasConsent],
+  ])(
+    'shows a plain link and loads no Instagram script when %s',
+    (_label, hasConsent) => {
+      mockUseCookieConsent.mockReturnValue({ hasConsent, isConsentKnown: true });
 
       const { container } = render(<InstagramPost url={POST_URL} />);
 
@@ -26,14 +31,14 @@ describe('InstagramPost', () => {
         'href',
         POST_URL
       );
-      expect(screen.getByText(/only shows here once you accept cookies/)).toBeInTheDocument();
+      expect(screen.getByText(/Instagram sets cookies, so this only shows here once you allow "Embedded content" cookies/)).toBeInTheDocument();
       expect(container.querySelector('blockquote')).not.toBeInTheDocument();
       expect(document.querySelector('script')).not.toBeInTheDocument();
     }
   );
 
   it('renders nothing until the stored consent choice has been read', () => {
-    mockUseCookieConsent.mockReturnValue({ consent: null, isConsentKnown: false });
+    mockUseCookieConsent.mockReturnValue({ hasConsent: () => false, isConsentKnown: false });
 
     const { container } = render(<InstagramPost url={POST_URL} />);
 
@@ -42,20 +47,20 @@ describe('InstagramPost', () => {
   });
 
   it('removes the embed when consent is withdrawn', () => {
-    mockUseCookieConsent.mockReturnValue({ consent: 'accepted', isConsentKnown: true });
+    mockUseCookieConsent.mockReturnValue(ALLOWED);
     const { container, rerender } = render(<InstagramPost url={POST_URL} />);
     // Stand-in for the iframe Meta's script swaps in outside React's control
     container.querySelector('blockquote')?.replaceWith(document.createElement('iframe'));
 
-    mockUseCookieConsent.mockReturnValue({ consent: 'rejected', isConsentKnown: true });
+    mockUseCookieConsent.mockReturnValue(DECLINED);
     rerender(<InstagramPost url={POST_URL} />);
 
     expect(container.querySelector('iframe')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'View this post on Instagram' })).toBeInTheDocument();
   });
 
-  it('injects the embed blockquote and script once consent is accepted', () => {
-    mockUseCookieConsent.mockReturnValue({ consent: 'accepted', isConsentKnown: true });
+  it('injects the embed blockquote and script once embedded content is allowed', () => {
+    mockUseCookieConsent.mockReturnValue(ALLOWED);
 
     const { container } = render(<InstagramPost url={POST_URL} />);
 
@@ -70,7 +75,7 @@ describe('InstagramPost', () => {
   });
 
   it('re-scans with the already-loaded script instead of loading it again', () => {
-    mockUseCookieConsent.mockReturnValue({ consent: 'accepted', isConsentKnown: true });
+    mockUseCookieConsent.mockReturnValue(ALLOWED);
     const process = jest.fn();
     window.instgrm = { Embeds: { process } };
 
@@ -82,7 +87,7 @@ describe('InstagramPost', () => {
   });
 
   it('loads the script only once for several posts on the same page', () => {
-    mockUseCookieConsent.mockReturnValue({ consent: 'accepted', isConsentKnown: true });
+    mockUseCookieConsent.mockReturnValue(ALLOWED);
 
     render(
       <>
@@ -96,7 +101,7 @@ describe('InstagramPost', () => {
   });
 
   it('replaces the previous embed when the URL changes', () => {
-    mockUseCookieConsent.mockReturnValue({ consent: 'accepted', isConsentKnown: true });
+    mockUseCookieConsent.mockReturnValue(ALLOWED);
 
     const { container, rerender } = render(<InstagramPost url={POST_URL} />);
     rerender(<InstagramPost url="https://www.instagram.com/p/Other123/" />);

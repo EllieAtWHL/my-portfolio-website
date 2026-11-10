@@ -1,5 +1,6 @@
 import MainSitePage from '@/components/MainSitePage';
 import London2012Layout from '@/components/London2012Layout';
+import { ConsentGatedEmbed } from '@/components/ConsentGatedEmbed';
 import Image from 'next/image';
 import { Metadata } from 'next';
 
@@ -87,21 +88,28 @@ export default function MyFirstAuditionPage() {
                   The audition was a thrilling three-part journey, starting with simple movements and gradually escalating in complexity. As a seasoned dancer, I felt confident and in my element, relishing each new challenge. One of the standout moments was when the iconic beats of Beyonce&apos;s &quot;Love On Top&quot; filled the room. This song will forever hold a special place in my heart as a reminder of this unforgettable day.
                 </p>
 
-                {/* Spotify embed */}
-                <div className="rounded-lg overflow-hidden">
-                  <iframe
-                    title="Spotify player: Love On Top by Beyoncé"
-                    style={{ '--border-radius': '12px', borderRadius: 'var(--border-radius)' } as React.CSSProperties}
-                    src="https://open.spotify.com/embed/track/1z6WtY7X4HQJvzxC4UgkSf?utm_source=generator&theme=0"
-                    width="100%"
-                    height="152"
-                    frameBorder="0"
-                    allowFullScreen
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                    className="dark:bg-gray-800"
-                  />
-                </div>
+                {/* Spotify embed - sets spotify.com cookies on load (WEB-104), so
+                    it waits for "Embedded content" consent like the YouTube ones */}
+                <ConsentGatedEmbed
+                  service="Spotify"
+                  href="https://open.spotify.com/track/1z6WtY7X4HQJvzxC4UgkSf"
+                  linkLabel="Listen to Love On Top by Beyoncé on Spotify"
+                >
+                  <div className="rounded-lg overflow-hidden">
+                    <iframe
+                      title="Spotify player: Love On Top by Beyoncé"
+                      style={{ '--border-radius': '12px', borderRadius: 'var(--border-radius)' } as React.CSSProperties}
+                      src="https://open.spotify.com/embed/track/1z6WtY7X4HQJvzxC4UgkSf?utm_source=generator&theme=0"
+                      width="100%"
+                      height="152"
+                      frameBorder="0"
+                      allowFullScreen
+                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                      loading="lazy"
+                      className="dark:bg-gray-800"
+                    />
+                  </div>
+                </ConsentGatedEmbed>
 
                 <p>
                   The atmosphere was electric, and I felt as though I had already become a part of the London 2012 experience, even if this was the end of my journey. As the audition came to a close, we were informed that we would receive a response within 48 hours. The anticipation was almost too much to bear, and I found myself checking my phone every few minutes, waiting for that all-important email. It was a day I will never forget.
