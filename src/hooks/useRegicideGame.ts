@@ -36,6 +36,9 @@ export interface GameData {
   discardPile: PlayingCard[];
   jestersRemaining: number;
   defenceRemaining: number;
+  // True once at least one card has been discarded towards the current
+  // defence - closes the solo Jester window (see isJesterTiming)
+  hasDiscarded: boolean;
   message: GameMessage | null;
   gameOver: boolean;
   victory: boolean;
@@ -115,10 +118,25 @@ const STATS_KEY = 'regicide-stats';
 // Merged over DEFAULT_STATS so stats saved before a field existed (e.g. the
 // per-medal win counts, added in WEB-78) still load with that field at 0.
 // Shared by the hook and StatsScreen so there's one reader of this key.
+// Only known fields are kept, so obsolete ones (like the `winRate` the old
+// StatsScreen reset used to write) aren't carried forward on every save,
+// and unreadable saved data falls back to the defaults rather than
+// throwing during render.
 export function loadStats(): GameStats {
   if (typeof window === 'undefined') return { ...DEFAULT_STATS };
-  const saved = localStorage.getItem(STATS_KEY);
-  return saved ? { ...DEFAULT_STATS, ...JSON.parse(saved) } : { ...DEFAULT_STATS };
+  let saved: Partial<GameStats> = {};
+  try {
+    saved = JSON.parse(localStorage.getItem(STATS_KEY) ?? '{}') ?? {};
+  } catch {
+    return { ...DEFAULT_STATS };
+  }
+  const stats = { ...DEFAULT_STATS };
+  for (const key of Object.keys(DEFAULT_STATS) as (keyof GameStats)[]) {
+    if (typeof saved[key] === typeof DEFAULT_STATS[key]) {
+      (stats as Record<keyof GameStats, unknown>)[key] = saved[key];
+    }
+  }
+  return stats;
 }
 
 export function saveStats(stats: GameStats) {
@@ -152,6 +170,7 @@ const EMPTY_GAME_DATA: GameData = {
   discardPile: [],
   jestersRemaining: TOTAL_JESTERS,
   defenceRemaining: 0,
+  hasDiscarded: false,
   message: null,
   gameOver: false,
   victory: false,
@@ -245,14 +264,11 @@ export function isValidSelection(chosenCards: PlayingCard[], candidate: PlayingC
 
 // Solo Jester timing: only at the start of Step 1 (before any card is
 // chosen) or the start of Step 4 (before any damage has been discarded).
-// defenceRemaining starts equal to the royal's (shield-reduced) attack and
-// every discard lowers it by at least 1, so equality means nothing has been
-// discarded yet. Without this, a Jester could be flipped with cards already
-// chosen - keeping them in play while also dealing a fresh hand.
+// Without this, a Jester could be flipped with cards already chosen -
+// keeping them in play while also dealing a fresh hand.
 export function isJesterTiming(data: GameData): boolean {
   if (data.chosenCards.length > 0) return false;
-  if (data.phase === 'defend') return data.defenceRemaining === data.royalCard?.attack;
-  return true;
+  return !(data.phase === 'defend' && data.hasDiscarded);
 }
 
 function handValue(hand: PlayingCard[]): number {
@@ -269,25 +285,15 @@ function lose(data: GameData, reason: string): GameData {
   };
 }
 
-// Run after every action that changes the hand. Two ways to lose:
-// - out of cards and jesters (nothing left to play), or
-// - in the defend phase, the hand can't cover the damage still owed and a
-//   Jester can't rescue it - either none are left, or discarding has
-//   already started (see isJesterTiming). The rulebook says you lose as
-//   soon as you can't cover the damage; without this second check, the
-//   Jester timing rule would leave a player who'd started discarding stuck
-//   with an empty hand and no legal move.
+// Run after every action that changes the hand: out of cards and jesters
+// means nothing is left to play. A hand that can't cover a royal's attack
+// isn't a loss on its own here - the player discards until the hand is
+// empty, which keeps Undo available until the very last card (see the
+// defend branch of selectHandCard for the one case that's refused instead).
 export function checkForLoss(data: GameData): GameData {
   if (data.gameOver) return data;
   if (data.playerHand.length === 0 && data.jestersRemaining === 0) {
     return lose(data, 'out of cards and jesters');
-  }
-  if (
-    data.phase === 'defend' &&
-    handValue(data.playerHand) < data.defenceRemaining &&
-    !(data.jestersRemaining > 0 && isJesterTiming(data))
-  ) {
-    return lose(data, `your hand can't cover the ${data.defenceRemaining} damage still owed`);
   }
   return data;
 }
@@ -345,6 +351,7 @@ export function useRegicideGame() {
       discardPile: [],
       jestersRemaining: TOTAL_JESTERS,
       defenceRemaining: 0,
+      hasDiscarded: false,
       message: null,
       gameOver: false,
       victory: false,
@@ -375,6 +382,21 @@ export function useRegicideGame() {
       }
 
       // Defend phase: discard cards to cover the royal's attack.
+      // If the hand can't cover the damage but a Jester still could (only
+      // before the first discard), refuse the discard: once discarding
+      // starts the Jester window closes, and the player would be left
+      // discarding towards a certain loss with no way back.
+      if (isJesterTiming(prev) && prev.jestersRemaining > 0 && handValue(prev.playerHand) < prev.defenceRemaining) {
+        setGameData({
+          ...prev,
+          message: {
+            text: `Your hand can't cover ${prev.defenceRemaining} damage - use a Jester first`,
+            tone: 'error',
+          },
+        });
+        return;
+      }
+
       const remainingHand = removeCard(prev.playerHand, card);
       const remainingDefence = Math.max(0, prev.defenceRemaining - cardValue(card.rank));
       let next: GameData = {
@@ -382,6 +404,7 @@ export function useRegicideGame() {
         playerHand: remainingHand,
         discardPile: [card, ...prev.discardPile],
         defenceRemaining: remainingDefence,
+        hasDiscarded: remainingDefence > 0,
         phase: remainingDefence <= 0 ? 'attack' : 'defend',
         message:
           remainingDefence <= 0
@@ -479,6 +502,7 @@ export function useRegicideGame() {
         activeDeck: [...prev.activeDeck, ...chosenCards],
         phase,
         defenceRemaining: royalAttack > 0 ? royalAttack : 0,
+        hasDiscarded: false,
         message: { text: messages.join(' · '), tone: 'info' },
       };
       next = checkForLoss(next);
@@ -520,6 +544,7 @@ export function useRegicideGame() {
       activeDeck: [],
       phase: 'attack',
       defenceRemaining: 0,
+      hasDiscarded: false,
       message: { text: messages.join(' · '), tone: 'info' },
     };
 

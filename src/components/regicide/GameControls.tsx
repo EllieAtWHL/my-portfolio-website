@@ -8,9 +8,11 @@ interface GameControlsProps {
   onAttack: () => void;
   canAttack: boolean;
   onUseJester: () => void;
+  // The button is only disabled once none remain. Mid-turn timing (see
+  // isJesterTiming) is enforced by the engine, which answers an early click
+  // with an error toast - an aria-live message reaches keyboard and
+  // screen-reader users, where a disabled button's tooltip wouldn't.
   jestersRemaining: number;
-  // False while a card is chosen or discarding has begun (see isJesterTiming)
-  canUseJester: boolean;
   onUndo: () => void;
   canUndo: boolean;
 }
@@ -21,7 +23,6 @@ export function GameControls({
   canAttack,
   onUseJester,
   jestersRemaining,
-  canUseJester,
   onUndo,
   canUndo,
 }: GameControlsProps) {
@@ -39,17 +40,7 @@ export function GameControls({
         </Button>
       )}
 
-      <Button
-        variant="secondary"
-        onClick={onUseJester}
-        disabled={!canUseJester}
-        title={
-          jestersRemaining > 0 && !canUseJester
-            ? 'A Jester can only be used before you choose a card, or before you start discarding'
-            : undefined
-        }
-        className={buttonClasses}
-      >
+      <Button variant="secondary" onClick={onUseJester} disabled={jestersRemaining < 1} className={buttonClasses}>
         <svg className="w-5 h-5 flex-shrink-0 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <rect x="4" y="3" width="16" height="18" rx="2" strokeWidth={2} />
           <path

@@ -106,27 +106,33 @@ No Redux/Zustand/context - this hook is only ever used once, at the
   the Jester's power entirely; the multiplayer version instead cancels the
   current enemy's suit immunity, which isn't implemented here since this is
   solo-only). That timing is enforced by `isJesterTiming` (WEB-78): no cards
-  chosen yet, and in the defend phase nothing discarded yet
-  (`defenceRemaining` still equals the royal's attack). Before WEB-78 a
-  Jester could be flipped mid-turn, which kept the chosen cards in play
-  *and* dealt a fresh hand. The Jester button is disabled, with a tooltip,
-  outside that window
+  chosen yet, and in the defend phase nothing discarded yet (the explicit
+  `hasDiscarded` flag, set by the first defend discard and reset whenever a
+  new defence starts). Before WEB-78 a Jester could be flipped mid-turn,
+  which kept the chosen cards in play *and* dealt a fresh hand. Outside the
+  window the button stays enabled and `useJester` answers with an error
+  toast, the same way an illegal card pick does. That's deliberate: the
+  toast sits in an `aria-live` region, whereas a disabled button's tooltip
+  can't be reached by keyboard or screen-reader users. The button is only
+  disabled once no Jesters remain
 - Undo: a full move-stack (`history`), not just the last action
 - Win: the royal deck is emptied, graded by `victoryMedal` from the solo
   rulebook: Gold (no Jesters used), Silver (one) or Bronze (both).
-- Loss: `checkForLoss`, called after every action that changes the hand.
-  Two cases:
-  - hand and jesters both hit zero. This includes `useJester`, a WEB-77
-    follow-up fix: previously `useJester` could deal an empty hand with no
-    jesters left, undetected, if the tavern deck ever ran out. That's
-    empirically near-impossible with the standard 52-card/2-jester economy,
-    but the check is correct defensive coverage regardless.
-  - in the defend phase, the hand's total value can't cover the damage
-    still owed and a Jester can't rescue it (none left, or discarding has
-    started). The rulebook makes this a loss straight away. WEB-78 added it
-    alongside the Jester timing rule, which would otherwise have left a
-    player who'd started discarding stuck with an empty hand and no legal
-    move.
+- Loss: `checkForLoss`, called after every action that changes the hand,
+  when hand and jesters both hit zero. That includes `useJester`, a WEB-77
+  follow-up fix: previously `useJester` could deal an empty hand with no
+  jesters left, undetected, if the tavern deck ever ran out. That's
+  empirically near-impossible with the standard 52-card/2-jester economy,
+  but the check is correct defensive coverage regardless.
+- A hand that can't cover a royal's attack is deliberately **not** an
+  instant loss, even though the rulebook treats it as one. The player
+  discards until the hand is empty and loses then, so Undo stays available
+  right up to the last card (the controls, Undo included, disappear on game
+  over). The one exception: if the hand can't cover the damage but a Jester
+  could still be used (nothing discarded yet, Jesters left), the defend
+  branch of `selectHandCard` refuses the discard with a "use a Jester
+  first" toast. Without that, the Jester timing rule would let a player
+  discard straight into a certain loss with the rescue already closed off.
 
 **State shape**: see the `GameData` interface at the top of the file -
 `phase: 'attack' | 'defend'`, `royalCard`/`royalDeck`, `tavernDeck`,
@@ -138,9 +144,11 @@ committed this fight), `discardPile`, `jestersRemaining`,
 **Stats persistence**: `localStorage['regicide-stats']` -
 `{ gamesStarted, gamesWon, gamesLost, goldWins, silverWins, bronzeWins, lastPlayed }`,
 read and written only through the module-level `loadStats`/`saveStats`
-(shared by the hook and `StatsScreen`). `loadStats` merges what's saved over
-`DEFAULT_STATS`, so a save from before a field existed loads with that field
-at 0. The medal counts were added in WEB-78, so wins from before then
+(shared by the hook and `StatsScreen`). `loadStats` keeps only the known
+fields, with the right types, layered over `DEFAULT_STATS`. A save from
+before a field existed loads with that field at 0, obsolete fields (the old
+reset used to write a `winRate`) are dropped, and unreadable JSON falls back
+to the defaults rather than throwing during render. The medal counts were added in WEB-78, so wins from before then
 weren't graded and the three counts can add up to less than `gamesWon`.
 Win rate is derived on display, not stored. No `totalPlayTime` -
 removed as dead code (was never incremented); see
@@ -226,8 +234,8 @@ deterministic shuffle fixture (`Math.random` pinned to `0`, worked through
 by hand in the test file's header comment) rather than mocking the RNG
 output directly. The pure rule helpers (`isValidSelection`,
 `isJesterTiming`, `checkForLoss`, `victoryMedal`) are also tested directly,
-`checkForLoss` against constructed defend-phase states, since reaching each
-loss branch through a real deal isn't practical. `Card.tsx`, `Toast.tsx`,
+`checkForLoss` against constructed states. The "use a Jester first" refusal
+is tested against a scripted line of play through the fixture deal. `Card.tsx`, `Toast.tsx`,
 `ToastContainer.tsx`, `GameControls.tsx`, `GameOverModal.tsx`,
 `RulesModal.tsx`, `StatsScreen.tsx` and `useToasts.ts` have their own
 component/hook test suites under `src/components/regicide/__tests__/` and

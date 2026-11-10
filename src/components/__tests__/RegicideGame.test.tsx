@@ -34,6 +34,19 @@ describe('RegicideGame - rules reference', () => {
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(screen.getByText(/Attack Power:/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /use jester/i })).toBeDisabled();
+  });
+
+  it('explains, rather than silently ignoring, a Jester clicked after choosing a card', () => {
+    render(<RegicideGame />);
+    fireEvent.click(screen.getByRole('button', { name: /play game/i }));
+    fireEvent.click(screen.getAllByRole('button', { name: / of / })[0]);
+
+    fireEvent.click(screen.getByRole('button', { name: /use jester \(2\)/i }));
+
+    expect(
+      screen.getByText('A Jester can only be used before you choose a card, or before you start discarding')
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /use jester \(2\)/i })).toBeInTheDocument();
+    expect(screen.getByText(/Attack Power:/)).toBeInTheDocument();
   });
 });

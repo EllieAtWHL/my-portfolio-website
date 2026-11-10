@@ -13,7 +13,6 @@ import { useToasts } from '@/hooks/useToasts';
 import {
   calculateAttackDamage,
   compareHandCards,
-  isJesterTiming,
   SUIT_POWER_LABEL,
   victoryMedal,
   type GameData,
@@ -257,7 +256,6 @@ export function PlayArea({
             canAttack={phase === 'attack' && chosenCards.length > 0}
             onUseJester={useJester}
             jestersRemaining={jestersRemaining}
-            canUseJester={jestersRemaining > 0 && isJesterTiming(gameData)}
             onUndo={undo}
             canUndo={canUndo}
           />

@@ -501,6 +501,23 @@ describe('useRegicideGame', () => {
       expect(second.gamesStarted).toBe(0);
     });
 
+    it('falls back to the defaults when the saved stats are unreadable', () => {
+      localStorage.setItem('regicide-stats', '{not json');
+      const { result } = renderHook(() => useRegicideGame());
+
+      expect(result.current.loadStats()).toEqual(DEFAULT_STATS);
+    });
+
+    it('drops obsolete or mistyped fields instead of carrying them forward', () => {
+      localStorage.setItem(
+        'regicide-stats',
+        JSON.stringify({ gamesStarted: 3, gamesWon: 'two', winRate: 67, lastPlayed: 'Never' })
+      );
+      const { result } = renderHook(() => useRegicideGame());
+
+      expect(result.current.loadStats()).toEqual({ ...DEFAULT_STATS, gamesStarted: 3 });
+    });
+
     it('writes and reads back stats from localStorage', () => {
       const { result } = renderHook(() => useRegicideGame());
       const stats = {
@@ -547,9 +564,59 @@ describe('useRegicideGame', () => {
     });
   });
 
-  describe('checkForLoss (pure, against constructed defend-phase states)', () => {
-    // The diamonds Jack has hit back for 10 (its full, unshielded attack).
-    const defending = (overrides: Partial<GameData>): GameData => ({
+  describe("defending with a hand that can't cover the damage", () => {
+    // Scripted against the fixture deal: attack the diamonds Jack (attack 10)
+    // with the smallest card each turn and defend by discarding the largest,
+    // until it hits back for 10 against a lone 5 of hearts - with both
+    // jesters still available.
+    function reachDoomedDefence() {
+      const rendered = dealFixtureGame();
+      const { result } = rendered;
+      const play = (index: number) => act(() => result.current.selectHandCard(index));
+      play(0); act(() => result.current.attack()); // 2h, Jack hits back for 10
+      play(6); play(5); // discard 9h, 8h
+      play(0); act(() => result.current.attack()); // 3h
+      play(3); play(2); // discard 7h, 6h
+      play(0); act(() => result.current.attack()); // 4h
+      expect(result.current.gameData.phase).toBe('defend');
+      expect(result.current.gameData.defenceRemaining).toBe(10);
+      expect(result.current.gameData.playerHand.map(cardLabel)).toEqual(['hearts-5']);
+      expect(result.current.gameData.jestersRemaining).toBe(2);
+      return rendered;
+    }
+
+    it('refuses a discard while a Jester could still help, and points the player at the Jester', () => {
+      const { result } = reachDoomedDefence();
+      const before = result.current.gameData;
+
+      act(() => result.current.selectHandCard(0));
+
+      const { gameData } = result.current;
+      expect(gameData.playerHand).toEqual(before.playerHand);
+      expect(gameData.discardPile).toEqual(before.discardPile);
+      expect(gameData.hasDiscarded).toBe(false);
+      expect(gameData.gameOver).toBe(false);
+      expect(gameData.message).toEqual({
+        text: "Your hand can't cover 10 damage - use a Jester first",
+        tone: 'error',
+      });
+    });
+
+    it('still allows the Jester, which refills the hand without clearing the damage owed', () => {
+      const { result } = reachDoomedDefence();
+
+      act(() => result.current.useJester());
+
+      const { gameData } = result.current;
+      expect(gameData.jestersRemaining).toBe(1);
+      expect(gameData.playerHand).toHaveLength(8);
+      expect(gameData.phase).toBe('defend');
+      expect(gameData.defenceRemaining).toBe(10);
+    });
+  });
+
+  describe('checkForLoss (pure)', () => {
+    const state = (overrides: Partial<GameData>): GameData => ({
       isPlaying: true,
       phase: 'defend',
       royalCard: { suit: 'diamonds', rank: 'J', attack: 10, maxAttack: 10, health: 12, maxHealth: 20 },
@@ -561,38 +628,29 @@ describe('useRegicideGame', () => {
       discardPile: [],
       jestersRemaining: 0,
       defenceRemaining: 10,
+      hasDiscarded: true,
       message: null,
       gameOver: false,
       victory: false,
       ...overrides,
     });
 
-    it('is not a loss when the hand can cover the damage owed', () => {
-      const state = defending({ playerHand: [card('clubs', '5'), card('clubs', '4'), card('clubs', 'A')] });
-      expect(checkForLoss(state)).toBe(state);
-    });
-
-    it("is a loss when the hand can't cover the damage and no jesters remain", () => {
-      const result = checkForLoss(defending({ playerHand: [card('clubs', '5'), card('clubs', '4')] }));
+    it('is a loss once the hand and jesters are both gone', () => {
+      const result = checkForLoss(state({}));
       expect(result.gameOver).toBe(true);
       expect(result.victory).toBe(false);
       expect(result.isPlaying).toBe(false);
-      expect(result.message).toEqual({
-        text: "Sorry, you lost - your hand can't cover the 10 damage still owed",
-        tone: 'error',
-      });
+      expect(result.message).toEqual({ text: 'Sorry, you lost - out of cards and jesters', tone: 'error' });
     });
 
-    it("is not yet a loss when the hand can't cover the damage but a Jester can still be used before discarding", () => {
-      const state = defending({ playerHand: [card('clubs', '5')], jestersRemaining: 1 });
-      expect(checkForLoss(state)).toBe(state);
+    it("isn't yet a loss while cards remain, even if they can't cover the damage - so Undo stays available", () => {
+      const doomed = state({ playerHand: [card('clubs', '2')] });
+      expect(checkForLoss(doomed)).toBe(doomed);
     });
 
-    it("is a loss once discarding has started, even with a Jester left, since it can't be used mid-discard", () => {
-      const result = checkForLoss(
-        defending({ playerHand: [card('clubs', '2')], jestersRemaining: 1, defenceRemaining: 5 })
-      );
-      expect(result.gameOver).toBe(true);
+    it("isn't a loss with an empty hand while a jester remains", () => {
+      const refillable = state({ phase: 'attack', defenceRemaining: 0, hasDiscarded: false, jestersRemaining: 1 });
+      expect(checkForLoss(refillable)).toBe(refillable);
     });
   });
 

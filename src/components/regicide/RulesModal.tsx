@@ -16,7 +16,7 @@ import { SUIT_ICON_SRC } from './Card';
 import { MEDAL_LABEL, MedalIcon } from './Medal';
 
 export const OFFICIAL_RULES_URL =
-  'https://www.regicidegame.com/site_files/33132/upload_files/RegicideRulesA4.pdf?dl=1';
+  'https://www.regicidegame.com/site_files/33132/upload_files/RegicideRulesA4.pdf';
 
 interface RulesModalProps {
   onClose: () => void;
@@ -262,6 +262,10 @@ export function RulesModal({ onClose }: RulesModalProps) {
             <li>at the start of your turn, before choosing a card, or</li>
             <li>when a royal hits back, before you start discarding.</li>
           </ul>
+          <p>
+            If a royal hits back for more than your whole hand is worth, use a Jester before discarding - once
+            you start discarding, it&apos;s too late.
+          </p>
           <p className="text-sm">
             A Jester doesn&apos;t cancel a royal&apos;s immunity in solo play, and it doesn&apos;t reduce the damage
             you owe.
@@ -275,7 +279,7 @@ export function RulesModal({ onClose }: RulesModalProps) {
           </p>
           <ul className="space-y-1">
             {medalRows.map(({ jestersUsed, medal }) => (
-              <li key={medal} className="flex items-center gap-2">
+              <li key={jestersUsed} className="flex items-center gap-2">
                 <MedalIcon medal={medal} className="w-5 h-5" />
                 <span>
                   <strong>{MEDAL_LABEL[medal]}</strong> - {jestersUsed === 0 ? 'no' : jestersUsed}{' '}
