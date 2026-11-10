@@ -216,7 +216,7 @@ has a Jira ticket per line, all under epic
 |---|---|
 | Make more mobile-friendly | [WEB-106](https://eleanormatthewman.atlassian.net/browse/WEB-106) |
 | Improve accessibility | [WEB-107](https://eleanormatthewman.atlassian.net/browse/WEB-107) |
-| Include a way of teaching new players how to play | [WEB-240](https://eleanormatthewman.atlassian.net/browse/WEB-240) (guided tutorial; the rules reference it builds on shipped in [WEB-78](https://eleanormatthewman.atlassian.net/browse/WEB-78)) |
+| Add a guided tutorial for new players | [WEB-240](https://eleanormatthewman.atlassian.net/browse/WEB-240) (was "Include a way of teaching new players how to play" - reworded once the rules reference shipped in [WEB-78](https://eleanormatthewman.atlassian.net/browse/WEB-78)) |
 | Option to restart (with same starting cards) | [WEB-108](https://eleanormatthewman.atlassian.net/browse/WEB-108) |
 | Resign option | [WEB-109](https://eleanormatthewman.atlassian.net/browse/WEB-109) |
 | Multi-player support | [WEB-110](https://eleanormatthewman.atlassian.net/browse/WEB-110) |

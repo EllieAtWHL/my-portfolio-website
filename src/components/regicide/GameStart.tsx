@@ -183,7 +183,7 @@ export function GameStart({ onStartGame, onShowStats, onShowRules }: GameStartPr
             </li>
             <li className="flex items-baseline gap-2">
               <span className="text-green-600 dark:text-green-400">▸</span>
-              <span>Include a way of teaching new players how to play</span>
+              <span>Add a guided tutorial for new players</span>
             </li>
             <li className="flex items-baseline gap-2">
               <span className="text-green-600 dark:text-green-400">▸</span>
