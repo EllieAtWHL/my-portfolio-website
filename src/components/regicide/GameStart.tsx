@@ -13,6 +13,16 @@ interface GameStartProps {
 
 const RELEASES = [
   {
+    version: 'v0.5',
+    date: '10th November 2026',
+    notes: [
+      'Added an in-app "How to play" guide to the solo rules',
+      'Wins now earn a Gold, Silver or Bronze medal depending on how many Jesters you used, tracked in your stats',
+      'Pairs of 5s and pairs of Aces can now be played, as the official rules allow',
+      'Jesters can now only be used before choosing a card or before discarding, as the official solo rules require',
+    ],
+  },
+  {
     version: 'v0.4',
     date: '16th August 2026',
     notes: [

@@ -142,7 +142,7 @@ Your new Button component consolidates all button patterns into a single, reusab
 
 ### ⚠️ Migration Incomplete
 
-Migration is **not** complete. As of the last audit (2026-09), 14 production files still render raw `<button>` elements instead of the shared `Button` component (in addition to `Button.tsx` itself, `spurs-women/SpursTabButton.tsx` — a shared Spurs Women tab-button component, same exemption as `Button.tsx`: it legitimately renders a native `<button>` internally so its own two consumers don't have to — and `regicide/StatsIconButton.tsx`, same exemption again: it deliberately does *not* look like a `Button` at all, restoring the original site's low-opacity icon-only stats trigger rather than a filled/labelled button):
+Migration is **not** complete. As of the last audit (2026-09, plus `RulesModal.tsx` added by WEB-78 in 2026-11), 15 production files still render raw `<button>` elements instead of the shared `Button` component (in addition to `Button.tsx` itself, `spurs-women/SpursTabButton.tsx` — a shared Spurs Women tab-button component, same exemption as `Button.tsx`: it legitimately renders a native `<button>` internally so its own two consumers don't have to — and `regicide/IconButton.tsx`, same exemption again: it deliberately does *not* look like a `Button` at all, restoring the original site's low-opacity icon-only stats trigger rather than a filled/labelled button. Both `regicide/StatsIconButton.tsx` and `regicide/RulesIconButton.tsx` are thin wrappers around it):
 
 - `src/components/admin/TabNav.tsx` (generic tab switcher, used for the admin page's matches/teams/players/stadiums tabs and edit sub-tabs — since the admin page decomposition, `src/app/spurs-women/admin/page.tsx` itself no longer renders any raw `<button>` directly)
 - `src/components/Modal.tsx` (close button)
@@ -153,6 +153,7 @@ Migration is **not** complete. As of the last audit (2026-09), 14 production fil
 - `src/components/regicide/StatsScreen.tsx` (close/reset buttons)
 - `src/components/regicide/PlayArea.tsx` (sort-hand toggle)
 - `src/components/regicide/GameOverModal.tsx` (close button)
+- `src/components/regicide/RulesModal.tsx` (close button - same markup as `GameOverModal`'s, so migrate the two together)
 - `src/components/regicide/Toast.tsx` (dismiss-on-click toast)
 - `src/components/admin/CollapsibleFormSection.tsx` (collapsible section toggle, used by `MatchForm.tsx`'s collapsible sections — `MatchForm.tsx` itself no longer renders a raw `<button>` directly, since this toggle was extracted into its own component)
 - `src/components/admin/ColorPicker.tsx` (swatch/custom color buttons)

@@ -16,9 +16,35 @@ visual/behavioural reference, not built or deployed). Tracked under epic
 
 ## Rules reference
 
-`reference/regicide/RegicideRulesA4.pdf` is the official rules PDF. There is
-no in-app rules reference yet - [WEB-78](https://eleanormatthewman.atlassian.net/browse/WEB-78)
-tracks adding one.
+`reference/regicide/RegicideRulesA4.pdf` is the official rules PDF, kept
+here for development reference only. It's the publisher's copyrighted
+rulebook (with Sketchgoblin's art), so it's deliberately **not** served by
+the app.
+
+Players get `regicide/RulesModal.tsx` instead
+([WEB-78](https://eleanormatthewman.atlassian.net/browse/WEB-78)): a
+solo-only summary written in our own words, in collapsible sections, linking
+out to the official PDF on the publisher's site (`OFFICIAL_RULES_URL`).
+It shows only rules this port actually plays, leaving out multiplayer rules
+(yielding, turn order, communication, the multiplayer Jester). Every number
+it shows (hand size, Jester count, combo limits, royal attack/health, medal
+grading) is read from the engine's exported constants (`HAND_LIMIT`,
+`TOTAL_JESTERS`, `SET_LIMITS`, `ROYAL_STATS`, `victoryMedal`) rather than
+typed into the text, so changing a rule in the engine updates the reference
+too. If you change a rule's *behaviour*, also check the modal's wording.
+
+It's opened from the rules icon (`RulesIconButton`) next to the stats icon
+on both the start and play screens, and from the start screen's "Learn to
+Play" card. It's an overlay owned by `RegicideGame` (`showRules` state), not
+another `gameState` screen, so opening it mid-game leaves the play area
+mounted underneath.
+
+**Yield is deliberately not implemented.** It's a Step 1 option in the
+rulebook, but its only restriction ("may not yield if every other player
+has yielded") is meaningless with one player, and the solo rules don't need
+it. Decided with Ellie on 2026-11-10, so don't add it as a "missing rule".
+A guided tutorial for new players is tracked separately in
+[WEB-240](https://eleanormatthewman.atlassian.net/browse/WEB-240).
 
 ## Route & top-level structure
 
@@ -38,9 +64,12 @@ tracks adding one.
 | `regicide/Card.tsx` | A single playing card face - traditional pip layout for 2-10, dedicated face art for J/Q/K, big suit icon for A (see "Card faces" below) |
 | `regicide/Deck.tsx` | A card-back pile (royal deck / tavern draw pile), shows a count badge |
 | `regicide/GameControls.tsx` | Attack / Use Jester / Undo buttons |
-| `regicide/GameOverModal.tsx` | The win/lose overlay shown when `gameData.gameOver` is true - a portal-rendered dialog (not a card in the page flow, to avoid reintroducing forced scroll) offering Play Again / View Stats, dismissible via its close button, backdrop click, or Escape |
-| `regicide/StatsIconButton.tsx` | The small stats-icon trigger (deliberately not the shared `Button` component - restores the original site's low-opacity icon-only look) |
-| `regicide/StatsScreen.tsx` | Modal showing games started/won/lost, win rate, last played |
+| `regicide/GameOverModal.tsx` | The win/lose overlay shown when `gameData.gameOver` is true - a portal-rendered dialog (not a card in the page flow, to avoid reintroducing forced scroll) offering Play Again / View Stats, dismissible via its close button, backdrop click, or Escape. Shows the medal earned on a win |
+| `regicide/RulesModal.tsx` | The in-app solo rules reference (see "Rules reference" above) |
+| `regicide/IconButton.tsx` | Shared base for the small icon-only header triggers (deliberately not the shared `Button` component - restores the original site's low-opacity icon-only look) |
+| `regicide/StatsIconButton.tsx` / `regicide/RulesIconButton.tsx` | The stats and rules triggers, both thin wrappers around `IconButton` so they always match side by side |
+| `regicide/Medal.tsx` | Medal label, colour and icon (`MEDAL_LABEL`, `MEDAL_ORDER`, `MedalIcon`), shared by the win screen, stats screen and rules |
+| `regicide/StatsScreen.tsx` | Modal showing games started/won/lost, win rate, wins per medal, last played |
 | `regicide/Toast.tsx` / `regicide/ToastContainer.tsx` | The stacking, auto-dismissing notification system (see "Toasts" below) |
 
 ## Game engine (`src/hooks/useRegicideGame.ts`)
@@ -59,8 +88,10 @@ No Redux/Zustand/context - this hook is only ever used once, at the
   royal's suit (`SUIT_POWER_LABEL`): ♠ shields against the counter-attack,
   ♥ heals cards back from the discard pile, ♣ doubles damage, ♦ draws cards
 - Same-rank combos (`isValidSelection`/`SET_LIMITS`): 2s in groups of up to 4,
-  3s up to 3, 4s up to 2, as long as the combined value stays ≤ 10; Aces only
-  pair with other Aces
+  3s up to 3, 4s and 5s up to 2, so the combined value stays ≤ 10. An Ace
+  (Animal Companion) pairs with exactly one other card, which can be another
+  Ace, and never joins a same-rank set. (Pairs of 5s and Ace + Ace were both
+  wrongly rejected before WEB-78.)
 - Defend phase: a surviving royal counter-attacks for its (shield-reduced)
   attack value; the player must discard cards worth at least that much
   before attacking again
@@ -74,14 +105,28 @@ No Redux/Zustand/context - this hook is only ever used once, at the
   refill, not a way to cancel or reduce incoming damage. Solo play swaps
   the Jester's power entirely; the multiplayer version instead cancels the
   current enemy's suit immunity, which isn't implemented here since this is
-  solo-only)
+  solo-only). That timing is enforced by `isJesterTiming` (WEB-78): no cards
+  chosen yet, and in the defend phase nothing discarded yet
+  (`defenceRemaining` still equals the royal's attack). Before WEB-78 a
+  Jester could be flipped mid-turn, which kept the chosen cards in play
+  *and* dealt a fresh hand. The Jester button is disabled, with a tooltip,
+  outside that window
 - Undo: a full move-stack (`history`), not just the last action
-- Win: the royal deck is emptied. Loss: `checkHandExhausted` - hand and
-  jesters both hit zero. Called after every hand-emptying action, including
-  `useJester` (a WEB-77 follow-up fix - previously `useJester` could deal an
-  empty hand with no jesters left, undetected, if the tavern deck ever ran
-  out; empirically near-impossible to hit with the standard 52-card/2-jester
-  economy, but the fix is correct defensive coverage regardless)
+- Win: the royal deck is emptied, graded by `victoryMedal` from the solo
+  rulebook: Gold (no Jesters used), Silver (one) or Bronze (both).
+- Loss: `checkForLoss`, called after every action that changes the hand.
+  Two cases:
+  - hand and jesters both hit zero. This includes `useJester`, a WEB-77
+    follow-up fix: previously `useJester` could deal an empty hand with no
+    jesters left, undetected, if the tavern deck ever ran out. That's
+    empirically near-impossible with the standard 52-card/2-jester economy,
+    but the check is correct defensive coverage regardless.
+  - in the defend phase, the hand's total value can't cover the damage
+    still owed and a Jester can't rescue it (none left, or discarding has
+    started). The rulebook makes this a loss straight away. WEB-78 added it
+    alongside the Jester timing rule, which would otherwise have left a
+    player who'd started discarding stuck with an empty hand and no legal
+    move.
 
 **State shape**: see the `GameData` interface at the top of the file -
 `phase: 'attack' | 'defend'`, `royalCard`/`royalDeck`, `tavernDeck`,
@@ -91,7 +136,13 @@ committed this fight), `discardPile`, `jestersRemaining`,
 `victory`.
 
 **Stats persistence**: `localStorage['regicide-stats']` -
-`{ gamesStarted, gamesWon, gamesLost, lastPlayed }`. No `totalPlayTime` -
+`{ gamesStarted, gamesWon, gamesLost, goldWins, silverWins, bronzeWins, lastPlayed }`,
+read and written only through the module-level `loadStats`/`saveStats`
+(shared by the hook and `StatsScreen`). `loadStats` merges what's saved over
+`DEFAULT_STATS`, so a save from before a field existed loads with that field
+at 0. The medal counts were added in WEB-78, so wins from before then
+weren't graded and the three counts can add up to less than `gamesWon`.
+Win rate is derived on display, not stored. No `totalPlayTime` -
 removed as dead code (was never incremented); see
 [WEB-105](https://eleanormatthewman.atlassian.net/browse/WEB-105) for
 reintroducing it properly.
@@ -157,7 +208,7 @@ has a Jira ticket per line, all under epic
 |---|---|
 | Make more mobile-friendly | [WEB-106](https://eleanormatthewman.atlassian.net/browse/WEB-106) |
 | Improve accessibility | [WEB-107](https://eleanormatthewman.atlassian.net/browse/WEB-107) |
-| Include a way of teaching new players how to play | [WEB-78](https://eleanormatthewman.atlassian.net/browse/WEB-78) |
+| Include a way of teaching new players how to play | [WEB-240](https://eleanormatthewman.atlassian.net/browse/WEB-240) (guided tutorial; the rules reference it builds on shipped in [WEB-78](https://eleanormatthewman.atlassian.net/browse/WEB-78)) |
 | Option to restart (with same starting cards) | [WEB-108](https://eleanormatthewman.atlassian.net/browse/WEB-108) |
 | Resign option | [WEB-109](https://eleanormatthewman.atlassian.net/browse/WEB-109) |
 | Multi-player support | [WEB-110](https://eleanormatthewman.atlassian.net/browse/WEB-110) |
@@ -173,6 +224,14 @@ above).
 out in `reference/testing/README.md` - scripted turns against a
 deterministic shuffle fixture (`Math.random` pinned to `0`, worked through
 by hand in the test file's header comment) rather than mocking the RNG
-output directly. `Card.tsx`, `Toast.tsx`, `ToastContainer.tsx`, and
-`useToasts.ts` have their own component/hook test suites under
-`src/components/regicide/__tests__/` and `src/hooks/__tests__/`.
+output directly. The pure rule helpers (`isValidSelection`,
+`isJesterTiming`, `checkForLoss`, `victoryMedal`) are also tested directly,
+`checkForLoss` against constructed defend-phase states, since reaching each
+loss branch through a real deal isn't practical. `Card.tsx`, `Toast.tsx`,
+`ToastContainer.tsx`, `GameControls.tsx`, `GameOverModal.tsx`,
+`RulesModal.tsx`, `StatsScreen.tsx` and `useToasts.ts` have their own
+component/hook test suites under `src/components/regicide/__tests__/` and
+`src/hooks/__tests__/`. `src/components/__tests__/RegicideGame.test.tsx`
+covers opening the rules from each trigger, including mid-game without
+losing the turn in progress. `RulesModal`'s tests assert against the
+engine's constants, not literal numbers, so they fail if the two drift.

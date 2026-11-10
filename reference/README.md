@@ -20,7 +20,7 @@ AI agents working in this codebase.
 | [`COOKIE_CONSENT.md`](./COOKIE_CONSENT.md) | Cookie consent banner - what it gates (FullStory, Vercel Analytics/Speed Insights, reCAPTCHA), storage/versioning, per-section theming |
 | [`fullstory/README.md`](./fullstory/README.md) | FullStory analytics integration |
 | [`photo-gallery/README.md`](./photo-gallery/README.md) | GitHub-hosted photo gallery system, including the mobile upload flow (WEB-149) |
-| [`regicide/README.md`](./regicide/README.md) | Regicide card game: engine, component map, card face/toast systems, known gaps |
+| [`regicide/README.md`](./regicide/README.md) | Regicide card game: engine, solo rules reference, component map, card face/toast systems, known gaps |
 | [`microbrew/README.md`](./microbrew/README.md) | Microbrew board game port: current status, file map, static-data notes, attribution requirements |
 | [`trick-or-trailhead/Trick-or-Trailhead-Badge-Checker-Requirements-Plan.md`](./trick-or-trailhead/Trick-or-Trailhead-Badge-Checker-Requirements-Plan.md) | Trick or Trailhead badge checker (WEB-228): requirements, live Trailhead API findings, catalogue, delivery plan |
 | [`bobbin/README.md`](./bobbin/README.md) | Bobbin conveyor puzzle game (offline PWA at `/bobbin/`): rules, procedural generation, puzzle codes, difficulty calibration, hosting alongside the site's service worker |

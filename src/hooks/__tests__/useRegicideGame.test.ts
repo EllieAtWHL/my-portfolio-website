@@ -389,7 +389,7 @@ describe('useRegicideGame', () => {
     });
 
     // No dedicated regression test for the tavern-exhaustion fix below
-    // (checkHandExhausted is now called after useJester, matching every
+    // (checkForLoss is now called after useJester, matching every
     // other hand-mutating action) - constructing that exact state through
     // natural play isn't practical to assert on: with the standard 52-card
     // deck and 2 jesters, jestersRemaining reliably hits 0 (the
