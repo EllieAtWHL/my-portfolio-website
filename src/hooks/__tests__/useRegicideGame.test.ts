@@ -1,5 +1,15 @@
 import { renderHook, act } from '@testing-library/react';
-import { useRegicideGame, isValidSelection, cardValue, type PlayingCard } from '../useRegicideGame';
+import {
+  useRegicideGame,
+  isValidSelection,
+  isJesterTiming,
+  checkForLoss,
+  victoryMedal,
+  cardValue,
+  DEFAULT_STATS,
+  type GameData,
+  type PlayingCard,
+} from '../useRegicideGame';
 
 // ---------------------------------------------------------------------------
 // Deterministic shuffle fixture
@@ -152,17 +162,24 @@ describe('useRegicideGame', () => {
       expect(isValidSelection([], card('spades', 'A'))).toBe(true);
     });
 
-    it('allows an Ace to pair with exactly one non-Ace companion, in either order', () => {
+    it('allows an Ace to pair with exactly one other card, in either order', () => {
       expect(isValidSelection([card('hearts', '7')], card('spades', 'A'))).toBe(true);
       expect(isValidSelection([card('spades', 'A')], card('hearts', '7'))).toBe(true);
+      // Including a defeated royal drawn back into hand
+      expect(isValidSelection([card('spades', 'A')], card('hearts', 'K'))).toBe(true);
     });
 
-    it('rejects a second Ace or a third card once an Ace has a companion', () => {
-      expect(isValidSelection([card('spades', 'A')], card('hearts', 'A'))).toBe(false);
+    it('allows two Aces to pair with each other (the rulebook allows Animal Companion + Animal Companion)', () => {
+      expect(isValidSelection([card('spades', 'A')], card('hearts', 'A'))).toBe(true);
+    });
+
+    it('rejects a third card once an Ace has a companion, and never lets an Ace join a same-rank set', () => {
       expect(isValidSelection([card('spades', 'A'), card('hearts', '7')], card('clubs', '5'))).toBe(false);
+      expect(isValidSelection([card('spades', 'A'), card('hearts', 'A')], card('clubs', 'A'))).toBe(false);
+      expect(isValidSelection([card('hearts', '2'), card('spades', '2')], card('clubs', 'A'))).toBe(false);
     });
 
-    it('allows same-rank sets of 2s (up to 4), 3s (up to 3), and 4s (up to 2)', () => {
+    it('allows same-rank sets of 2s (up to 4), 3s (up to 3), 4s (up to 2) and 5s (up to 2)', () => {
       expect(isValidSelection([card('hearts', '2'), card('spades', '2'), card('clubs', '2')], card('diamonds', '2'))).toBe(true);
       expect(
         isValidSelection(
@@ -176,11 +193,15 @@ describe('useRegicideGame', () => {
 
       expect(isValidSelection([card('hearts', '4')], card('spades', '4'))).toBe(true);
       expect(isValidSelection([card('hearts', '4'), card('spades', '4')], card('clubs', '4'))).toBe(false);
+
+      expect(isValidSelection([card('hearts', '5')], card('spades', '5'))).toBe(true);
+      expect(isValidSelection([card('hearts', '5'), card('spades', '5')], card('clubs', '5'))).toBe(false);
     });
 
-    it('rejects mismatched ranks and rejects sets above rank 4', () => {
+    it('rejects mismatched ranks and rejects sets above rank 5 (they would total more than 10)', () => {
       expect(isValidSelection([card('hearts', '2')], card('spades', '3'))).toBe(false);
-      expect(isValidSelection([card('hearts', '5')], card('spades', '5'))).toBe(false);
+      expect(isValidSelection([card('hearts', '6')], card('spades', '6'))).toBe(false);
+      expect(isValidSelection([card('hearts', 'J')], card('spades', 'J'))).toBe(false);
     });
   });
 
@@ -334,8 +355,41 @@ describe('useRegicideGame', () => {
       expect(gameData.tavernDeck).toHaveLength(tavernBefore - 8);
     });
 
+    it('refuses (with an error message) once a card has been chosen this turn, leaving state unchanged', () => {
+      const { result } = dealFixtureGame();
+      act(() => result.current.selectHandCard(0));
+      const before = result.current.gameData;
+      expect(isJesterTiming(before)).toBe(false);
+
+      act(() => result.current.useJester());
+
+      const { gameData } = result.current;
+      expect(gameData.jestersRemaining).toBe(2);
+      expect(gameData.playerHand).toEqual(before.playerHand);
+      expect(gameData.chosenCards).toEqual(before.chosenCards);
+      expect(gameData.message?.tone).toBe('error');
+    });
+
+    it('is allowed at the start of the defend phase, but not once discarding has begun', () => {
+      const { result } = dealFixtureGame();
+      // hearts-2 against the diamonds Jack: 2 damage, the Jack survives and
+      // counter-attacks for 10.
+      act(() => result.current.selectHandCard(0));
+      act(() => result.current.attack());
+      expect(result.current.gameData.phase).toBe('defend');
+      expect(isJesterTiming(result.current.gameData)).toBe(true);
+
+      act(() => result.current.selectHandCard(0)); // discard one card
+      expect(result.current.gameData.phase).toBe('defend');
+      expect(isJesterTiming(result.current.gameData)).toBe(false);
+
+      act(() => result.current.useJester());
+      expect(result.current.gameData.jestersRemaining).toBe(2);
+      expect(result.current.gameData.message?.tone).toBe('error');
+    });
+
     // No dedicated regression test for the tavern-exhaustion fix below
-    // (checkHandExhausted is now called after useJester, matching every
+    // (checkForLoss is now called after useJester, matching every
     // other hand-mutating action) - constructing that exact state through
     // natural play isn't practical to assert on: with the standard 52-card
     // deck and 2 jesters, jestersRemaining reliably hits 0 (the
@@ -415,7 +469,25 @@ describe('useRegicideGame', () => {
         gamesStarted: 0,
         gamesWon: 0,
         gamesLost: 0,
+        goldWins: 0,
+        silverWins: 0,
+        bronzeWins: 0,
         lastPlayed: 'Never',
+      });
+    });
+
+    it('fills in medal counts as 0 for stats saved before they existed', () => {
+      localStorage.setItem(
+        'regicide-stats',
+        JSON.stringify({ gamesStarted: 5, gamesWon: 2, gamesLost: 3, lastPlayed: 'Never' })
+      );
+      const { result } = renderHook(() => useRegicideGame());
+
+      expect(result.current.loadStats()).toEqual({
+        ...DEFAULT_STATS,
+        gamesStarted: 5,
+        gamesWon: 2,
+        gamesLost: 3,
       });
     });
 
@@ -429,12 +501,30 @@ describe('useRegicideGame', () => {
       expect(second.gamesStarted).toBe(0);
     });
 
+    it('falls back to the defaults when the saved stats are unreadable', () => {
+      localStorage.setItem('regicide-stats', '{not json');
+      const { result } = renderHook(() => useRegicideGame());
+
+      expect(result.current.loadStats()).toEqual(DEFAULT_STATS);
+    });
+
+    it('drops obsolete or mistyped fields instead of carrying them forward', () => {
+      localStorage.setItem(
+        'regicide-stats',
+        JSON.stringify({ gamesStarted: 3, gamesWon: 'two', winRate: 67, lastPlayed: 'Never' })
+      );
+      const { result } = renderHook(() => useRegicideGame());
+
+      expect(result.current.loadStats()).toEqual({ ...DEFAULT_STATS, gamesStarted: 3 });
+    });
+
     it('writes and reads back stats from localStorage', () => {
       const { result } = renderHook(() => useRegicideGame());
       const stats = {
+        ...DEFAULT_STATS,
         gamesStarted: 1,
         gamesWon: 1,
-        gamesLost: 0,
+        silverWins: 1,
         lastPlayed: '2026-01-01T00:00:00.000Z',
       };
 
@@ -445,16 +535,20 @@ describe('useRegicideGame', () => {
   });
 
   describe('winGame / loseGame', () => {
-    it('winGame increments gamesWon on top of existing stats', () => {
+    it('winGame increments gamesWon and the medal count on top of existing (pre-medal) stats', () => {
       localStorage.setItem(
         'regicide-stats',
         JSON.stringify({ gamesStarted: 3, gamesWon: 1, gamesLost: 1, lastPlayed: 'Never' })
       );
       const { result } = renderHook(() => useRegicideGame());
 
-      act(() => result.current.winGame());
+      act(() => result.current.winGame('gold'));
 
-      expect(JSON.parse(localStorage.getItem('regicide-stats')!).gamesWon).toBe(2);
+      const saved = JSON.parse(localStorage.getItem('regicide-stats')!);
+      expect(saved.gamesWon).toBe(2);
+      expect(saved.goldWins).toBe(1);
+      expect(saved.silverWins).toBe(0);
+      expect(saved.bronzeWins).toBe(0);
     });
 
     it('loseGame increments gamesLost on top of existing stats', () => {
@@ -467,6 +561,104 @@ describe('useRegicideGame', () => {
       act(() => result.current.loseGame());
 
       expect(JSON.parse(localStorage.getItem('regicide-stats')!).gamesLost).toBe(2);
+    });
+  });
+
+  describe("defending with a hand that can't cover the damage", () => {
+    // Scripted against the fixture deal: attack the diamonds Jack (attack 10)
+    // with the smallest card each turn and defend by discarding the largest,
+    // until it hits back for 10 against a lone 5 of hearts - with both
+    // jesters still available.
+    function reachDoomedDefence() {
+      const rendered = dealFixtureGame();
+      const { result } = rendered;
+      const play = (index: number) => act(() => result.current.selectHandCard(index));
+      play(0); act(() => result.current.attack()); // 2h, Jack hits back for 10
+      play(6); play(5); // discard 9h, 8h
+      play(0); act(() => result.current.attack()); // 3h
+      play(3); play(2); // discard 7h, 6h
+      play(0); act(() => result.current.attack()); // 4h
+      expect(result.current.gameData.phase).toBe('defend');
+      expect(result.current.gameData.defenceRemaining).toBe(10);
+      expect(result.current.gameData.playerHand.map(cardLabel)).toEqual(['hearts-5']);
+      expect(result.current.gameData.jestersRemaining).toBe(2);
+      return rendered;
+    }
+
+    it('refuses a discard while a Jester could still help, and points the player at the Jester', () => {
+      const { result } = reachDoomedDefence();
+      const before = result.current.gameData;
+
+      act(() => result.current.selectHandCard(0));
+
+      const { gameData } = result.current;
+      expect(gameData.playerHand).toEqual(before.playerHand);
+      expect(gameData.discardPile).toEqual(before.discardPile);
+      expect(gameData.hasDiscarded).toBe(false);
+      expect(gameData.gameOver).toBe(false);
+      expect(gameData.message).toEqual({
+        text: "Your hand can't cover 10 damage - use a Jester first",
+        tone: 'error',
+      });
+    });
+
+    it('still allows the Jester, which refills the hand without clearing the damage owed', () => {
+      const { result } = reachDoomedDefence();
+
+      act(() => result.current.useJester());
+
+      const { gameData } = result.current;
+      expect(gameData.jestersRemaining).toBe(1);
+      expect(gameData.playerHand).toHaveLength(8);
+      expect(gameData.phase).toBe('defend');
+      expect(gameData.defenceRemaining).toBe(10);
+    });
+  });
+
+  describe('checkForLoss (pure)', () => {
+    const state = (overrides: Partial<GameData>): GameData => ({
+      isPlaying: true,
+      phase: 'defend',
+      royalCard: { suit: 'diamonds', rank: 'J', attack: 10, maxAttack: 10, health: 12, maxHealth: 20 },
+      royalDeck: [],
+      tavernDeck: [],
+      playerHand: [],
+      chosenCards: [],
+      activeDeck: [],
+      discardPile: [],
+      jestersRemaining: 0,
+      defenceRemaining: 10,
+      hasDiscarded: true,
+      message: null,
+      gameOver: false,
+      victory: false,
+      ...overrides,
+    });
+
+    it('is a loss once the hand and jesters are both gone', () => {
+      const result = checkForLoss(state({}));
+      expect(result.gameOver).toBe(true);
+      expect(result.victory).toBe(false);
+      expect(result.isPlaying).toBe(false);
+      expect(result.message).toEqual({ text: 'Sorry, you lost - out of cards and jesters', tone: 'error' });
+    });
+
+    it("isn't yet a loss while cards remain, even if they can't cover the damage - so Undo stays available", () => {
+      const doomed = state({ playerHand: [card('clubs', '2')] });
+      expect(checkForLoss(doomed)).toBe(doomed);
+    });
+
+    it("isn't a loss with an empty hand while a jester remains", () => {
+      const refillable = state({ phase: 'attack', defenceRemaining: 0, hasDiscarded: false, jestersRemaining: 1 });
+      expect(checkForLoss(refillable)).toBe(refillable);
+    });
+  });
+
+  describe('victoryMedal', () => {
+    it('grades a win by jesters used: none is gold, one is silver, both is bronze', () => {
+      expect(victoryMedal(2)).toBe('gold');
+      expect(victoryMedal(1)).toBe('silver');
+      expect(victoryMedal(0)).toBe('bronze');
     });
   });
 

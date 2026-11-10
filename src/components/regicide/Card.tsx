@@ -75,7 +75,7 @@ const ROYAL_VALUE: Record<string, number> = { J: 10, Q: 15, K: 20 };
 // (public/regicide/heart.svg etc., copied over unmodified from the original
 // site's imgs/ folder) - rendered the same way it was there: a square box
 // with background-size: cover, just scaled up to this card's larger size.
-const SUIT_ICON_SRC: Record<CardProps['suit'], string> = {
+export const SUIT_ICON_SRC: Record<CardProps['suit'], string> = {
   hearts: '/regicide/heart.svg',
   spades: '/regicide/spade.svg',
   diamonds: '/regicide/diamond.svg',

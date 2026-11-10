@@ -2,14 +2,35 @@
 
 import { Card as UniversalCard } from '@/components/Card';
 import { Button } from '@/components/Button';
+import { RulesIconButton } from './RulesIconButton';
 import { StatsIconButton } from './StatsIconButton';
 
 interface GameStartProps {
   onStartGame: () => void;
   onShowStats: () => void;
+  onShowRules: () => void;
 }
 
-const RELEASES = [
+// A release lists its notes either as one flat list (`notes`) or, from
+// v0.5 on, split into new features and bug fixes.
+type Release = { version: string; date: string } & (
+  | { notes: string[] }
+  | { features: string[]; fixes: string[] }
+);
+
+const RELEASES: Release[] = [
+  {
+    version: 'v0.5',
+    date: '10th November 2026',
+    features: [
+      'Added an in-app "How to play" guide to the solo rules',
+      'Wins now earn a Gold, Silver or Bronze medal depending on how many Jesters you used, tracked in your stats',
+    ],
+    fixes: [
+      'Pairs of 5s and pairs of Aces can now be played, as the official rules allow',
+      'Jesters can now only be used before choosing a card or before discarding, as the official solo rules require',
+    ],
+  },
   {
     version: 'v0.4',
     date: '16th August 2026',
@@ -36,7 +57,20 @@ const RELEASES = [
   },
 ];
 
-export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
+function ReleaseNotes({ notes }: { notes: string[] }) {
+  return (
+    <ul className="space-y-1 text-gray-600 dark:text-gray-400 pb-3">
+      {notes.map((note) => (
+        <li key={note} className="flex items-baseline gap-2">
+          <span className="text-green-600 dark:text-green-400 text-sm">▸</span>
+          <span>{note}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export function GameStart({ onStartGame, onShowStats, onShowRules }: GameStartProps) {
   return (
     <div className="text-center py-8">
       {/* Title Section */}
@@ -78,7 +112,8 @@ export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
         >
           Play Game
         </Button>
-        <div className="flex justify-end">
+        <div className="flex justify-end items-center gap-2">
+          <RulesIconButton onClick={onShowRules} />
           <StatsIconButton onClick={onShowStats} />
         </div>
       </div>
@@ -109,7 +144,7 @@ export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
             variant="highlight"
             hover={true}
             clickable={true}
-            onClick={() => window.open('https://www.badgersfrommars.com/regicide/', '_blank')}
+            onClick={onShowRules}
           >
             <div className="flex items-center gap-4">
               <svg className="w-8 h-8 flex-shrink-0 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -117,7 +152,7 @@ export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
               </svg>
               <div className="flex-1">
                 <div className="font-semibold text-gray-800 dark:text-gray-200 text-lg">Learn to Play</div>
-                <div className="text-gray-600 dark:text-gray-400">Official rules & guide</div>
+                <div className="text-gray-600 dark:text-gray-400">How the solo game works</div>
               </div>
               <span className="text-green-600 dark:text-green-400 group-hover:text-green-700 dark:group-hover:text-green-300 group-hover:translate-x-2 transition-all text-2xl">→</span>
             </div>
@@ -148,7 +183,7 @@ export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
             </li>
             <li className="flex items-baseline gap-2">
               <span className="text-green-600 dark:text-green-400">▸</span>
-              <span>Include a way of teaching new players how to play</span>
+              <span>Add a guided tutorial for new players</span>
             </li>
             <li className="flex items-baseline gap-2">
               <span className="text-green-600 dark:text-green-400">▸</span>
@@ -193,14 +228,16 @@ export function GameStart({ onStartGame, onShowStats }: GameStartProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </summary>
-              <ul className="space-y-1 text-gray-600 dark:text-gray-400 pb-3">
-                {release.notes.map((note) => (
-                  <li key={note} className="flex items-baseline gap-2">
-                    <span className="text-green-600 dark:text-green-400 text-sm">▸</span>
-                    <span>{note}</span>
-                  </li>
-                ))}
-              </ul>
+              {'notes' in release ? (
+                <ReleaseNotes notes={release.notes} />
+              ) : (
+                <>
+                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">New features</h4>
+                  <ReleaseNotes notes={release.features} />
+                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Bug fixes</h4>
+                  <ReleaseNotes notes={release.fixes} />
+                </>
+              )}
             </details>
           ))}
         </UniversalCard>

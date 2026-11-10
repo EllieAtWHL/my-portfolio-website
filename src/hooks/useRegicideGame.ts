@@ -36,25 +36,38 @@ export interface GameData {
   discardPile: PlayingCard[];
   jestersRemaining: number;
   defenceRemaining: number;
+  // True once at least one card has been discarded towards the current
+  // defence - closes the solo Jester window (see isJesterTiming)
+  hasDiscarded: boolean;
   message: GameMessage | null;
   gameOver: boolean;
   victory: boolean;
 }
 
-interface GameStats {
+// Solo-play victory grading from the rulebook: a win using no Jesters is
+// Gold, one is Silver, both is Bronze.
+export type VictoryMedal = 'gold' | 'silver' | 'bronze';
+
+export interface GameStats {
   gamesStarted: number;
   gamesWon: number;
   gamesLost: number;
+  goldWins: number;
+  silverWins: number;
+  bronzeWins: number;
   lastPlayed: string;
 }
 
 const SUITS: Suit[] = ['hearts', 'diamonds', 'clubs', 'spades'];
 const RANKS: Rank[] = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
-const HAND_LIMIT = 8;
-const TOTAL_JESTERS = 2;
+// Exported (along with SET_LIMITS and ROYAL_STATS) so the in-app rules
+// reference (RulesModal) shows the numbers the engine actually plays by,
+// rather than a hand-typed copy that could drift from them.
+export const HAND_LIMIT = 8;
+export const TOTAL_JESTERS = 2;
 // Same-rank combos: how many cards of that rank may be chosen together
-// (their values must sum to 10 or less - 4x2, 3x3 or 2x4).
-const SET_LIMITS: Partial<Record<Rank, number>> = { '2': 4, '3': 3, '4': 2 };
+// (their values must sum to 10 or less - 4x2, 3x3, 2x4 or 2x5).
+export const SET_LIMITS: Partial<Record<Rank, number>> = { '2': 4, '3': 3, '4': 2, '5': 2 };
 
 export const SUIT_SYMBOL: Record<Suit, string> = {
   spades: '♠',
@@ -84,17 +97,65 @@ export function compareHandCards(a: PlayingCard, b: PlayingCard): number {
   );
 }
 
-const ROYAL_STATS: Record<'J' | 'Q' | 'K', { attack: number; health: number }> = {
+export const ROYAL_STATS: Record<'J' | 'Q' | 'K', { attack: number; health: number }> = {
   J: { attack: 10, health: 20 },
   Q: { attack: 15, health: 30 },
   K: { attack: 20, health: 40 },
 };
 
-const DEFAULT_STATS: GameStats = {
+export const DEFAULT_STATS: GameStats = {
   gamesStarted: 0,
   gamesWon: 0,
   gamesLost: 0,
+  goldWins: 0,
+  silverWins: 0,
+  bronzeWins: 0,
   lastPlayed: 'Never',
+};
+
+const STATS_KEY = 'regicide-stats';
+
+// Merged over DEFAULT_STATS so stats saved before a field existed (e.g. the
+// per-medal win counts, added in WEB-78) still load with that field at 0.
+// Shared by the hook and StatsScreen so there's one reader of this key.
+// Only known fields are kept, so obsolete ones (like the `winRate` the old
+// StatsScreen reset used to write) aren't carried forward on every save,
+// and unreadable saved data falls back to the defaults rather than
+// throwing during render.
+export function loadStats(): GameStats {
+  if (typeof window === 'undefined') return { ...DEFAULT_STATS };
+  let saved: Partial<GameStats> = {};
+  try {
+    saved = JSON.parse(localStorage.getItem(STATS_KEY) ?? '{}') ?? {};
+  } catch {
+    return { ...DEFAULT_STATS };
+  }
+  const stats = { ...DEFAULT_STATS };
+  for (const key of Object.keys(DEFAULT_STATS) as (keyof GameStats)[]) {
+    if (typeof saved[key] === typeof DEFAULT_STATS[key]) {
+      (stats as Record<keyof GameStats, unknown>)[key] = saved[key];
+    }
+  }
+  return stats;
+}
+
+export function saveStats(stats: GameStats) {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+  }
+}
+
+export function victoryMedal(jestersRemaining: number): VictoryMedal {
+  const jestersUsed = TOTAL_JESTERS - jestersRemaining;
+  if (jestersUsed <= 0) return 'gold';
+  if (jestersUsed === 1) return 'silver';
+  return 'bronze';
+}
+
+const MEDAL_STAT: Record<VictoryMedal, 'goldWins' | 'silverWins' | 'bronzeWins'> = {
+  gold: 'goldWins',
+  silver: 'silverWins',
+  bronze: 'bronzeWins',
 };
 
 const EMPTY_GAME_DATA: GameData = {
@@ -109,6 +170,7 @@ const EMPTY_GAME_DATA: GameData = {
   discardPile: [],
   jestersRemaining: TOTAL_JESTERS,
   defenceRemaining: 0,
+  hasDiscarded: false,
   message: null,
   gameOver: false,
   victory: false,
@@ -181,16 +243,16 @@ function buildStandardDeck() {
   return { tavern, jacks, queens, kings };
 }
 
-// A combo is: a single card; a single non-Ace card paired with a single Ace
-// (in either order, as its "companion"); or a same-rank set of 2s/3s/4s up
-// to SET_LIMITS[rank].
+// A combo is: a single card; an Ace (Animal Companion) paired with exactly
+// one other card - which may itself be another Ace - in either order; or a
+// same-rank set of 2s/3s/4s/5s up to SET_LIMITS[rank]. An Ace can never
+// join a same-rank set.
 export function isValidSelection(chosenCards: PlayingCard[], candidate: PlayingCard): boolean {
   if (chosenCards.length === 0) return true;
 
   if (chosenCards.length === 1) {
     const [only] = chosenCards;
-    const exactlyOneIsAce = (only.rank === 'A') !== (candidate.rank === 'A');
-    if (exactlyOneIsAce) return true;
+    if (only.rank === 'A' || candidate.rank === 'A') return true;
   }
 
   if (candidate.rank === 'A') return false;
@@ -200,16 +262,38 @@ export function isValidSelection(chosenCards: PlayingCard[], candidate: PlayingC
   return allSameRank && chosenCards.length < limit;
 }
 
-function checkHandExhausted(data: GameData): GameData {
+// Solo Jester timing: only at the start of Step 1 (before any card is
+// chosen) or the start of Step 4 (before any damage has been discarded).
+// Without this, a Jester could be flipped with cards already chosen -
+// keeping them in play while also dealing a fresh hand.
+export function isJesterTiming(data: GameData): boolean {
+  if (data.chosenCards.length > 0) return false;
+  return !(data.phase === 'defend' && data.hasDiscarded);
+}
+
+function handValue(hand: PlayingCard[]): number {
+  return hand.reduce((sum, card) => sum + cardValue(card.rank), 0);
+}
+
+function lose(data: GameData, reason: string): GameData {
+  return {
+    ...data,
+    gameOver: true,
+    victory: false,
+    isPlaying: false,
+    message: { text: `Sorry, you lost - ${reason}`, tone: 'error' },
+  };
+}
+
+// Run after every action that changes the hand: out of cards and jesters
+// means nothing is left to play. A hand that can't cover a royal's attack
+// isn't a loss on its own here - the player discards until the hand is
+// empty, which keeps Undo available until the very last card (see the
+// defend branch of selectHandCard for the one case that's refused instead).
+export function checkForLoss(data: GameData): GameData {
   if (data.gameOver) return data;
   if (data.playerHand.length === 0 && data.jestersRemaining === 0) {
-    return {
-      ...data,
-      gameOver: true,
-      victory: false,
-      isPlaying: false,
-      message: { text: 'Sorry, you lost - out of cards and jesters', tone: 'error' },
-    };
+    return lose(data, 'out of cards and jesters');
   }
   return data;
 }
@@ -219,36 +303,25 @@ export function useRegicideGame() {
   const [gameData, setGameData] = useState<GameData>(EMPTY_GAME_DATA);
   const [history, setHistory] = useState<GameData[]>([]);
 
-  const loadStats = useCallback((): GameStats => {
-    if (typeof window === 'undefined') return { ...DEFAULT_STATS };
-    const saved = localStorage.getItem('regicide-stats');
-    return saved ? JSON.parse(saved) : { ...DEFAULT_STATS };
-  }, []);
-
-  const saveStats = useCallback((stats: GameStats) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('regicide-stats', JSON.stringify(stats));
-    }
-  }, []);
-
-  const winGame = useCallback(() => {
+  const winGame = useCallback((medal: VictoryMedal) => {
     const stats = loadStats();
     stats.gamesWon += 1;
+    stats[MEDAL_STAT[medal]] += 1;
     saveStats(stats);
-  }, [loadStats, saveStats]);
+  }, []);
 
   const loseGame = useCallback(() => {
     const stats = loadStats();
     stats.gamesLost += 1;
     saveStats(stats);
-  }, [loadStats, saveStats]);
+  }, []);
 
   const recordGameStarted = useCallback(() => {
     const stats = loadStats();
     stats.gamesStarted += 1;
     stats.lastPlayed = new Date().toISOString();
     saveStats(stats);
-  }, [loadStats, saveStats]);
+  }, []);
 
   const initializeGame = useCallback(() => {
     setIsLoading(true);
@@ -278,6 +351,7 @@ export function useRegicideGame() {
       discardPile: [],
       jestersRemaining: TOTAL_JESTERS,
       defenceRemaining: 0,
+      hasDiscarded: false,
       message: null,
       gameOver: false,
       victory: false,
@@ -308,6 +382,21 @@ export function useRegicideGame() {
       }
 
       // Defend phase: discard cards to cover the royal's attack.
+      // If the hand can't cover the damage but a Jester still could (only
+      // before the first discard), refuse the discard: once discarding
+      // starts the Jester window closes, and the player would be left
+      // discarding towards a certain loss with no way back.
+      if (isJesterTiming(prev) && prev.jestersRemaining > 0 && handValue(prev.playerHand) < prev.defenceRemaining) {
+        setGameData({
+          ...prev,
+          message: {
+            text: `Your hand can't cover ${prev.defenceRemaining} damage - use a Jester first`,
+            tone: 'error',
+          },
+        });
+        return;
+      }
+
       const remainingHand = removeCard(prev.playerHand, card);
       const remainingDefence = Math.max(0, prev.defenceRemaining - cardValue(card.rank));
       let next: GameData = {
@@ -315,23 +404,25 @@ export function useRegicideGame() {
         playerHand: remainingHand,
         discardPile: [card, ...prev.discardPile],
         defenceRemaining: remainingDefence,
+        hasDiscarded: remainingDefence > 0,
         phase: remainingDefence <= 0 ? 'attack' : 'defend',
         message:
           remainingDefence <= 0
             ? null
             : { text: `Current defence needed is ${remainingDefence}`, tone: 'info' },
       };
-      next = checkHandExhausted({ ...next, playerHand: remainingHand });
+      next = checkForLoss(next);
 
+      // A discard can only ever end the game as a loss (out of cards and
+      // jesters) - victory only comes from attack() defeating the last royal.
       if (next.gameOver && !prev.gameOver) {
-        if (next.victory) winGame();
-        else loseGame();
+        loseGame();
       }
 
       setHistory((h) => [prev, ...h]);
       setGameData(next);
     },
-    [gameData, winGame, loseGame]
+    [gameData, loseGame]
   );
 
   const attack = useCallback(() => {
@@ -411,9 +502,10 @@ export function useRegicideGame() {
         activeDeck: [...prev.activeDeck, ...chosenCards],
         phase,
         defenceRemaining: royalAttack > 0 ? royalAttack : 0,
+        hasDiscarded: false,
         message: { text: messages.join(' · '), tone: 'info' },
       };
-      next = checkHandExhausted(next);
+      next = checkForLoss(next);
 
       if (next.gameOver && !prev.gameOver) {
         loseGame();
@@ -452,6 +544,7 @@ export function useRegicideGame() {
       activeDeck: [],
       phase: 'attack',
       defenceRemaining: 0,
+      hasDiscarded: false,
       message: { text: messages.join(' · '), tone: 'info' },
     };
 
@@ -464,11 +557,11 @@ export function useRegicideGame() {
         message: { text: 'You won the game!', tone: 'info' },
       };
     } else {
-      next = checkHandExhausted(next);
+      next = checkForLoss(next);
     }
 
     if (next.gameOver && !prev.gameOver) {
-      if (next.victory) winGame();
+      if (next.victory) winGame(victoryMedal(next.jestersRemaining));
       else loseGame();
     }
 
@@ -482,6 +575,17 @@ export function useRegicideGame() {
 
     if (prev.jestersRemaining < 1) {
       setGameData({ ...prev, message: { text: 'No jesters remaining', tone: 'error' } });
+      return;
+    }
+
+    if (!isJesterTiming(prev)) {
+      setGameData({
+        ...prev,
+        message: {
+          text: 'A Jester can only be used before you choose a card, or before you start discarding',
+          tone: 'error',
+        },
+      });
       return;
     }
 
@@ -500,7 +604,7 @@ export function useRegicideGame() {
       jestersRemaining: prev.jestersRemaining - 1,
       message: null,
     };
-    next = checkHandExhausted(next);
+    next = checkForLoss(next);
 
     if (next.gameOver && !prev.gameOver) {
       loseGame();

@@ -8,6 +8,10 @@ interface GameControlsProps {
   onAttack: () => void;
   canAttack: boolean;
   onUseJester: () => void;
+  // The button is only disabled once none remain. Mid-turn timing (see
+  // isJesterTiming) is enforced by the engine, which answers an early click
+  // with an error toast - an aria-live message reaches keyboard and
+  // screen-reader users, where a disabled button's tooltip wouldn't.
   jestersRemaining: number;
   onUndo: () => void;
   canUndo: boolean;

@@ -1,58 +1,26 @@
 'use client';
 
-import { useState, useEffect, useId } from 'react';
+import { useState, useId } from 'react';
 import { Card as UniversalCard } from '@/components/Card';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { formatDateWithMonthName } from '@/lib/utils/date';
+import { DEFAULT_STATS, loadStats, saveStats, type GameStats } from '@/hooks/useRegicideGame';
+import { MEDAL_LABEL, MEDAL_ORDER, MedalIcon } from './Medal';
 
 interface StatsScreenProps {
   onClose: () => void;
 }
 
-interface GameStats {
-  gamesStarted: number;
-  gamesWon: number;
-  gamesLost: number;
-  winRate: number;
-  lastPlayed: string;
-}
-
 export function StatsScreen({ onClose }: StatsScreenProps) {
-  const [stats, setStats] = useState<GameStats>({
-    gamesStarted: 0,
-    gamesWon: 0,
-    gamesLost: 0,
-    winRate: 0,
-    lastPlayed: 'Never'
-  });
+  // A lazy initializer is safe here: StatsScreen only mounts after a click,
+  // never on the server render, so there's no hydration mismatch to avoid.
+  const [stats, setStats] = useState<GameStats>(loadStats);
 
-  useEffect(() => {
-    // Load stats from localStorage
-    const loadStats = () => {
-      const savedStats = localStorage.getItem('regicide-stats');
-      if (savedStats) {
-        const parsed = JSON.parse(savedStats);
-        setStats({
-          ...parsed,
-          winRate: parsed.gamesStarted > 0 ? Math.round((parsed.gamesWon / parsed.gamesStarted) * 100) : 0
-        });
-      }
-    };
-
-    loadStats();
-  }, []);
+  const winRate = stats.gamesStarted > 0 ? Math.round((stats.gamesWon / stats.gamesStarted) * 100) : 0;
 
   const resetStats = () => {
-    const defaultStats = {
-      gamesStarted: 0,
-      gamesWon: 0,
-      gamesLost: 0,
-      winRate: 0,
-      lastPlayed: 'Never'
-    };
-
-    localStorage.setItem('regicide-stats', JSON.stringify(defaultStats));
-    setStats(defaultStats);
+    saveStats({ ...DEFAULT_STATS });
+    setStats({ ...DEFAULT_STATS });
   };
 
   const titleId = useId();
@@ -133,16 +101,31 @@ export function StatsScreen({ onClose }: StatsScreenProps) {
             <UniversalCard padding="sm" className="dark:!bg-dark-bg-2">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-gray-600 dark:text-gray-300 text-sm">Win Rate</span>
-                <span className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.winRate}%</span>
+                <span className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{winRate}%</span>
               </div>
               <div className="w-full bg-gray-200 dark:bg-dark-bg-1 rounded-full h-2">
                 <div 
                   className="bg-yellow-600 dark:bg-yellow-400 h-2 rounded-full transition-all duration-500"
-                  style={{ '--progress-width': `${stats.winRate}%`, width: 'var(--progress-width)' } as React.CSSProperties}
+                  style={{ '--progress-width': `${winRate}%`, width: 'var(--progress-width)' } as React.CSSProperties}
                 />
               </div>
             </UniversalCard>
           </div>
+
+          {/* Medals - wins before WEB-78 weren't graded, so these can sum to
+              less than Games Won */}
+          <UniversalCard padding="sm" className="mb-6 dark:!bg-dark-bg-2">
+            <span className="text-gray-600 dark:text-gray-300 text-sm block mb-2">Victory Medals</span>
+            <div className="grid grid-cols-3 gap-4">
+              {MEDAL_ORDER.map((medal) => (
+                <div key={medal} className="flex flex-col items-center gap-1">
+                  <MedalIcon medal={medal} className="w-7 h-7" />
+                  <span className="text-xl font-bold leading-none">{stats[`${medal}Wins`]}</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">{MEDAL_LABEL[medal]}</span>
+                </div>
+              ))}
+            </div>
+          </UniversalCard>
 
           {/* Additional Info */}
           <UniversalCard padding="sm" className="mb-6 dark:!bg-dark-bg-2">

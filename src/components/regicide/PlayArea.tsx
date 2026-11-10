@@ -6,14 +6,23 @@ import { Card as GameCard } from './Card';
 import { Deck } from './Deck';
 import { GameControls } from './GameControls';
 import { GameOverModal } from './GameOverModal';
+import { RulesIconButton } from './RulesIconButton';
 import { StatsIconButton } from './StatsIconButton';
 import { ToastContainer } from './ToastContainer';
 import { useToasts } from '@/hooks/useToasts';
-import { calculateAttackDamage, compareHandCards, SUIT_POWER_LABEL, type GameData, type GameMessage } from '@/hooks/useRegicideGame';
+import {
+  calculateAttackDamage,
+  compareHandCards,
+  SUIT_POWER_LABEL,
+  victoryMedal,
+  type GameData,
+  type GameMessage,
+} from '@/hooks/useRegicideGame';
 
 interface PlayAreaProps {
   gameData?: GameData;
   onShowStats: () => void;
+  onShowRules: () => void;
   selectHandCard: (index: number) => void;
   attack: () => void;
   useJester: () => void;
@@ -25,6 +34,7 @@ interface PlayAreaProps {
 export function PlayArea({
   gameData,
   onShowStats,
+  onShowRules,
   selectHandCard,
   attack,
   useJester,
@@ -96,11 +106,21 @@ export function PlayArea({
           <p className="text-sm text-gray-600 dark:text-gray-300">Defeat the Royals!</p>
         </div>
 
-        <StatsIconButton onClick={onShowStats} />
+        <div className="flex items-center gap-2">
+          <RulesIconButton onClick={onShowRules} />
+          <StatsIconButton onClick={onShowStats} />
+        </div>
       </div>
 
       <div className="max-w-7xl mx-auto">
-        {gameOver && <GameOverModal victory={victory} onRestart={onRestart} onShowStats={onShowStats} />}
+        {gameOver && (
+          <GameOverModal
+            victory={victory}
+            medal={victoryMedal(jestersRemaining)}
+            onRestart={onRestart}
+            onShowStats={onShowStats}
+          />
+        )}
 
         {/* Royals (deck + current royal) | Tavern (draw pile + discard pile) -
             two combined groups, matching the original's single draw-container

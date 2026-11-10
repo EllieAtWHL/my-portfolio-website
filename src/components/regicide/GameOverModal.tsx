@@ -4,9 +4,13 @@ import { useEffect, useId, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Button } from '@/components/Button';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
+import type { VictoryMedal } from '@/hooks/useRegicideGame';
+import { MEDAL_LABEL, MedalIcon } from './Medal';
 
 interface GameOverModalProps {
   victory: boolean;
+  // Only meaningful on a win - the solo rulebook's Jester-based grading
+  medal: VictoryMedal;
   onRestart: () => void;
   onShowStats: () => void;
 }
@@ -19,7 +23,7 @@ interface GameOverModalProps {
 // `isOpen` is local state (not tied to gameData.gameOver) so it resets fresh
 // each time PlayArea mounts a new instance of this component for a new
 // game-over.
-export function GameOverModal({ victory, onRestart, onShowStats }: GameOverModalProps) {
+export function GameOverModal({ victory, medal, onRestart, onShowStats }: GameOverModalProps) {
   const [isOpen, setIsOpen] = useState(true);
   const titleId = useId();
   const containerRef = useFocusTrap<HTMLDivElement>(isOpen, () => setIsOpen(false));
@@ -81,6 +85,12 @@ export function GameOverModal({ victory, onRestart, onShowStats }: GameOverModal
           )}
           {victory ? 'You won the game!' : 'Sorry, you lost'}
         </h3>
+        {victory && (
+          <p className="flex items-center justify-center gap-2 text-lg font-semibold">
+            <MedalIcon medal={medal} />
+            {MEDAL_LABEL[medal]} victory
+          </p>
+        )}
         <div className="flex justify-center gap-4 mt-4">
           <Button variant="primary" onClick={onRestart}>
             Play Again
