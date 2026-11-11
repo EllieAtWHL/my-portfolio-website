@@ -145,7 +145,21 @@ describe('CookieConsentBanner', () => {
     expect(screen.getByText(/This site uses optional cookies/)).toHaveAttribute('aria-live', 'polite');
   });
 
-  it('uses the main-site button styling outside /spurs-women', () => {
+  it('publishes its height as --cookie-banner-height while open, and removes it when closed', () => {
+    mockConsent();
+    const { rerender } = render(<CookieConsentBanner />);
+
+    // jsdom has no layout, so offsetHeight is 0 - what matters is that the
+    // variable is set while open (globals.css adds it to footer clearance)
+    expect(document.documentElement.style.getPropertyValue('--cookie-banner-height')).toBe('0px');
+
+    mockConsent({ isBannerOpen: false });
+    rerender(<CookieConsentBanner />);
+
+    expect(document.documentElement.style.getPropertyValue('--cookie-banner-height')).toBe('');
+  });
+
+    it('uses the main-site button styling outside /spurs-women', () => {
     mockUsePathname.mockReturnValue('/contact-me');
     mockConsent();
 

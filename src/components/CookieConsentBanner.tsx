@@ -57,6 +57,29 @@ export function CookieConsentBanner() {
     }
   }, [isBannerOpen, shouldFocusBanner]);
 
+  // Publishes the open banner's height as --cookie-banner-height on <html>,
+  // which --spacing-footer-clearance (globals.css) adds to every page's
+  // bottom padding. The banner is fixed over the bottom of the viewport, so
+  // without this the last ~100px of a page (e.g. the home page's Contact Me
+  // CTA at 1280x720) can't be reached until the visitor dismisses it.
+  // A ResizeObserver keeps it right as the banner expands to Manage choices
+  // or reflows on resize.
+  useEffect(() => {
+    const region = regionRef.current;
+    if (!isBannerOpen || !region) return;
+
+    const root = document.documentElement;
+    const update = () => root.style.setProperty('--cookie-banner-height', `${region.offsetHeight}px`);
+    update();
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(update);
+    observer?.observe(region);
+
+    return () => {
+      observer?.disconnect();
+      root.style.removeProperty('--cookie-banner-height');
+    };
+  }, [isBannerOpen]);
+
   if (!isBannerOpen) return null;
 
   return (
@@ -103,21 +126,34 @@ function BannerContent({ isSpursSection }: { isSpursSection: boolean }) {
   // them to the same width AND min-width explicitly (main-theme.css is
   // imported layer(base) in globals.css, so plain Tailwind utilities here
   // already win without needing !important).
-  // w-36 is the narrowest width that fits "Manage choices" on one line.
-  const buttonWidth = 'w-36 min-w-36 whitespace-nowrap';
+  // Reject all / Accept all share one width so declining is never the
+  // smaller target; the middle button (Manage/Save choices) needs w-36 to
+  // fit "Manage choices" on one line. Kept as narrow as that allows, so the
+  // one-row summary view leaves the text enough width to stay short.
+  const buttonWidth = 'w-28 min-w-28 whitespace-nowrap';
+  const middleButtonWidth = 'w-36 min-w-36 whitespace-nowrap';
   const secondaryVariant = isSpursSection ? 'spurs' : 'secondary';
   const primaryVariant = isSpursSection ? 'spurs' : 'primary';
 
   return (
-    <div className="max-w-4xl mx-auto flex flex-col gap-4">
+    // The summary view sits on one row from sm up (text beside the buttons),
+    // as the original single-choice banner did, so a first-visit banner stays
+    // short and doesn't cover content near the bottom of the viewport (e.g.
+    // the home page's Contact Me CTA - Playwright's home.spec caught this).
+    // Only the opt-in detail view stacks, since its checkbox list needs the
+    // full width.
+    <div
+      className={`max-w-5xl mx-auto flex flex-col gap-4 ${
+        showDetails ? '' : 'sm:flex-row sm:items-center'
+      }`}
+    >
       {/* Only the summary is a live region - announcing the banner when it
           appears without stealing focus. The checkbox list stays out of it,
           or expanding it would read every description out unprompted. */}
-      <p className="text-sm" aria-live="polite">
-        This site uses optional cookies for session recording, analytics, spam protection on the
-        contact form, and embedded YouTube, Spotify and Instagram content. They stay off unless you
-        allow them, and you can change your mind any time via &quot;Cookie preferences&quot; in the
-        footer.
+      <p className="text-sm flex-1" aria-live="polite">
+        This site uses optional cookies for session recording, analytics, spam protection and
+        embedded videos and posts. They stay off unless you allow them, and you can change your mind
+        any time via &quot;Cookie preferences&quot; in the footer.
       </p>
 
       {showDetails && (
@@ -156,7 +192,11 @@ function BannerContent({ isSpursSection }: { isSpursSection: boolean }) {
         </fieldset>
       )}
 
-      <div className="flex flex-wrap justify-center sm:justify-end gap-2">
+      <div
+        className={`flex flex-wrap justify-center gap-2 ${
+          showDetails ? 'sm:justify-end' : 'flex-shrink-0'
+        }`}
+      >
         {/* Reject all and Accept all stay the same size and always visible
             in both views, so declining is never harder than accepting. */}
         <Button variant={secondaryVariant} size="sm" className={buttonWidth} onClick={rejectAll}>
@@ -166,7 +206,7 @@ function BannerContent({ isSpursSection }: { isSpursSection: boolean }) {
           <Button
             variant={secondaryVariant}
             size="sm"
-            className={buttonWidth}
+            className={middleButtonWidth}
             onClick={() => saveChoices(draft)}
           >
             Save choices
@@ -175,7 +215,7 @@ function BannerContent({ isSpursSection }: { isSpursSection: boolean }) {
           <Button
             variant={secondaryVariant}
             size="sm"
-            className={buttonWidth}
+            className={middleButtonWidth}
             onClick={() => setShowDetails(true)}
           >
             Manage choices

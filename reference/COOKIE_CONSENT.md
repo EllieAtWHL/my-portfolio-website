@@ -124,11 +124,39 @@ stays open, so their unsaved ticks aren't thrown away mid-edit.
   views, so declining is never more work than accepting (ICO guidance).
 - The banner's content is only mounted while it's open, so unsaved checkbox
   edits and the summary/detail view reset each time it's reopened.
+- The summary view sits on one row from `sm` up (text beside the buttons),
+  like the original single-choice banner, so a first-visit banner stays
+  short: 93px at 1280x720, the same as before WEB-104. Only the detail view
+  stacks. Reject all / Accept all are `w-28`; the middle button (Manage /
+  Save choices) is `w-36`, the narrowest that fits "Manage choices" on one
+  line. At phone width they wrap onto two rows.
 - The banner is capped at `max-h-[85vh]` with `overflow-y-auto`, so the
   expanded list stays scrollable on short phone screens instead of pushing
-  the buttons off-screen. All buttons share `w-36 min-w-36`, the narrowest
-  width that keeps "Manage choices" on one line; at phone width they wrap
-  onto two rows.
+  the buttons off-screen.
+
+### Not hiding page content
+
+The banner is fixed over the bottom of the viewport, so on its own it would
+cover the last ~100px of every page until the visitor answered it. At
+1280x720 that included half of the home page's "Contact Me" button, a
+pre-existing problem that WEB-104's first, taller banner made bad enough to
+fail Playwright (`home.spec.ts`, `spurs-women/matches.spec.ts`).
+
+While it's open, `CookieConsentBanner` publishes its own height as
+`--cookie-banner-height` on `<html>`, using a `ResizeObserver` so the value
+follows the detail view and window resizes. It removes the variable when
+the banner closes. `--spacing-footer-clearance` (globals.css `@theme`) is
+`calc(6rem + var(--cookie-banner-height, 0px))`. That's the one token both
+site sections already use for fixed-footer clearance (`.content-with-footer`
+on the main site, `pb-footer-clearance` on every Spurs Women `<main>`), so
+every page gets enough extra bottom padding to scroll its last content up
+from behind the banner, with no per-page changes.
+
+The Playwright suite deliberately runs as a first-time visitor (no stored
+consent), with the banner open, so it keeps checking that the site works for
+someone who hasn't answered the banner yet. Pre-seeding a consent choice was
+considered and rejected: it would have hidden exactly this kind of
+regression.
 
 ### Withdrawing consent
 
@@ -321,10 +349,16 @@ that variant gets a real transparent background, not just this button.
   banner closes, a reopened one stays open), the FullStory shutdown whenever
   session recording ends up off and restart when it's turned back on, and
   `shouldFocusBanner` only being set by `openPreferences()`.
+- `tests/cookie-consent.spec.ts` (Playwright) - first visit shows the
+  banner and Reject all persists across reload; Manage choices → Save
+  choices → reopened from the footer with focus moved and the choices
+  pre-filled; axe checks on both views; a YouTube embed staying behind its
+  fallback until Embedded content is allowed.
 - `src/components/__tests__/CookieConsentBanner.test.tsx` - open/closed
   rendering, summary vs. detail view, Save choices passing exactly the
   ticked categories, pre-filled choices on reopen, focus only when asked
-  for, the checkbox list staying outside the live region, per-section
+  for, the checkbox list staying outside the live region,
+  `--cookie-banner-height` set while open and removed on close, per-section
   (`usePathname`) theming.
 - `src/components/__tests__/FullStoryLoader.test.tsx` /
   `ConsentGatedVercelScripts.test.tsx` - each loads only for its own
