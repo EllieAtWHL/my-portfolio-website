@@ -2,78 +2,147 @@
 
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import MainSitePage from '@/components/MainSitePage';
 import { trackFormInteraction, trackPageView } from '@/lib/fullstory';
-import { useCookieConsent } from '@/components/CookieConsentProvider';
+import { SITE_URL } from '@/lib/site';
+import { allChoices, useCookieConsent } from '@/components/CookieConsentProvider';
+
+// The page's origin, read in a way that keeps the server render and the first
+// client render identical (both use the null server snapshot during
+// hydration; React then re-renders with the real value). Reading
+// window.location directly during render made the server and client disagree
+// about the Send button's `disabled` and the hidden retURL value, and React
+// doesn't repair mismatched attributes after hydration (WEB-242).
+const subscribeToNothing = () => () => {};
+const getOrigin = () => window.location.origin;
+const getServerOrigin = () => null;
+
+// WEB-242: the "did you message me while the form was broken?" notice hides
+// itself after this date; WEB-243 tracks removing it from the code. Read via
+// useSyncExternalStore with the server snapshot "show", so the prerendered
+// HTML and hydration always agree and the browser hides it straight after if
+// the date has passed (the page is static, so the server can't decide).
+const MISSED_MESSAGES_NOTICE_UNTIL = Date.UTC(2027, 1, 12); // 12 Feb 2027
+const isMissedMessagesNoticeCurrent = () => Date.now() < MISSED_MESSAGES_NOTICE_UNTIL;
+const showMissedMessagesNoticeOnServer = () => true;
+
+// Salesforce's generated Web-to-Lead snippet keeps the captcha_settings
+// timestamp fresh until the visitor completes reCAPTCHA.
+function refreshCaptchaTimestamp() {
+  const response = document.getElementById('g-recaptcha-response') as HTMLTextAreaElement | null;
+  if (response && response.value.trim() !== '') return;
+
+  const captchaSettings = document.getElementsByName('captcha_settings')[0] as HTMLInputElement | undefined;
+  if (!captchaSettings?.value) return;
+
+  const settings = JSON.parse(captchaSettings.value);
+  settings.ts = JSON.stringify(new Date().getTime());
+  captchaSettings.value = JSON.stringify(settings);
+}
+
+declare global {
+  interface Window {
+    onContactRecaptchaSuccess?: () => void;
+  }
+}
 
 export default function ContactMe() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const { hasConsent } = useCookieConsent();
+  const [captchaError, setCaptchaError] = useState(false);
+  const { hasConsent, isConsentKnown, choices, saveChoices } = useCookieConsent();
   const allowsRecaptcha = hasConsent('spamProtection');
+
+  const origin = useSyncExternalStore(subscribeToNothing, getOrigin, getServerOrigin);
+  const showMissedMessagesNotice = useSyncExternalStore(
+    subscribeToNothing,
+    isMissedMessagesNoticeCurrent,
+    showMissedMessagesNoticeOnServer
+  );
+  const isLocalhost = origin !== null && new URL(origin).hostname === 'localhost';
+  // Salesforce Web-to-Lead has "Require reCAPTCHA Verification" switched on,
+  // so it silently discards any submission without a valid reCAPTCHA
+  // response - the visitor still lands on the thank-you page, but the message
+  // never arrives (WEB-242). Outside localhost (where submission is
+  // simulated) the form therefore only sends once reCAPTCHA is allowed, and
+  // handleSubmit also checks it was completed.
+  const needsRecaptcha = origin !== null && !isLocalhost;
+  const canSend = origin !== null && (isLocalhost || (isConsentKnown && allowsRecaptcha));
+  const showSpamProtectionNeeded = needsRecaptcha && isConsentKnown && !allowsRecaptcha;
+
+  // Turns on the Spam protection category only, keeping the visitor's other
+  // choices as they were (all off if they hadn't answered the banner yet).
+  const allowSpamProtection = () => {
+    saveChoices({ ...(choices ?? allChoices(false)), spamProtection: true });
+  };
 
   useEffect(() => {
     trackPageView('/contact-me', 'Contact Me');
   }, []);
 
+  // A page restored from the back/forward cache (e.g. Back from the thank-you
+  // page) keeps its "Sending..." state, which would leave Send stuck.
   useEffect(() => {
-    // Only load reCAPTCHA for non-localhost environments
-    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-      return;
-    }
+    const resetOnRestore = (event: PageTransitionEvent) => {
+      if (event.persisted) setIsSubmitting(false);
+    };
+    window.addEventListener('pageshow', resetOnRestore);
+    return () => window.removeEventListener('pageshow', resetOnRestore);
+  }, []);
 
+  useEffect(() => {
     // reCAPTCHA sets a Google cookie, so it stays off until the visitor
     // allows the spam protection category (WEB-102/WEB-104) - see the
-    // fallback message rendered below where the widget would otherwise appear.
-    if (!allowsRecaptcha) {
+    // explanation rendered below where the widget would otherwise appear.
+    if (!needsRecaptcha || !allowsRecaptcha) {
       return;
     }
 
-    // Load Google reCAPTCHA script
+    // Named in the widget's data-callback: clears the "tick the box" error
+    // as soon as the visitor completes reCAPTCHA.
+    window.onContactRecaptchaSuccess = () => setCaptchaError(false);
+
     const script = document.createElement('script');
     script.src = 'https://www.google.com/recaptcha/api.js';
     script.async = true;
     script.defer = true;
     document.head.appendChild(script);
 
-    // Timestamp function for reCAPTCHA
-    const timestampScript = document.createElement('script');
-    timestampScript.text = `
-      function timestamp() { 
-        var response = document.getElementById("g-recaptcha-response"); 
-        if (response == null || response.value.trim() == "") {
-          var captchaSettings = document.getElementsByName("captcha_settings")[0];
-          if (captchaSettings && captchaSettings.value) {
-            var elems = JSON.parse(captchaSettings.value);
-            elems["ts"] = JSON.stringify(new Date().getTime());
-            captchaSettings.value = JSON.stringify(elems); 
-          }
-        } 
-      } 
-      setInterval(timestamp, 500);
-    `;
-    document.head.appendChild(timestampScript);
+    const timestampInterval = window.setInterval(refreshCaptchaTimestamp, 500);
 
     return () => {
+      window.clearInterval(timestampInterval);
+      delete window.onContactRecaptchaSuccess;
       if (document.head.contains(script)) {
         document.head.removeChild(script);
       }
-      if (document.head.contains(timestampScript)) {
-        document.head.removeChild(timestampScript);
-      }
     };
-  }, [allowsRecaptcha]);
+  }, [needsRecaptcha, allowsRecaptcha]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const form = e.currentTarget;
+
+    // Send is disabled when it can't send, but guard anyway (e.g. Enter key).
+    if (!canSend) return;
+
+    if (needsRecaptcha) {
+      const response = form.querySelector<HTMLTextAreaElement>('[name="g-recaptcha-response"]');
+      if (!response || response.value.trim() === '') {
+        setCaptchaError(true);
+        return;
+      }
+    }
+
+    setCaptchaError(false);
     setIsSubmitting(true);
 
     // Track form start
     trackFormInteraction('contact', 'start');
 
     // For localhost, simulate form submission and redirect immediately
-    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+    if (isLocalhost) {
       // Simulate a brief delay for UX
       await new Promise(resolve => setTimeout(resolve, 1000));
       trackFormInteraction('contact', 'success');
@@ -82,7 +151,6 @@ export default function ContactMe() {
     }
 
     // For production, submit to Salesforce normally
-    const form = e.currentTarget;
     form.submit();
   };
 
@@ -127,6 +195,31 @@ export default function ContactMe() {
             </div>
 
             <div className="max-w-2xl mx-auto">
+              {/* WEB-242: from WEB-70's CSP going live (5 Aug 2026) until the fix
+                  deployed, the browser blocked every submission, so no message
+                  reached Salesforce. Tells anyone who wrote in then to resend.
+                  Hides itself after MISSED_MESSAGES_NOTICE_UNTIL; WEB-243 removes it. */}
+              {showMissedMessagesNotice && (
+              <div
+                // No accessible name of its own: its heading is read out anyway,
+                // and naming it after "Did you message me..." made it a second
+                // match for anything looking up the "Message" field by label.
+                className="outdated-banner"
+                role="note"
+              >
+                <div className="banner-content">
+                  <h2 className="banner-title">
+                    Did you message me between 5 August and 12 November 2026?
+                  </h2>
+                  <p className="banner-text">
+                    A technical problem stopped this form from delivering messages during that time,
+                    so I never received yours. Sorry about that! It&apos;s fixed now, so please send
+                    it again.
+                  </p>
+                </div>
+              </div>
+              )}
+
               <form 
                 action="https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8" 
                 method="POST" 
@@ -137,7 +230,7 @@ export default function ContactMe() {
                   <input 
                     type="hidden" 
                     name='captcha_settings' 
-                    value={typeof window !== 'undefined' && window.location.hostname === 'localhost' ? '' : '{"keyname":"EllieAtWHL","fallback":"true","orgId":"00D58000000YxlM","ts":""}'}
+                    value={isLocalhost ? '' : '{"keyname":"EllieAtWHL","fallback":"true","orgId":"00D58000000YxlM","ts":""}'}
                   />
                   <input 
                     type="hidden" 
@@ -147,7 +240,8 @@ export default function ContactMe() {
                   <input 
                     type="hidden" 
                     name="retURL" 
-                    value={typeof window !== 'undefined' ? `${window.location.origin}/contact-me/thank-you` : '/contact-me/thank-you'}
+                    // Absolute, because Salesforce redirects here from its own domain.
+                    value={`${origin ?? SITE_URL}/contact-me/thank-you`}
                   />
                   
                   {/* NOTE: These fields are optional debugging elements. Please uncomment */}
@@ -216,19 +310,29 @@ export default function ContactMe() {
                     />
                   </div>
 
-                  {typeof window !== 'undefined' && window.location.hostname !== 'localhost' && (
+                  {needsRecaptcha && isConsentKnown && (
                     allowsRecaptcha ? (
-                      <div className="flex justify-center p-8">
+                      <div className="flex flex-col items-center gap-2 p-8">
                         <div
                           className="g-recaptcha"
                           data-sitekey="6LfUBQEfAAAAAOwXkILtp2Amwf_U6Ouoza-xsGZT"
+                          data-callback="onContactRecaptchaSuccess"
                         />
+                        {captchaError && (
+                          <p role="alert" className="text-sm font-semibold text-red-600 dark:text-red-400">
+                            Please tick &quot;I&apos;m not a robot&quot; before sending.
+                          </p>
+                        )}
                       </div>
                     ) : (
-                      <p className="text-sm text-center form-label p-4">
-                        Please allow &quot;Spam protection&quot; cookies (see the banner, or &quot;Cookie
-                        preferences&quot; in the footer) to enable spam protection for this form.
-                      </p>
+                      <div id="spam-protection-needed" className="text-sm text-center form-label p-4 space-y-3">
+                        <p>
+                          {"This form uses Google reCAPTCHA to keep out spam, and can't send a message without it. reCAPTCHA sets a Google cookie, so it stays off until you allow \"Spam protection\"."}
+                        </p>
+                        <Button type="button" variant="secondary" size="sm" onClick={allowSpamProtection}>
+                          Allow spam protection
+                        </Button>
+                      </div>
                     )
                   )}
 
@@ -238,7 +342,10 @@ export default function ContactMe() {
                       variant="primary"
                       size="lg"
                       fullWidth
-                      disabled={isSubmitting}
+                      // Disabled until the form can actually deliver a message, so
+                      // nothing is sent into Salesforce's silent discard (WEB-242).
+                      disabled={isSubmitting || !canSend}
+                      aria-describedby={showSpamProtectionNeeded ? 'spam-protection-needed' : undefined}
                     >
                       {isSubmitting ? 'Sending...' : 'Send Message'}
                     </Button>

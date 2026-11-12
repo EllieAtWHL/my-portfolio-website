@@ -215,13 +215,40 @@ so plain utility classes win without a specificity fight.
 
 The contact form's Google reCAPTCHA loading effect (`src/app/contact-me/page.tsx`)
 checks `hasConsent('spamProtection')` and simply doesn't inject the
-reCAPTCHA `<script>` otherwise. Unlike the other trackers, this one has a
-visible fallback: if the visitor hasn't allowed it, the form renders a
-message asking them to allow "Spam protection" cookies (via the banner or
-"Cookie preferences") to enable spam protection,
-rather than silently rendering a broken widget. The form itself still
-submits without it - rejecting cookies doesn't block using the contact form,
-just the spam-protection widget.
+reCAPTCHA `<script>` otherwise.
+
+**The form can't send without it.** Salesforce Web-to-Lead in the org the
+form posts to has **"Require reCAPTCHA Verification"** switched on, so
+Salesforce *silently discards* any submission without a valid reCAPTCHA
+response. The visitor would still land on the thank-you page, but the
+message would never arrive. So outside localhost (WEB-242):
+
+- **Spam protection not allowed:** Send is disabled (`aria-describedby`
+  points at the explanation), and the form explains that it needs reCAPTCHA
+  and offers an **Allow spam protection** button. That button calls
+  `saveChoices()` with only `spamProtection` turned on, keeping the
+  visitor's other choices (all off if they hadn't answered the banner). It's
+  a specific, user-initiated consent for exactly what's needed.
+- **"I'm not a robot" not ticked:** `handleSubmit` blocks the submit and
+  shows an inline `role="alert"` error, instead of posting an empty
+  response.
+- **Before the stored choice is read** (`isConsentKnown` false): neither
+  state renders and Send stays disabled, so nothing flashes.
+
+On localhost reCAPTCHA is skipped and submission is simulated, which is why
+none of this, nor the CSP problem below, could show up in dev or Playwright.
+
+**CSP.** reCAPTCHA needs `script-src https://www.google.com/recaptcha/
+https://www.gstatic.com/recaptcha/` and `frame-src
+https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/`
+(Google's documented values), and the form's POST needs `form-action 'self'
+https://webto.salesforce.com`. All three were missing from WEB-70's CSP, so
+from 5 August 2026 until WEB-242 no contact form message reached Salesforce:
+the browser blocked the POST, and the button stuck on "Sending...".
+`src/__tests__/csp.test.ts` now guards these entries. Verify any CSP change
+against a production build served on a non-localhost hostname (`next build
+&& next start`, then http://127.0.0.1:3000), since the dev server won't
+hydrate on 127.0.0.1.
 
 ## Embedded content
 
