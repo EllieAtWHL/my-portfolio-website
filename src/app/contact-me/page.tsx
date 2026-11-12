@@ -134,6 +134,10 @@ export default function ContactMe() {
                 onSubmit={handleSubmit}
               >
                 <Card variant="accent" padding="md">
+                  {/* The visible fields carry fs-exclude so FullStory never records what's
+                      typed here, even for a visitor who allowed session recording and
+                      whatever the FullStory account's own privacy settings are (WEB-103;
+                      the privacy policy promises this). */}
                   <input 
                     type="hidden" 
                     name='captcha_settings' 
@@ -167,7 +171,7 @@ export default function ContactMe() {
                         name="first_name" 
                         size={20} 
                         type="text"
-                        className="w-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 form-input-tall"
+                        className="w-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 form-input-tall fs-exclude"
                         required
                       />
                     </div>
@@ -182,7 +186,7 @@ export default function ContactMe() {
                         name="last_name" 
                         size={20} 
                         type="text"
-                        className="w-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 form-input-tall"
+                        className="w-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 form-input-tall fs-exclude"
                         required
                       />
                     </div>
@@ -198,7 +202,7 @@ export default function ContactMe() {
                       name="email" 
                       size={20} 
                       type="email"
-                      className="w-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 form-input-tall"
+                      className="w-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 form-input-tall fs-exclude"
                       required
                     />
                   </div>
@@ -211,7 +215,7 @@ export default function ContactMe() {
                       id="description" 
                       rows={6} 
                       name="description"
-                      className="w-full border border-gray-300 dark:border-gray-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 resize-none form-textarea"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 resize-none form-textarea fs-exclude"
                       required
                     />
                   </div>

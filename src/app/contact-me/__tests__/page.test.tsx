@@ -36,6 +36,16 @@ describe('ContactMe reCAPTCHA consent gating (non-localhost)', () => {
     expect(document.querySelector('.g-recaptcha')).not.toBeInTheDocument();
   });
 
+  it('excludes every visible form field from FullStory recording', () => {
+    mockUseCookieConsent.mockReturnValue({ hasConsent: () => true });
+
+    render(<ContactMe />);
+
+    for (const name of ['first_name', 'last_name', 'email', 'description']) {
+      expect(document.querySelector(`[name="${name}"]`)).toHaveClass('fs-exclude');
+    }
+  });
+
   it('renders the captcha widget once spam protection is allowed', () => {
     mockUseCookieConsent.mockReturnValue({ hasConsent: (category: string) => category === 'spamProtection' });
 
