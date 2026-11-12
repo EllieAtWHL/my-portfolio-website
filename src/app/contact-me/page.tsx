@@ -2,10 +2,41 @@
 
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import MainSitePage from '@/components/MainSitePage';
 import { trackFormInteraction, trackPageView } from '@/lib/fullstory';
+import { SITE_URL } from '@/lib/site';
 import { allChoices, useCookieConsent } from '@/components/CookieConsentProvider';
+
+// The page's origin, read in a way that keeps the server render and the first
+// client render identical (both use the null server snapshot during
+// hydration; React then re-renders with the real value). Reading
+// window.location directly during render made the server and client disagree
+// about the Send button's `disabled` and the hidden retURL value, and React
+// doesn't repair mismatched attributes after hydration (WEB-242).
+const subscribeToNothing = () => () => {};
+const getOrigin = () => window.location.origin;
+const getServerOrigin = () => null;
+
+// Salesforce's generated Web-to-Lead snippet keeps the captcha_settings
+// timestamp fresh until the visitor completes reCAPTCHA.
+function refreshCaptchaTimestamp() {
+  const response = document.getElementById('g-recaptcha-response') as HTMLTextAreaElement | null;
+  if (response && response.value.trim() !== '') return;
+
+  const captchaSettings = document.getElementsByName('captcha_settings')[0] as HTMLInputElement | undefined;
+  if (!captchaSettings?.value) return;
+
+  const settings = JSON.parse(captchaSettings.value);
+  settings.ts = JSON.stringify(new Date().getTime());
+  captchaSettings.value = JSON.stringify(settings);
+}
+
+declare global {
+  interface Window {
+    onContactRecaptchaSuccess?: () => void;
+  }
+}
 
 export default function ContactMe() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -13,13 +44,18 @@ export default function ContactMe() {
   const [captchaError, setCaptchaError] = useState(false);
   const { hasConsent, isConsentKnown, choices, saveChoices } = useCookieConsent();
   const allowsRecaptcha = hasConsent('spamProtection');
-  const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
+
+  const origin = useSyncExternalStore(subscribeToNothing, getOrigin, getServerOrigin);
+  const isLocalhost = origin !== null && new URL(origin).hostname === 'localhost';
   // Salesforce Web-to-Lead has "Require reCAPTCHA Verification" switched on,
   // so it silently discards any submission without a valid reCAPTCHA
   // response - the visitor still lands on the thank-you page, but the message
-  // never arrives (WEB-242). Outside localhost the form must therefore never
-  // submit unless reCAPTCHA is allowed AND completed.
-  const isBlockedBySpamProtection = !isLocalhost && !allowsRecaptcha;
+  // never arrives (WEB-242). Outside localhost (where submission is
+  // simulated) the form therefore only sends once reCAPTCHA is allowed, and
+  // handleSubmit also checks it was completed.
+  const needsRecaptcha = origin !== null && !isLocalhost;
+  const canSend = origin !== null && (isLocalhost || (isConsentKnown && allowsRecaptcha));
+  const showSpamProtectionNeeded = needsRecaptcha && isConsentKnown && !allowsRecaptcha;
 
   // Turns on the Spam protection category only, keeping the visitor's other
   // choices as they were (all off if they hadn't answered the banner yet).
@@ -31,64 +67,54 @@ export default function ContactMe() {
     trackPageView('/contact-me', 'Contact Me');
   }, []);
 
+  // A page restored from the back/forward cache (e.g. Back from the thank-you
+  // page) keeps its "Sending..." state, which would leave Send stuck.
   useEffect(() => {
-    // Only load reCAPTCHA for non-localhost environments
-    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-      return;
-    }
+    const resetOnRestore = (event: PageTransitionEvent) => {
+      if (event.persisted) setIsSubmitting(false);
+    };
+    window.addEventListener('pageshow', resetOnRestore);
+    return () => window.removeEventListener('pageshow', resetOnRestore);
+  }, []);
 
+  useEffect(() => {
     // reCAPTCHA sets a Google cookie, so it stays off until the visitor
     // allows the spam protection category (WEB-102/WEB-104) - see the
-    // fallback message rendered below where the widget would otherwise appear.
-    if (!allowsRecaptcha) {
+    // explanation rendered below where the widget would otherwise appear.
+    if (!needsRecaptcha || !allowsRecaptcha) {
       return;
     }
 
-    // Load Google reCAPTCHA script
+    // Named in the widget's data-callback: clears the "tick the box" error
+    // as soon as the visitor completes reCAPTCHA.
+    window.onContactRecaptchaSuccess = () => setCaptchaError(false);
+
     const script = document.createElement('script');
     script.src = 'https://www.google.com/recaptcha/api.js';
     script.async = true;
     script.defer = true;
     document.head.appendChild(script);
 
-    // Timestamp function for reCAPTCHA
-    const timestampScript = document.createElement('script');
-    timestampScript.text = `
-      function timestamp() { 
-        var response = document.getElementById("g-recaptcha-response"); 
-        if (response == null || response.value.trim() == "") {
-          var captchaSettings = document.getElementsByName("captcha_settings")[0];
-          if (captchaSettings && captchaSettings.value) {
-            var elems = JSON.parse(captchaSettings.value);
-            elems["ts"] = JSON.stringify(new Date().getTime());
-            captchaSettings.value = JSON.stringify(elems); 
-          }
-        } 
-      } 
-      setInterval(timestamp, 500);
-    `;
-    document.head.appendChild(timestampScript);
+    const timestampInterval = window.setInterval(refreshCaptchaTimestamp, 500);
 
     return () => {
+      window.clearInterval(timestampInterval);
+      delete window.onContactRecaptchaSuccess;
       if (document.head.contains(script)) {
         document.head.removeChild(script);
       }
-      if (document.head.contains(timestampScript)) {
-        document.head.removeChild(timestampScript);
-      }
     };
-  }, [allowsRecaptcha]);
+  }, [needsRecaptcha, allowsRecaptcha]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const form = e.currentTarget;
 
-    if (!isLocalhost) {
-      // Send is disabled in this state, but guard anyway (e.g. Enter key).
-      if (!allowsRecaptcha) return;
+    // Send is disabled when it can't send, but guard anyway (e.g. Enter key).
+    if (!canSend) return;
 
-      const response = e.currentTarget.querySelector<HTMLTextAreaElement>(
-        '[name="g-recaptcha-response"]'
-      );
+    if (needsRecaptcha) {
+      const response = form.querySelector<HTMLTextAreaElement>('[name="g-recaptcha-response"]');
       if (!response || response.value.trim() === '') {
         setCaptchaError(true);
         return;
@@ -102,7 +128,7 @@ export default function ContactMe() {
     trackFormInteraction('contact', 'start');
 
     // For localhost, simulate form submission and redirect immediately
-    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+    if (isLocalhost) {
       // Simulate a brief delay for UX
       await new Promise(resolve => setTimeout(resolve, 1000));
       trackFormInteraction('contact', 'success');
@@ -111,7 +137,6 @@ export default function ContactMe() {
     }
 
     // For production, submit to Salesforce normally
-    const form = e.currentTarget;
     form.submit();
   };
 
@@ -166,7 +191,7 @@ export default function ContactMe() {
                   <input 
                     type="hidden" 
                     name='captcha_settings' 
-                    value={typeof window !== 'undefined' && window.location.hostname === 'localhost' ? '' : '{"keyname":"EllieAtWHL","fallback":"true","orgId":"00D58000000YxlM","ts":""}'}
+                    value={isLocalhost ? '' : '{"keyname":"EllieAtWHL","fallback":"true","orgId":"00D58000000YxlM","ts":""}'}
                   />
                   <input 
                     type="hidden" 
@@ -176,7 +201,8 @@ export default function ContactMe() {
                   <input 
                     type="hidden" 
                     name="retURL" 
-                    value={typeof window !== 'undefined' ? `${window.location.origin}/contact-me/thank-you` : '/contact-me/thank-you'}
+                    // Absolute, because Salesforce redirects here from its own domain.
+                    value={`${origin ?? SITE_URL}/contact-me/thank-you`}
                   />
                   
                   {/* NOTE: These fields are optional debugging elements. Please uncomment */}
@@ -245,15 +271,16 @@ export default function ContactMe() {
                     />
                   </div>
 
-                  {!isLocalhost && isConsentKnown && (
+                  {needsRecaptcha && isConsentKnown && (
                     allowsRecaptcha ? (
                       <div className="flex flex-col items-center gap-2 p-8">
                         <div
                           className="g-recaptcha"
                           data-sitekey="6LfUBQEfAAAAAOwXkILtp2Amwf_U6Ouoza-xsGZT"
+                          data-callback="onContactRecaptchaSuccess"
                         />
                         {captchaError && (
-                          <p role="alert" className="text-sm form-label">
+                          <p role="alert" className="text-sm font-semibold text-red-600 dark:text-red-400">
                             Please tick &quot;I&apos;m not a robot&quot; before sending.
                           </p>
                         )}
@@ -276,10 +303,10 @@ export default function ContactMe() {
                       variant="primary"
                       size="lg"
                       fullWidth
-                      // Disabled until consent is known and reCAPTCHA is allowed, so a
-                      // message can't be sent into Salesforce's silent discard (WEB-242).
-                      disabled={isSubmitting || (!isLocalhost && (!isConsentKnown || isBlockedBySpamProtection))}
-                      aria-describedby={isBlockedBySpamProtection ? 'spam-protection-needed' : undefined}
+                      // Disabled until the form can actually deliver a message, so
+                      // nothing is sent into Salesforce's silent discard (WEB-242).
+                      disabled={isSubmitting || !canSend}
+                      aria-describedby={showSpamProtectionNeeded ? 'spam-protection-needed' : undefined}
                     >
                       {isSubmitting ? 'Sending...' : 'Send Message'}
                     </Button>

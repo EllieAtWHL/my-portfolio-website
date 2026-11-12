@@ -7,7 +7,7 @@
 // covered separately in page.localhost.test.tsx, since jsdom's window.location
 // isn't reassignable at runtime in this jsdom version.
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import ContactMe from '../page';
 import { useCookieConsent } from '@/components/CookieConsentProvider';
 
@@ -114,7 +114,20 @@ describe('ContactMe reCAPTCHA consent gating (non-localhost)', () => {
 
     expect(screen.queryByText(/can't send a message without it/)).not.toBeInTheDocument();
     expect(document.querySelector('.g-recaptcha')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Send Message' })).toBeDisabled();
+    const send = screen.getByRole('button', { name: 'Send Message' });
+    expect(send).toBeDisabled();
+    // No description to point at yet
+    expect(send).not.toHaveAttribute('aria-describedby');
+  });
+
+  it('sends Salesforce an absolute return URL on this site', () => {
+    mockConsent();
+
+    render(<ContactMe />);
+
+    expect(document.querySelector('input[name="retURL"]')).toHaveValue(
+      'https://ellieatwhl.co.uk/contact-me/thank-you'
+    );
   });
 
   it('renders the captcha widget and enables Send once spam protection is allowed', () => {
@@ -136,6 +149,42 @@ describe('ContactMe reCAPTCHA consent gating (non-localhost)', () => {
 
     expect(screen.getByRole('alert')).toHaveTextContent(/I'm not a robot/);
     expect(submitSpy).not.toHaveBeenCalled();
+  });
+
+  it('clears the "not a robot" error as soon as the visitor completes reCAPTCHA', () => {
+    mockConsent({ hasConsent: (category: string) => category === 'spamProtection' });
+
+    render(<ContactMe />);
+    fillForm();
+    fireEvent.click(screen.getByRole('button', { name: 'Send Message' }));
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+
+    // reCAPTCHA calls the widget's data-callback by name on success
+    expect(document.querySelector('.g-recaptcha')).toHaveAttribute('data-callback', 'onContactRecaptchaSuccess');
+    act(() => window.onContactRecaptchaSuccess?.());
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('frees Send again when the page is restored from the back/forward cache', async () => {
+    mockConsent({ hasConsent: (category: string) => category === 'spamProtection' });
+
+    render(<ContactMe />);
+    const response = document.createElement('textarea');
+    response.name = 'g-recaptcha-response';
+    response.value = 'token-from-google';
+    document.querySelector('.g-recaptcha')!.appendChild(response);
+    fillForm();
+    fireEvent.click(screen.getByRole('button', { name: 'Send Message' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Sending...' })).toBeDisabled());
+
+    const restored = new Event('pageshow') as PageTransitionEvent;
+    Object.defineProperty(restored, 'persisted', { value: true });
+    act(() => {
+      window.dispatchEvent(restored);
+    });
+
+    expect(screen.getByRole('button', { name: 'Send Message' })).toBeEnabled();
   });
 
   it('submits to Salesforce once reCAPTCHA has been completed', async () => {
