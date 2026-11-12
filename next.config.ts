@@ -23,17 +23,26 @@ const scriptSrc = ["'self'", "'unsafe-inline'", ...(isDev ? ["'unsafe-eval'"] : 
 // (www.instagram.com for embed.js and the iframe it renders) and Bluesky's
 // public AppView (public.api.bsky.app) for resolving a post author's handle to
 // the DID the Bluesky embed needs.
+// WEB-242: the contact form (src/app/contact-me/page.tsx) was missed by the
+// WEB-70 pass - on localhost it skips reCAPTCHA and simulates submission, so
+// neither gap could show up in dev. Since WEB-70 shipped, production blocked
+// both Google reCAPTCHA (script + iframe) and the form's POST to Salesforce
+// Web-to-Lead (form-action 'self'), so no contact form message got through.
+// The reCAPTCHA sources are Google's documented path-scoped ones
+// (developers.google.com/recaptcha/docs/faq#im-using-content-security-policy-csp-on-my-website.-how-can-i-configure-it-to-work-with-recaptcha).
+// Verify any change here against a production build (`next build && next
+// start`) served on a non-localhost hostname, e.g. http://127.0.0.1:3000.
 const CSP_DIRECTIVES = [
   "default-src 'self'",
-  `script-src ${scriptSrc.join(" ")} https://edge.fullstory.com https://va.vercel-scripts.com https://embed.bsky.app https://www.instagram.com`,
+  `script-src ${scriptSrc.join(" ")} https://edge.fullstory.com https://va.vercel-scripts.com https://embed.bsky.app https://www.instagram.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
   "connect-src 'self' https://*.supabase.co https://www.youtube.com https://noembed.com https://*.fullstory.com https://public.api.bsky.app",
-  "frame-src https://www.youtube.com https://open.spotify.com https://www.openstreetmap.org https://embed.bsky.app https://www.instagram.com",
+  "frame-src https://www.youtube.com https://open.spotify.com https://www.openstreetmap.org https://embed.bsky.app https://www.instagram.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/",
   "object-src 'none'",
   "base-uri 'self'",
-  "form-action 'self'",
+  "form-action 'self' https://webto.salesforce.com",
   "frame-ancestors 'self'",
   // Dev/CI serve plain http://localhost - upgrading that would just break every
   // request (WebKit in particular does not reliably exempt localhost from this,
