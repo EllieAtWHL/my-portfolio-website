@@ -3,14 +3,26 @@
 import { Button } from './Button';
 import { useCookieConsent } from './CookieConsentProvider';
 
-// A labelled "Cookie preferences" button for use in page content (the
-// privacy policy), so a server-component page can reopen the cookie banner.
-// The footers use their own icon-only version.
-export function CookiePreferencesButton() {
+interface CookiePreferencesButtonProps {
+  // Spurs Women pages need the spurs button styling (it only applies inside
+  // <SpursWrapper>); the main site's secondary style otherwise.
+  theme?: 'main' | 'spurs';
+  className?: string;
+}
+
+// A labelled "Cookie preferences" button that reopens the cookie banner, for
+// use in page content - the privacy policy and the blocked-embed fallback
+// (EmbedConsentFallback). The footers use their own icon-only version.
+export function CookiePreferencesButton({ theme = 'main', className }: CookiePreferencesButtonProps) {
   const { openPreferences } = useCookieConsent();
 
   return (
-    <Button variant="secondary" size="sm" onClick={openPreferences}>
+    <Button
+      variant={theme === 'spurs' ? 'spurs' : 'secondary'}
+      size="sm"
+      className={className}
+      onClick={openPreferences}
+    >
       Cookie preferences
     </Button>
   );

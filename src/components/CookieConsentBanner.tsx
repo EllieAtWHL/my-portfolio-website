@@ -154,7 +154,7 @@ function BannerContent({ isSpursSection }: { isSpursSection: boolean }) {
       <p className="text-sm flex-1" aria-live="polite">
         This site uses optional cookies for session recording, analytics, spam protection and
         embedded videos and posts. They stay off unless you allow them, and you can change your mind
-        any time. More in the{' '}
+        any time with the cookie icon in the footer. More in the{' '}
         <Link href="/privacy-policy" className="underline text-inherit">
           privacy policy
         </Link>

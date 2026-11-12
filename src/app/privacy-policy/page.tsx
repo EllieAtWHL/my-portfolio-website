@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Card } from '@/components/Card';
 import MainSitePage from '@/components/MainSitePage';
 import { CookiePreferencesButton } from '@/components/CookiePreferencesButton';
+import { SITE_IMAGE } from '@/lib/site';
 
 // Bump this whenever the policy's substance changes (see
 // reference/COOKIE_CONSENT.md - "Privacy policy"). Kept as a plain string so
@@ -18,6 +19,7 @@ export const metadata = {
     description:
       'What personal data ellieatwhl.co.uk collects, why, who it is shared with, and how to exercise your rights.',
     url: 'https://ellieatwhl.co.uk/privacy-policy',
+    images: [SITE_IMAGE],
   },
 };
 
@@ -78,7 +80,7 @@ export default function PrivacyPolicyPage() {
                 <p>
                   The first time you visit, a banner asks which of these you&apos;re happy with.
                   Nothing in this section loads until you allow its category, and you can change
-                  your mind at any time, here or with the cookie icon in the footer. Turning a
+                  your mind at any time, with the button below or the cookie icon in the footer. Turning a
                   category off stops it from then on; it can&apos;t recall data already sent.
                   The legal basis for all of these is your consent.
                 </p>
@@ -200,15 +202,25 @@ export default function PrivacyPolicyPage() {
                     Clearing your browser&apos;s site data removes them.
                   </li>
                   <li>
-                    <strong>Bluesky posts and OpenStreetMap maps.</strong>{' '}These load without
-                    asking, because I checked and they set no cookies or other storage for visitors.
-                    As with any embedded content, your browser still contacts their servers to load
-                    them.
+                    <strong>Content that sets no cookies.</strong>{' '}Some third-party content
+                    loads without asking, because I checked and it sets no cookies or other storage
+                    for visitors: Bluesky posts and OpenStreetMap maps, and the thumbnails and titles
+                    of YouTube videos listed on Spurs Women pages (fetched from YouTube and
+                    noembed.com). The videos themselves only play on YouTube. As with any embedded
+                    content, your browser still contacts these services to load it, so they see
+                    your IP address.
                   </li>
                   <li>
-                    <strong>Spurs Women data.</strong>{' '}The match, player and stadium information is
-                    public football data. The site&apos;s database holds no information about
-                    visitors, and the only login is my own, for editing that data.
+                    <strong>Spurs Women data.</strong>{' '}The match, player and stadium information
+                    is public football data. The site&apos;s database, hosted by Supabase, holds no
+                    information about visitors.
+                  </li>
+                  <li>
+                    <strong>The sign-in page.</strong>{' '}There&apos;s a Google sign-in page used
+                    for editing the Spurs Women data. It isn&apos;t linked anywhere and isn&apos;t
+                    meant for visitors, and signing in gives no extra access. If someone signs in
+                    anyway, Supabase stores the email address, name and profile picture Google
+                    shares, plus a sign-in cookie. Ask me and I&apos;ll delete the account.
                   </li>
                 </ul>
               </section>
@@ -218,10 +230,11 @@ export default function PrivacyPolicyPage() {
                   Data outside the UK
                 </h2>
                 <p>
-                  FullStory, Vercel, Google, Salesforce, Spotify and Meta are based in the United
-                  States, so data sent to them may be stored there. They rely on recognised
-                  safeguards for this, such as the UK–US data bridge or standard contractual
-                  clauses, set out in their own privacy policies linked above.
+                  Most of the services above, including FullStory, Vercel, Google, Salesforce,
+                  Spotify, Meta, Bluesky, Supabase and noembed.com, are based in or store data in
+                  the United States, so data sent to them may be stored there. The larger providers
+                  rely on recognised safeguards for this, such as the UK–US data bridge or standard
+                  contractual clauses, set out in their own privacy policies linked above.
                 </p>
               </section>
 

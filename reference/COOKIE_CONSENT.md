@@ -419,8 +419,19 @@ might have changed):
   `privacy@ellieatwhl.co.uk` forwarding alias), add it to the "Your rights"
   section.
 
-The contact form's visible fields carry FullStory's `fs-exclude` class, so
-the policy's promise that form contents aren't recorded holds whatever the
+- **Spurs Women sign-in:** `/spurs-women/login` (Google OAuth) is unlinked,
+  but anyone who finds it can sign in, creating a Supabase user (email, name,
+  avatar). The policy says so rather than claiming the only login is Ellie's.
+- **Content that loads without consent:** besides Bluesky and OpenStreetMap,
+  this includes the Spurs Women `VideoGrid`'s browser-side `fetch`es to
+  `youtube.com/oembed` and `noembed.com`, and its `img.youtube.com`
+  thumbnails. None of them set cookies (they're plain fetches without
+  credentials, and the thumbnails were checked), but the visitor's IP
+  reaches them, so the policy lists them.
+
+The contact `<form>` itself carries FullStory's `fs-exclude` class (FullStory
+excludes every descendant), so the policy's promise that form contents
+aren't recorded holds for any field, present or future, whatever the
 FullStory account's own privacy settings are (see `fullstory/README.md`).
 
 ## Known follow-ups

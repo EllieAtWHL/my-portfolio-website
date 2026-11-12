@@ -24,11 +24,10 @@ built-in defaults: password, hidden and credit-card fields. Its suggested
 contenteditable) appear to need opting into; as of WEB-103, Ellie was
 recommended to opt in.
 
-Whatever that setting is, the contact form's visible fields
-(`src/app/contact-me/page.tsx`) carry the `fs-exclude` class, so nothing
-typed into them is ever sent to FullStory. The privacy policy
-(`/privacy-policy`) promises this, so keep the class on any field added to
-the form. Recordings are kept for 12 months (the account's retention
+Whatever that setting is, the contact `<form>` (`src/app/contact-me/page.tsx`)
+carries the `fs-exclude` class, and FullStory excludes every descendant, so
+nothing typed into any of its fields is ever sent to FullStory. The privacy
+policy (`/privacy-policy`) promises this, so keep the class on the form. Recordings are kept for 12 months (the account's retention
 setting), on FullStory's North America region (the `-na1` org ID suffix).
 
 ## Architecture

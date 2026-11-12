@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from './Button';
+import { CookiePreferencesButton } from './CookiePreferencesButton';
 import { useCookieConsent } from './CookieConsentProvider';
 
 interface EmbedConsentFallbackProps {
@@ -18,7 +18,6 @@ interface EmbedConsentFallbackProps {
 // content stays reachable via a plain link, and the button reopens the
 // banner rather than silently opting the visitor in from here.
 export function EmbedConsentFallback({ service, href, linkLabel, theme = 'main' }: EmbedConsentFallbackProps) {
-  const { openPreferences } = useCookieConsent();
   const isSpurs = theme === 'spurs';
 
   return (
@@ -40,14 +39,7 @@ export function EmbedConsentFallback({ service, href, linkLabel, theme = 'main' 
             Jest render (textContent "YouTubesets cookies"). */}
         {`${service} sets cookies, so this only shows here once you allow "Embedded content" cookies.`}
       </p>
-      <Button
-        variant={isSpurs ? 'spurs' : 'secondary'}
-        size="sm"
-        className="mt-2"
-        onClick={openPreferences}
-      >
-        Cookie preferences
-      </Button>
+      <CookiePreferencesButton theme={theme} className="mt-2" />
     </div>
   );
 }

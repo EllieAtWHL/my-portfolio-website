@@ -69,13 +69,15 @@ describe('Privacy policy page', () => {
   });
 
   it('keeps the spaces after bold labels and inline links', () => {
-    // The JSX transform dropped these spaces when written as plain
-    // "</strong> The..." (WEB-103) - the page uses explicit {' '} instead.
+    // Written as plain "</strong> The...", these spaces were missing from the
+    // HTML the dev server actually sent (checked with curl during WEB-103;
+    // cause not pinned down), so the page uses explicit {' '} instead.
     const { container } = render(<PrivacyPolicyPage />);
     const text = container.textContent ?? '';
 
     expect(text).toContain('Hosting. The site');
     expect(text).toContain('Spurs Women data. The match');
+    expect(text).toContain('The sign-in page. There');
     expect(text).toContain('contact form and say');
   });
 

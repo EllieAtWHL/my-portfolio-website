@@ -130,14 +130,15 @@ export default function ContactMe() {
               <form 
                 action="https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8" 
                 method="POST" 
-                className="space-y-6"
+                // fs-exclude on the whole form (FullStory excludes every descendant)
+                // means nothing typed here is ever recorded - including any field
+                // added later - even for a visitor who allowed session recording,
+                // whatever the FullStory account's own privacy settings are. The
+                // privacy policy promises this (WEB-103).
+                className="space-y-6 fs-exclude"
                 onSubmit={handleSubmit}
               >
                 <Card variant="accent" padding="md">
-                  {/* The visible fields carry fs-exclude so FullStory never records what's
-                      typed here, even for a visitor who allowed session recording and
-                      whatever the FullStory account's own privacy settings are (WEB-103;
-                      the privacy policy promises this). */}
                   <input 
                     type="hidden" 
                     name='captcha_settings' 
@@ -171,7 +172,7 @@ export default function ContactMe() {
                         name="first_name" 
                         size={20} 
                         type="text"
-                        className="w-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 form-input-tall fs-exclude"
+                        className="w-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 form-input-tall"
                         required
                       />
                     </div>
@@ -186,7 +187,7 @@ export default function ContactMe() {
                         name="last_name" 
                         size={20} 
                         type="text"
-                        className="w-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 form-input-tall fs-exclude"
+                        className="w-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 form-input-tall"
                         required
                       />
                     </div>
@@ -202,7 +203,7 @@ export default function ContactMe() {
                       name="email" 
                       size={20} 
                       type="email"
-                      className="w-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 form-input-tall fs-exclude"
+                      className="w-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 form-input-tall"
                       required
                     />
                   </div>
@@ -215,7 +216,7 @@ export default function ContactMe() {
                       id="description" 
                       rows={6} 
                       name="description"
-                      className="w-full border border-gray-300 dark:border-gray-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 resize-none form-textarea fs-exclude"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 resize-none form-textarea"
                       required
                     />
                   </div>
@@ -230,8 +231,8 @@ export default function ContactMe() {
                       </div>
                     ) : (
                       <p className="text-sm text-center form-label p-4">
-                        Please allow &quot;Spam protection&quot; cookies (see the banner, or &quot;Cookie
-                        preferences&quot; in the footer) to enable spam protection for this form.
+                        Please allow &quot;Spam protection&quot; cookies (in the banner, or with the
+                        cookie icon in the footer) to enable spam protection for this form.
                       </p>
                     )
                   )}
