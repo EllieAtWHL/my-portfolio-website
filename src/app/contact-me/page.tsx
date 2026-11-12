@@ -18,6 +18,15 @@ const subscribeToNothing = () => () => {};
 const getOrigin = () => window.location.origin;
 const getServerOrigin = () => null;
 
+// WEB-242: the "did you message me while the form was broken?" notice hides
+// itself after this date; WEB-243 tracks removing it from the code. Read via
+// useSyncExternalStore with the server snapshot "show", so the prerendered
+// HTML and hydration always agree and the browser hides it straight after if
+// the date has passed (the page is static, so the server can't decide).
+const MISSED_MESSAGES_NOTICE_UNTIL = Date.UTC(2027, 1, 12); // 12 Feb 2027
+const isMissedMessagesNoticeCurrent = () => Date.now() < MISSED_MESSAGES_NOTICE_UNTIL;
+const showMissedMessagesNoticeOnServer = () => true;
+
 // Salesforce's generated Web-to-Lead snippet keeps the captcha_settings
 // timestamp fresh until the visitor completes reCAPTCHA.
 function refreshCaptchaTimestamp() {
@@ -46,6 +55,11 @@ export default function ContactMe() {
   const allowsRecaptcha = hasConsent('spamProtection');
 
   const origin = useSyncExternalStore(subscribeToNothing, getOrigin, getServerOrigin);
+  const showMissedMessagesNotice = useSyncExternalStore(
+    subscribeToNothing,
+    isMissedMessagesNoticeCurrent,
+    showMissedMessagesNoticeOnServer
+  );
   const isLocalhost = origin !== null && new URL(origin).hostname === 'localhost';
   // Salesforce Web-to-Lead has "Require reCAPTCHA Verification" switched on,
   // so it silently discards any submission without a valid reCAPTCHA
@@ -181,6 +195,25 @@ export default function ContactMe() {
             </div>
 
             <div className="max-w-2xl mx-auto">
+              {/* WEB-242: from WEB-70's CSP going live (5 Aug 2026) until the fix
+                  deployed, the browser blocked every submission, so no message
+                  reached Salesforce. Tells anyone who wrote in then to resend.
+                  Hides itself after MISSED_MESSAGES_NOTICE_UNTIL; WEB-243 removes it. */}
+              {showMissedMessagesNotice && (
+              <div className="outdated-banner" role="note" aria-labelledby="missed-messages-title">
+                <div className="banner-content">
+                  <h2 id="missed-messages-title" className="banner-title">
+                    Did you message me between 5 August and 12 November 2026?
+                  </h2>
+                  <p className="banner-text">
+                    A technical problem stopped this form from delivering messages during that time,
+                    so I never received yours. Sorry about that! It&apos;s fixed now, so please send
+                    it again.
+                  </p>
+                </div>
+              </div>
+              )}
+
               <form 
                 action="https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8" 
                 method="POST" 
