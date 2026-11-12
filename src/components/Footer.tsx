@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useTheme } from './ThemeProvider';
 import { useCookieConsent } from './CookieConsentProvider';
 import { Button } from './Button';
@@ -22,6 +23,10 @@ export default function Footer() {
           >
             Linktree
           </a>
+          <span aria-hidden="true"> · </span>
+          <Link href="/privacy-policy" className="linktree-link">
+            Privacy
+          </Link>
         </p>
       </div>
 

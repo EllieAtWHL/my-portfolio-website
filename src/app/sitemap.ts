@@ -37,6 +37,7 @@ export const CORE_SITE_ROUTES: ReadonlyArray<{
   { path: '/london-2012/costume-fitting', priority: 0.4, changeFrequency: 'yearly' },
   { path: '/regicide', priority: 0.5, changeFrequency: 'monthly' },
   { path: '/microbrew', priority: 0.4, changeFrequency: 'monthly' },
+  { path: '/privacy-policy', priority: 0.3, changeFrequency: 'yearly' },
 ];
 
 /** Core-site pages deliberately left out of the sitemap (noindex'd). */

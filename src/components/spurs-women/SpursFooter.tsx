@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import BlueskyLogo from './BlueskyLogo';
 import { useCookieConsent } from '../CookieConsentProvider';
 import { Button } from '../Button';
@@ -23,6 +24,12 @@ export default function Footer() {
             <BlueskyLogo size={16} className="inline-block" />
             Bluesky
           </a>
+          <span aria-hidden="true"> · </span>
+          {/* One privacy policy covers the whole site, so Spurs Women links to
+              the main-site page rather than having its own. */}
+          <Link href="/privacy-policy" className="linktree-link spurs-text venue-link">
+            Privacy
+          </Link>
         </p>
       </div>
 

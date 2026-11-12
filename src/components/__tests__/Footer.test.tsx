@@ -39,4 +39,9 @@ describe('Footer', () => {
 
     expect(openPreferences).toHaveBeenCalled()
   })
+
+  it('links to the privacy policy', () => {
+    render(<Footer />)
+    expect(screen.getByRole('link', { name: 'Privacy' })).toHaveAttribute('href', '/privacy-policy')
+  })
 })

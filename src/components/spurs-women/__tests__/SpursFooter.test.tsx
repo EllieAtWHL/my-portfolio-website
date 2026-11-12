@@ -31,4 +31,9 @@ describe('SpursFooter', () => {
 
     expect(openPreferences).toHaveBeenCalled()
   })
+
+  it('links to the site-wide privacy policy', () => {
+    render(<Footer />)
+    expect(screen.getByRole('link', { name: 'Privacy' })).toHaveAttribute('href', '/privacy-policy')
+  })
 })

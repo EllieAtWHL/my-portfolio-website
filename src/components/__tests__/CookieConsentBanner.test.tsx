@@ -159,7 +159,15 @@ describe('CookieConsentBanner', () => {
     expect(document.documentElement.style.getPropertyValue('--cookie-banner-height')).toBe('');
   });
 
-    it('uses the main-site button styling outside /spurs-women', () => {
+    it('links to the privacy policy from the summary', () => {
+    mockConsent();
+
+    render(<CookieConsentBanner />);
+
+    expect(screen.getByRole('link', { name: 'privacy policy' })).toHaveAttribute('href', '/privacy-policy');
+  });
+
+  it('uses the main-site button styling outside /spurs-women', () => {
     mockUsePathname.mockReturnValue('/contact-me');
     mockConsent();
 
