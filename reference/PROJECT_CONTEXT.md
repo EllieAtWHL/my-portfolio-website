@@ -631,6 +631,8 @@ what's actually running):
     recording, analytics, spam protection, embedded content. None of them
     load until a visitor allows that category. See
     `reference/COOKIE_CONSENT.md` for the full consent architecture.
+  - Visitors get a plain-language explanation of all of this at
+    `/privacy-policy` (WEB-103), which covers both site sections.
 
 Original MVP decision (superseded by the above):
   - Minimal or no analytics initially.

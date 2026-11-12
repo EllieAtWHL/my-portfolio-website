@@ -360,6 +360,10 @@ that variant gets a real transparent background, not just this button.
   for, the checkbox list staying outside the live region,
   `--cookie-banner-height` set while open and removed on close, per-section
   (`usePathname`) theming.
+- `src/app/privacy-policy/__tests__/page.test.tsx` - the policy has a
+  section per consent category, its links, and its Cookie preferences
+  button; `tests/privacy-policy.spec.ts` (Playwright) - reachable from the
+  banner as a new visitor and from both footers, plus an axe check.
 - `src/components/__tests__/FullStoryLoader.test.tsx` /
   `ConsentGatedVercelScripts.test.tsx` - each loads only for its own
   category (including staying off when every *other* category is allowed).
@@ -384,7 +388,41 @@ that variant gets a real transparent background, not just this button.
   `src/components/spurs-women/__tests__/SpursFooter.test.tsx` - the
   "Cookie preferences" control reopens the banner.
 
+## Privacy policy
+
+`/privacy-policy` (`src/app/privacy-policy/page.tsx`, WEB-103) is the
+plain-language, visitor-facing description of everything in this doc. It
+covers both site sections, and is linked from:
+- the banner's summary sentence ("More in the privacy policy")
+- both footers (`Footer.tsx`, `SpursFooter.tsx`)
+- the sitemap
+
+It also has its own "Cookie preferences" button (`CookiePreferencesButton`)
+that reopens the banner.
+
+**Keep it in step with this doc.** When consent behaviour changes (a new
+tracker, a new category, a changed retention period), update the policy in
+the same piece of work and bump its `LAST_UPDATED` constant. Its Jest test
+enforces part of this: it fails if a category in `CONSENT_CATEGORIES` has no
+matching heading on the page.
+
+Facts the policy states that live outside this repo (re-check them if they
+might have changed):
+- **FullStory:** recordings are kept for 12 months (the account's retention
+  setting), and the account is on the North America region.
+- **Contact form:** posts to Ellie's personal Salesforce Developer Edition
+  org. Ellie is the controller and Salesforce is the processor, so privacy
+  requests go to Ellie, not Salesforce. Messages are kept until she deletes
+  them.
+- **Privacy requests:** visitors are pointed at the contact form, as there's
+  no dedicated privacy email address. If one is set up (e.g. a
+  `privacy@ellieatwhl.co.uk` forwarding alias), add it to the "Your rights"
+  section.
+
+The contact form's visible fields carry FullStory's `fs-exclude` class, so
+the policy's promise that form contents aren't recorded holds whatever the
+FullStory account's own privacy settings are (see `fullstory/README.md`).
+
 ## Known follow-ups
 
-- **WEB-103** (privacy policy page) will need to describe what's gated here,
-  per category, in plain language - not yet written, tracked separately.
+None currently.
