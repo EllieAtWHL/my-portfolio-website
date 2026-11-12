@@ -1,12 +1,25 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { usePhotoUploadModal } from '../usePhotoUploadModal';
 import { compressImageForUpload } from '@/lib/image-compression';
+import { PhotoUnreadableError, snapshotPickedFile } from '@/lib/photo-file-snapshot';
 
 jest.mock('@/lib/image-compression', () => ({
   compressImageForUpload: jest.fn(async (file: File) => ({ file, compressed: true })),
 }));
 
+jest.mock('@/lib/photo-file-snapshot', () => {
+  const actual = jest.requireActual('@/lib/photo-file-snapshot');
+  return { ...actual, snapshotPickedFile: jest.fn() };
+});
+
 const mockCompress = compressImageForUpload as jest.Mock;
+const mockSnapshot = snapshotPickedFile as jest.Mock;
+
+// Stands in for the real byte copy (jsdom's File has no arrayBuffer()) -
+// a distinct File, so tests can check the queue works from the copy.
+async function copyOf(file: File): Promise<File> {
+  return new File(['copied bytes'], file.name, { type: file.type });
+}
 
 // Real production behaviour waits 2s before an automatic retry (see the
 // hook's doc comment) - tests override this to keep them fast/deterministic.
@@ -47,6 +60,90 @@ describe('usePhotoUploadModal', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockCompress.mockImplementation(async (file: File) => ({ file, compressed: true }));
+    mockSnapshot.mockImplementation(copyOf);
+  });
+
+  // WEB-244: Android can revoke read access to picked files partway through
+  // a long batch, so every photo is copied before any is processed.
+  it('copies every picked photo before compressing any, and compresses the copies', async () => {
+    const events: string[] = [];
+    mockSnapshot.mockImplementation(async (file: File) => {
+      events.push(`read ${file.name}`);
+      return copyOf(file);
+    });
+    mockCompress.mockImplementation(async (file: File) => {
+      events.push(`compress ${file.name}`);
+      return { file, compressed: true };
+    });
+    mockFetchRouter([uploadSuccess('folder/a.webp', 'sha-a', 1), uploadSuccess('folder/b.webp', 'sha-b', 2)], [finalizeSuccess()]);
+
+    const picked = [makeFile('a.jpg'), makeFile('b.jpg')];
+    const { result } = renderHook(() =>
+      usePhotoUploadModal({ editingMatchId: 'match-1', refreshRelatedMedia, showMessage, autoRetryDelayMs: TEST_RETRY_DELAY_MS })
+    );
+
+    act(() => {
+      result.current.addFiles(picked as unknown as FileList);
+    });
+    expect(result.current.photoQueue.map((item) => item.status)).toEqual(['reading', 'reading']);
+
+    await waitFor(() => {
+      expect(result.current.photoQueue.every((item) => item.status === 'done')).toBe(true);
+    });
+
+    expect(events).toEqual(['read a.jpg', 'read b.jpg', 'compress a.jpg', 'compress b.jpg']);
+    const compressedFiles = mockCompress.mock.calls.map(([file]) => file);
+    expect(compressedFiles).not.toContain(picked[0]);
+    expect(compressedFiles).not.toContain(picked[1]);
+    expect(result.current.photoQueue.every((item) => item.snapshotted)).toBe(true);
+  });
+
+  it('fails only the photo that can no longer be read, with an actionable message, and uploads the rest', async () => {
+    mockSnapshot.mockImplementation(async (file: File) => {
+      if (file.name === 'b.jpg') throw new PhotoUnreadableError('Couldn\'t read "b.jpg" from this device - Choose it again');
+      return copyOf(file);
+    });
+    mockFetchRouter([uploadSuccess('folder/a.webp', 'sha-a', 1), uploadSuccess('folder/c.webp', 'sha-c', 3)], [finalizeSuccess()]);
+
+    const { result } = renderHook(() =>
+      usePhotoUploadModal({ editingMatchId: 'match-1', refreshRelatedMedia, showMessage, autoRetryDelayMs: TEST_RETRY_DELAY_MS })
+    );
+
+    act(() => {
+      result.current.addFiles([makeFile('a.jpg'), makeFile('b.jpg'), makeFile('c.jpg')] as unknown as FileList);
+    });
+
+    await waitFor(() => {
+      expect(result.current.photoQueue.map((item) => item.status)).toEqual(['done', 'error', 'done']);
+    });
+    expect(result.current.photoQueue[1].error).toContain('Choose it again');
+    expect(mockCompress).toHaveBeenCalledTimes(2);
+  });
+
+  it('tries reading an unreadable photo again on manual retry', async () => {
+    mockSnapshot
+      .mockRejectedValueOnce(new PhotoUnreadableError('Couldn\'t read "a.jpg"'))
+      .mockImplementation(copyOf);
+    mockFetchRouter([uploadSuccess('folder/a.webp', 'sha-a', 1)], [finalizeSuccess()]);
+
+    const { result } = renderHook(() =>
+      usePhotoUploadModal({ editingMatchId: 'match-1', refreshRelatedMedia, showMessage, autoRetryDelayMs: TEST_RETRY_DELAY_MS })
+    );
+
+    act(() => {
+      result.current.addFiles([makeFile('a.jpg')] as unknown as FileList);
+    });
+    await waitFor(() => {
+      expect(result.current.photoQueue[0].status).toBe('error');
+    });
+
+    act(() => {
+      result.current.retryItem(result.current.photoQueue[0].id);
+    });
+    await waitFor(() => {
+      expect(result.current.photoQueue[0].status).toBe('done');
+    });
+    expect(mockSnapshot).toHaveBeenCalledTimes(2);
   });
 
   it('uploads a single photo, marks it done, and publishes it via finalize', async () => {
@@ -273,6 +370,9 @@ describe('usePhotoUploadModal', () => {
     await waitFor(() => {
       expect(result.current.photoQueue[0].status).toBe('done');
     });
+    // The retry works from the copy made when the photo was picked, not a
+    // second read of the original (which may no longer be readable - WEB-244).
+    expect(mockSnapshot).toHaveBeenCalledTimes(1);
   });
 
   it('fails fast without calling the API if no match is being edited', async () => {

@@ -2,7 +2,7 @@ import { useId, useRef } from 'react';
 import { Button } from '@/components/Button';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { supportsReducedSizeDecode } from '@/lib/image-compression';
-import type { FinalizeStatus, PhotoQueueItem } from '@/hooks/admin/usePhotoUploadModal';
+import type { FinalizeStatus, PhotoQueueItem, PhotoQueueItemStatus } from '@/hooks/admin/usePhotoUploadModal';
 
 interface PhotoUploadModalProps {
   photoQueue: PhotoQueueItem[];
@@ -14,6 +14,8 @@ interface PhotoUploadModalProps {
   onClose: () => void;
 }
 
+const IN_PROGRESS_STATUSES: PhotoQueueItemStatus[] = ['reading', 'queued', 'compressing', 'uploading'];
+
 function formatKb(bytes: number | undefined): string {
   if (bytes === undefined) return '';
   return `${Math.round(bytes / 1024)} KB`;
@@ -21,6 +23,7 @@ function formatKb(bytes: number | undefined): string {
 
 function statusLabel(item: PhotoQueueItem): string {
   switch (item.status) {
+    case 'reading': return 'Reading from device...';
     case 'queued': return 'Queued';
     case 'compressing': return 'Compressing...';
     case 'uploading': return 'Uploading...';
@@ -49,7 +52,7 @@ export function PhotoUploadModal({
   const doneCount = photoQueue.filter((item) => item.status === 'done').length;
   const errorCount = photoQueue.filter((item) => item.status === 'error').length;
   const isBusy =
-    photoQueue.some((item) => item.status === 'queued' || item.status === 'compressing' || item.status === 'uploading') ||
+    photoQueue.some((item) => IN_PROGRESS_STATUSES.includes(item.status)) ||
     finalizeStatus === 'publishing';
 
   return (

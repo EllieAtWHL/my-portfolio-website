@@ -264,6 +264,19 @@ per match, so both "+ New" and clicking the existing row open the same
 upload flow). Pick one or more photos from the camera roll; each is
 uploaded, resized, and committed automatically:
 
+0. As soon as the photos are picked, the browser copies each one's bytes
+   into a browser-owned file ("Reading from device..." in the list), before
+   compressing or uploading any of them
+   (`src/lib/photo-file-snapshot.ts`). On Android, a picked file is only a
+   reference to the photo, and the OS can withdraw the page's access to it
+   partway through a long batch. Before this copy step, a 19-photo batch
+   uploaded 10 photos and then every later photo failed with "The requested
+   file could not be read" (`NotReadableError`), both when compressing and
+   when sending uncompressed, and Retry failed the same way (WEB-244). The
+   copy holds the photo's encoded bytes, not a decoded bitmap, so it doesn't
+   bring back the WEB-173 memory problem below. A photo that's already
+   unreadable when picked fails straight away with a "choose it again"
+   message, and Retry tries reading it once more.
 1. The browser compresses the photo client-side (capped at 2000px, JPEG)
    before sending it, to keep the upload itself fast on a mobile connection
    and under Vercel's ~4.5MB request-body limit. Each photo is decoded in

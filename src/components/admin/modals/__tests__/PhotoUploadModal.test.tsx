@@ -64,6 +64,14 @@ describe('PhotoUploadModal', () => {
     expect(screen.getByText('Close (continues in background)')).toBeInTheDocument();
   });
 
+  it('shows photos still being read from the device as in progress', () => {
+    const queue = [makeItem({ id: '1', status: 'reading' })];
+    render(<PhotoUploadModal {...defaultProps} photoQueue={queue} />);
+
+    expect(screen.getByText('Reading from device...')).toBeInTheDocument();
+    expect(screen.getByText('Close (continues in background)')).toBeInTheDocument();
+  });
+
   it('shows a "continues in background" close label while the batch is publishing', () => {
     const queue = [makeItem({ id: '1', status: 'done' })];
     render(<PhotoUploadModal {...defaultProps} photoQueue={queue} finalizeStatus="publishing" />);

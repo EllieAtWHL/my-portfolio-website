@@ -1,11 +1,17 @@
 import { useCallback, useRef, useState } from 'react';
 import { compressImageForUpload } from '@/lib/image-compression';
+import { snapshotPickedFile } from '@/lib/photo-file-snapshot';
 
-export type PhotoQueueItemStatus = 'queued' | 'compressing' | 'uploading' | 'done' | 'error';
+export type PhotoQueueItemStatus = 'reading' | 'queued' | 'compressing' | 'uploading' | 'done' | 'error';
 
 export interface PhotoQueueItem {
   id: string;
+  /**
+   * The picked file - replaced by a browser-owned copy once `snapshotted`
+   * is true (WEB-244, see src/lib/photo-file-snapshot.ts).
+   */
   file: File;
+  snapshotted?: boolean;
   name: string;
   status: PhotoQueueItemStatus;
   error?: string;
@@ -45,6 +51,11 @@ interface UsePhotoUploadModalArgs {
  * sequentially so a dropped connection only affects the one in flight, and
  * a Screen Wake Lock is held for the duration to reduce the chance of the
  * phone's screen lock suspending an in-flight upload.
+ *
+ * Every picked photo is first copied into a browser-owned File (status
+ * 'reading') before any of them is compressed or uploaded, because Android
+ * can revoke the picker's read access to the originals partway through a
+ * long batch (WEB-244, see src/lib/photo-file-snapshot.ts).
  *
  * Each per-photo request only resizes the photo and creates a git blob -
  * it does not push to the gallery repo. Once every queued photo has
@@ -130,6 +141,19 @@ export function usePhotoUploadModal({
     }
   }, [autoRetryDelayMs]);
 
+  // Returns the item with its snapshot in place, or null (with the item
+  // marked as failed) if the picked file can't be read any more.
+  const snapshotItem = useCallback(async (item: PhotoQueueItem): Promise<PhotoQueueItem | null> => {
+    try {
+      const file = await snapshotPickedFile(item.file);
+      updateItem(item.id, { file, snapshotted: true });
+      return { ...item, file, snapshotted: true };
+    } catch (error) {
+      updateItem(item.id, { status: 'error', error: (error as Error).message || 'Couldn\'t read this photo' });
+      return null;
+    }
+  }, [updateItem]);
+
   const compressItem = useCallback(async (item: PhotoQueueItem) => {
     // Clear the previous attempt's diagnostics, so a compression failure on
     // a manual retry can't be reported with a stale "sent ..." from before.
@@ -178,6 +202,15 @@ export function usePhotoUploadModal({
       return;
     }
 
+    // Only a manual retry of a photo that was already unreadable when it was
+    // picked gets here without a snapshot - worth one more read attempt in
+    // case that was transient.
+    if (!item.snapshotted) {
+      const snapshotted = await snapshotItem(item);
+      if (!snapshotted) return;
+      item = snapshotted;
+    }
+
     try {
       // Compressed once, outside the auto-retry: the retry is for transient
       // network/session failures, and re-decoding a full-resolution photo
@@ -201,7 +234,7 @@ export function usePhotoUploadModal({
         : '';
       updateItem(item.id, { status: 'error', error: `${(error as Error).message || 'Upload failed'}${diagnostics}` });
     }
-  }, [editingMatchId, updateItem, compressItem, sendPhoto, withOneAutoRetry]);
+  }, [editingMatchId, updateItem, snapshotItem, compressItem, sendPhoto, withOneAutoRetry]);
 
   const finalizeBatch = useCallback(async () => {
     const toPublish = queueRef.current.filter((item) => item.status === 'done' && !item.published && item.path && item.blobSha);
@@ -258,13 +291,24 @@ export function usePhotoUploadModal({
       id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `${file.name}-${Date.now()}-${Math.random()}`,
       file,
       name: file.name,
-      status: 'queued',
+      status: 'reading',
       originalSizeBytes: file.size,
     }));
     queueRef.current = [...queueRef.current, ...items];
     commit();
-    void processQueue();
-  }, [commit, processQueue]);
+
+    // Read every photo up front, while the picker's access is fresh, rather
+    // than when the queue reaches it (WEB-244). One at a time, so only one
+    // photo's bytes are held as a plain ArrayBuffer at once.
+    void (async () => {
+      for (const item of items) {
+        if (await snapshotItem(item)) {
+          updateItem(item.id, { status: 'queued' });
+        }
+      }
+      void processQueue();
+    })();
+  }, [commit, snapshotItem, updateItem, processQueue]);
 
   const retryItem = useCallback((id: string) => {
     updateItem(id, { status: 'queued', error: undefined });
