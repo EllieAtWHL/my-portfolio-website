@@ -5,13 +5,27 @@ import { Card } from '@/components/Card';
 import { useEffect, useState } from 'react';
 import MainSitePage from '@/components/MainSitePage';
 import { trackFormInteraction, trackPageView } from '@/lib/fullstory';
-import { useCookieConsent } from '@/components/CookieConsentProvider';
+import { allChoices, useCookieConsent } from '@/components/CookieConsentProvider';
 
 export default function ContactMe() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const { hasConsent } = useCookieConsent();
+  const [captchaError, setCaptchaError] = useState(false);
+  const { hasConsent, isConsentKnown, choices, saveChoices } = useCookieConsent();
   const allowsRecaptcha = hasConsent('spamProtection');
+  const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
+  // Salesforce Web-to-Lead has "Require reCAPTCHA Verification" switched on,
+  // so it silently discards any submission without a valid reCAPTCHA
+  // response - the visitor still lands on the thank-you page, but the message
+  // never arrives (WEB-242). Outside localhost the form must therefore never
+  // submit unless reCAPTCHA is allowed AND completed.
+  const isBlockedBySpamProtection = !isLocalhost && !allowsRecaptcha;
+
+  // Turns on the Spam protection category only, keeping the visitor's other
+  // choices as they were (all off if they hadn't answered the banner yet).
+  const allowSpamProtection = () => {
+    saveChoices({ ...(choices ?? allChoices(false)), spamProtection: true });
+  };
 
   useEffect(() => {
     trackPageView('/contact-me', 'Contact Me');
@@ -67,6 +81,21 @@ export default function ContactMe() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!isLocalhost) {
+      // Send is disabled in this state, but guard anyway (e.g. Enter key).
+      if (!allowsRecaptcha) return;
+
+      const response = e.currentTarget.querySelector<HTMLTextAreaElement>(
+        '[name="g-recaptcha-response"]'
+      );
+      if (!response || response.value.trim() === '') {
+        setCaptchaError(true);
+        return;
+      }
+    }
+
+    setCaptchaError(false);
     setIsSubmitting(true);
 
     // Track form start
@@ -216,19 +245,28 @@ export default function ContactMe() {
                     />
                   </div>
 
-                  {typeof window !== 'undefined' && window.location.hostname !== 'localhost' && (
+                  {!isLocalhost && isConsentKnown && (
                     allowsRecaptcha ? (
-                      <div className="flex justify-center p-8">
+                      <div className="flex flex-col items-center gap-2 p-8">
                         <div
                           className="g-recaptcha"
                           data-sitekey="6LfUBQEfAAAAAOwXkILtp2Amwf_U6Ouoza-xsGZT"
                         />
+                        {captchaError && (
+                          <p role="alert" className="text-sm form-label">
+                            Please tick &quot;I&apos;m not a robot&quot; before sending.
+                          </p>
+                        )}
                       </div>
                     ) : (
-                      <p className="text-sm text-center form-label p-4">
-                        Please allow &quot;Spam protection&quot; cookies (see the banner, or &quot;Cookie
-                        preferences&quot; in the footer) to enable spam protection for this form.
-                      </p>
+                      <div id="spam-protection-needed" className="text-sm text-center form-label p-4 space-y-3">
+                        <p>
+                          {"This form uses Google reCAPTCHA to keep out spam, and can't send a message without it. reCAPTCHA sets a Google cookie, so it stays off until you allow \"Spam protection\"."}
+                        </p>
+                        <Button type="button" variant="secondary" size="sm" onClick={allowSpamProtection}>
+                          Allow spam protection
+                        </Button>
+                      </div>
                     )
                   )}
 
@@ -238,7 +276,10 @@ export default function ContactMe() {
                       variant="primary"
                       size="lg"
                       fullWidth
-                      disabled={isSubmitting}
+                      // Disabled until consent is known and reCAPTCHA is allowed, so a
+                      // message can't be sent into Salesforce's silent discard (WEB-242).
+                      disabled={isSubmitting || (!isLocalhost && (!isConsentKnown || isBlockedBySpamProtection))}
+                      aria-describedby={isBlockedBySpamProtection ? 'spam-protection-needed' : undefined}
                     >
                       {isSubmitting ? 'Sending...' : 'Send Message'}
                     </Button>

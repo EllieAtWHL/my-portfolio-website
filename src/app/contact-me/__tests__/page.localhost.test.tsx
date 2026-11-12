@@ -19,11 +19,14 @@ const mockUseCookieConsent = useCookieConsent as jest.Mock;
 
 describe('ContactMe reCAPTCHA consent gating (localhost)', () => {
   it('skips both the captcha and the consent message on localhost regardless of consent', () => {
-    mockUseCookieConsent.mockReturnValue({ hasConsent: () => false });
+    mockUseCookieConsent.mockReturnValue({ hasConsent: () => false, isConsentKnown: true, choices: null, saveChoices: jest.fn() });
 
     render(<ContactMe />);
 
     expect(document.querySelector('.g-recaptcha')).not.toBeInTheDocument();
-    expect(screen.queryByText(/spam protection" cookies/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/can't send a message without it/)).not.toBeInTheDocument();
+    // localhost simulates the submission instead of posting to Salesforce,
+    // so Send stays usable without reCAPTCHA there
+    expect(screen.getByRole('button', { name: 'Send Message' })).toBeEnabled();
   });
 });
