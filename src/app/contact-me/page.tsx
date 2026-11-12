@@ -200,9 +200,15 @@ export default function ContactMe() {
                   reached Salesforce. Tells anyone who wrote in then to resend.
                   Hides itself after MISSED_MESSAGES_NOTICE_UNTIL; WEB-243 removes it. */}
               {showMissedMessagesNotice && (
-              <div className="outdated-banner" role="note" aria-labelledby="missed-messages-title">
+              <div
+                // No accessible name of its own: its heading is read out anyway,
+                // and naming it after "Did you message me..." made it a second
+                // match for anything looking up the "Message" field by label.
+                className="outdated-banner"
+                role="note"
+              >
                 <div className="banner-content">
-                  <h2 id="missed-messages-title" className="banner-title">
+                  <h2 className="banner-title">
                     Did you message me between 5 August and 12 November 2026?
                   </h2>
                   <p className="banner-text">
