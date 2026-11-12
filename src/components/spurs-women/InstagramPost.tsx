@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useCookieConsent } from '../CookieConsentProvider';
+import { EmbedConsentFallback } from '../ConsentGatedEmbed';
 import { loadEmbedScript } from '@/lib/social-embed';
 
 declare global {
@@ -12,13 +13,14 @@ declare global {
 
 export default function InstagramPost({ url }: { url: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { consent, isConsentKnown } = useCookieConsent();
-  const hasConsent = consent === 'accepted';
+  const { hasConsent: hasConsentFor, isConsentKnown } = useCookieConsent();
+  const hasConsent = hasConsentFor('embeds');
 
   useEffect(() => {
     // Meta's embed sets instagram.com/facebook.com cookies even for
-    // logged-out viewers, so unlike the Bluesky/YouTube/Spotify embeds it
-    // stays behind cookie consent (WEB-147) - see the fallback below.
+    // logged-out viewers, so like the YouTube/Spotify embeds (and unlike
+    // Bluesky/OpenStreetMap, which set none) it stays behind the "Embedded
+    // content" consent category (WEB-147, WEB-104) - see the fallback below.
     if (!url || !hasConsent) return;
 
     // Clear previous embed if it exists
@@ -59,20 +61,13 @@ export default function InstagramPost({ url }: { url: string }) {
   // script injected (outside React's control) alive next to the fallback.
   if (!hasConsent) {
     return (
-      <div key="fallback" className="text-sm">
-        <a
+      <div key="fallback">
+        <EmbedConsentFallback
+          service="Instagram"
           href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="spurs-text venue-link hover:underline"
-        >
-          View this post on Instagram
-        </a>{' '}
-        <span className="text-gray-400 text-sm">↗</span>
-        <p className="mt-1">
-          Instagram embeds set cookies, so this post only shows here once you accept cookies (see
-          the banner, or &quot;Cookie preferences&quot; in the footer).
-        </p>
+          linkLabel="View this post on Instagram"
+          theme="spurs"
+        />
       </div>
     );
   }

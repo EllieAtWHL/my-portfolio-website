@@ -621,12 +621,15 @@ Practices:
 Current state (this superseded the original MVP-era "minimal or no
 analytics" plan below it - kept for the rationale, not as a description of
 what's actually running):
-  - **FullStory** (session recording) and **Vercel Analytics** are both in
-    use - see `reference/fullstory/README.md`.
-  - **Google reCAPTCHA** on the contact form additionally sets a third-party
-    cookie.
-  - All three are gated behind an explicit cookie consent banner (WEB-102) -
-    none of them load until a visitor accepts. See
+  - **FullStory** (session recording) and **Vercel Analytics/Speed
+    Insights** are both in use - see `reference/fullstory/README.md`.
+  - **Google reCAPTCHA** on the contact form, and the **Instagram**,
+    **YouTube** and **Spotify** embeds, additionally set third-party
+    cookies. Bluesky and OpenStreetMap embeds were checked and don't.
+  - All of these are gated behind an explicit cookie consent banner
+    (WEB-102), with a separate opt-in per purpose (WEB-104): session
+    recording, analytics, spam protection, embedded content. None of them
+    load until a visitor allows that category. See
     `reference/COOKIE_CONSENT.md` for the full consent architecture.
 
 Original MVP decision (superseded by the above):

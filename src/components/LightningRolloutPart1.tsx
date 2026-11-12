@@ -1,6 +1,7 @@
 'use client';
 
 import { Card } from '@/components/Card';
+import { YouTubeEmbed } from '@/components/YouTubeEmbed';
 import { BlogArticleLayout } from '@/components/lightning-rollout/BlogArticleLayout';
 
 export default function LightningRolloutPart1() {
@@ -88,16 +89,7 @@ export default function LightningRolloutPart1() {
 
           <p>Below is a simplified version of a video I created for one of my presentations showing how I was able to dramatically cut the time it took to create a Lead from a Case.</p>
 
-          <div className="video-container">
-            <iframe
-              src="https://www.youtube.com/embed/KphQ352Gz48"
-              title="YouTube video player"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="video-iframe"
-            ></iframe>
-          </div>
+          <YouTubeEmbed videoId="KphQ352Gz48" />
         </Card>
 
         <Card variant="accent" padding="lg" className="topic-block">

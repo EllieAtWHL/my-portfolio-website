@@ -6,8 +6,9 @@ This site uses FullStory for user session recording and analytics.
 - **Dashboard**: https://app.fullstory.com
 - **Help Center**: https://help.fullstory.com
 
-**Consent-gated (WEB-102)**: the script below only loads once a visitor
-accepts the site's cookie consent banner - see
+**Consent-gated (WEB-102, WEB-104)**: the script below only loads once a
+visitor allows the **Session recording** category in the site's cookie
+consent banner (its own toggle, separate from analytics) - see
 [`../COOKIE_CONSENT.md`](../COOKIE_CONSENT.md) for the consent layer that
 gates this (and Vercel Analytics/Speed Insights, and the contact form's
 reCAPTCHA). This doc
@@ -29,7 +30,8 @@ be conditionally rendered based on consent:
 // src/components/FullStoryLoader.tsx
 import Script from 'next/script';
 
-if (consent !== 'accepted') return null;
+const { hasConsent } = useCookieConsent();
+if (!hasConsent('sessionRecording')) return null;
 return <Script src="/fullstory-init.js" strategy="afterInteractive" />;
 ```
 

@@ -15,16 +15,19 @@ jest.mock('next/script', () => {
 const mockUseCookieConsent = useCookieConsent as jest.Mock;
 
 describe('FullStoryLoader', () => {
-  it.each(['rejected', null] as const)('renders nothing when consent is %s', (consent) => {
-    mockUseCookieConsent.mockReturnValue({ consent });
+  it.each([
+    ['nothing is allowed', () => false],
+    ['every other category is allowed', (category: string) => category !== 'sessionRecording'],
+  ])('renders nothing when %s', (_label, hasConsent) => {
+    mockUseCookieConsent.mockReturnValue({ hasConsent });
 
     const { container } = render(<FullStoryLoader />);
 
     expect(container.querySelector('[data-testid="fullstory-script"]')).not.toBeInTheDocument();
   });
 
-  it('loads /fullstory-init.js once consent is accepted', () => {
-    mockUseCookieConsent.mockReturnValue({ consent: 'accepted' });
+  it('loads /fullstory-init.js once session recording is allowed', () => {
+    mockUseCookieConsent.mockReturnValue({ hasConsent: (category: string) => category === 'sessionRecording' });
 
     const { container } = render(<FullStoryLoader />);
 

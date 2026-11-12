@@ -10,7 +10,8 @@ import { useCookieConsent } from '@/components/CookieConsentProvider';
 export default function ContactMe() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const { consent } = useCookieConsent();
+  const { hasConsent } = useCookieConsent();
+  const allowsRecaptcha = hasConsent('spamProtection');
 
   useEffect(() => {
     trackPageView('/contact-me', 'Contact Me');
@@ -23,9 +24,9 @@ export default function ContactMe() {
     }
 
     // reCAPTCHA sets a Google cookie, so it stays off until the visitor
-    // accepts cookies (WEB-102) - see the fallback message rendered below
-    // where the widget would otherwise appear.
-    if (consent !== 'accepted') {
+    // allows the spam protection category (WEB-102/WEB-104) - see the
+    // fallback message rendered below where the widget would otherwise appear.
+    if (!allowsRecaptcha) {
       return;
     }
 
@@ -62,7 +63,7 @@ export default function ContactMe() {
         document.head.removeChild(timestampScript);
       }
     };
-  }, [consent]);
+  }, [allowsRecaptcha]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -216,7 +217,7 @@ export default function ContactMe() {
                   </div>
 
                   {typeof window !== 'undefined' && window.location.hostname !== 'localhost' && (
-                    consent === 'accepted' ? (
+                    allowsRecaptcha ? (
                       <div className="flex justify-center p-8">
                         <div
                           className="g-recaptcha"
@@ -225,8 +226,8 @@ export default function ContactMe() {
                       </div>
                     ) : (
                       <p className="text-sm text-center form-label p-4">
-                        Please accept cookies (see the banner, or &quot;Cookie preferences&quot; in the
-                        footer) to enable spam protection for this form.
+                        Please allow &quot;Spam protection&quot; cookies (see the banner, or &quot;Cookie
+                        preferences&quot; in the footer) to enable spam protection for this form.
                       </p>
                     )
                   )}

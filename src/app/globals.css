@@ -54,8 +54,13 @@
      (.spurs-wrapper main + every Spurs <main>'s own pb-footer-clearance
      class in spurs-theme.css) - two independent mechanisms by design (see
      CLAUDE.md on the two site sections), but sharing one number so they
-     can't drift out of sync. */
-  --spacing-footer-clearance: 6rem;
+     can't drift out of sync.
+     --cookie-banner-height is set on <html> by CookieConsentBanner while it's
+     open (and removed when it closes), so the same clearance also grows to
+     clear the banner - a first-time visitor can scroll anything at the
+     bottom of a page up from behind it instead of having to dismiss the
+     banner first (WEB-104). */
+  --spacing-footer-clearance: calc(6rem + var(--cookie-banner-height, 0px));
 }
 
 /* Shared heading styles, built from Tailwind utilities via @apply so they're

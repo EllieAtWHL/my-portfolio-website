@@ -1,11 +1,42 @@
 'use client';
 
+import { useEffect, useId, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Button } from './Button';
-import { useCookieConsent } from './CookieConsentProvider';
+import {
+  CONSENT_CATEGORIES,
+  allChoices,
+  useCookieConsent,
+  type ConsentCategory,
+  type ConsentChoices,
+} from './CookieConsentProvider';
+
+const CATEGORY_COPY: Record<ConsentCategory, { label: string; description: string }> = {
+  sessionRecording: {
+    label: 'Session recording',
+    description:
+      'FullStory records how you move around and interact with pages, to show where the site is confusing or broken. The most detailed of these.',
+  },
+  analytics: {
+    label: 'Analytics',
+    description:
+      'Vercel Analytics and Speed Insights count page visits and measure how fast pages load.',
+  },
+  spamProtection: {
+    label: 'Spam protection',
+    description:
+      'Google reCAPTCHA on the contact form, which sets a Google cookie. The form still sends without it.',
+  },
+  embeds: {
+    label: 'Embedded content',
+    description:
+      'Shows YouTube videos, a Spotify track and Instagram posts in place, instead of as links. Those services set their own cookies.',
+  },
+};
 
 export function CookieConsentBanner() {
-  const { isBannerOpen, accept, reject } = useCookieConsent();
+  const { isBannerOpen, shouldFocusBanner } = useCookieConsent();
+  const regionRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   // This banner is rendered once at the root layout (consent must be shared
   // across both site sections), so it sits outside the per-route
@@ -15,20 +46,53 @@ export function CookieConsentBanner() {
   // opts back into that exact styling instead of duplicating it.
   const isSpursSection = pathname?.startsWith('/spurs-women') ?? false;
 
+  // When the visitor opened the banner on purpose ("Cookie preferences" in
+  // the footer or under a blocked embed), move focus into it - it's fixed to
+  // the bottom of the viewport but its DOM position may be far from the
+  // button they pressed. A first-visit banner doesn't take focus (it isn't a
+  // modal, and the visitor didn't ask for it).
+  useEffect(() => {
+    if (isBannerOpen && shouldFocusBanner) {
+      regionRef.current?.focus();
+    }
+  }, [isBannerOpen, shouldFocusBanner]);
+
+  // Publishes the open banner's height as --cookie-banner-height on <html>,
+  // which --spacing-footer-clearance (globals.css) adds to every page's
+  // bottom padding. The banner is fixed over the bottom of the viewport, so
+  // without this the last ~100px of a page (e.g. the home page's Contact Me
+  // CTA at 1280x720) can't be reached until the visitor dismisses it.
+  // A ResizeObserver keeps it right as the banner expands to Manage choices
+  // or reflows on resize.
+  useEffect(() => {
+    const region = regionRef.current;
+    if (!isBannerOpen || !region) return;
+
+    const root = document.documentElement;
+    const update = () => root.style.setProperty('--cookie-banner-height', `${region.offsetHeight}px`);
+    update();
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(update);
+    observer?.observe(region);
+
+    return () => {
+      observer?.disconnect();
+      root.style.removeProperty('--cookie-banner-height');
+    };
+  }, [isBannerOpen]);
+
   if (!isBannerOpen) return null;
 
   return (
     <div
+      ref={regionRef}
       role="region"
       aria-label="Cookie consent"
-      // Announces the banner to screen reader users when it appears (it's
-      // not a modal dialog, so we don't steal focus - aria-live is the
-      // non-disruptive way to surface it instead).
-      aria-live="polite"
-      aria-atomic="true"
+      tabIndex={-1}
       // Fixed + above the site's fixed navbar (z-index: 100 in main-theme.css;
       // z-[200] matches OfflineBanner/SkipLink's convention for the same reason).
-      className={`fixed bottom-0 inset-x-0 z-[200] px-4 py-4 shadow-lg border-t ${
+      // max-h + overflow keeps the expanded choices list reachable on short
+      // phone screens rather than pushing the buttons off-screen.
+      className={`fixed bottom-0 inset-x-0 z-[200] px-4 py-4 shadow-lg border-t max-h-[85vh] overflow-y-auto focus:outline-none ${
         isSpursSection
           ? 'spurs-wrapper pt-4 border-white/10'
           : // dark:bg-gray-900/border-gray-700 are generic Tailwind grays with a
@@ -40,38 +104,126 @@ export function CookieConsentBanner() {
             'bg-white dark:bg-[var(--dark-bg-1)] border-gray-300 dark:border-[var(--dark-accent)] text-gray-700 dark:text-[var(--dark-text)]'
       }`}
     >
-      <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center gap-4">
-        <p className="text-sm flex-1">
-          This site uses optional cookies to understand how visitors use the site, to help keep
-          the contact form free of spam, and to show embedded Instagram posts. They stay off unless
-          you accept, and you can change your mind any time via &quot;Cookie preferences&quot; in
-          the footer.
-        </p>
-        <div className="flex gap-2 flex-shrink-0">
+      {/* Mounted only while open, so its local state (which view, unsaved
+          checkbox edits) resets each time the banner is reopened. */}
+      <BannerContent isSpursSection={isSpursSection} />
+    </div>
+  );
+}
+
+function BannerContent({ isSpursSection }: { isSpursSection: boolean }) {
+  const { choices, acceptAll, rejectAll, saveChoices } = useCookieConsent();
+  // First visit opens the short summary; reopening via "Cookie preferences"
+  // (a choice already exists) goes straight to the per-category view, since
+  // that's what someone changing their mind came to see.
+  const [showDetails, setShowDetails] = useState(choices !== null);
+  const [draft, setDraft] = useState<ConsentChoices>(choices ?? allChoices(false));
+  const idPrefix = useId();
+
+  // Main-theme .button.secondary carries an explicit min-width:150px that
+  // .button.primary doesn't, so the buttons would render at different widths
+  // here (unlike the spurs variant, where they all share one CSS class) - pin
+  // them to the same width AND min-width explicitly (main-theme.css is
+  // imported layer(base) in globals.css, so plain Tailwind utilities here
+  // already win without needing !important).
+  // Reject all / Accept all share one width so declining is never the
+  // smaller target; the middle button (Manage/Save choices) needs w-36 to
+  // fit "Manage choices" on one line. Kept as narrow as that allows, so the
+  // one-row summary view leaves the text enough width to stay short.
+  const buttonWidth = 'w-28 min-w-28 whitespace-nowrap';
+  const middleButtonWidth = 'w-36 min-w-36 whitespace-nowrap';
+  const secondaryVariant = isSpursSection ? 'spurs' : 'secondary';
+  const primaryVariant = isSpursSection ? 'spurs' : 'primary';
+
+  return (
+    // The summary view sits on one row from sm up (text beside the buttons),
+    // as the original single-choice banner did, so a first-visit banner stays
+    // short and doesn't cover content near the bottom of the viewport (e.g.
+    // the home page's Contact Me CTA - Playwright's home.spec caught this).
+    // Only the opt-in detail view stacks, since its checkbox list needs the
+    // full width.
+    <div
+      className={`max-w-5xl mx-auto flex flex-col gap-4 ${
+        showDetails ? '' : 'sm:flex-row sm:items-center'
+      }`}
+    >
+      {/* Only the summary is a live region - announcing the banner when it
+          appears without stealing focus. The checkbox list stays out of it,
+          or expanding it would read every description out unprompted. */}
+      <p className="text-sm flex-1" aria-live="polite">
+        This site uses optional cookies for session recording, analytics, spam protection and
+        embedded videos and posts. They stay off unless you allow them, and you can change your mind
+        any time via &quot;Cookie preferences&quot; in the footer.
+      </p>
+
+      {showDetails && (
+        <fieldset className="flex flex-col gap-3">
+          <legend className="sr-only">Choose which optional cookies to allow</legend>
+          {CONSENT_CATEGORIES.map((category) => {
+            const id = `${idPrefix}-${category}`;
+            const { label, description } = CATEGORY_COPY[category];
+            return (
+              <div key={category} className="flex items-start gap-3">
+                <input
+                  id={id}
+                  type="checkbox"
+                  checked={draft[category]}
+                  onChange={(event) =>
+                    setDraft((current) => ({ ...current, [category]: event.target.checked }))
+                  }
+                  aria-describedby={`${id}-description`}
+                  className={`mt-1 h-4 w-4 flex-shrink-0 cursor-pointer ${
+                    isSpursSection
+                      ? 'accent-[var(--accent-spurs)]'
+                      : 'accent-[var(--brand-primary-light)] dark:accent-[var(--dark-accent)]'
+                  }`}
+                />
+                <div className="text-sm">
+                  <label htmlFor={id} className="font-semibold cursor-pointer">
+                    {label}
+                  </label>
+                  <p id={`${id}-description`} className="opacity-80">
+                    {description}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </fieldset>
+      )}
+
+      <div
+        className={`flex flex-wrap justify-center gap-2 ${
+          showDetails ? 'sm:justify-end' : 'flex-shrink-0'
+        }`}
+      >
+        {/* Reject all and Accept all stay the same size and always visible
+            in both views, so declining is never harder than accepting. */}
+        <Button variant={secondaryVariant} size="sm" className={buttonWidth} onClick={rejectAll}>
+          Reject all
+        </Button>
+        {showDetails ? (
           <Button
-            variant={isSpursSection ? 'spurs' : 'secondary'}
+            variant={secondaryVariant}
             size="sm"
-            // Main-theme .button.secondary carries an explicit min-width:150px
-            // that .button.primary doesn't, so the two would render at
-            // different widths here (unlike the spurs variant, where both
-            // buttons already share one CSS class) - pin both to the same
-            // width AND min-width explicitly (main-theme.css is imported
-            // layer(base) in globals.css, so plain Tailwind utilities here
-            // already win without needing !important).
-            className="w-28 min-w-28"
-            onClick={reject}
+            className={middleButtonWidth}
+            onClick={() => saveChoices(draft)}
           >
-            Reject
+            Save choices
           </Button>
+        ) : (
           <Button
-            variant={isSpursSection ? 'spurs' : 'primary'}
+            variant={secondaryVariant}
             size="sm"
-            className="w-28 min-w-28"
-            onClick={accept}
+            className={middleButtonWidth}
+            onClick={() => setShowDetails(true)}
           >
-            Accept
+            Manage choices
           </Button>
-        </div>
+        )}
+        <Button variant={primaryVariant} size="sm" className={buttonWidth} onClick={acceptAll}>
+          Accept all
+        </Button>
       </div>
     </div>
   );

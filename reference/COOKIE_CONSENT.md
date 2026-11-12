@@ -2,9 +2,16 @@
 
 Site-wide cookie consent gate (WEB-102, split from WEB-71 "GDPR compliance").
 Nothing that sets a non-essential cookie loads until the visitor actively
-accepts: **FullStory** (session recording), **Vercel Analytics** and
-**Vercel Speed Insights** (WEB-64), Google **reCAPTCHA** on the contact
-form, and **Instagram post embeds** on Spurs Women match pages (WEB-147). See `fullstory/README.md` for FullStory's own integration details -
+allows it, with a separate choice per purpose (WEB-104):
+
+| Category (`ConsentCategory`) | Banner label | Gates |
+|---|---|---|
+| `sessionRecording` | Session recording | **FullStory** |
+| `analytics` | Analytics | **Vercel Analytics** and **Vercel Speed Insights** (WEB-64) |
+| `spamProtection` | Spam protection | Google **reCAPTCHA** on the contact form |
+| `embeds` | Embedded content | **Instagram post embeds** on Spurs Women match pages (WEB-147), **YouTube** videos (Lightning Rollout parts 1 and 2) and the **Spotify** track on London 2012's "My First Audition" (WEB-104) |
+
+See `fullstory/README.md` for FullStory's own integration details -
 this doc covers the consent layer that gates it (and the other trackers)
 rather than duplicating that content.
 
@@ -12,12 +19,13 @@ rather than duplicating that content.
 
 | File | Role |
 |------|------|
-| `src/components/CookieConsentProvider.tsx` | React Context holding consent state, backed by `localStorage`. Exports `useCookieConsent()`. |
-| `src/components/CookieConsentBanner.tsx` | The visible Accept/Reject banner. |
-| `src/components/FullStoryLoader.tsx` | Loads `/public/fullstory-init.js` only once `consent === 'accepted'`. |
-| `src/components/ConsentGatedVercelScripts.tsx` | Renders `@vercel/analytics/next`'s `<Analytics />` and `@vercel/speed-insights/next`'s `<SpeedInsights />` only once `consent === 'accepted'`. |
-| `src/app/contact-me/page.tsx` | Gates the Google reCAPTCHA script the same way (see "reCAPTCHA" below). |
-| `src/components/spurs-women/InstagramPost.tsx` | Gates Meta's Instagram embed script the same way (see "Instagram embeds" below). |
+| `src/components/CookieConsentProvider.tsx` | React Context holding per-category consent state, backed by `localStorage`. Exports `useCookieConsent()`, `CONSENT_CATEGORIES` and the `ConsentCategory`/`ConsentChoices` types. |
+| `src/components/CookieConsentBanner.tsx` | The visible banner: Reject all / Manage choices / Accept all, plus the per-category checkboxes. Holds each category's label and description copy. |
+| `src/components/FullStoryLoader.tsx` | Loads `/public/fullstory-init.js` only once `hasConsent('sessionRecording')`. |
+| `src/components/ConsentGatedVercelScripts.tsx` | Renders `@vercel/analytics/next`'s `<Analytics />` and `@vercel/speed-insights/next`'s `<SpeedInsights />` only once `hasConsent('analytics')`. |
+| `src/app/contact-me/page.tsx` | Gates the Google reCAPTCHA script on `hasConsent('spamProtection')` (see "reCAPTCHA" below). |
+| `src/components/ConsentGatedEmbed.tsx` | `ConsentGatedEmbed` renders its children (an iframe) only once `hasConsent('embeds')`, otherwise `EmbedConsentFallback`: a link to the content on the service, a note, and a "Cookie preferences" button. Used for YouTube and Spotify (see "Embedded content" below). |
+| `src/components/spurs-women/InstagramPost.tsx` | Gates Meta's Instagram embed script on `hasConsent('embeds')`, using the same `EmbedConsentFallback` (see "Embedded content" below). |
 | `src/components/Footer.tsx` / `src/components/spurs-women/SpursFooter.tsx` | Render a "Cookie preferences" icon control that reopens the banner. |
 | `src/components/CookieIcon.tsx` | The icon used by that control. |
 
@@ -45,25 +53,39 @@ and Spurs Women, not re-asked when navigating between them.
 
 ```ts
 {
-  consent: 'accepted' | 'rejected' | null;  // null = no choice made yet
+  choices: ConsentChoices | null;  // null = no choice made yet
+  hasConsent: (category: ConsentCategory) => boolean;  // false while choices is null
   isConsentKnown: boolean;  // false until the stored choice has been read client-side
   isBannerOpen: boolean;
-  accept: () => void;
-  reject: () => void;
+  shouldFocusBanner: boolean;  // true only when openPreferences() opened it
+  acceptAll: () => void;
+  rejectAll: () => void;
+  saveChoices: (choices: ConsentChoices) => void;
   openPreferences: () => void;  // reopens the banner
 }
 ```
 
-Stored in `localStorage` under `cookie-consent` as `{ status, version }`, not
-a bare string:
+Gated components only ever call `hasConsent('<category>')` for their own
+category - nothing checks "has the visitor accepted everything", so a
+tracker can't accidentally load on another category's consent.
+
+Stored in `localStorage` under `cookie-consent` as `{ choices, version }`:
 
 ```json
-{ "status": "accepted", "version": 2 }
+{
+  "choices": { "sessionRecording": false, "analytics": true, "spamProtection": true, "embeds": false },
+  "version": 4
+}
 ```
 
+A stored value is only used if every category in `CONSENT_CATEGORIES` is
+present as a boolean; anything else counts as no stored consent. So adding
+a new category is itself a shape change that re-prompts everyone, even
+without remembering to bump the version (though do bump it).
+
 **Versioning**: `CONSENT_VERSION` in `CookieConsentProvider.tsx` must be
-bumped whenever what "accept" actually covers changes (e.g. a new tracker is
-added, or WEB-104 below splits this into per-tracker toggles). A stored value
+bumped whenever what a category actually covers changes (e.g. a new tracker
+is added to one) or the stored shape changes. A stored value
 whose `version` doesn't match the current `CONSENT_VERSION` - including the
 pre-versioning bare `"accepted"`/`"rejected"` string format this replaced, and
 any malformed JSON - is treated as no consent at all, and the banner reopens.
@@ -71,29 +93,89 @@ This is deliberate: a visitor who already chose under an old meaning of
 "accept" gets re-prompted rather than silently having their stale choice
 carried forward to cover something new they never agreed to. `CONSENT_VERSION`
 was bumped from 1 to 2 in WEB-64 when Vercel Speed Insights was added to the
-gate - a worked example of this rule, not just a hypothetical - and from 2
-to 3 in WEB-147 when Instagram embeds were added.
+gate - a worked example of this rule, not just a hypothetical - from 2
+to 3 in WEB-147 when Instagram embeds were added, and from 3 to 4 in
+WEB-104 when the single `{ status: 'accepted' | 'rejected' }` choice became
+per-category `choices`. An old "accepted" isn't migrated to all-true: the
+visitor agreed to one bundle, not to each category separately, so they're
+asked again.
 
-`accept()`/`reject()` persist the choice and close the banner.
-`openPreferences()` (wired to the footer's "Cookie preferences" control)
-reopens it without clearing the stored choice, so the current Accept/Reject
-state is still whatever was last chosen until the visitor picks again.
+`acceptAll()`/`rejectAll()`/`saveChoices()` persist the choice and close the
+banner. `openPreferences()` (wired to the footer's "Cookie preferences"
+control) reopens it without clearing the stored choice, so the current
+choices stay in effect until the visitor saves new ones.
 
-Multiple open tabs are kept in sync via a `storage` event listener - accepting
-in one tab closes the banner in another already-open tab too.
+Multiple open tabs are kept in sync via a `storage` event listener. A
+choice made in one tab applies its new choices in every other open tab
+(including the FullStory stop/restart below), and closes a *first-visit*
+banner there. A banner the visitor deliberately reopened in another tab
+stays open, so their unsaved ticks aren't thrown away mid-edit.
+
+## The banner
+
+- **First visit** (no stored choice): a short summary plus **Reject all**,
+  **Manage choices** and **Accept all**. Manage choices reveals one checkbox
+  per category, each with a one-line description, all unticked, and swaps
+  that button for **Save choices**.
+- **Reopened via "Cookie preferences"** (a choice already exists): opens
+  straight on the checkboxes, pre-filled with the current choices, since
+  someone reopening it has come to change something.
+- **Reject all** and **Accept all** stay the same size and visible in both
+  views, so declining is never more work than accepting (ICO guidance).
+- The banner's content is only mounted while it's open, so unsaved checkbox
+  edits and the summary/detail view reset each time it's reopened.
+- The summary view sits on one row from `sm` up (text beside the buttons),
+  like the original single-choice banner, so a first-visit banner stays
+  short: 93px at 1280x720, the same as before WEB-104. Only the detail view
+  stacks. Reject all / Accept all are `w-28`; the middle button (Manage /
+  Save choices) is `w-36`, the narrowest that fits "Manage choices" on one
+  line. At phone width they wrap onto two rows.
+- The banner is capped at `max-h-[85vh]` with `overflow-y-auto`, so the
+  expanded list stays scrollable on short phone screens instead of pushing
+  the buttons off-screen.
+
+### Not hiding page content
+
+The banner is fixed over the bottom of the viewport, so on its own it would
+cover the last ~100px of every page until the visitor answered it. At
+1280x720 that included half of the home page's "Contact Me" button, a
+pre-existing problem that WEB-104's first, taller banner made bad enough to
+fail Playwright (`home.spec.ts`, `spurs-women/matches.spec.ts`).
+
+While it's open, `CookieConsentBanner` publishes its own height as
+`--cookie-banner-height` on `<html>`, using a `ResizeObserver` so the value
+follows the detail view and window resizes. It removes the variable when
+the banner closes. `--spacing-footer-clearance` (globals.css `@theme`) is
+`calc(6rem + var(--cookie-banner-height, 0px))`. That's the one token both
+site sections already use for fixed-footer clearance (`.content-with-footer`
+on the main site, `pb-footer-clearance` on every Spurs Women `<main>`), so
+every page gets enough extra bottom padding to scroll its last content up
+from behind the banner, with no per-page changes.
+
+The Playwright suite deliberately runs as a first-time visitor (no stored
+consent), with the banner open, so it keeps checking that the site works for
+someone who hasn't answered the banner yet. Pre-seeding a consent choice was
+considered and rejected: it would have hidden exactly this kind of
+regression.
 
 ### Withdrawing consent
 
-`reject()` (including via the reopened banner, after a prior `accept()`) also
-calls `window.FS.consent(false)` and `window.FS.shutdown()` as a best-effort
-stop, since FullStory may already be recording by that point. This can't undo
+Whenever a choice with `sessionRecording: false` is applied - `rejectAll()`,
+`saveChoices()` with it unticked, or the same arriving from another tab - the
+provider also calls `window.FS.consent(false)` and `window.FS.shutdown()` (if
+FullStory is loaded) as a best-effort stop, since it may already be recording
+by that point. If session recording is then turned back on in the same page
+session, the provider calls `window.FS.consent(true)` and
+`window.FS.restart()`. It has to: `FullStoryLoader`'s `<Script>` won't re-run
+an already-loaded `src`, so re-rendering it alone wouldn't resume recording.
+A ref tracks whether the provider stopped FullStory, so `restart()` is only
+called after its own `shutdown()`. This can't undo
 anything already captured before the call - there's no way to un-capture data
 already sent - but it does stop further capture within the current session
 without needing a page reload. Vercel Analytics, Vercel Speed Insights, and
 reCAPTCHA don't have an equivalent runtime "stop" API;
 `ConsentGatedVercelScripts`/the reCAPTCHA effect simply won't inject any of
-these scripts on a future render once `consent` flips back away from
-`'accepted'`.
+these scripts on a future render once their category is turned off.
 
 ## Per-section theming
 
@@ -115,11 +197,15 @@ container styling and the `Button` `variant` prop accordingly:
   (with its `padding-top: 80px` reset to `pt-4` for this bottom-fixed
   context) rather than duplicating spurs-theme.css's navy gradient.
 
-Both Reject and Accept are pinned to an explicit `w-28 min-w-28` because
+Every banner button is pinned to an explicit `w-36 min-w-36` because
 `main-theme.css`'s `.button.secondary` carries an explicit `min-width: 150px`
 that `.button.primary` doesn't - without the override they'd render at
 different widths on the main site (the spurs variant doesn't have this
-problem since both buttons already share one CSS class there). No
+problem since all its buttons already share one CSS class there). Reject
+all, Manage choices and Save choices use `secondary`; Accept all uses
+`primary`. The checkboxes are native inputs tinted with `accent-color`:
+`--brand-primary-light` (`--dark-accent` in dark mode) on the main site,
+`--accent-spurs` on Spurs Women. No
 `!important`/Tailwind `!` prefix is needed anywhere in this component:
 `main-theme.css`/`spurs-theme.css` are imported `layer(base)` in
 `globals.css`, and Tailwind's own utilities layer already comes after `base`,
@@ -128,36 +214,79 @@ so plain utility classes win without a specificity fight.
 ## reCAPTCHA
 
 The contact form's Google reCAPTCHA loading effect (`src/app/contact-me/page.tsx`)
-checks `consent === 'accepted'` the same way `FullStoryLoader`/
-`ConsentGatedVercelScripts` do, and simply doesn't inject the reCAPTCHA `<script>`
-otherwise. Unlike the other trackers, this one has a visible fallback:
-if the visitor hasn't accepted, the form renders a message asking them to
-accept cookies (or use "Cookie preferences") to enable spam protection,
+checks `hasConsent('spamProtection')` and simply doesn't inject the
+reCAPTCHA `<script>` otherwise. Unlike the other trackers, this one has a
+visible fallback: if the visitor hasn't allowed it, the form renders a
+message asking them to allow "Spam protection" cookies (via the banner or
+"Cookie preferences") to enable spam protection,
 rather than silently rendering a broken widget. The form itself still
 submits without it - rejecting cookies doesn't block using the contact form,
 just the spam-protection widget.
 
-## Instagram embeds
+## Embedded content
+
+Third-party embeds that set cookies for a logged-out visitor wait for the
+`embeds` category. Until it's allowed, each one renders `EmbedConsentFallback`
+instead of rendering nothing: a plain link to the content on the service
+(opens in a new tab), a note naming the service that sets the cookies, and a
+"Cookie preferences" button that reopens the banner. The button doesn't opt
+the visitor in by itself, so every consent choice still goes through the
+banner. `theme="spurs"` switches the link and button to Spurs Women styling.
+
+### YouTube and Spotify (`ConsentGatedEmbed`)
+
+The Lightning Rollout YouTube videos (`LightningRolloutPart1.tsx`,
+`LightningRolloutPart2.tsx`) use `<YouTubeEmbed videoId />`
+(`src/components/YouTubeEmbed.tsx`). It wraps the iframe in
+`ConsentGatedEmbed` and builds both the embed URL and the fallback's watch
+link from the one ID, so the two can't drift apart. The London 2012
+Spotify track (`src/app/london-2012/my-first-audition/page.tsx`) wraps its
+iframe in `<ConsentGatedEmbed service href linkLabel>` directly. The iframe isn't rendered at
+all until `embeds` is allowed, so nothing is requested from YouTube or
+Spotify before then. Like `InstagramPost`, it renders nothing while
+`isConsentKnown` is false.
+
+To gate a new iframe embed, wrap it the same way. `ConsentGatedEmbed` is a
+client component, but it can be used from a server component page (London
+2012's is one).
+
+### Instagram
 
 `InstagramPost.tsx` (Spurs Women match media - see "Social post embeds" in
 `spurs-women/README.md`) only injects Meta's `embed.js` once
-`consent === 'accepted'`, because Meta's embed sets `instagram.com`/
-`facebook.com` cookies even for logged-out viewers. Like reCAPTCHA, it has a
-visible fallback rather than rendering nothing: a plain link to the post,
-plus a note that it only shows once cookies are accepted. It renders nothing
-at all while `isConsentKnown` is still false (`consent` is `null` both before
+`hasConsent('embeds')`, because Meta's embed sets `instagram.com`/
+`facebook.com` cookies even for logged-out viewers. It can't just use
+`ConsentGatedEmbed`, because it builds its embed imperatively in an effect,
+but it renders the same `EmbedConsentFallback` (`theme="spurs"`). It renders nothing
+at all while `isConsentKnown` is still false (`choices` is `null` both before
 the stored choice is read and when no choice exists), so a returning visitor
 who already accepted isn't briefly told to accept cookies. The fallback and
 embed elements are keyed apart so withdrawing consent replaces the element
 outright - otherwise React would reuse the container `div` and leave the
-iframe Meta's script injected into it alive. The banner's copy
-mentions embedded Instagram posts so "Accept" actually describes this.
+iframe Meta's script injected into it alive.
 
-The site's other third-party embeds - Bluesky posts, YouTube videos, the
-London 2012 Spotify embed, OpenStreetMap - load ungated. That's an existing
-convention rather than a reviewed decision; gating Instagram was a deliberate
-choice for WEB-147 given it's Meta, and whether the others should follow is
-tracked separately in WEB-226 rather than changed as a side effect.
+### What was checked, and what stays ungated
+
+Checked on 2026-11-10 (WEB-226's audit, done as part of WEB-104): each
+embed loaded in a fresh, logged-out Playwright Chromium profile with
+cookies cleared, scrolled into view, without pressing play.
+
+| Embed | Cookies set on load | Decision |
+|---|---|---|
+| YouTube (`www.youtube.com/embed`) | `VISITOR_INFO1_LIVE`, `VISITOR_PRIVACY_METADATA`, `__Secure-YNID`, `__Secure-ROLLOUT_TOKEN` (180 days), `YSC` | Gated |
+| Spotify (`open.spotify.com/embed`) | `sp_t` (365 days), `sp_landing` | Gated |
+| Bluesky (`embed.bsky.app`) | None, and no iframe storage | Ungated |
+| OpenStreetMap (`openstreetmap.org/export/embed.html`) | None, and no iframe storage | Ungated |
+| YouTube thumbnails (`img.youtube.com`, Spurs Women home video grid) | None | Ungated |
+
+Spurs Women match videos (`video-external` media) are plain links, not
+embeds, so there's nothing to gate.
+
+If Bluesky or OpenStreetMap start setting cookies, or a new embed is added,
+re-run the same check and gate it under `embeds` rather than adding a new
+category. Switching YouTube to `youtube-nocookie.com` was considered. It's
+documented as setting no cookies until playback, but it hasn't been checked
+here, and gating covers it either way.
 
 ## Reopening the banner ("Cookie preferences")
 
@@ -188,47 +317,74 @@ that variant gets a real transparent background, not just this button.
 - The banner is rendered *before* `{children}` in `layout.tsx`, not after -
   its `fixed` positioning keeps it visually pinned to the bottom of the
   viewport regardless of DOM order, but DOM order still determines tab
-  order. Keyboard users reach Reject/Accept as the very first two focusable
-  elements on the page, instead of only after tabbing through the entire
+  order. Keyboard users reach the banner's buttons (and checkboxes) as the
+  very first focusable elements on the page, instead of only after tabbing through the entire
   page (nav, content, footer).
-- `role="region" aria-label="Cookie consent" aria-live="polite" aria-atomic="true"`
-  announces the banner to screen reader users when it appears, without
-  forcibly moving focus into it - it isn't a modal dialog, the rest of the
-  page stays usable while it's open, and grabbing focus is normally reserved
-  for actual modals.
+- The banner is a `role="region" aria-label="Cookie consent"`, and only its
+  summary sentence is `aria-live="polite"`. That announces the banner when it
+  appears, without forcibly moving focus into it on a first visit: it isn't
+  a modal dialog, and the rest of the page stays usable while it's open.
+  Before WEB-104 the whole region was the live region (with
+  `aria-atomic="true"`). With a checkbox list inside, that would have read
+  every category description out the moment Manage choices was pressed.
+- When the visitor opens the banner on purpose, through either a footer
+  "Cookie preferences" control or the button under a blocked embed,
+  `openPreferences()` sets `shouldFocusBanner` and the banner focuses its
+  region (`tabIndex={-1}`). Without that, a keyboard user pressing the
+  button mid-article would get no feedback, and the controls could be a
+  long way off in tab order. The next Tab reaches the first checkbox.
+- The checkboxes sit in a `<fieldset>` with a visually hidden `<legend>`;
+  each has a real `<label>` (the category name) and its description wired up
+  via `aria-describedby`. When Manage choices is swapped for Save choices,
+  React reuses the same `<button>` element, so keyboard focus stays in place
+  instead of falling back to the top of the page.
 
 ## Testing
 
 - `src/components/__tests__/CookieConsentProvider.test.tsx` - storage
-  read/write, versioning/migration behavior (stale version, pre-versioning
-  bare string, malformed JSON all treated as no consent), multi-tab sync,
-  `reject()`'s FullStory shutdown call.
+  read/write for accept all / reject all / mixed choices,
+  versioning/migration behavior (every older version including v3's single
+  status, missing or non-boolean categories, pre-versioning bare string,
+  malformed JSON all treated as no consent), multi-tab sync (first-visit
+  banner closes, a reopened one stays open), the FullStory shutdown whenever
+  session recording ends up off and restart when it's turned back on, and
+  `shouldFocusBanner` only being set by `openPreferences()`.
+- `tests/cookie-consent.spec.ts` (Playwright) - first visit shows the
+  banner and Reject all persists across reload; Manage choices → Save
+  choices → reopened from the footer with focus moved and the choices
+  pre-filled; axe checks on both views; a YouTube embed staying behind its
+  fallback until Embedded content is allowed.
 - `src/components/__tests__/CookieConsentBanner.test.tsx` - open/closed
-  rendering, per-section (`usePathname`) theming.
+  rendering, summary vs. detail view, Save choices passing exactly the
+  ticked categories, pre-filled choices on reopen, focus only when asked
+  for, the checkbox list staying outside the live region,
+  `--cookie-banner-height` set while open and removed on close, per-section
+  (`usePathname`) theming.
 - `src/components/__tests__/FullStoryLoader.test.tsx` /
-  `ConsentGatedVercelScripts.test.tsx` - gating behavior per consent value.
+  `ConsentGatedVercelScripts.test.tsx` - each loads only for its own
+  category (including staying off when every *other* category is allowed).
+  The contact page and Instagram tests below follow the same pattern.
 - `src/app/contact-me/__tests__/page.test.tsx` /
   `page.localhost.test.tsx` - reCAPTCHA gating and the localhost skip path
   (jsdom's `window.location` isn't reassignable at runtime in this jsdom
   version, so the non-localhost case is covered via a
   `@jest-environment-options` URL docblock instead, matching
   `src/lib/__tests__/fullstory.non-localhost.test.ts`'s existing pattern).
+- `src/components/__tests__/YouTubeEmbed.test.tsx` - embed URL and fallback
+  link both derived from the video ID.
+- `src/components/__tests__/ConsentGatedEmbed.test.tsx` - the iframe gate
+  (nothing until consent is known, fallback until `embeds` is allowed, even
+  when everything else is) and the fallback's link, button and theming.
 - `src/components/spurs-women/__tests__/InstagramPost.test.tsx` - the
   Instagram embed's gating and fallback link.
+- `src/components/__tests__/LightningRolloutPart1.test.tsx` / `Part2` -
+  render inside a real `CookieConsentProvider`, since their videos are
+  gated.
 - `src/components/__tests__/Footer.test.tsx` /
   `src/components/spurs-women/__tests__/SpursFooter.test.tsx` - the
   "Cookie preferences" control reopens the banner.
 
 ## Known follow-ups
 
-- **WEB-103** (privacy policy page) will need to describe what's gated here
-  in plain language - not yet written, tracked separately.
-- **WEB-104** (granular consent): FullStory (high-risk session recording),
-  Vercel Analytics and Vercel Speed Insights (low-risk, largely cookieless),
-  and reCAPTCHA (third-party Google cookie) currently share a single
-  Accept/Reject choice. An
-  independent GDPR/cookie-consent review of WEB-102 flagged this as worth
-  splitting into per-tracker toggles eventually, but not urgent enough to
-  block WEB-102 shipping for this site's risk profile. Implementing it will
-  require a `CONSENT_VERSION` bump (see "Versioning" above), since the
-  stored `{ status, version }` shape doesn't yet support per-tracker choices.
+- **WEB-103** (privacy policy page) will need to describe what's gated here,
+  per category, in plain language - not yet written, tracked separately.
