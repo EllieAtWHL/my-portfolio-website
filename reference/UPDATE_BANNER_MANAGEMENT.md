@@ -159,7 +159,7 @@ File: `/src/components/UpdateBanner.tsx`
 - **Theme-aware**: Works with light/dark mode
 - **Responsive**: Adapts to all screen sizes
 - **Accessible**: Proper ARIA labels and semantic HTML
-- **Session-based**: Stays dismissed during current session
+- **Not persisted**: Dismissal is local component state only (`useState`), not sessionStorage/localStorage - it resets on every page navigation/reload, since `London2012Sidebar` is rendered per-page (`src/app/london-2012/*/page.tsx`) rather than in a shared layout, so the component remounts between pages
 
 ### Dependencies
 - React hooks: `useState`
