@@ -159,7 +159,7 @@ Fetches upcoming Tottenham Hotspur Women matches. Despite the `/cache/` path seg
       "attendance": null,
       "notes": null,
       "competitions": { "name": "Women's Super League", "icon_svg": null },
-      "season_id": 12,
+      "season_id": "b2b1c1b2-0000-4a1a-9c1a-000000000012",
       "home_possession": null,
       "away_possession": null,
       "home_total_shots": null,
@@ -206,12 +206,12 @@ Fetches all seasons with match counts.
 {
   "seasons": [
     {
-      "id": 1,
+      "id": "a1a1a1a1-0000-4a1a-9c1a-000000000001",
       "name": "2018-19",
       "match_count": 20
     },
     {
-      "id": 2,
+      "id": "a1a1a1a1-0000-4a1a-9c1a-000000000002",
       "name": "2019-20",
       "match_count": 22
     }
@@ -224,7 +224,7 @@ Fetches all seasons with match counts.
 - **Cache**: 24 hours (server-side, tag-based revalidation)
 - **Data**: All seasons with a count of matches recorded for each
 - **Sorting**: Oldest season first, ascending by `start_date` (`getSeasonsWithMatchCounts` in `src/lib/data/seasons.ts` orders ascending — this is not reversed anywhere before the response is returned)
-- **Note**: There is no "is this the active season" flag in the response — infer the current season by the most recent `id`/start date
+- **Note**: There is no "is this the active season" flag in the response — infer the current season from `start_date`/the array's ordering (ascending by `start_date`, so the last entry is the current season). `id` is a random UUID (`seasons.id`, generated via `uuid_generate_v4()`), not a sequential value, so it carries no ordering information
 
 ---
 
