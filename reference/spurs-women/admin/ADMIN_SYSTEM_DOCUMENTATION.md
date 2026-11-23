@@ -86,7 +86,7 @@ constraint, and index, not just the ones the admin UI touches - see
 - **Table**: `matches`
 - **Fields**:
   - `id` (string, UUID)
-  - `season_id` (number)
+  - `season_id` (string, UUID)
   - `competition_id` (string, UUID)
   - `date` (string, date)
   - `kickoff_time` (string, time)
@@ -98,7 +98,7 @@ constraint, and index, not just the ones the admin UI touches - see
   - `spurs_score_pens` (number, nullable)
   - `opponent_score_pens` (number, nullable)
   - `stadium_id` (string, UUID)
-  - `stadium_display_name` (string, nullable)
+  - `stadium_display_name` (string, nullable) - **not** a raw column on `matches`; it's read-only, computed by the `matches_with_stadium` view as `COALESCE(stadium_names.name, stadia.name)`. The admin UI reads it (e.g. `useMatchesAdmin`'s search/stadium-matching) but never writes it directly - the stadium name is changed by updating `stadium_id` or the `stadium_names` history, not this field
   - `attended` (boolean)
   - `attendance` (number, nullable)
   - `notes` (string, nullable)
@@ -496,7 +496,7 @@ Required environment variables:
 
 1. **Stadium Table Name**: The stadium table is named `stadia` (plural) in the database. The code queries `stadia` consistently (`src/lib/data/stadiums.ts`, `src/lib/data/query-builders.ts`, `src/app/api/admin/stadia/route.ts`) - there's no fallback to `stadiums`/`stadium` table names.
 
-2. **ID Types**: Most entities use UUID strings for IDs, but teams and seasons use integer IDs (players use UUID strings, like most other entities).
+2. **ID Types**: Most entities use UUID strings for IDs (players, matches, media, stadia, stadium_names, player_history, player_stats, seasons, and competitions). `teams` is the exception, using integer IDs (`matches.home_team_id`/`away_team_id`, `player_history.team_id`/`on_loan_from_team_id`, `player_stats.team_id`, and `stadia.home_team_id` all reference it).
 
 3. **Player Stats Upsert**: Player stats use `upsert` with conflict resolution on `player_id, match_id` to allow updating existing stats.
 
