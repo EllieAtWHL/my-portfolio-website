@@ -146,9 +146,10 @@ FS.restart();
 ```
 
 - Never expose sensitive personal data in recordings; regularly audit recorded data and limit FullStory dashboard access to authorized people.
-- If using a CSP, allow the FullStory hosts:
+- This site's CSP (`next.config.ts`) allows the FullStory hosts actually used - the init script only ever loads `edge.fullstory.com` (per `_fs_script` above), and FS's own XHR/fetch traffic needs the broader wildcard:
   ```
-  script-src 'self' https://edge.fullstory.com https://www.fullstory.com;
+  script-src 'self' https://edge.fullstory.com;
+  connect-src 'self' https://*.fullstory.com;
   ```
 
 ## Troubleshooting
