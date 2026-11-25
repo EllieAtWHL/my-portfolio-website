@@ -12,6 +12,8 @@ All endpoints below are publicly accessible with no authentication and return JS
 
 The site also exposes `/api/cache/revalidate` and `/api/cache/revalidate-all`, which are **not public** — they require a `Bearer` token matching the server's `CACHE_API_KEY` and are used internally to invalidate cached data. They are not documented here.
 
+The same Spurs Women data is also available to AI assistants such as Claude through a public, read-only **MCP server** at `/api/mcp`. It speaks the Model Context Protocol rather than plain REST/JSON, so it's documented separately: see `reference/spurs-women/mcp/README.md` in the repository.
+
 ---
 
 ## Public Endpoints
