@@ -99,7 +99,7 @@ const makeMatch = (overrides: Partial<Match> = {}): Match => ({
   attendance: null,
   notes: null,
   competitions: { name: 'Womens Super League' },
-  season_id: 1,
+  season_id: 'season-1',
   home_possession: null,
   away_possession: null,
   home_total_shots: null,

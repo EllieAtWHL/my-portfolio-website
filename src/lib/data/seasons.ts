@@ -4,7 +4,7 @@ import { getSeasonMatches } from './matches';
 import { fetchAllFromDB, fetchByIdFromDB, fetchWithSingleMatchCountFromDB } from './generic-fetchers';
 
 export interface Season {
-  id: number;
+  id: string;
   name: string;
 }
 
@@ -13,7 +13,7 @@ export interface SeasonWithMatchCount extends Season {
 }
 
 export interface SeasonStatsData {
-  seasonId: number;
+  seasonId: string;
   seasonName: string;
   winPercentage: number;
   goalsPerGame: number;
@@ -27,7 +27,7 @@ export interface SeasonStatsData {
 
 export interface SeasonReview {
   id?: number;
-  season_id: number;
+  season_id: string;
   title: string;
   content: string;
   highlights?: string[];
@@ -72,7 +72,7 @@ async function fetchSeasonReviewFromDB(seasonId: string): Promise<SeasonReview |
     // If season_review exists and is not null/empty, return it
     if (data && data.season_review) {
       return {
-        season_id: parseInt(seasonId),
+        season_id: seasonId,
         title: 'Season Review', // Default title
         content: data.season_review,
         highlights: []

@@ -6,7 +6,7 @@ import { formatDateConsistent } from '@/lib/utils/date';
 
 interface SeasonReview {
   id?: number;
-  season_id: number;
+  season_id: string;
   title: string;
   content: string;
   highlights?: string[];

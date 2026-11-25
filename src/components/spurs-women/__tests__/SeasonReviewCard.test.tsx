@@ -20,7 +20,7 @@ describe('SeasonReviewCard', () => {
     render(
       <SeasonReviewCard
         review={{
-          season_id: 1,
+          season_id: 'season-1',
           title: 'Season Review',
           content: 'A great season overall.',
           highlights: ['Won the cup', 'Unbeaten at home'],
@@ -37,7 +37,7 @@ describe('SeasonReviewCard', () => {
     render(
       <SeasonReviewCard
         review={{
-          season_id: 1,
+          season_id: 'season-1',
           title: 'Season Review',
           content: 'Review body.',
           updated_at: '2026-03-05T00:00:00.000Z',
@@ -52,7 +52,7 @@ describe('SeasonReviewCard', () => {
     render(
       <SeasonReviewCard
         review={{
-          season_id: 1,
+          season_id: 'season-1',
           title: 'Season Review',
           content: 'Review body.',
         }}
