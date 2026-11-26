@@ -27,6 +27,7 @@ jest.mock('@/lib/data/stadiums', () => ({
   getAllStadiums: jest.fn(),
   getMatchesAtStadium: jest.fn(),
   getStadiumBySlug: jest.fn(),
+  getAllStadiumNames: jest.fn(),
 }));
 jest.mock('@/lib/data/media', () => ({ getMediaByMatch: jest.fn() }));
 jest.mock('@/lib/data/news', () => ({ getSpursWomenNews: jest.fn() }));
@@ -242,6 +243,7 @@ describe('season tools', () => {
   });
 
   it('get_season_review returns the review', async () => {
+    (seasons.getSeasonById as jest.Mock).mockResolvedValue({ id: SEASON_ID, name: '2025/2026' });
     (seasons.getSeasonReview as jest.Mock).mockResolvedValue({ season_id: SEASON_ID, title: 'Season Review', content: 'What a season!' });
 
     await expect(tool('get_season_review').run({ season_id: SEASON_ID })).resolves.toEqual({
@@ -249,10 +251,21 @@ describe('season tools', () => {
     });
   });
 
-  it('get_season_stats passes the per-season stats through', async () => {
-    (seasons.getAllSeasonStats as jest.Mock).mockResolvedValue([{ seasonId: SEASON_ID, winPercentage: 50 }]);
+  it('get_season_review says a valid season has no review yet, rather than calling the id invalid', async () => {
+    (seasons.getSeasonById as jest.Mock).mockResolvedValue({ id: SEASON_ID, name: '2026/2027' });
+    (seasons.getSeasonReview as jest.Mock).mockResolvedValue(null);
 
-    await expect(tool('get_season_stats').run({})).resolves.toEqual([{ seasonId: SEASON_ID, winPercentage: 50 }]);
+    await expect(tool('get_season_review').run({ season_id: SEASON_ID })).rejects.toThrow(
+      'No review has been published for the 2026/2027 season yet.'
+    );
+  });
+
+  it('get_season_stats renames the owner-attendance figure so it cannot pass for crowd size', async () => {
+    (seasons.getAllSeasonStats as jest.Mock).mockResolvedValue([{ seasonId: SEASON_ID, winPercentage: 50, attendancePercentage: 85 }]);
+
+    await expect(tool('get_season_stats').run({})).resolves.toEqual([
+      { seasonId: SEASON_ID, winPercentage: 50, percentageOfMatchesSiteOwnerAttended: 85 },
+    ]);
   });
 });
 
@@ -281,6 +294,13 @@ describe('player tools', () => {
     expect(result.total).toBe(1);
   });
 
+  it('search_players matches letters NFD does not decompose, like o-slash', async () => {
+    (players.getAllPlayers as jest.Mock).mockResolvedValue([{ ...squad[0], first_name: 'Bjørn', last_name: 'Ærø' }]);
+
+    expect(((await tool('search_players').run({ query: 'bjorn' })) as ToolOutput).total).toBe(1);
+    expect(((await tool('search_players').run({ query: 'aero' })) as ToolOutput).total).toBe(1);
+  });
+
   it('search_players enforces a minimum query and the page-size cap', async () => {
     await expect(tool('search_players').run({ query: 'a' })).rejects.toThrow();
     await expect(tool('search_players').run({ query: 'ab', limit: MAX_PAGE_SIZE + 1 })).rejects.toThrow();
@@ -304,13 +324,21 @@ describe('player tools', () => {
 
   it('get_player_history pages through appearances', async () => {
     const appearance = { match: buildMatch(), started: true, was_substitute: false, was_unused_substitute: false, minutes_played: 90, goals: 1, assists: 0, yellow_cards: 0, red_cards: 0, player_rating: null, player_of_the_match: false };
+    (players.getPlayerById as jest.Mock).mockResolvedValue(player);
     (players.getPlayerMatchHistory as jest.Mock).mockResolvedValue([appearance, appearance, appearance]);
 
     const result = (await tool('get_player_history').run({ player_id: PLAYER_ID, limit: 2 })) as ToolOutput;
 
     expect(result).toMatchObject({ total: 3, has_more: true });
     expect(result.items).toHaveLength(2);
-    expect(result.items[0]).toMatchObject({ goals: 1, minutes_played: 90, match: { opponent: 'Arsenal', result: 'W' } });
+    expect(result.items[0]).toMatchObject({ goals: 1, minutes_played: 90, match: { opponent: 'Arsenal', result: 'W', attended_by_site_owner: true } });
+  });
+
+  it('get_player_history reports an unknown player rather than "no appearances"', async () => {
+    (players.getPlayerById as jest.Mock).mockResolvedValue(null);
+    (players.getPlayerMatchHistory as jest.Mock).mockResolvedValue([]);
+
+    await expect(tool('get_player_history').run({ player_id: PLAYER_ID })).rejects.toBeInstanceOf(ToolInputError);
   });
 });
 
@@ -339,12 +367,30 @@ describe('team and stadium tools', () => {
     await expect(tool('get_team').run({ team_id: 999 })).rejects.toBeInstanceOf(ToolInputError);
   });
 
+  it('get_team on Tottenham returns an all-time record, not a head-to-head with itself', async () => {
+    (teams.getTeamById as jest.Mock).mockResolvedValue(spurs);
+    (teams.getMatchesForTeam as jest.Mock).mockResolvedValue([buildMatch()]);
+
+    const result = (await tool('get_team').run({ team_id: 1 })) as ToolOutput;
+
+    expect(result.head_to_head).toBeUndefined();
+    expect(result.all_time_record).toMatchObject({ played: 1, won: 1 });
+  });
+
   it('get_matches_v_team pages the matches', async () => {
+    (teams.getTeamById as jest.Mock).mockResolvedValue(arsenal);
     (teams.getMatchesForTeam as jest.Mock).mockResolvedValue([buildMatch(), buildMatch(), buildMatch()]);
 
     const result = (await tool('get_matches_v_team').run({ team_id: 4, limit: 1, offset: 2 })) as ToolOutput;
     expect(result).toMatchObject({ total: 3, offset: 2, has_more: false });
     expect(result.items).toHaveLength(1);
+  });
+
+  it('get_matches_v_team reports an unknown team rather than "never played"', async () => {
+    (teams.getTeamById as jest.Mock).mockResolvedValue(null);
+    (teams.getMatchesForTeam as jest.Mock).mockResolvedValue([]);
+
+    await expect(tool('get_matches_v_team').run({ team_id: 999 })).rejects.toBeInstanceOf(ToolInputError);
   });
 
   const ground = {
@@ -355,9 +401,24 @@ describe('team and stadium tools', () => {
 
   it('search_stadiums matches name or city and leaves out the unjoined home team', async () => {
     (stadiums.getAllStadiums as jest.Mock).mockResolvedValue([{ ...ground, home_team: undefined }]);
+    (stadiums.getAllStadiumNames as jest.Mock).mockResolvedValue({});
 
     const result = (await tool('search_stadiums').run({ query: 'london' })) as ToolOutput;
-    expect(result.items).toEqual([{ slug: 'brisbane-road', name: 'Brisbane Road', city: 'London', country: 'England', capacity: 9271 }]);
+    expect(result.items).toEqual([{ slug: 'brisbane-road', name: 'Brisbane Road', city: 'London', country: 'England', capacity: 9271, other_names: [] }]);
+  });
+
+  it('search_stadiums finds a ground by the sponsored name matches report it under', async () => {
+    (stadiums.getAllStadiums as jest.Mock).mockResolvedValue([ground]);
+    (stadiums.getAllStadiumNames as jest.Mock).mockResolvedValue({
+      s1: [
+        { id: 'n1', stadium_id: 's1', name: 'The BetWright Stadium', valid_from: '2024-07-01', valid_to: null },
+        { id: 'n2', stadium_id: 's1', name: 'Brisbane Road', valid_from: null, valid_to: '2024-06-30' },
+      ],
+    });
+
+    const result = (await tool('search_stadiums').run({ query: 'betwright' })) as ToolOutput;
+
+    expect(result.items).toEqual([expect.objectContaining({ slug: 'brisbane-road', other_names: ['The BetWright Stadium'] })]);
   });
 
   it('get_stadium returns the ground and the record there', async () => {
@@ -378,10 +439,18 @@ describe('team and stadium tools', () => {
   });
 
   it('get_matches_at_stadium pages the matches', async () => {
+    (stadiums.getStadiumBySlug as jest.Mock).mockResolvedValue(ground);
     (stadiums.getMatchesAtStadium as jest.Mock).mockResolvedValue([buildMatch(), buildMatch()]);
 
     const result = (await tool('get_matches_at_stadium').run({ slug: 'brisbane-road', limit: 1 })) as ToolOutput;
     expect(result).toMatchObject({ total: 2, has_more: true });
+  });
+
+  it('get_matches_at_stadium reports a mistyped slug rather than "never played there"', async () => {
+    (stadiums.getStadiumBySlug as jest.Mock).mockResolvedValue(null);
+    (stadiums.getMatchesAtStadium as jest.Mock).mockResolvedValue([]);
+
+    await expect(tool('get_matches_at_stadium').run({ slug: 'brisbane-rd' })).rejects.toBeInstanceOf(ToolInputError);
   });
 });
 

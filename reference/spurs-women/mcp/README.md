@@ -45,19 +45,19 @@ The `search_*` and `list_*` tools exist to find the ids and slugs the `get_*` to
 | `list_seasons` | none | Season ids, names, match counts |
 | `get_season` | `season_id` | W/D/L record and every match |
 | `get_season_review` | `season_id` | The written season review |
-| `get_season_stats` | none | League stats per season (win %, goals per game, possession…) |
+| `get_season_stats` | none | League stats per season (win %, goals per game, possession…), plus `percentageOfMatchesSiteOwnerAttended` (the % of matches Ellie went to, not crowd size) |
 | `search_players` | `query`, paging | Matching players with career Tottenham apps/goals/assists |
 | `get_player` | `player_id` | Profile and full club history |
 | `get_player_history` | `player_id`, paging | Match-by-match appearances and stats |
 | `search_teams` | `query`, paging | Matching teams with ids |
-| `get_team` | `team_id` | The team and the all-time head-to-head record |
+| `get_team` | `team_id` | The team and the all-time head-to-head record (for Tottenham itself: `all_time_record` instead) |
 | `get_matches_v_team` | `team_id`, paging | Every match against that team |
-| `search_stadiums` | `query`, paging | Matching grounds (Spurs Women grounds only) with slugs |
+| `search_stadiums` | `query`, paging | Matching grounds (Spurs Women grounds only) with slugs. Also matches sponsored and former names from `stadium_names`, returned as `other_names` |
 | `get_stadium` | `slug` | Ground details and Tottenham's record there |
 | `get_matches_at_stadium` | `slug`, paging | Every match at that ground |
 | `get_news` | `limit` (≤10, default 5) | Latest headlines with links |
 
-Match, player and season ids are UUIDs; team ids are integers; grounds use slugs.
+Match, player and season ids are UUIDs; team ids are integers; grounds use slugs. An unknown id or slug always comes back as a not-found error, never as an empty result, so the model can tell a typo from "never played there". In match results, `attendance` is the crowd size and `attended_by_site_owner` is whether Ellie was there.
 
 To add a tool, add a `defineTool({...})` entry to `readTools`, with a test in `src/lib/mcp/__tests__/read-tools.test.ts` and a row in the table above. Write the `description` for the model: it's how Claude decides when to call the tool.
 

@@ -20,7 +20,7 @@ import { getMatchById, getPreviousMatches, getSeasonMatches, getUpcomingMatches 
 import { getAllPlayers, getPlayerById, getPlayerMatchHistory, getTeamLineupsByMatch } from '@/lib/data/players';
 import { getAllSeasonStats, getSeasonById, getSeasonReview, getSeasonsWithMatchCounts } from '@/lib/data/seasons';
 import { getAllTeams, getMatchesForTeam, getTeamById } from '@/lib/data/teams';
-import { getAllStadiums, getMatchesAtStadium, getStadiumBySlug } from '@/lib/data/stadiums';
+import { getAllStadiumNames, getAllStadiums, getMatchesAtStadium, getStadiumBySlug } from '@/lib/data/stadiums';
 import { getMediaByMatch } from '@/lib/data/media';
 import { getSpursWomenNews } from '@/lib/data/news';
 import type { Match } from '@/lib/data/matches';
@@ -87,10 +87,21 @@ export function paginate<T>(items: T[], { limit, offset }: { limit: number; offs
   };
 }
 
-// Case- and accent-insensitive, so "Bjorn" finds "Bjørn"-style names and
-// "spurs" finds "Spurs".
-function normalise(text: string): string {
-  return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+// Letters NFD doesn't decompose into base + accent - they're distinct letters,
+// not accented ones - so the combining-mark strip below can't reach them.
+// Matters for this squad: Scandinavian names are common.
+const STANDALONE_LETTERS: Record<string, string> = {
+  'ø': 'o', 'æ': 'ae', 'œ': 'oe', 'ł': 'l', 'đ': 'd', 'ð': 'd', 'þ': 'th', 'ß': 'ss',
+};
+
+// Case- and accent-insensitive, so "bjorn" finds "Bjørn", "zoe" finds "Zoë"
+// and "spurs" finds "Spurs".
+export function normalise(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .replace(/[øæœłđðþß]/g, (letter) => STANDALONE_LETTERS[letter]);
 }
 
 function matchesQuery(query: string, ...fields: (string | null | undefined)[]): boolean {
@@ -224,8 +235,11 @@ export const readTools: ReadTool[] = [
       season_id: recordId.describe('Season id, from list_seasons.'),
     }),
     handler: async ({ season_id }) => {
-      const review = await getSeasonReview(season_id);
-      if (!review) notFound('season review', season_id);
+      const [season, review] = await Promise.all([getSeasonById(season_id), getSeasonReview(season_id)]);
+      if (!season) notFound('season', season_id);
+      // A valid season without a review yet isn't a bad id - say so, so the
+      // model doesn't go hunting for a "correct" season id.
+      if (!review) throw new ToolInputError(`No review has been published for the ${season.name} season yet.`);
       return { season_id: review.season_id, title: review.title, content: review.content, highlights: review.highlights ?? [] };
     },
   }),
@@ -233,9 +247,15 @@ export const readTools: ReadTool[] = [
   defineTool({
     name: 'get_season_stats',
     title: 'Season-by-season stats',
-    description: 'League stats for every season side by side: win %, goals scored and conceded per game, average possession, shots and corners.',
+    description: 'League stats for every season side by side: win %, goals scored and conceded per game, average possession, shots and corners. Also the % of matches the site owner attended in person (not crowd figures - those are per match, as attendance).',
     inputSchema: z.object({}),
-    handler: async () => getAllSeasonStats(),
+    // Renamed rather than passed through: the site's attendancePercentage is
+    // the share of matches the site owner went to, which a model would
+    // otherwise read as how full the grounds were.
+    handler: async () => (await getAllSeasonStats()).map(({ attendancePercentage, ...stats }) => ({
+      ...stats,
+      percentageOfMatchesSiteOwnerAttended: attendancePercentage,
+    })),
   }),
 
   defineTool({
@@ -274,7 +294,10 @@ export const readTools: ReadTool[] = [
       ...pagingShape,
     }),
     handler: async ({ player_id, limit, offset }) => {
-      const appearances = await getPlayerMatchHistory(player_id);
+      const [player, appearances] = await Promise.all([getPlayerById(player_id), getPlayerMatchHistory(player_id)]);
+      // Without this an unknown id reads as "no appearances" - indistinguishable
+      // from a real player who hasn't played.
+      if (!player) notFound('player', player_id);
       return paginate(
         appearances.map((appearance) => ({
           match: summariseMatch(appearance.match),
@@ -307,7 +330,7 @@ export const readTools: ReadTool[] = [
   defineTool({
     name: 'get_team',
     title: 'Team and head-to-head',
-    description: "A team and Tottenham's all-time head-to-head record against them (played, won, drawn, lost, goals). For the individual matches use get_matches_v_team.",
+    description: "A team and Tottenham's all-time head-to-head record against them (played, won, drawn, lost, goals). For Tottenham itself, returns Tottenham's overall all-time record instead. For the individual matches use get_matches_v_team.",
     inputSchema: z.object({
       team_id: z.number().int().positive().describe('Team id, from search_teams.'),
     }),
@@ -317,20 +340,26 @@ export const readTools: ReadTool[] = [
         getMatchesForTeam(String(team_id)),
       ]);
       if (!team) notFound('team', team_id);
-      return { ...summariseTeam(team), head_to_head: summariseRecord(matches) };
+      const record = summariseRecord(matches);
+      // Tottenham's "matches involving this team" is every match, so a
+      // head-to-head label would read as Spurs v Spurs.
+      return team.is_tottenham
+        ? { ...summariseTeam(team), all_time_record: record }
+        : { ...summariseTeam(team), head_to_head: record };
     },
   }),
 
   defineTool({
     name: 'get_matches_v_team',
     title: 'Matches against a team',
-    description: 'Every Tottenham match against one team, newest first.',
+    description: 'Every Tottenham match against one team, newest first. (For Tottenham itself, every match.)',
     inputSchema: z.object({
       team_id: z.number().int().positive().describe('Team id, from search_teams.'),
       ...pagingShape,
     }),
     handler: async ({ team_id, limit, offset }) => {
-      const matches = await getMatchesForTeam(String(team_id));
+      const [team, matches] = await Promise.all([getTeamById(String(team_id)), getMatchesForTeam(String(team_id))]);
+      if (!team) notFound('team', team_id);
       return paginate(matches.map(summariseMatch), { limit, offset });
     },
   }),
@@ -338,11 +367,16 @@ export const readTools: ReadTool[] = [
   defineTool({
     name: 'search_stadiums',
     title: 'Search stadiums',
-    description: 'Find grounds Tottenham Hotspur Women have played at, by name or city. Returns slugs needed by get_stadium and get_matches_at_stadium.',
+    description: 'Find grounds Tottenham Hotspur Women have played at, by name (including sponsored and former names) or city. Returns slugs needed by get_stadium and get_matches_at_stadium.',
     inputSchema: z.object({ query: searchQuery, ...pagingShape }),
     handler: async ({ query, limit, offset }) => {
-      const stadiums = (await getAllStadiums()).filter((stadium) => matchesQuery(query, stadium.name, stadium.city));
-      return paginate(stadiums.map(summariseStadium), { limit, offset });
+      // Matches report a ground by the name in use on the day (often a
+      // sponsor's), which can differ from stadia.name, so search those too.
+      const [stadiums, namesByStadium] = await Promise.all([getAllStadiums(), getAllStadiumNames()]);
+      const found = stadiums
+        .map((stadium) => ({ stadium, otherNames: [...new Set((namesByStadium[stadium.id] ?? []).map((n) => n.name))].filter((n) => n !== stadium.name) }))
+        .filter(({ stadium, otherNames }) => matchesQuery(query, stadium.name, stadium.city, ...otherNames));
+      return paginate(found.map(({ stadium, otherNames }) => ({ ...summariseStadium(stadium), other_names: otherNames })), { limit, offset });
     },
   }),
 
@@ -369,7 +403,8 @@ export const readTools: ReadTool[] = [
       ...pagingShape,
     }),
     handler: async ({ slug, limit, offset }) => {
-      const matches = (await getMatchesAtStadium(slug)) as Match[];
+      const [stadium, matches] = await Promise.all([getStadiumBySlug(slug), getMatchesAtStadium(slug) as Promise<Match[]>]);
+      if (!stadium) notFound('stadium', slug);
       return paginate(matches.map(summariseMatch), { limit, offset });
     },
   }),

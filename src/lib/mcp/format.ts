@@ -40,7 +40,9 @@ export function summariseMatch(match: Match) {
     result: getMatchResult(match),
     shootout_winner: getShootoutWinner(match),
     attendance: match.attendance,
-    attended: match.attended,
+    // Whether the site owner was at the match in person - not crowd size
+    // (that is attendance), named so a model can't confuse the two.
+    attended_by_site_owner: match.attended,
     season_id: match.season_id,
   };
 }
