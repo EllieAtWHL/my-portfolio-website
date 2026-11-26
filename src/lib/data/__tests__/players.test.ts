@@ -1,4 +1,4 @@
-import { describe, it, expect, jest } from '@jest/globals';
+import { beforeEach, describe, it, expect, jest } from '@jest/globals';
 import { mockSupabaseFrom } from '@/test-utils/supabase-query-mock';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -692,6 +692,52 @@ describe('players data layer', () => {
         appearances: 0,
         goals: 0,
       });
+    });
+  });
+
+  describe('getSeasonPlayerTotals', () => {
+    // The getAllPlayers test above doMocks ./teams with only
+    // fetchPlayerStatsAggregateForTeam, and doMock outlives resetModules -
+    // these tests need the real aggregatePlayerStats.
+    beforeEach(() => {
+      jest.unmock('@/lib/data/teams');
+    });
+
+    it("sums one season's Tottenham player_stats per player, not counting unused subs as appearances", async () => {
+      jest.resetModules();
+      const mockFrom = mockSupabaseFrom({
+        player_stats: {
+          data: [
+            { id: 's1', player_id: 'player-1', goals: 2, assists: 0, yellow_cards: 1, red_cards: 0, was_unused_substitute: false },
+            { id: 's2', player_id: 'player-1', goals: 1, assists: 1, yellow_cards: 0, red_cards: 0, was_unused_substitute: false },
+            { id: 's3', player_id: 'player-2', goals: null, assists: null, yellow_cards: null, red_cards: null, was_unused_substitute: true },
+          ],
+          error: null,
+        },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getSeasonPlayerTotals } = await import('@/lib/data/players');
+      const result = await getSeasonPlayerTotals('season-1');
+
+      expect(mockFrom).toHaveBeenCalledWith('player_stats');
+      expect(result).toEqual([
+        { player_id: 'player-1', appearances: 2, goals: 3, assists: 1, yellow_cards: 1, red_cards: 0 },
+        { player_id: 'player-2', appearances: 0, goals: 0, assists: 0, yellow_cards: 0, red_cards: 0 },
+      ]);
+    });
+
+    it('throws on a database error rather than reporting an empty season', async () => {
+      jest.resetModules();
+      jest.spyOn(console, 'error').mockImplementation(() => {});
+      const mockFrom = mockSupabaseFrom({
+        player_stats: { data: null, error: { message: 'boom' } },
+      });
+      jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
+
+      const { getSeasonPlayerTotals } = await import('@/lib/data/players');
+
+      await expect(getSeasonPlayerTotals('season-1')).rejects.toThrow();
     });
   });
 });

@@ -17,7 +17,7 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/server';
 import { getMatchById, getPreviousMatches, getSeasonMatches, getUpcomingMatches } from '@/lib/data/matches';
-import { getAllPlayers, getPlayerById, getPlayerMatchHistory, getTeamLineupsByMatch } from '@/lib/data/players';
+import { getAllPlayers, getPlayerById, getPlayerMatchHistory, getSeasonPlayerTotals, getTeamLineupsByMatch } from '@/lib/data/players';
 import { getAllSeasonStats, getSeasonById, getSeasonReview, getSeasonsWithMatchCounts } from '@/lib/data/seasons';
 import { getAllTeams, getMatchesForTeam, getTeamById } from '@/lib/data/teams';
 import { getAllStadiumNames, getAllStadiums, getMatchesAtStadium, getStadiumBySlug } from '@/lib/data/stadiums';
@@ -135,6 +135,37 @@ export function summariseRecord(matches: MatchScoreFields[]) {
     record.goals_against += score.opponent;
   }
   return record;
+}
+
+export const LEADERBOARD_STATS = ['goals', 'assists', 'appearances', 'yellow_cards', 'red_cards'] as const;
+
+// Highest first, players on zero left out, and ties share a rank
+// ("standard competition" ranking: 1, 2, 2, 4) so a cut-off at `limit` never
+// hides that the last place is shared - the whole tie is included instead.
+// Name order breaks ties for a stable listing.
+export function rankLeaderboard(
+  totals: Array<{ player_id: string; appearances: number; value: number }>,
+  playersById: Map<string, { first_name: string | null; last_name: string; position: string | null }>,
+  limit: number
+) {
+  const named = totals
+    .filter((t) => t.value > 0)
+    .map((t) => {
+      const player = playersById.get(t.player_id);
+      return { ...t, name: player ? [player.first_name, player.last_name].filter(Boolean).join(' ') : 'Unknown player', position: player?.position ?? null };
+    })
+    .sort((a, b) => b.value - a.value || a.name.localeCompare(b.name));
+
+  const ranking: Array<{ rank: number; player_id: string; name: string; position: string | null; value: number; appearances: number }> = [];
+  let rank = 0;
+  for (const [index, entry] of named.entries()) {
+    // A tie keeps the previous rank; otherwise rank is the 1-based position.
+    if (index === 0 || entry.value !== named[index - 1].value) rank = index + 1;
+    // Sorted descending, so ranks only grow - once past the limit, so is everyone after.
+    if (rank > limit) break;
+    ranking.push({ rank, player_id: entry.player_id, name: entry.name, position: entry.position, value: entry.value, appearances: entry.appearances });
+  }
+  return ranking;
 }
 
 function notFound(what: string, id: string | number): never {
@@ -261,7 +292,7 @@ export const readTools: ReadTool[] = [
   defineTool({
     name: 'search_players',
     title: 'Search players',
-    description: 'Find players by name. Returns ids (needed by get_player and get_player_history) with career Tottenham appearances, goals and assists.',
+    description: 'Find players by name. Returns ids (needed by get_player and get_player_history) with career Tottenham appearances, goals and assists. To rank players (top scorers etc.) use get_leaderboard instead.',
     inputSchema: z.object({ query: searchQuery, ...pagingShape }),
     handler: async ({ query, limit, offset }) => {
       const players = (await getAllPlayers()).filter((player) =>
@@ -313,6 +344,39 @@ export const readTools: ReadTool[] = [
         })),
         { limit, offset }
       );
+    },
+  }),
+
+  defineTool({
+    name: 'get_leaderboard',
+    title: 'Player leaderboard',
+    description:
+      'Rank Tottenham players by goals, assists, appearances, yellow cards or red cards - all-time (every season on record) or for one season. ' +
+      'Use this for any "top scorer" / "most assists" / "most appearances" question rather than searching players one by one. ' +
+      'Players tied at the cut-off are all included, so a ranking can be longer than limit. Covers only the seasons on record (see list_seasons), not the full club history.',
+    inputSchema: z.object({
+      stat: z.enum(LEADERBOARD_STATS).default('goals').describe('What to rank by.'),
+      season_id: recordId.optional().describe('Limit to one season (id from list_seasons). Omit for all seasons on record.'),
+      limit: z.number().int().min(1).max(MAX_PAGE_SIZE).default(10).describe(`How many places (max ${MAX_PAGE_SIZE}).`),
+    }),
+    handler: async ({ stat, season_id, limit }) => {
+      const players = await getAllPlayers();
+      let scope = 'All seasons on record';
+      let totals: Array<{ player_id: string; appearances: number; value: number }>;
+
+      if (season_id) {
+        const [season, seasonTotals] = await Promise.all([getSeasonById(season_id), getSeasonPlayerTotals(season_id)]);
+        if (!season) notFound('season', season_id);
+        scope = season.name;
+        totals = seasonTotals.map((t) => ({ player_id: t.player_id, appearances: t.appearances, value: t[stat] }));
+      } else {
+        // getAllPlayers already carries career Tottenham totals, so the
+        // all-time board needs no extra query.
+        totals = players.map((p) => ({ player_id: p.id, appearances: p.appearances, value: p[stat] }));
+      }
+
+      const playersById = new Map(players.map((p) => [p.id, p]));
+      return { stat, scope, ranking: rankLeaderboard(totals, playersById, limit) };
     },
   }),
 

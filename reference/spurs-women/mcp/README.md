@@ -55,6 +55,7 @@ The `search_*` and `list_*` tools exist to find the ids and slugs the `get_*` to
 | `search_players` | `query`, paging | Matching players with career Tottenham apps/goals/assists |
 | `get_player` | `player_id` | Profile and full club history |
 | `get_player_history` | `player_id`, paging | Match-by-match appearances and stats |
+| `get_leaderboard` | `stat` (goals, assists, appearances, yellow_cards, red_cards; default goals), optional `season_id`, `limit` (≤50, default 10) | Players ranked by that stat, all-time or for one season. Ties share a rank, ties at the cut-off are all included, and players on zero are left out. Use this, not `search_players`, for "top scorer" questions |
 | `search_teams` | `query`, paging | Matching teams with ids |
 | `get_team` | `team_id` | The team and the all-time head-to-head record (for Tottenham itself: `all_time_record` instead) |
 | `get_matches_v_team` | `team_id`, paging | Every match against that team |

@@ -88,7 +88,6 @@ export async function fetchPlayerStatsAggregateForTeam(teamId: string): Promise<
   // aggregates (see fetchAllPaginated for why/how). Ordered by id (a stable, unique
   // tiebreaker, unlike created_at - a whole match's rows can be upserted in one POST
   // and share a timestamp) so this single read's row order is deterministic.
-  type PlayerStatRow = { player_id: string; goals: number | null; assists: number | null; yellow_cards: number | null; red_cards: number | null; was_unused_substitute: boolean | null };
   const { data: playerStats, error: statsError } = await fetchAllPaginated<PlayerStatRow>((from, to) =>
     supabase
       .from('player_stats')
@@ -102,9 +101,25 @@ export async function fetchPlayerStatsAggregateForTeam(teamId: string): Promise<
     console.error('Error fetching player stats for team:', statsError);
   }
 
+  return aggregatePlayerStats(playerStats);
+}
+
+export interface PlayerStatRow {
+  player_id: string;
+  goals: number | null;
+  assists: number | null;
+  yellow_cards: number | null;
+  red_cards: number | null;
+  was_unused_substitute: boolean | null;
+}
+
+// Sums player_stats rows into per-player totals, keyed by player_id. Shared by
+// the team-wide aggregate above and the per-season one in players.ts (WEB-249),
+// so the "what counts as an appearance" rule lives in one place.
+export function aggregatePlayerStats(rows: PlayerStatRow[]): Map<string, PlayerStatsAggregate> {
   const statsByPlayer = new Map<string, PlayerStatsAggregate>();
 
-  playerStats.forEach((stat) => {
+  rows.forEach((stat) => {
     const playerId = stat.player_id;
     if (!statsByPlayer.has(playerId)) {
       statsByPlayer.set(playerId, { appearances: 0, goals: 0, assists: 0, yellow_cards: 0, red_cards: 0 });

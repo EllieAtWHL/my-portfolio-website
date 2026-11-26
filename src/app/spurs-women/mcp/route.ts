@@ -19,7 +19,9 @@ const mcpHandler = createMcpHandler(registerReadTools, {
   instructions:
     'Data from an unofficial Tottenham Hotspur Women fan site: fixtures, results, line-ups, player stats, ' +
     'seasons, opponents and grounds. Use the search_* and list_seasons tools to find ids before calling ' +
-    'the get_* tools. List tools are paginated - check has_more and pass offset for the next page.',
+    'the get_* tools, and get_leaderboard for rankings (top scorers, most appearances). List tools are ' +
+    'paginated - check has_more and pass offset for the next page. Stats cover only the seasons on record ' +
+    '(list_seasons), not the full club history.',
 });
 
 async function handler(request: Request): Promise<Response> {
