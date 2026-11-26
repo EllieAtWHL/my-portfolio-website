@@ -1,5 +1,5 @@
 // Read-only MCP tools over the Spurs Women data layer (WEB-249). Shared by the
-// public /api/mcp server and (from WEB-250) the private admin one.
+// public /spurs-women/mcp server and (from WEB-250) the private admin one.
 //
 // SECURITY: this module is served publicly. It must only ever read through
 // the cached src/lib/data/ fetchers (anon-key client, RLS applies) - never

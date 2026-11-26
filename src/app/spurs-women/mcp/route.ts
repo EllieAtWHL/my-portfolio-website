@@ -1,6 +1,11 @@
 // Public, read-only Spurs Women MCP server (WEB-249). Anyone can connect, e.g.
-// `claude mcp add --transport http spurs-women https://<domain>/api/mcp`.
+// `claude mcp add --transport http spurs-women https://<domain>/spurs-women/mcp`.
 // See reference/spurs-women/mcp/README.md.
+//
+// Lives under /spurs-women (not /api) because it is Spurs Women-specific and
+// is a URL people paste into their AI client. Route handlers ignore the
+// section layout, and the middleware matcher only covers /spurs-women/admin
+// and /profile, so nothing else under this path applies to it.
 //
 // SECURITY: no auth by design - it only serves data the fan site already shows
 // publicly. Only ever register read tools here; write tools and supabaseAdmin
@@ -22,7 +27,7 @@ async function handler(request: Request): Promise<Response> {
   // than the 30/min on the news/podcast proxies, but still tight: the quotas
   // behind it are free-plan hard caps shared with the whole site. In-memory
   // and per-instance (see src/lib/rate-limit.ts) - a Vercel Firewall rule on
-  // /api/mcp is the real backstop if this is ever abused.
+  // /spurs-women/mcp is the real backstop if this is ever abused.
   const rateLimited = rateLimitResponse(request, {
     routeKey: 'mcp-public',
     limit: 60,

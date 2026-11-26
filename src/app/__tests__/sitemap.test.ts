@@ -49,6 +49,6 @@ describe('robots', () => {
     const result = robots();
     expect(result.sitemap).toBe(`${SITE_URL}/sitemap.xml`);
     const rules = Array.isArray(result.rules) ? result.rules[0] : result.rules;
-    expect(rules.disallow).toEqual(expect.arrayContaining(['/api/', '/spurs-women/admin']));
+    expect(rules.disallow).toEqual(expect.arrayContaining(['/api/', '/spurs-women/admin', '/spurs-women/mcp']));
   });
 });

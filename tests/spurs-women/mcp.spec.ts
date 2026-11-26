@@ -8,7 +8,7 @@ import { test, expect, type APIRequestContext } from '@playwright/test';
 // MCP responds over Streamable HTTP, which may frame a single JSON-RPC
 // response as a server-sent event; accept either framing.
 async function rpc(request: APIRequestContext, method: string, params: Record<string, unknown> = {}) {
-  const response = await request.post('/api/mcp', {
+  const response = await request.post('/spurs-women/mcp', {
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json, text/event-stream',
