@@ -54,15 +54,16 @@ export default function SeasonStats({ matches }: SeasonStatsProps) {
 
   const calculateStats = (): Stats => {
     // Filter matches by competition type
+    // "Scored" uses the same null check as getMatchResult, so every counted
+    // match has a result and Wins + Draws + Losses always equals Total Matches.
     const leagueMatches = matches.filter(match => {
-      const hasScore = match.spurs_score !== null && match.opponent_score !== null;
+      const hasScore = getFinalScore(match) !== null;
       const isWSL = match.competitions?.name?.toLowerCase().includes('super league');
       return hasScore && isWSL;
     });
-    
-    const cupMatches = matches.filter(match => 
-      match.spurs_score !== null && 
-      match.opponent_score !== null &&
+
+    const cupMatches = matches.filter(match =>
+      getFinalScore(match) !== null &&
       match.competitions?.name &&
       !match.competitions.name.toLowerCase().includes('super league') &&
       !match.competitions.name.toLowerCase().includes('friendly')

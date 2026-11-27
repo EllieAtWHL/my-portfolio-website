@@ -146,23 +146,23 @@ async function fetchAllSeasonStatsFromDB(): Promise<SeasonStatsData[]> {
       
       // Filter for league matches (WSL) with scores
       const leagueMatches = matches.filter(match => {
-        const hasScore = match.spurs_score !== null && match.opponent_score !== null;
+        const hasScore = getFinalScore(match) !== null;
         const isWSL = match.competitions?.name?.toLowerCase().includes('super league');
         return hasScore && isWSL;
       });
       
       // Filter for cup matches (competitive but not WSL or friendly)
-      const cupMatches = matches.filter(match => 
-        match.spurs_score !== null && 
-        match.opponent_score !== null &&
+      const cupMatches = matches.filter(match =>
+        getFinalScore(match) !== null &&
         match.competitions?.name &&
         !match.competitions.name.toLowerCase().includes('super league') &&
         !match.competitions.name.toLowerCase().includes('friendly')
       );
       
       const totalMatches = leagueMatches.length;
-      // League matches never go to extra time, but the shared helpers keep this in
-      // step with SeasonStats if that ever changes.
+      // League matches never go to extra time, but scoring uses the same helpers
+      // as SeasonStats. (The league/cup split above is still a copy of
+      // SeasonStats' filters, so a change to either has to be made in both.)
       const wins = leagueMatches.filter(match => getMatchResult(match) === 'W').length;
       const winPercentage = totalMatches > 0 ? (wins / totalMatches) * 100 : 0;
 
