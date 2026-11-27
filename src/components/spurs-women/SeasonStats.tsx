@@ -4,6 +4,15 @@ import { useState } from 'react';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { Match } from '@/lib/data/matches';
+import { getFinalScore, getMatchResult, MatchResult } from '@/lib/utils/match-result';
+
+function countResults(matches: Match[], result: MatchResult) {
+  return matches.filter(match => getMatchResult(match) === result).length;
+}
+
+function sumGoals(matches: Match[], side: 'spurs' | 'opponent') {
+  return matches.reduce((sum, match) => sum + (getFinalScore(match)?.[side] ?? 0), 0);
+}
 
 interface SeasonStatsProps {
   matches: Match[];
@@ -44,23 +53,17 @@ export default function SeasonStats({ matches }: SeasonStatsProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 
   const calculateStats = (): Stats => {
-    console.log('All matches for stats:', matches.map(m => ({ 
-      id: m.id, 
-      competition: m.competitions?.name, 
-      spurs_score: m.spurs_score, 
-      opponent_score: m.opponent_score 
-    })));
-
     // Filter matches by competition type
+    // "Scored" uses the same null check as getMatchResult, so every counted
+    // match has a result and Wins + Draws + Losses always equals Total Matches.
     const leagueMatches = matches.filter(match => {
-      const hasScore = match.spurs_score !== null && match.opponent_score !== null;
+      const hasScore = getFinalScore(match) !== null;
       const isWSL = match.competitions?.name?.toLowerCase().includes('super league');
       return hasScore && isWSL;
     });
-    
-    const cupMatches = matches.filter(match => 
-      match.spurs_score !== null && 
-      match.opponent_score !== null &&
+
+    const cupMatches = matches.filter(match =>
+      getFinalScore(match) !== null &&
       match.competitions?.name &&
       !match.competitions.name.toLowerCase().includes('super league') &&
       !match.competitions.name.toLowerCase().includes('friendly')
@@ -69,26 +72,18 @@ export default function SeasonStats({ matches }: SeasonStatsProps) {
     // For main stats, use only league matches (WSL)
     const completedMatches = leagueMatches;
 
+    // Results and goals use the deciding score (after extra time when played), so a
+    // cup tie won in extra time is a win, not a 90-minute draw - see match-result.ts.
     const totalMatches = completedMatches.length;
-    const wins = completedMatches.filter(match => 
-      match.spurs_score! > match.opponent_score!
-    ).length;
-    const draws = completedMatches.filter(match => 
-      match.spurs_score === match.opponent_score
-    ).length;
-    const losses = completedMatches.filter(match => 
-      match.spurs_score! < match.opponent_score!
-    ).length;
+    const wins = countResults(completedMatches, 'W');
+    const draws = countResults(completedMatches, 'D');
+    const losses = countResults(completedMatches, 'L');
 
-    const goalsScored = completedMatches.reduce((sum, match) => 
-      sum + (match.spurs_score || 0), 0
-    );
-    const goalsConceded = completedMatches.reduce((sum, match) => 
-      sum + (match.opponent_score || 0), 0
-    );
+    const goalsScored = sumGoals(completedMatches, 'spurs');
+    const goalsConceded = sumGoals(completedMatches, 'opponent');
 
-    const cleanSheets = completedMatches.filter(match => 
-      match.opponent_score === 0
+    const cleanSheets = completedMatches.filter(match =>
+      getFinalScore(match)?.opponent === 0
     ).length;
 
     // Attendance includes all competitive matches (league + cup)
@@ -109,21 +104,11 @@ export default function SeasonStats({ matches }: SeasonStatsProps) {
     const goalDifference = goalsScored - goalsConceded;
 
     // Calculate cup stats
-    const cupWins = cupMatches.filter(match => 
-      match.spurs_score! > match.opponent_score!
-    ).length;
-    const cupDraws = cupMatches.filter(match => 
-      match.spurs_score === match.opponent_score
-    ).length;
-    const cupLosses = cupMatches.filter(match => 
-      match.spurs_score! < match.opponent_score!
-    ).length;
-    const cupGoalsScored = cupMatches.reduce((sum, match) => 
-      sum + (match.spurs_score || 0), 0
-    );
-    const cupGoalsConceded = cupMatches.reduce((sum, match) => 
-      sum + (match.opponent_score || 0), 0
-    );
+    const cupWins = countResults(cupMatches, 'W');
+    const cupDraws = countResults(cupMatches, 'D');
+    const cupLosses = countResults(cupMatches, 'L');
+    const cupGoalsScored = sumGoals(cupMatches, 'spurs');
+    const cupGoalsConceded = sumGoals(cupMatches, 'opponent');
 
     // Calculate match stats (league only)
     const matchesWithStats = leagueMatches.filter(match => 

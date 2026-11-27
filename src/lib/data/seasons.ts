@@ -1,6 +1,7 @@
 import { supabase } from '@/utils/supabase';
 import { createCachedFunction, CACHE_TTL, CACHE_TAGS } from './cache-utils';
 import { getSeasonMatches } from './matches';
+import { getFinalScore, getMatchResult } from '@/lib/utils/match-result';
 import { fetchAllFromDB, fetchByIdFromDB, fetchWithSingleMatchCountFromDB } from './generic-fetchers';
 
 export interface Season {
@@ -145,26 +146,28 @@ async function fetchAllSeasonStatsFromDB(): Promise<SeasonStatsData[]> {
       
       // Filter for league matches (WSL) with scores
       const leagueMatches = matches.filter(match => {
-        const hasScore = match.spurs_score !== null && match.opponent_score !== null;
+        const hasScore = getFinalScore(match) !== null;
         const isWSL = match.competitions?.name?.toLowerCase().includes('super league');
         return hasScore && isWSL;
       });
       
       // Filter for cup matches (competitive but not WSL or friendly)
-      const cupMatches = matches.filter(match => 
-        match.spurs_score !== null && 
-        match.opponent_score !== null &&
+      const cupMatches = matches.filter(match =>
+        getFinalScore(match) !== null &&
         match.competitions?.name &&
         !match.competitions.name.toLowerCase().includes('super league') &&
         !match.competitions.name.toLowerCase().includes('friendly')
       );
       
       const totalMatches = leagueMatches.length;
-      const wins = leagueMatches.filter(match => match.spurs_score! > match.opponent_score!).length;
+      // League matches never go to extra time, but scoring uses the same helpers
+      // as SeasonStats. (The league/cup split above is still a copy of
+      // SeasonStats' filters, so a change to either has to be made in both.)
+      const wins = leagueMatches.filter(match => getMatchResult(match) === 'W').length;
       const winPercentage = totalMatches > 0 ? (wins / totalMatches) * 100 : 0;
-      
-      const goalsScored = leagueMatches.reduce((sum, match) => sum + (match.spurs_score || 0), 0);
-      const goalsConceded = leagueMatches.reduce((sum, match) => sum + (match.opponent_score || 0), 0);
+
+      const goalsScored = leagueMatches.reduce((sum, match) => sum + (getFinalScore(match)?.spurs ?? 0), 0);
+      const goalsConceded = leagueMatches.reduce((sum, match) => sum + (getFinalScore(match)?.opponent ?? 0), 0);
       const goalsPerGame = totalMatches > 0 ? goalsScored / totalMatches : 0;
       const goalsConcededPerGame = totalMatches > 0 ? goalsConceded / totalMatches : 0;
       
