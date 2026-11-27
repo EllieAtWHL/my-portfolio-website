@@ -30,7 +30,7 @@ claude mcp add --transport http spurs-women-admin https://www.ellieatwhl.co.uk/s
 
 Use a Vercel preview URL instead of the domain to test a branch, or `http://localhost:3000/spurs-women/mcp/admin` against `npm run dev` (with the token from `.env.local`). In the MCP Inspector, add the same `Authorization` header. claude.ai custom connectors can't send a static header, so the admin endpoint is Claude Code (or another header-capable client) only, until OAuth lands in [WEB-252](https://eleanormatthewman.atlassian.net/browse/WEB-252).
 
-**`MCP_ADMIN_TOKEN`** is a long random secret (generate one with `openssl rand -base64 48`). It's set in Vercel for Production and Preview, and in `.env.local` for local dev. It's never committed. If it's unset or blank in an environment, the endpoint rejects every request there (fail closed).
+**`MCP_ADMIN_TOKEN`** is a long random secret (generate one with `openssl rand -base64 48`). The code only references the env var's *name* and reads the value from the server environment at request time. The value itself lives only in Vercel (Production and Preview, marked Sensitive) and in your gitignored `.env.local`. It's never committed. If it's unset or blank in an environment, the endpoint rejects every request there (fail closed).
 
 **Rotating the token** (do this if it might have leaked, e.g. pasted somewhere it shouldn't be):
 
