@@ -12,6 +12,8 @@ All endpoints below are publicly accessible with no authentication and return JS
 
 The site also exposes `/api/cache/revalidate` and `/api/cache/revalidate-all`, which are **not public** — they require a `Bearer` token matching the server's `CACHE_API_KEY` and are used internally to invalidate cached data. They are not documented here.
 
+The same Spurs Women data is also available to AI assistants such as Claude through a public, read-only **MCP server** at `/spurs-women/mcp` (note: under the site, not under `/api`). It speaks the Model Context Protocol rather than plain REST/JSON, so it's documented separately: see `reference/spurs-women/mcp/README.md` in the repository.
+
 ---
 
 ## Public Endpoints
@@ -125,7 +127,7 @@ Fetches upcoming Tottenham Hotspur Women matches. Despite the `/cache/` path seg
 {
   "matches": [
     {
-      "id": "482",
+      "id": "bf4eb036-2ead-447c-9305-0f8b7aad4e81",
       "date": "2026-08-20T19:00:00.000Z",
       "kickoff_time": "19:00",
       "home_team": {
@@ -153,13 +155,13 @@ Fetches upcoming Tottenham Hotspur Women matches. Despite the `/cache/` path seg
       "attended": false,
       "is_home_match": true,
       "is_neutral_venue": false,
-      "stadium_id": "12",
+      "stadium_id": "5b1e0c2a-7d3f-4e8a-9c61-2f4d8a7b3e10",
       "stadium_display_name": "Brisbane Road",
       "stadium_slug": "brisbane-road",
       "attendance": null,
       "notes": null,
       "competitions": { "name": "Women's Super League", "icon_svg": null },
-      "season_id": "b2b1c1b2-0000-4a1a-9c1a-000000000012",
+      "season_id": "9998b69a-0f8f-4814-ae49-70778faddbe7",
       "home_possession": null,
       "away_possession": null,
       "home_total_shots": null,
@@ -206,12 +208,12 @@ Fetches all seasons with match counts.
 {
   "seasons": [
     {
-      "id": "a1a1a1a1-0000-4a1a-9c1a-000000000001",
+      "id": "ea61bb94-165f-43ae-98fa-b7c84d4a6a58",
       "name": "2018-19",
       "match_count": 20
     },
     {
-      "id": "a1a1a1a1-0000-4a1a-9c1a-000000000002",
+      "id": "1142cb89-0bf6-436a-9916-c4f8cae3eb78",
       "name": "2019-20",
       "match_count": 22
     }
@@ -224,7 +226,7 @@ Fetches all seasons with match counts.
 - **Cache**: 24 hours (server-side, tag-based revalidation)
 - **Data**: All seasons with a count of matches recorded for each
 - **Sorting**: Oldest season first, ascending by `start_date` (`getSeasonsWithMatchCounts` in `src/lib/data/seasons.ts` orders ascending — this is not reversed anywhere before the response is returned)
-- **Note**: There is no "is this the active season" flag in the response — infer the current season from `start_date`/the array's ordering (ascending by `start_date`, so the last entry is the current season). `id` is a random UUID (`seasons.id`, generated via `uuid_generate_v4()`), not a sequential value, so it carries no ordering information
+- **Note**: There is no "is this the active season" flag in the response — infer the current season as the last one in the list (latest start date). Ids are UUIDs, so they carry no ordering
 
 ---
 

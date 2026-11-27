@@ -34,6 +34,11 @@ const customJestConfig = {
     // under Jest - exercised by the Playwright suite instead (see
     // reference/testing/README.md).
     '!src/app/api/**',
+    // Same reasoning for the route handlers that live in the page tree
+    // rather than under /api - currently just the MCP server, whose tool
+    // logic (src/lib/mcp/) is unit tested; the route itself is a thin
+    // rate-limit + mcp-handler wrapper covered by tests/spurs-women/mcp.spec.ts.
+    '!src/app/**/route.ts',
     // Thin 4-line delegate to lib/supabase/middleware.ts#updateSession, which
     // holds the actual routing/auth logic and is unit tested directly.
     '!src/middleware.ts',

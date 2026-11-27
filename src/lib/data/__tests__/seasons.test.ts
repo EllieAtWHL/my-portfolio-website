@@ -99,10 +99,10 @@ describe('seasons data layer', () => {
       jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
 
       const { getSeasonReviewDetails } = await import('@/lib/data/seasons');
-      const result = await getSeasonReviewDetails('3');
+      const result = await getSeasonReviewDetails('ea61bb94-165f-43ae-98fa-b7c84d4a6a58');
 
       expect(result).toEqual({
-        season_id: 3,
+        season_id: 'ea61bb94-165f-43ae-98fa-b7c84d4a6a58',
         title: 'Season Review',
         content: 'What a season!',
         highlights: [],
