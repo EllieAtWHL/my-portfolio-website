@@ -5,7 +5,7 @@ An [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server that l
 | Endpoint | Who | Tools | Status |
 |---|---|---|---|
 | `/spurs-women/mcp` | Anyone, no auth | Read only | Live ([WEB-249](https://eleanormatthewman.atlassian.net/browse/WEB-249)) |
-| `/spurs-women/mcp/admin` | Ellie only, bearer token | Read + write | Planned ([WEB-250](https://eleanormatthewman.atlassian.net/browse/WEB-250), [WEB-251](https://eleanormatthewman.atlassian.net/browse/WEB-251)) |
+| `/spurs-women/mcp/admin` | Ellie only, bearer token | Read only for now; write tools in [WEB-251](https://eleanormatthewman.atlassian.net/browse/WEB-251) | Live ([WEB-250](https://eleanormatthewman.atlassian.net/browse/WEB-250)) |
 
 ## Connecting
 
@@ -19,6 +19,26 @@ claude mcp add --transport http spurs-women https://www.ellieatwhl.co.uk/spurs-w
 
 **Locally:** run `npm run dev` and use `http://localhost:3000/spurs-women/mcp`. To browse and call tools by hand, run `npx @modelcontextprotocol/inspector`, then connect it to that URL with the "Streamable HTTP" transport.
 
+### The admin endpoint
+
+`/spurs-women/mcp/admin` needs the `MCP_ADMIN_TOKEN` value as a bearer token. Connect Claude Code with:
+
+```bash
+claude mcp add --transport http spurs-women-admin https://www.ellieatwhl.co.uk/spurs-women/mcp/admin \
+  --header "Authorization: Bearer <MCP_ADMIN_TOKEN>"
+```
+
+Use a Vercel preview URL instead of the domain to test a branch, or `http://localhost:3000/spurs-women/mcp/admin` against `npm run dev` (with the token from `.env.local`). In the MCP Inspector, add the same `Authorization` header. claude.ai custom connectors can't send a static header, so the admin endpoint is Claude Code (or another header-capable client) only, until OAuth lands in [WEB-252](https://eleanormatthewman.atlassian.net/browse/WEB-252).
+
+**`MCP_ADMIN_TOKEN`** is a long random secret (generate one with `openssl rand -base64 48`). It's set in Vercel for Production and Preview, and in `.env.local` for local dev. It's never committed. If it's unset or blank in an environment, the endpoint rejects every request there (fail closed).
+
+**Rotating the token** (do this if it might have leaked, e.g. pasted somewhere it shouldn't be):
+
+1. Generate a new value: `openssl rand -base64 48`.
+2. Replace `MCP_ADMIN_TOKEN` in Vercel (Project → Settings → Environment Variables) for Production and Preview, and in `.env.local`.
+3. Redeploy production (Deployments → latest production → Redeploy). Env var changes only apply to new deployments, so until then the old token still works.
+4. Re-add the client: `claude mcp remove spurs-women-admin`, then the `claude mcp add` command above with the new token.
+
 ## How it works
 
 - **Hosted inside the Next.js app.** It isn't a separate server. [`src/app/spurs-women/mcp/route.ts`](../../../src/app/spurs-women/mcp/route.ts) uses Vercel's [`mcp-handler`](https://www.npmjs.com/package/mcp-handler) (v2, on the official `@modelcontextprotocol/server` SDK v2). The route deploys with the rest of the site, and each request runs as an ordinary stateless Vercel function call. It serves both the current MCP spec and 2025-era Streamable HTTP clients.
@@ -26,7 +46,7 @@ claude mcp add --transport http spurs-women https://www.ellieatwhl.co.uk/spurs-w
   - Route handlers ignore the section layout.
   - The middleware only matches `/spurs-women/admin` and `/spurs-women/profile`, so nothing else under `/spurs-women` applies to it.
   - `robots.ts` disallows it alongside `/api/`.
-  - The admin server goes at `/spurs-women/mcp/admin`, *not* `/spurs-women/admin/mcp`. The middleware sends any request under `/spurs-women/admin` without a login cookie to the sign-in page, which would block MCP clients: they send a token instead.
+  - The admin server is at `/spurs-women/mcp/admin`, *not* `/spurs-women/admin/mcp`. The middleware sends any request under `/spurs-women/admin` without a login cookie to the sign-in page, which would block MCP clients: they send a token instead. It isn't under `/api/admin` either, for the same reason: that guard is cookie- and Origin-based.
   - The site's other API routes are Spurs Women-specific too, but still under `/api/` for now. Moving them is tracked in [WEB-255](https://eleanormatthewman.atlassian.net/browse/WEB-255).
 - **Why not a standalone stdio server** (a local process Claude Code launches): the data layer relies on Next's `unstable_cache`, which only works inside the Next runtime. A stdio server could only be used on Ellie's machine, and it would have to query Supabase directly, bypassing `src/lib/data/` and its cache.
 - **Tools are plain data.** [`src/lib/mcp/read-tools.ts`](../../../src/lib/mcp/read-tools.ts) defines each tool as a name, description, zod input schema and handler. `registerReadTools(server)` registers them all. Keeping them as data means Jest can test them without loading the ESM-only MCP SDK: the SDK is only a type import there, plus the route.
@@ -72,6 +92,11 @@ To add a tool, add a `defineTool({...})` entry to `readTools`, with a test in `s
 
 - **The public endpoint has no auth by design.** It exposes only what the public fan site already shows. Neither the `/api/admin` nor the `/spurs-women/admin` middleware guard (`src/lib/supabase/middleware.ts`) applies to it.
 - **`read-tools.ts` and `/spurs-women/mcp` must never import `supabaseAdmin` or any write-capable code.** They use the anon-key client through the data layer, so RLS applies. Write tools will live in a separate module that only the admin route imports (WEB-251). A Jest test asserts every registered tool name starts with `get_`, `list_` or `search_`.
+- **The admin endpoint does its own auth.** [`src/app/spurs-women/mcp/admin/route.ts`](../../../src/app/spurs-women/mcp/admin/route.ts) is outside both admin middleware guards, so nothing upstream protects it. Every request goes through `isAuthorizedAdminRequest` ([`src/lib/mcp/admin-auth.ts`](../../../src/lib/mcp/admin-auth.ts)) before reaching the MCP handler:
+  - The token is compared in constant time: both sides are SHA-256 hashed, then compared with `crypto.timingSafeEqual`, so neither the content nor the length leaks through timing.
+  - A missing token, a wrong token and an unset env var all get the same `401 {"error":"Unauthorized"}` with a `WWW-Authenticate: Bearer` header, so a caller can't tell which.
+  - It's rate-limited to 120 requests per minute per IP (`routeKey: 'mcp-admin'`, the same budget as `/api/admin/*`). The limit is checked *before* auth, so token guessing is throttled too.
+  - It currently registers only the read tools, so it uses the anon-key client like the public endpoint. When WEB-251 adds write tools, those will use `supabaseAdmin`, and this bearer check becomes the only thing between the internet and the service role key.
 - **No CSP changes are needed.** MCP calls are server-to-server, not made from a browser page.
 
 ## Protecting the free-plan quotas
@@ -85,6 +110,6 @@ Vercel Hobby and Supabase Free hard-cap usage rather than billing for overages, 
 
 ## Testing
 
-- **Unit:** `npx jest src/lib/mcp src/lib/utils/__tests__/match-result.test.ts` covers every tool handler (with the data layer mocked), validation, pagination, error mapping and the read-only guard.
-- **E2E:** `npx playwright test tests/spurs-women/mcp.spec.ts` covers `initialize`, `tools/list` and a real tool call. It runs in the chromium project only, because it's HTTP-only.
+- **Unit:** `npx jest src/lib/mcp src/lib/utils/__tests__/match-result.test.ts` covers every tool handler (with the data layer mocked), validation, pagination, error mapping, the read-only guard, and the admin bearer check (including fail-closed and the constant-time comparison).
+- **E2E:** `npx playwright test tests/spurs-women/mcp.spec.ts` covers `initialize`, `tools/list` and a real tool call on the public endpoint, and the admin endpoint's 401 for a missing or wrong token. It runs in the chromium project only, because it's HTTP-only.
 - **Manually:** use the MCP Inspector (see Connecting), or `claude mcp add` against a Vercel preview URL and ask real questions.
