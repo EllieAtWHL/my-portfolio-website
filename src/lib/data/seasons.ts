@@ -1,6 +1,7 @@
 import { supabase } from '@/utils/supabase';
 import { createCachedFunction, CACHE_TTL, CACHE_TAGS } from './cache-utils';
 import { getSeasonMatches } from './matches';
+import { getFinalScore, getMatchResult } from '@/lib/utils/match-result';
 import { fetchAllFromDB, fetchByIdFromDB, fetchWithSingleMatchCountFromDB } from './generic-fetchers';
 
 export interface Season {
@@ -160,11 +161,13 @@ async function fetchAllSeasonStatsFromDB(): Promise<SeasonStatsData[]> {
       );
       
       const totalMatches = leagueMatches.length;
-      const wins = leagueMatches.filter(match => match.spurs_score! > match.opponent_score!).length;
+      // League matches never go to extra time, but the shared helpers keep this in
+      // step with SeasonStats if that ever changes.
+      const wins = leagueMatches.filter(match => getMatchResult(match) === 'W').length;
       const winPercentage = totalMatches > 0 ? (wins / totalMatches) * 100 : 0;
-      
-      const goalsScored = leagueMatches.reduce((sum, match) => sum + (match.spurs_score || 0), 0);
-      const goalsConceded = leagueMatches.reduce((sum, match) => sum + (match.opponent_score || 0), 0);
+
+      const goalsScored = leagueMatches.reduce((sum, match) => sum + (getFinalScore(match)?.spurs ?? 0), 0);
+      const goalsConceded = leagueMatches.reduce((sum, match) => sum + (getFinalScore(match)?.opponent ?? 0), 0);
       const goalsPerGame = totalMatches > 0 ? goalsScored / totalMatches : 0;
       const goalsConcededPerGame = totalMatches > 0 ? goalsConceded / totalMatches : 0;
       

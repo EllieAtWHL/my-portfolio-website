@@ -9,6 +9,7 @@ import { AttendedFilter } from './filters/AttendedFilter';
 import { ResultFilter } from './filters/ResultFilter';
 import { DateRangeFilter } from './filters/DateRangeFilter';
 import { Match } from '@/lib/data/matches';
+import { getMatchResult } from '@/lib/utils/match-result';
 
 interface MatchFilterControlsProps {
   matches: Match[];
@@ -60,18 +61,13 @@ export default function MatchFilterControls({
       }
 
       if (showResultFilter && resultFilter !== 'all') {
-        const hasScore = match.spurs_score !== null && match.opponent_score !== null;
-        if (!hasScore) return false;
+        // Extra time decides the result; a shootout leaves it a draw (match-result.ts).
+        const result = getMatchResult(match);
+        if (!result) return false;
 
-        const spursScore = match.spurs_score!;
-        const opponentScore = match.opponent_score!;
-        const isWin = spursScore > opponentScore;
-        const isDraw = spursScore === opponentScore;
-        const isLoss = spursScore < opponentScore;
-
-        if (resultFilter === 'won' && !isWin) return false;
-        if (resultFilter === 'draw' && !isDraw) return false;
-        if (resultFilter === 'lost' && !isLoss) return false;
+        if (resultFilter === 'won' && result !== 'W') return false;
+        if (resultFilter === 'draw' && result !== 'D') return false;
+        if (resultFilter === 'lost' && result !== 'L') return false;
       }
 
       if (showMonthFilter && (dateFromFilter || dateToFilter)) {
