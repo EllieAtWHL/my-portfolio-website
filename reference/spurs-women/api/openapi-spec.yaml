@@ -245,10 +245,10 @@ paths:
                   summary: Example seasons response
                   value:
                     seasons:
-                      - id: 1
+                      - id: "ea61bb94-165f-43ae-98fa-b7c84d4a6a58"
                         name: "2018-19"
                         match_count: 20
-                      - id: 2
+                      - id: "1142cb89-0bf6-436a-9916-c4f8cae3eb78"
                         name: "2019-20"
                         match_count: 22
                     count: 5
@@ -528,7 +528,8 @@ components:
         competitions:
           $ref: '#/components/schemas/Competition'
         season_id:
-          type: integer
+          type: string
+          format: uuid
         home_possession:
           type: number
           nullable: true
@@ -576,9 +577,10 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
+          format: uuid
           description: Season identifier
-          example: 12
+          example: "9998b69a-0f8f-4814-ae49-70778faddbe7"
         name:
           type: string
           description: Season display name

@@ -53,7 +53,7 @@ const baseMatch: Match = {
   attendance: null,
   notes: null,
   competitions: null,
-  season_id: 1,
+  season_id: 'season-1',
   home_possession: null,
   away_possession: null,
   home_total_shots: null,

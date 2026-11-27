@@ -2,7 +2,7 @@ import { supabase } from '@/utils/supabase';
 import { fetchAllPaginated } from '@/lib/utils/paginate';
 import { createCachedFunction, CACHE_TAGS } from './cache-utils';
 import { Match } from './matches';
-import { fetchPlayerStatsAggregateForTeam, type PlayerWithStats as TeamPlayerWithStats } from './teams';
+import { aggregatePlayerStats, fetchPlayerStatsAggregateForTeam, type PlayerStatRow, type PlayerStatsAggregate, type PlayerWithStats as TeamPlayerWithStats } from './teams';
 
 // Tottenham Women's team_id - the single source of truth for this fact in
 // this file (getSquadNumberFromHistory below compares against it directly;
@@ -509,5 +509,49 @@ export const getAllPlayers = createCachedFunction(
     keyParts: ['players', 'all'],
     tags: [CACHE_TAGS.PLAYERS, CACHE_TAGS.TEAMS],
     ttl: 'PLAYER_DATA'
+  }
+);
+
+export interface PlayerTotals extends PlayerStatsAggregate {
+  player_id: string;
+}
+
+// Tottenham per-player totals (appearances, goals, assists, cards), all-time
+// or for one season - backs the MCP get_leaderboard tool (WEB-249). The season
+// filter goes through the player_stats -> matches embed (!inner, so rows from
+// other seasons are dropped server-side rather than fetched and discarded).
+// Returned as an array, not a Map, because unstable_cache JSON-serialises
+// results (and keys on the arguments, so each season caches separately).
+// Paginated, since all-time Tottenham player_stats is past PostgREST's cap.
+// Throws on a DB error - including a failed page part-way through - rather
+// than returning [] or a partial sum, so a failure can't be cached and
+// reported as "nobody scored". getAllPlayers' career totals don't have that
+// guarantee yet (WEB-254), which is why the leaderboard doesn't use them.
+async function fetchPlayerTotalsFromDB(seasonId?: string): Promise<PlayerTotals[]> {
+  const { data, error } = await fetchAllPaginated<PlayerStatRow>((from, to) => {
+    let query = supabase
+      .from('player_stats')
+      .select('id, player_id, goals, assists, yellow_cards, red_cards, was_unused_substitute, match:matches!inner(season_id)')
+      .eq('team_id', TOTTENHAM_TEAM_ID);
+    if (seasonId) {
+      query = query.eq('match.season_id', seasonId);
+    }
+    return query.order('id', { ascending: true }).range(from, to);
+  });
+
+  if (error) {
+    throw new Error(`Failed to fetch player totals: ${error.message}`);
+  }
+
+  return [...aggregatePlayerStats(data)].map(([player_id, totals]) => ({ player_id, ...totals }));
+}
+
+export const getPlayerTotals = createCachedFunction(
+  fetchPlayerTotalsFromDB,
+  {
+    keyParts: ['players', 'totals'],
+    // A player_stats write invalidates PLAYERS + MATCHES (invalidatePlayerStatsCache).
+    tags: [CACHE_TAGS.PLAYERS, CACHE_TAGS.MATCHES],
+    ttl: 'PLAYER_STATS'
   }
 );

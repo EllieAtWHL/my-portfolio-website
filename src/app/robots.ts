@@ -12,6 +12,9 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: [
         '/api/',
+        // The MCP server (WEB-249): an API endpoint, not a page, despite
+        // living in the /spurs-women tree.
+        '/spurs-women/mcp',
         '/spurs-women/admin',
         '/spurs-women/profile',
         '/spurs-women/login',

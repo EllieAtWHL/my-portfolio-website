@@ -40,7 +40,7 @@ export interface Match {
     name: string;
     icon_svg?: string;
   } | null;
-  season_id: number;
+  season_id: string;
   // Match statistics
   home_possession: number | null;
   away_possession: number | null;
