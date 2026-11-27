@@ -17,7 +17,7 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/server';
 import { getMatchById, getPreviousMatches, getSeasonMatches, getUpcomingMatches } from '@/lib/data/matches';
-import { getAllPlayers, getPlayerById, getPlayerMatchHistory, getSeasonPlayerTotals, getTeamLineupsByMatch } from '@/lib/data/players';
+import { getAllPlayers, getPlayerById, getPlayerMatchHistory, getPlayerTotals, getTeamLineupsByMatch } from '@/lib/data/players';
 import { getAllSeasonStats, getSeasonById, getSeasonReview, getSeasonsWithMatchCounts } from '@/lib/data/seasons';
 import { getAllTeams, getMatchesForTeam, getTeamById } from '@/lib/data/teams';
 import { getAllStadiumNames, getAllStadiums, getMatchesAtStadium, getStadiumBySlug } from '@/lib/data/stadiums';
@@ -142,12 +142,14 @@ export const LEADERBOARD_STATS = ['goals', 'assists', 'appearances', 'yellow_car
 // Highest first, players on zero left out, and ties share a rank
 // ("standard competition" ranking: 1, 2, 2, 4) so a cut-off at `limit` never
 // hides that the last place is shared - the whole tie is included instead.
-// Name order breaks ties for a stable listing.
+// Name order breaks ties for a stable listing. A huge tie (e.g. dozens of
+// players on one red card) is still capped at MAX_PAGE_SIZE rows, with the
+// number left off reported rather than silently dropped.
 export function rankLeaderboard(
   totals: Array<{ player_id: string; appearances: number; value: number }>,
   playersById: Map<string, { first_name: string | null; last_name: string; position: string | null }>,
   limit: number
-) {
+): { ranking: Array<{ rank: number; player_id: string; name: string; position: string | null; value: number; appearances: number }>; tied_players_omitted: number } {
   const named = totals
     .filter((t) => t.value > 0)
     .map((t) => {
@@ -157,15 +159,20 @@ export function rankLeaderboard(
     .sort((a, b) => b.value - a.value || a.name.localeCompare(b.name));
 
   const ranking: Array<{ rank: number; player_id: string; name: string; position: string | null; value: number; appearances: number }> = [];
+  let tiedPlayersOmitted = 0;
   let rank = 0;
   for (const [index, entry] of named.entries()) {
     // A tie keeps the previous rank; otherwise rank is the 1-based position.
     if (index === 0 || entry.value !== named[index - 1].value) rank = index + 1;
     // Sorted descending, so ranks only grow - once past the limit, so is everyone after.
     if (rank > limit) break;
+    if (ranking.length >= MAX_PAGE_SIZE) {
+      tiedPlayersOmitted += 1;
+      continue;
+    }
     ranking.push({ rank, player_id: entry.player_id, name: entry.name, position: entry.position, value: entry.value, appearances: entry.appearances });
   }
-  return ranking;
+  return { ranking, tied_players_omitted: tiedPlayersOmitted };
 }
 
 function notFound(what: string, id: string | number): never {
@@ -353,30 +360,45 @@ export const readTools: ReadTool[] = [
     description:
       'Rank Tottenham players by goals, assists, appearances, yellow cards or red cards - all-time (every season on record) or for one season. ' +
       'Use this for any "top scorer" / "most assists" / "most appearances" question rather than searching players one by one. ' +
-      'Players tied at the cut-off are all included, so a ranking can be longer than limit. Covers only the seasons on record (see list_seasons), not the full club history.',
+      'Players tied at the cut-off are all included, so a ranking can be longer than limit (up to 50 rows; tied_players_omitted counts any beyond that). ' +
+      'Covers only the seasons on record (see list_seasons), not the full club history.',
     inputSchema: z.object({
       stat: z.enum(LEADERBOARD_STATS).default('goals').describe('What to rank by.'),
       season_id: recordId.optional().describe('Limit to one season (id from list_seasons). Omit for all seasons on record.'),
       limit: z.number().int().min(1).max(MAX_PAGE_SIZE).default(10).describe(`How many places (max ${MAX_PAGE_SIZE}).`),
     }),
     handler: async ({ stat, season_id, limit }) => {
-      const players = await getAllPlayers();
-      let scope = 'All seasons on record';
-      let totals: Array<{ player_id: string; appearances: number; value: number }>;
+      // Totals come from getPlayerTotals, which throws on a DB error, not from
+      // getAllPlayers' career totals, which can silently come back empty or
+      // partial on one (WEB-254) - a leaderboard is exactly where a quiet
+      // undercount would be reported as fact. getAllPlayers is only the name
+      // lookup.
+      const [players, totals, season] = await Promise.all([
+        getAllPlayers(),
+        getPlayerTotals(season_id),
+        season_id ? getSeasonById(season_id) : Promise.resolve(null),
+      ]);
+      if (season_id && !season) notFound('season', season_id);
 
-      if (season_id) {
-        const [season, seasonTotals] = await Promise.all([getSeasonById(season_id), getSeasonPlayerTotals(season_id)]);
-        if (!season) notFound('season', season_id);
-        scope = season.name;
-        totals = seasonTotals.map((t) => ({ player_id: t.player_id, appearances: t.appearances, value: t[stat] }));
-      } else {
-        // getAllPlayers already carries career Tottenham totals, so the
-        // all-time board needs no extra query.
-        totals = players.map((p) => ({ player_id: p.id, appearances: p.appearances, value: p[stat] }));
+      // Same WEB-254 gap on the name lookup: an empty players list next to
+      // real totals means that fetch failed, so fail loudly rather than return
+      // a table of "Unknown player"s.
+      if (totals.length > 0 && players.length === 0) {
+        throw new Error('Player names unavailable (players fetch returned nothing)');
       }
 
       const playersById = new Map(players.map((p) => [p.id, p]));
-      return { stat, scope, ranking: rankLeaderboard(totals, playersById, limit) };
+      const { ranking, tied_players_omitted } = rankLeaderboard(
+        totals.map((t) => ({ player_id: t.player_id, appearances: t.appearances, value: t[stat] })),
+        playersById,
+        limit
+      );
+      return {
+        stat,
+        scope: season ? season.name : 'All seasons on record',
+        ranking,
+        ...(tied_players_omitted > 0 ? { tied_players_omitted } : {}),
+      };
     },
   }),
 

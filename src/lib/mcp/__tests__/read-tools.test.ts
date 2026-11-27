@@ -10,7 +10,7 @@ jest.mock('@/lib/data/players', () => ({
   getAllPlayers: jest.fn(),
   getPlayerById: jest.fn(),
   getPlayerMatchHistory: jest.fn(),
-  getSeasonPlayerTotals: jest.fn(),
+  getPlayerTotals: jest.fn(),
   getTeamLineupsByMatch: jest.fn(),
 }));
 jest.mock('@/lib/data/seasons', () => ({
@@ -353,17 +353,26 @@ describe('get_leaderboard', () => {
   // Names from the real data set that prompted this tool: a name-fragment
   // sweep of search_players missed Olivia Holdt, who is second all-time.
   const squad = [
-    { ...player, id: 'england', first_name: 'Bethany', last_name: 'England', appearances: 93, goals: 41, assists: 10, yellow_cards: 3, red_cards: 0 },
-    { ...player, id: 'holdt', first_name: 'Olivia', last_name: 'Holdt', appearances: 58, goals: 20, assists: 5, yellow_cards: 1, red_cards: 0 },
-    { ...player, id: 'thomas', first_name: 'Martha', last_name: 'Thomas', appearances: 72, goals: 17, assists: 4, yellow_cards: 2, red_cards: 1 },
-    { ...player, id: 'keeper', first_name: 'Becky', last_name: 'Spencer', appearances: 80, goals: 0, assists: 0, yellow_cards: 0, red_cards: 0 },
+    { ...player, id: 'england', first_name: 'Bethany', last_name: 'England' },
+    { ...player, id: 'holdt', first_name: 'Olivia', last_name: 'Holdt' },
+    { ...player, id: 'thomas', first_name: 'Martha', last_name: 'Thomas' },
+    { ...player, id: 'keeper', first_name: 'Becky', last_name: 'Spencer' },
+  ];
+  const careerTotals = [
+    { player_id: 'england', appearances: 93, goals: 41, assists: 10, yellow_cards: 3, red_cards: 0 },
+    { player_id: 'holdt', appearances: 58, goals: 20, assists: 5, yellow_cards: 1, red_cards: 0 },
+    { player_id: 'thomas', appearances: 72, goals: 17, assists: 4, yellow_cards: 2, red_cards: 1 },
+    { player_id: 'keeper', appearances: 80, goals: 0, assists: 0, yellow_cards: 0, red_cards: 0 },
   ];
 
   it('ranks every player by career goals without searching by name', async () => {
     (players.getAllPlayers as jest.Mock).mockResolvedValue(squad);
+    (players.getPlayerTotals as jest.Mock).mockResolvedValue(careerTotals);
 
     const result = (await tool('get_leaderboard').run({})) as ToolOutput;
 
+    expect(players.getPlayerTotals).toHaveBeenCalledWith(undefined);
+    expect(seasons.getSeasonById).not.toHaveBeenCalled();
     expect(result.stat).toBe('goals');
     expect(result.scope).toBe('All seasons on record');
     expect(result.ranking.map((r: { name: string; rank: number; value: number }) => [r.rank, r.name, r.value])).toEqual([
@@ -373,28 +382,29 @@ describe('get_leaderboard', () => {
     ]);
     // Players on zero are left out rather than padding the table.
     expect(result.ranking.find((r: { name: string }) => r.name === 'Becky Spencer')).toBeUndefined();
-    expect(players.getSeasonPlayerTotals).not.toHaveBeenCalled();
+    expect(result.tied_players_omitted).toBeUndefined();
   });
 
   it('ranks by another stat and respects the limit', async () => {
     (players.getAllPlayers as jest.Mock).mockResolvedValue(squad);
+    (players.getPlayerTotals as jest.Mock).mockResolvedValue(careerTotals);
 
     const result = (await tool('get_leaderboard').run({ stat: 'appearances', limit: 2 })) as ToolOutput;
 
     expect(result.ranking.map((r: { name: string }) => r.name)).toEqual(['Bethany England', 'Becky Spencer']);
   });
 
-  it('filters to one season using that season\'s totals', async () => {
+  it("filters to one season using that season's totals", async () => {
     (players.getAllPlayers as jest.Mock).mockResolvedValue(squad);
     (seasons.getSeasonById as jest.Mock).mockResolvedValue({ id: SEASON_ID, name: '2025/2026' });
-    (players.getSeasonPlayerTotals as jest.Mock).mockResolvedValue([
+    (players.getPlayerTotals as jest.Mock).mockResolvedValue([
       { player_id: 'thomas', appearances: 30, goals: 9, assists: 2, yellow_cards: 0, red_cards: 0 },
       { player_id: 'holdt', appearances: 25, goals: 6, assists: 3, yellow_cards: 0, red_cards: 0 },
     ]);
 
     const result = (await tool('get_leaderboard').run({ season_id: SEASON_ID })) as ToolOutput;
 
-    expect(players.getSeasonPlayerTotals).toHaveBeenCalledWith(SEASON_ID);
+    expect(players.getPlayerTotals).toHaveBeenCalledWith(SEASON_ID);
     expect(result.scope).toBe('2025/2026');
     expect(result.ranking).toEqual([
       { rank: 1, player_id: 'thomas', name: 'Martha Thomas', position: 'Forward', value: 9, appearances: 30 },
@@ -405,9 +415,26 @@ describe('get_leaderboard', () => {
   it('reports an unknown season', async () => {
     (players.getAllPlayers as jest.Mock).mockResolvedValue(squad);
     (seasons.getSeasonById as jest.Mock).mockResolvedValue(null);
-    (players.getSeasonPlayerTotals as jest.Mock).mockResolvedValue([]);
+    (players.getPlayerTotals as jest.Mock).mockResolvedValue([]);
 
     await expect(tool('get_leaderboard').run({ season_id: SEASON_ID })).rejects.toBeInstanceOf(ToolInputError);
+  });
+
+  it('fails loudly when the totals fetch fails, rather than returning an empty board', async () => {
+    (players.getAllPlayers as jest.Mock).mockResolvedValue(squad);
+    (players.getPlayerTotals as jest.Mock).mockRejectedValue(new Error('Failed to fetch player totals: timeout'));
+
+    await expect(tool('get_leaderboard').run({})).rejects.toThrow('Failed to fetch player totals');
+  });
+
+  it('fails loudly when player names come back empty next to real totals (a swallowed fetch error)', async () => {
+    (players.getAllPlayers as jest.Mock).mockResolvedValue([]);
+    (players.getPlayerTotals as jest.Mock).mockResolvedValue(careerTotals);
+
+    const result = await callReadTool(tool('get_leaderboard'), {});
+
+    expect(result.isError).toBe(true);
+    expect(result.content[0].text).not.toContain('Unknown player');
   });
 
   it('rejects an unknown stat and an oversized limit', async () => {
@@ -425,7 +452,7 @@ describe('rankLeaderboard', () => {
   ]);
 
   it('gives tied players the same rank and skips the next places', () => {
-    const ranking = rankLeaderboard(
+    const { ranking } = rankLeaderboard(
       [
         { player_id: 'c', appearances: 1, value: 5 },
         { player_id: 'a', appearances: 1, value: 7 },
@@ -440,7 +467,7 @@ describe('rankLeaderboard', () => {
   });
 
   it('keeps the whole tie at the cut-off rather than dropping part of it', () => {
-    const ranking = rankLeaderboard(
+    const { ranking } = rankLeaderboard(
       [
         { player_id: 'a', appearances: 1, value: 7 },
         { player_id: 'b', appearances: 1, value: 5 },
@@ -455,7 +482,7 @@ describe('rankLeaderboard', () => {
   });
 
   it('copes with ties after the cut-off (regression: real data has many players level on 1 goal)', () => {
-    const ranking = rankLeaderboard(
+    const { ranking } = rankLeaderboard(
       [
         { player_id: 'a', appearances: 1, value: 7 },
         { player_id: 'b', appearances: 1, value: 5 },
@@ -469,8 +496,18 @@ describe('rankLeaderboard', () => {
     expect(ranking.map((r) => [r.rank, r.name])).toEqual([[1, 'Amy A'], [2, 'Bea B']]);
   });
 
+  it('caps a huge tie at MAX_PAGE_SIZE rows and reports how many were left off', () => {
+    const totals = Array.from({ length: MAX_PAGE_SIZE + 30 }, (_, i) => ({ player_id: `p${i}`, appearances: 1, value: 1 }));
+
+    const { ranking, tied_players_omitted } = rankLeaderboard(totals, new Map(), 1);
+
+    expect(ranking).toHaveLength(MAX_PAGE_SIZE);
+    expect(ranking.every((r) => r.rank === 1)).toBe(true);
+    expect(tied_players_omitted).toBe(30);
+  });
+
   it('labels a player missing from the players table instead of dropping their total', () => {
-    expect(rankLeaderboard([{ player_id: 'zzz', appearances: 1, value: 2 }], byId, 5)[0].name).toBe('Unknown player');
+    expect(rankLeaderboard([{ player_id: 'zzz', appearances: 1, value: 2 }], byId, 5).ranking[0].name).toBe('Unknown player');
   });
 });
 

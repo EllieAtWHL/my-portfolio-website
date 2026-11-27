@@ -75,7 +75,7 @@ components never fetch data directly. Caching is applied here (see
 | `seasons.ts` | `getSeasons`, `getSeasonsWithMatchCounts`, `getSeasonById`, `getSeasonReview` |
 | `news.ts` | `getSpursWomenNews`, `getSpursWomenVideos`, `getPodcasts`, `getHomePageContent` |
 | `stadiums.ts` | `getStadiumBySlug`, `getAllStadiums`, `getStadiumsWithMatchCounts`, `getStadiumNames`, `getAllStadiumNames` (every stadium's name history in one query, grouped by stadium - used by the Stadiums and Groundhopper pages), `getMatchesAtStadium`, `getCurrentStadiumName` - the list/slug/team fetchers (`getAllStadiums`, `getStadiumsWithMatchCounts`, `getStadiumBySlug`, `getStadiumsForTeam`) are limited to `spurs_women = true` grounds - plus `getGroundhopperStadiums` (every ground with coordinates, for Groundhopper - see `groundhopper/README.md`) |
-| `players.ts` | `getPlayersByMatch`, `getTeamLineupsByMatch`, `getPlayerById`, `getPlayerMatchHistory`, `getAllPlayers` (career Tottenham totals per player), `getSeasonPlayerTotals` (per-player totals for one season - used by the MCP leaderboard, see `mcp/README.md`) |
+| `players.ts` | `getPlayersByMatch`, `getTeamLineupsByMatch`, `getPlayerById`, `getPlayerMatchHistory`, `getAllPlayers` (career Tottenham totals per player), `getPlayerTotals` (per-player totals, all-time or for one season; throws on a DB error - used by the MCP leaderboard, see `mcp/README.md`) |
 | `teams.ts` | `getAllTeams`, `getTeamsWithMatchCounts`, `getTeamById`, `getMatchesForTeam`, `getPlayersForTeam` |
 | `media.ts` | `getMediaByMatch`, `getPhotosByMatch`, `getArticlesByMatch`, `getSocialMediaByMatch`, `getVideosByMatch` |
 

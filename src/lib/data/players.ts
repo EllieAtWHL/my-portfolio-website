@@ -512,42 +512,44 @@ export const getAllPlayers = createCachedFunction(
   }
 );
 
-export interface SeasonPlayerTotals extends PlayerStatsAggregate {
+export interface PlayerTotals extends PlayerStatsAggregate {
   player_id: string;
 }
 
-// Tottenham per-player totals (appearances, goals, assists, cards) for one
-// season - the season filter on the MCP get_leaderboard tool (WEB-249). Career
-// totals already come from getAllPlayers; this is the per-season counterpart,
-// filtered via the player_stats -> matches embed (!inner, so rows from other
-// seasons are dropped server-side rather than fetched and discarded).
+// Tottenham per-player totals (appearances, goals, assists, cards), all-time
+// or for one season - backs the MCP get_leaderboard tool (WEB-249). The season
+// filter goes through the player_stats -> matches embed (!inner, so rows from
+// other seasons are dropped server-side rather than fetched and discarded).
 // Returned as an array, not a Map, because unstable_cache JSON-serialises
-// results. Paginated like the team-wide aggregate (a season's rows sit under
-// PostgREST's cap today, but grow with every match). Throws on a DB error
-// rather than returning [], so a failure can't be cached and reported as
-// "nobody scored" (see WEB-254 for the older fetchers that still do that).
-async function fetchSeasonPlayerTotalsFromDB(seasonId: string): Promise<SeasonPlayerTotals[]> {
-  const { data, error } = await fetchAllPaginated<PlayerStatRow>((from, to) =>
-    supabase
+// results (and keys on the arguments, so each season caches separately).
+// Paginated, since all-time Tottenham player_stats is past PostgREST's cap.
+// Throws on a DB error - including a failed page part-way through - rather
+// than returning [] or a partial sum, so a failure can't be cached and
+// reported as "nobody scored". getAllPlayers' career totals don't have that
+// guarantee yet (WEB-254), which is why the leaderboard doesn't use them.
+async function fetchPlayerTotalsFromDB(seasonId?: string): Promise<PlayerTotals[]> {
+  const { data, error } = await fetchAllPaginated<PlayerStatRow>((from, to) => {
+    let query = supabase
       .from('player_stats')
       .select('id, player_id, goals, assists, yellow_cards, red_cards, was_unused_substitute, match:matches!inner(season_id)')
-      .eq('team_id', TOTTENHAM_TEAM_ID)
-      .eq('match.season_id', seasonId)
-      .order('id', { ascending: true })
-      .range(from, to)
-  );
+      .eq('team_id', TOTTENHAM_TEAM_ID);
+    if (seasonId) {
+      query = query.eq('match.season_id', seasonId);
+    }
+    return query.order('id', { ascending: true }).range(from, to);
+  });
 
   if (error) {
-    throw new Error(`Failed to fetch season player stats: ${error.message}`);
+    throw new Error(`Failed to fetch player totals: ${error.message}`);
   }
 
   return [...aggregatePlayerStats(data)].map(([player_id, totals]) => ({ player_id, ...totals }));
 }
 
-export const getSeasonPlayerTotals = createCachedFunction(
-  fetchSeasonPlayerTotalsFromDB,
+export const getPlayerTotals = createCachedFunction(
+  fetchPlayerTotalsFromDB,
   {
-    keyParts: ['players', 'season-totals'],
+    keyParts: ['players', 'totals'],
     // A player_stats write invalidates PLAYERS + MATCHES (invalidatePlayerStatsCache).
     tags: [CACHE_TAGS.PLAYERS, CACHE_TAGS.MATCHES],
     ttl: 'PLAYER_STATS'

@@ -695,7 +695,7 @@ describe('players data layer', () => {
     });
   });
 
-  describe('getSeasonPlayerTotals', () => {
+  describe('getPlayerTotals', () => {
     // The getAllPlayers test above doMocks ./teams with only
     // fetchPlayerStatsAggregateForTeam, and doMock outlives resetModules -
     // these tests need the real aggregatePlayerStats.
@@ -717,8 +717,8 @@ describe('players data layer', () => {
       });
       jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
 
-      const { getSeasonPlayerTotals } = await import('@/lib/data/players');
-      const result = await getSeasonPlayerTotals('season-1');
+      const { getPlayerTotals } = await import('@/lib/data/players');
+      const result = await getPlayerTotals('season-1');
 
       expect(mockFrom).toHaveBeenCalledWith('player_stats');
       expect(result).toEqual([
@@ -735,9 +735,9 @@ describe('players data layer', () => {
       });
       jest.doMock('@/utils/supabase', () => ({ supabase: { from: mockFrom } }));
 
-      const { getSeasonPlayerTotals } = await import('@/lib/data/players');
+      const { getPlayerTotals } = await import('@/lib/data/players');
 
-      await expect(getSeasonPlayerTotals('season-1')).rejects.toThrow();
+      await expect(getPlayerTotals('season-1')).rejects.toThrow();
     });
   });
 });
