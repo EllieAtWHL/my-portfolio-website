@@ -481,6 +481,7 @@ Required environment variables:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous key
 - `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key (for admin operations)
 - `ADMIN_EMAIL` - Email address authorized for admin access
+- `MCP_ADMIN_TOKEN` - Bearer token for the admin MCP server at `/spurs-women/mcp/admin`. That route sits outside the admin middleware and checks this token itself, rejecting every request if it's unset. See `reference/spurs-women/mcp/README.md` for setup and rotation.
 
 ## Security Considerations
 
