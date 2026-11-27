@@ -809,6 +809,20 @@ describe('useMatchesAdmin', () => {
       expect(showMessage).toHaveBeenCalledWith('Match updated successfully', 'success');
     });
 
+    it('repeats any save warnings from the server in the success message', async () => {
+      (global.fetch as jest.Mock)
+        .mockResolvedValueOnce(okResponse({ data: [], warnings: ['Did this match go to extra time?'] }))
+        .mockResolvedValueOnce(okResponse({ data: [] }));
+      const { result, showMessage } = setup();
+      act(() => result.current.setMatchForm(validForm));
+
+      await act(async () => {
+        await result.current.handleMatchSubmit(fakeEvent);
+      });
+
+      expect(showMessage).toHaveBeenCalledWith('Match created successfully. Did this match go to extra time?', 'success');
+    });
+
     it('reloads matches from the exact GET endpoint and applies the returned data', async () => {
       const reloaded = [{ ...match, id: 'reloaded-1' }];
       (global.fetch as jest.Mock)

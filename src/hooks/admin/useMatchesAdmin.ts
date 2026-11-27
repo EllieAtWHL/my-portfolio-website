@@ -262,7 +262,11 @@ export function useMatchesAdmin({ matches, setMatches, teams, stadiums, stadiumN
         throw new Error(result.error || `Failed to ${isEditMode ? 'update' : 'create'} match`);
       }
 
-      showMessage(isEditMode ? 'Match updated successfully' : 'Match created successfully', 'success');
+      // Warnings (e.g. penalties with no extra-time score) don't block the
+      // save, but are worth repeating once the form has closed.
+      const warnings: string[] = Array.isArray(result.warnings) ? result.warnings : [];
+      const saved = isEditMode ? 'Match updated successfully' : 'Match created successfully';
+      showMessage(warnings.length > 0 ? `${saved}. ${warnings.join(' ')}` : saved, 'success');
 
       handleCancelEdit();
 

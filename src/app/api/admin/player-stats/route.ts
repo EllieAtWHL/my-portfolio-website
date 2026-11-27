@@ -1,27 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin, handleApiError, handleApiSuccess } from '@/lib/admin-api';
-import { invalidatePlayerStatsCache } from '@/lib/data/cache-invalidation';
+import { NextResponse } from 'next/server';
+import { supabaseAdmin, handleApiError } from '@/lib/admin-api';
+import { createPlayerStats, updatePlayerStats, deletePlayerStats } from '@/lib/admin/services';
+import { adminWriteRoute } from '@/lib/admin/services/route-handler';
 import { fetchAllPaginated } from '@/lib/utils/paginate';
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-
-    const { data, error } = await supabaseAdmin.from('player_stats').upsert(body, {
-      onConflict: 'player_id, match_id',
-      ignoreDuplicates: false
-    }).select();
-
-    if (error) {
-      return NextResponse.json(handleApiError(error, 'Failed to create player stats'), { status: 400 });
-    }
-
-    invalidatePlayerStatsCache();
-    return NextResponse.json(handleApiSuccess(data, 'Player stats created successfully'));
-  } catch (error) {
-    return NextResponse.json(handleApiError(error, 'Internal server error'), { status: 500 });
-  }
-}
+export const POST = adminWriteRoute(createPlayerStats, 'Player stats created successfully');
+export const PUT = adminWriteRoute(updatePlayerStats, 'Player stats updated successfully');
+export const DELETE = adminWriteRoute(deletePlayerStats, 'Player stats deleted successfully');
 
 export async function GET() {
   try {
@@ -45,54 +30,6 @@ export async function GET() {
     }
 
     return NextResponse.json({ data });
-  } catch (error) {
-    return NextResponse.json(handleApiError(error, 'Internal server error'), { status: 500 });
-  }
-}
-
-export async function PUT(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { id, ...updateData } = body;
-
-    if (!id) {
-      return NextResponse.json({ error: 'ID is required' }, { status: 400 });
-    }
-
-    const { data, error } = await supabaseAdmin
-      .from('player_stats')
-      .update(updateData)
-      .eq('id', id)
-      .select();
-
-    if (error) {
-      return NextResponse.json(handleApiError(error, 'Failed to update player stats'), { status: 400 });
-    }
-
-    invalidatePlayerStatsCache();
-    return NextResponse.json(handleApiSuccess(data, 'Player stats updated successfully'));
-  } catch (error) {
-    return NextResponse.json(handleApiError(error, 'Internal server error'), { status: 500 });
-  }
-}
-
-export async function DELETE(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { id } = body;
-
-    if (!id) {
-      return NextResponse.json({ error: 'ID is required' }, { status: 400 });
-    }
-
-    const { error } = await supabaseAdmin.from('player_stats').delete().eq('id', id);
-
-    if (error) {
-      return NextResponse.json(handleApiError(error, 'Failed to delete player stats'), { status: 400 });
-    }
-
-    invalidatePlayerStatsCache();
-    return NextResponse.json({ success: true, message: 'Player stats deleted successfully' });
   } catch (error) {
     return NextResponse.json(handleApiError(error, 'Internal server error'), { status: 500 });
   }
