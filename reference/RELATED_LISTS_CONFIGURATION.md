@@ -93,21 +93,27 @@ Each column object has:
 - `render` (optional): A custom render function for complex display logic
 - `id` (optional): Overrides the React key for this column - required when two columns derive from the same `key` (see below)
 
-The player-related Player Stats list (shown in a player's edit view, `relatedPlayerStatsForPlayer` in the admin page) adds an Opponent column that reads `match_id` but renders the *other* team from the match rather than the match itself:
+The player-related Player Stats list (shown in a player's edit view, in `PlayersTabPanel.tsx`) adds an Opponent column that reads `match_id` but renders the *other* team from the match rather than the match itself. The opponent-resolution logic itself is factored out into a `resolveOpponentName` helper (exported from `PlayersTabPanel.tsx`, built on the shared `getTeamDisplayName` from `src/lib/utils/team-display.ts`) rather than inlined in the column's `render`, because it's shared with this related list's search filter (`matchesPlayerStatsSearch`, WEB-169) and the two need to stay in sync:
 
 ```typescript
+// Shared by the Opponent column and the search filter below.
+export function resolveOpponentName(stat: PlayerStats, match: Match | undefined, teams: Team[]): string {
+  if (!match) return '';
+  const opponentTeamId = match.home_team_id === stat.team_id
+    ? match.away_team_id
+    : match.home_team_id;
+  const opponentTeam = teams.find(t => t.id === opponentTeamId);
+  return getTeamDisplayName(opponentTeam, ''); // short_name || name || ''
+}
+
+// In the column config:
 {
   key: 'match_id',
   id: 'opponent',
   label: 'Opponent',
   render: (value: unknown, stat: PlayerStats) => {
     const match = matches.find(m => m.id === (value as string));
-    if (!match) return '-';
-    const opponentTeamId = match.home_team_id === stat.team_id
-      ? match.away_team_id
-      : match.home_team_id;
-    const opponentTeam = teams.find(t => t.id === opponentTeamId);
-    return opponentTeam?.short_name || opponentTeam?.name || '-';
+    return resolveOpponentName(stat, match, teams) || '-';
   }
 }
 ```
