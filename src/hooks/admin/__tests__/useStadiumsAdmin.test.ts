@@ -4,6 +4,7 @@ import { callAdminApi, createEntityAndReload } from '@/lib/api-client';
 import type { Stadium, StadiumName } from '@/types/spurs-women-admin';
 
 jest.mock('@/lib/api-client', () => ({
+  describeAdminError: jest.requireActual('@/lib/api-client').describeAdminError,
   callAdminApi: jest.fn(),
   createEntityAndReload: jest.fn(),
 }));
@@ -406,7 +407,7 @@ describe('useStadiumsAdmin', () => {
       });
 
       expect(console.error).toHaveBeenCalledWith('Error saving stadium:', expect.any(Error));
-      expect(showMessage).toHaveBeenCalledWith('Error creating stadium', 'error');
+      expect(showMessage).toHaveBeenCalledWith('Error creating stadium: create failed', 'error');
       expect(mockCallAdminApi).not.toHaveBeenCalled();
       // handleCancelEditStadium never ran; edit-mode flags are untouched (still initial/false),
       // but the form should NOT have been reset back to empty.
@@ -698,7 +699,7 @@ describe('useStadiumsAdmin', () => {
     });
 
     it('sets the form error and keeps the modal open when the API returns an error', async () => {
-      mockCallAdminApi.mockResolvedValueOnce({ error: 'Name already exists' });
+      mockCallAdminApi.mockRejectedValueOnce(new Error('Name already exists'));
       const { result } = setup();
 
       act(() => result.current.setStadiumNameForm({ stadium_id: '', name: 'Dup', valid_from: '2021-01-01', valid_to: null }));
@@ -706,7 +707,7 @@ describe('useStadiumsAdmin', () => {
         await result.current.handleStadiumNameSubmit();
       });
 
-      expect(result.current.stadiumNameFormError).toBe('Name already exists');
+      expect(result.current.stadiumNameFormError).toBe('Error creating stadium name: Name already exists');
       // Modal was NOT closed since we took the error branch.
       expect(mockCallAdminApi).toHaveBeenCalledTimes(1);
     });
@@ -734,7 +735,7 @@ describe('useStadiumsAdmin', () => {
         await result.current.handleStadiumNameSubmit();
       });
 
-      expect(result.current.stadiumNameFormError).toBe('Error creating stadium name');
+      expect(result.current.stadiumNameFormError).toBe('Error creating stadium name: boom');
       expect(console.error).toHaveBeenCalledWith('Error saving stadium name:', expect.any(Error));
       expect(setLoading).toHaveBeenNthCalledWith(1, true);
       expect(setLoading).toHaveBeenNthCalledWith(2, false);
@@ -750,7 +751,7 @@ describe('useStadiumsAdmin', () => {
         await result.current.handleStadiumNameSubmit();
       });
 
-      expect(result.current.stadiumNameFormError).toBe('Error updating stadium name');
+      expect(result.current.stadiumNameFormError).toBe('Error updating stadium name: boom');
     });
   });
 

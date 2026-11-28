@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { callAdminApi } from '@/lib/api-client';
+import { callAdminApi, describeAdminError } from '@/lib/api-client';
 import type { PlayerStats } from '@/types/spurs-women-admin';
 
 const emptyPlayerStatsForm: Partial<PlayerStats> = {
@@ -136,18 +136,16 @@ export function usePlayerStatsModal({
         was_unused_substitute: wasUnusedSubstitute,
       };
 
-      const response = editingPlayerStatsId
-        ? await callAdminApi('player-stats', 'PUT', { id: editingPlayerStatsId, ...payload })
-        : await callAdminApi('player-stats', 'POST', payload);
-      if (response.error) {
-        setPlayerStatsFormError(response.error);
+      if (editingPlayerStatsId) {
+        await callAdminApi('player-stats', 'PUT', { id: editingPlayerStatsId, ...payload });
       } else {
-        showMessage(editingPlayerStatsId ? 'Player stats updated successfully' : 'Player stats created successfully', 'success');
-        closeModal();
-        await refreshRelatedStats();
+        await callAdminApi('player-stats', 'POST', payload);
       }
+      showMessage(editingPlayerStatsId ? 'Player stats updated successfully' : 'Player stats created successfully', 'success');
+      closeModal();
+      await refreshRelatedStats();
     } catch (error) {
-      setPlayerStatsFormError(editingPlayerStatsId ? 'Error updating player stats' : 'Error creating player stats');
+      setPlayerStatsFormError(describeAdminError(editingPlayerStatsId ? 'Error updating player stats' : 'Error creating player stats', error));
       console.error('Error saving player stats:', error);
     } finally {
       setLoading(false);

@@ -60,6 +60,11 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 
 # Admin Authorization
 ADMIN_EMAIL=admin@example.com
+
+# Admin MCP server bearer token (long random value, e.g. `openssl rand -base64 48`).
+# If unset, /spurs-women/mcp/admin rejects every request.
+# See reference/spurs-women/mcp/README.md.
+MCP_ADMIN_TOKEN=your_long_random_token
 ```
 
 Note: FullStory is configured separately - see below. It does not currently read any `NEXT_PUBLIC_FULLSTORY_*` environment variables; the organization ID is hardcoded directly in `public/fullstory-init.js`.

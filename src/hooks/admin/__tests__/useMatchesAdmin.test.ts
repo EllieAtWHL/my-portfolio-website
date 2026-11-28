@@ -4,6 +4,7 @@ import { callAdminApi } from '@/lib/api-client';
 import type { Match, Team, Stadium, StadiumName, Media, PlayerStats } from '@/types/spurs-women-admin';
 
 jest.mock('@/lib/api-client', () => ({
+  describeAdminError: jest.requireActual('@/lib/api-client').describeAdminError,
   callAdminApi: jest.fn(),
 }));
 
@@ -809,6 +810,20 @@ describe('useMatchesAdmin', () => {
       expect(showMessage).toHaveBeenCalledWith('Match updated successfully', 'success');
     });
 
+    it('repeats any save warnings from the server in the success message', async () => {
+      (global.fetch as jest.Mock)
+        .mockResolvedValueOnce(okResponse({ data: [], warnings: ['Did this match go to extra time?'] }))
+        .mockResolvedValueOnce(okResponse({ data: [] }));
+      const { result, showMessage } = setup();
+      act(() => result.current.setMatchForm(validForm));
+
+      await act(async () => {
+        await result.current.handleMatchSubmit(fakeEvent);
+      });
+
+      expect(showMessage).toHaveBeenCalledWith('Match created successfully. Did this match go to extra time?', 'success');
+    });
+
     it('reloads matches from the exact GET endpoint and applies the returned data', async () => {
       const reloaded = [{ ...match, id: 'reloaded-1' }];
       (global.fetch as jest.Mock)
@@ -1113,7 +1128,7 @@ describe('useMatchesAdmin', () => {
       });
 
       it('shows the response error and does not treat it as success', async () => {
-        mockCallAdminApi.mockResolvedValueOnce({ error: 'Validation failed' });
+        mockCallAdminApi.mockRejectedValueOnce(new Error('Validation failed'));
         const { result, showMessage } = setup();
         act(() => result.current.openNewMedia('photo'));
 
@@ -1121,7 +1136,7 @@ describe('useMatchesAdmin', () => {
           await result.current.handleMediaSubmit();
         });
 
-        expect(showMessage).toHaveBeenCalledWith('Validation failed', 'error');
+        expect(showMessage).toHaveBeenCalledWith('Error creating media: Validation failed', 'error');
         expect(showMessage).not.toHaveBeenCalledWith('Media created successfully', 'success');
         expect(result.current.showMediaModal).toBe(true); // modal was not closed
       });
@@ -1182,7 +1197,7 @@ describe('useMatchesAdmin', () => {
           await result.current.handleMediaSubmit();
         });
 
-        expect(showMessage).toHaveBeenCalledWith('Error creating media', 'error');
+        expect(showMessage).toHaveBeenCalledWith('Error creating media: save failed', 'error');
         expect(consoleErrorSpy).toHaveBeenCalledWith('Error saving media:', expect.any(Error));
         expect(setLoading).toHaveBeenLastCalledWith(false);
       });
@@ -1196,7 +1211,7 @@ describe('useMatchesAdmin', () => {
           await result.current.handleMediaSubmit();
         });
 
-        expect(showMessage).toHaveBeenCalledWith('Error updating media', 'error');
+        expect(showMessage).toHaveBeenCalledWith('Error updating media: save failed', 'error');
       });
     });
   });

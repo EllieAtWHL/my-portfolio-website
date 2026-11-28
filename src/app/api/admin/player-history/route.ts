@@ -1,24 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin, handleApiError, handleApiSuccess } from '@/lib/admin-api';
-import { invalidatePlayerHistoryCache } from '@/lib/data/cache-invalidation';
+import { NextResponse } from 'next/server';
+import { supabaseAdmin, handleApiError } from '@/lib/admin-api';
+import { createPlayerHistory, updatePlayerHistory, deletePlayerHistory } from '@/lib/admin/services';
+import { adminWriteRoute } from '@/lib/admin/services/route-handler';
 import { fetchAllPaginated } from '@/lib/utils/paginate';
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-
-    const { data, error } = await supabaseAdmin.from('player_history').insert(body).select();
-
-    if (error) {
-      return NextResponse.json(handleApiError(error, 'Failed to create player history'), { status: 400 });
-    }
-
-    invalidatePlayerHistoryCache();
-    return NextResponse.json(handleApiSuccess(data, 'Player history created successfully'));
-  } catch (error) {
-    return NextResponse.json(handleApiError(error, 'Internal server error'), { status: 500 });
-  }
-}
+export const POST = adminWriteRoute(createPlayerHistory, 'Player history created successfully');
+export const PUT = adminWriteRoute(updatePlayerHistory, 'Player history updated successfully');
+export const DELETE = adminWriteRoute(deletePlayerHistory, 'Player history deleted successfully');
 
 export async function GET() {
   try {
@@ -38,54 +26,6 @@ export async function GET() {
     }
     
     return NextResponse.json({ data });
-  } catch (error) {
-    return NextResponse.json(handleApiError(error, 'Internal server error'), { status: 500 });
-  }
-}
-
-export async function PUT(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { id, ...updateData } = body;
-
-    if (!id) {
-      return NextResponse.json({ error: 'ID is required' }, { status: 400 });
-    }
-
-    const { data, error } = await supabaseAdmin
-      .from('player_history')
-      .update(updateData)
-      .eq('id', id)
-      .select();
-
-    if (error) {
-      return NextResponse.json(handleApiError(error, 'Failed to update player history'), { status: 400 });
-    }
-
-    invalidatePlayerHistoryCache();
-    return NextResponse.json(handleApiSuccess(data, 'Player history updated successfully'));
-  } catch (error) {
-    return NextResponse.json(handleApiError(error, 'Internal server error'), { status: 500 });
-  }
-}
-
-export async function DELETE(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { id } = body;
-
-    if (!id) {
-      return NextResponse.json({ error: 'ID is required' }, { status: 400 });
-    }
-
-    const { error } = await supabaseAdmin.from('player_history').delete().eq('id', id);
-
-    if (error) {
-      return NextResponse.json(handleApiError(error, 'Failed to delete player history'), { status: 400 });
-    }
-
-    invalidatePlayerHistoryCache();
-    return NextResponse.json({ success: true, message: 'Player history deleted successfully' });
   } catch (error) {
     return NextResponse.json(handleApiError(error, 'Internal server error'), { status: 500 });
   }

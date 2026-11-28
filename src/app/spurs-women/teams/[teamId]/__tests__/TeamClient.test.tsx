@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import TeamClient from '../TeamClient'
 import type { Team, Stadium } from '@/lib/data/stadiums'
 import type { TeamPlayers } from '@/lib/data/teams'
-import type { Match } from '@/lib/data/matches'
+import { makeMatch } from '@/test-utils/match-fixture'
 
 jest.mock('@/lib/data/teams', () => ({
   getMatchesForTeam: jest.fn(),
@@ -77,39 +77,6 @@ const stadium: Stadium = {
   spurs_women: true,
   wikidata_qid: null,
 }
-
-const makeMatch = (overrides: Partial<Match> = {}): Match => ({
-  id: 'match-1',
-  date: '2026-03-01',
-  kickoff_time: '15:00',
-  home_team: { id: 1, name: 'Tottenham Hotspur', short_name: 'Spurs', primary_color: '#132257', secondary_color: '#ffffff', is_tottenham: true },
-  away_team: { id: 2, name: 'Chelsea', short_name: 'Chelsea', primary_color: '#034694', secondary_color: '#ffffff', is_tottenham: false },
-  spurs_score: 2,
-  opponent_score: 1,
-  spurs_score_aet: null,
-  opponent_score_aet: null,
-  spurs_score_pens: null,
-  opponent_score_pens: null,
-  attended: false,
-  is_home_match: true,
-  is_neutral_venue: false,
-  stadium_id: 'stadium-1',
-  stadium_display_name: 'Tottenham Hotspur Stadium',
-  stadium_slug: 'tottenham-hotspur-stadium',
-  attendance: null,
-  notes: null,
-  competitions: { name: 'Womens Super League' },
-  season_id: 'season-1',
-  home_possession: null,
-  away_possession: null,
-  home_total_shots: null,
-  away_total_shots: null,
-  home_shots_on_target: null,
-  away_shots_on_target: null,
-  home_corners: null,
-  away_corners: null,
-  ...overrides,
-})
 
 describe('TeamClient', () => {
   beforeEach(() => {
@@ -296,6 +263,23 @@ describe('TeamClient', () => {
     // Explicitly attributes each count to a side, rather than a bare "1W 1D 1L"
     // that leaves it ambiguous whose win/loss column is whose.
     expect(screen.getByText('Tottenham wins: 1 · Draws: 1 · Chelsea wins: 1')).toBeInTheDocument()
+  })
+
+  it('counts the result after extra time, but leaves a penalty shootout as a draw', async () => {
+    const opponent: Team = { ...team, id: 3, name: 'Leicester City', is_tottenham: false }
+    mockGetMatchesForTeam.mockResolvedValue([
+      // 1-1 at 90 minutes, 2-1 after extra time (the 2024 FA Cup semi-final shape)
+      makeMatch({ id: 'aet-win', spurs_score: 1, opponent_score: 1, spurs_score_aet: 2, opponent_score_aet: 1 }),
+      // level after extra time, lost on penalties: still a draw in the record
+      makeMatch({ id: 'pens', spurs_score: 3, opponent_score: 3, spurs_score_aet: 3, opponent_score_aet: 3, spurs_score_pens: 3, opponent_score_pens: 4 }),
+    ])
+
+    render(<TeamClient team={opponent} teamId="3" />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Head-to-head vs Tottenham:')).toBeInTheDocument()
+    })
+    expect(screen.getByText('Tottenham wins: 1 · Draws: 1 · Leicester City wins: 0')).toBeInTheDocument()
   })
 
   it('labels the record as overall (not head-to-head) on Tottenham\'s own team page', async () => {

@@ -15,6 +15,7 @@ import { getMatchesForTeam, getPlayersForTeam, TeamPlayers } from '@/lib/data/te
 import { Match } from '@/lib/data/matches';
 import TeamPill from '@/components/spurs-women/TeamPill';
 import { Team, Stadium } from '@/lib/data/stadiums';
+import { getMatchResult, MatchResult } from '@/lib/utils/match-result';
 
 interface TeamClientProps {
   team: Team;
@@ -42,15 +43,13 @@ function sortStadiumsByMatchCount(stadiums: Stadium[], matches: Match[]) {
     .sort((a, b) => b.matchCount - a.matchCount);
 }
 
+// Extra-time results count (a tie won after extra time is a win); a penalty
+// shootout doesn't (still a draw) - see match-result.ts.
 function computeMatchRecord(matches: Match[]) {
-  const scored = matches.filter(
-    (match) => match.spurs_score != null && match.opponent_score != null
-  );
-  const wins = scored.filter((match) => match.spurs_score! > match.opponent_score!).length;
-  const draws = scored.filter((match) => match.spurs_score! === match.opponent_score!).length;
-  const losses = scored.filter((match) => match.spurs_score! < match.opponent_score!).length;
+  const results = matches.map(getMatchResult).filter((result) => result !== null);
+  const count = (result: MatchResult) => results.filter((r) => r === result).length;
 
-  return { played: scored.length, wins, draws, losses };
+  return { played: results.length, wins: count('W'), draws: count('D'), losses: count('L') };
 }
 
 export default function TeamClient({ team, teamId, stadiums = [] }: TeamClientProps) {

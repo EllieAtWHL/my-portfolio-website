@@ -5,6 +5,7 @@ import { CollapsibleFormSection } from './CollapsibleFormSection';
 import { MatchStatsFields } from './MatchStatsFields';
 import { MatchExtraTimeFields } from './MatchExtraTimeFields';
 import SearchInput from '@/components/spurs-women/SearchInput';
+import { checkMatchScores } from '@/lib/admin/match-score-rules';
 
 interface Team {
   id: number;
@@ -109,6 +110,9 @@ export function MatchForm({
   // Picking a Groundhopper-only ground is fine: saving the match promotes it
   // to a Spurs Women ground (database trigger, WEB-224).
   const [stadiumFilter, setStadiumFilter] = useState('');
+  // Same rules the match service enforces on save (WEB-83): errors will be
+  // refused by the server, warnings won't.
+  const scoreCheck = checkMatchScores(matchForm);
   const stadiumDate = matchForm.date || new Date().toISOString().split('T')[0];
   const stadiumOptions = stadiums
     .map(stadium => {
@@ -287,6 +291,18 @@ export function MatchForm({
         >
           <MatchExtraTimeFields matchForm={matchForm} setMatchForm={setMatchForm} />
         </CollapsibleFormSection>
+
+        {/* Outside the collapsible sections, so it's visible even when Extra Time is closed. */}
+        {(scoreCheck.errors.length > 0 || scoreCheck.warnings.length > 0) && (
+          <div aria-live="polite" className="space-y-2 text-sm">
+            {scoreCheck.errors.map((error) => (
+              <p key={error} className="p-3 rounded bg-red-600 text-white">{error}</p>
+            ))}
+            {scoreCheck.warnings.map((warning) => (
+              <p key={warning} className="p-3 rounded bg-yellow-100 text-yellow-900">{warning}</p>
+            ))}
+          </div>
+        )}
 
       </FormWrapper>
   );
