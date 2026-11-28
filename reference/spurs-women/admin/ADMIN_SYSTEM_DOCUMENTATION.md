@@ -20,7 +20,7 @@ The admin system provides a web-based interface for managing Spurs Women's footb
    - Next.js API routes for server-side operations
    - Authentication and authorization checks
    - Supabase service role client for admin operations (bypasses RLS)
-   - Every `POST`/`PUT`/`DELETE` is a one-line wrapper (`adminWriteRoute`) around an admin write service; only the `GET`s query Supabase in the route itself
+   - In the entity routes, every `POST`/`PUT`/`DELETE` is a one-line wrapper (`adminWriteRoute`) around an admin write service; only the `GET`s query Supabase in the route itself. The photo-upload routes validate their own payloads by hand (see "Photo Upload API"), and the cache route takes no body
 
 3. **Admin write services** (`src/lib/admin/services/`, WEB-83)
    - One validated code path per entity for create/update/delete, shared by the API routes and the admin MCP write tools (WEB-251) - see "Input validation" below
