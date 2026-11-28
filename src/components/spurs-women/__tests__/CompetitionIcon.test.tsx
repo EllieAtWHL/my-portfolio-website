@@ -33,6 +33,14 @@ describe('CompetitionIcon', () => {
     expect(path).toHaveAttribute('clip-rule', 'evenodd');
   });
 
+  it('turns a stored width/height into a viewBox when there is none, so the icon scales instead of clipping', () => {
+    const { container } = render(<CompetitionIcon iconSvg='<svg width="24" height="24"><path d="M0 0h24v24H0z"/></svg>' />);
+    const svg = container.querySelector('svg');
+    expect(svg).toHaveAttribute('viewBox', '0 0 24 24');
+    expect(svg).not.toHaveAttribute('width');
+    expect(svg).not.toHaveAttribute('height');
+  });
+
   it.each([
     ['a script element', '<svg><script>alert(1)</script></svg>'],
     ['an event handler', '<svg onload="alert(1)"><path d="M0 0" /></svg>'],

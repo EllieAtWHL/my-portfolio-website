@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useSearchPagination } from '@/hooks/useSearchPagination';
-import { callAdminApi, createEntityAndReload } from '@/lib/api-client';
+import { callAdminApi, createEntityAndReload, describeAdminError } from '@/lib/api-client';
 import type { Stadium, StadiumName } from '@/types/spurs-women-admin';
 
 const STADIUMS_PER_PAGE = 20;
@@ -193,7 +193,9 @@ export function useStadiumsAdmin({ recentStadiums, setStadiums, setRecentStadium
 
       handleCancelEditStadium();
     } catch (error) {
-      showMessage(serverError ?? (isStadiumEditMode ? 'Error updating stadium' : 'Error creating stadium'), 'error');
+      // A create goes through callAdminApi, which throws with the server's
+      // reason (e.g. a validation error), so it's in error.message.
+      showMessage(serverError ?? (isStadiumEditMode ? 'Error updating stadium' : describeAdminError('Error creating stadium', error)), 'error');
       console.error('Error saving stadium:', error);
     } finally {
       setLoading(false);
@@ -262,22 +264,20 @@ export function useStadiumsAdmin({ recentStadiums, setStadiums, setRecentStadium
         ...stadiumNameForm,
         valid_to: stadiumNameForm.valid_to || null,
       };
-      const response = editingStadiumNameId
-        ? await callAdminApi('stadium-names', 'PUT', { id: editingStadiumNameId, ...payload })
-        : await callAdminApi('stadium-names', 'POST', payload);
-      if (response.error) {
-        setStadiumNameFormError(response.error);
+      if (editingStadiumNameId) {
+        await callAdminApi('stadium-names', 'PUT', { id: editingStadiumNameId, ...payload });
       } else {
-        showMessage(editingStadiumNameId ? 'Stadium name updated successfully' : 'Stadium name created successfully', 'success');
-        closeStadiumNameModal();
-        const stadiumNamesRes = await callAdminApi('stadium-names', 'GET');
-        if (stadiumNamesRes.data) {
-          const allStadiumNames = stadiumNamesRes.data as StadiumName[];
-          setRelatedStadiumNames(allStadiumNames.filter(sn => sn.stadium_id === editingStadiumId));
-        }
+        await callAdminApi('stadium-names', 'POST', payload);
+      }
+      showMessage(editingStadiumNameId ? 'Stadium name updated successfully' : 'Stadium name created successfully', 'success');
+      closeStadiumNameModal();
+      const stadiumNamesRes = await callAdminApi('stadium-names', 'GET');
+      if (stadiumNamesRes.data) {
+        const allStadiumNames = stadiumNamesRes.data as StadiumName[];
+        setRelatedStadiumNames(allStadiumNames.filter(sn => sn.stadium_id === editingStadiumId));
       }
     } catch (error) {
-      setStadiumNameFormError(editingStadiumNameId ? 'Error updating stadium name' : 'Error creating stadium name');
+      setStadiumNameFormError(describeAdminError(editingStadiumNameId ? 'Error updating stadium name' : 'Error creating stadium name', error));
       console.error('Error saving stadium name:', error);
     } finally {
       setLoading(false);

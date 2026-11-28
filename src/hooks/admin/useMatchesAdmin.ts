@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useSearchPagination } from '@/hooks/useSearchPagination';
-import { callAdminApi } from '@/lib/api-client';
+import { callAdminApi, describeAdminError } from '@/lib/api-client';
 import { buildMatchPayload } from '@/lib/admin-match-payload';
 import { getCurrentStadiumName } from '@/lib/admin-stadium-names';
 import type { Match, Media, PlayerStats, Team, Stadium, StadiumName } from '@/types/spurs-women-admin';
@@ -353,18 +353,16 @@ export function useMatchesAdmin({ matches, setMatches, teams, stadiums, stadiumN
   const handleMediaSubmit = useCallback(async () => {
     try {
       setLoading(true);
-      const response = editingMediaId
-        ? await callAdminApi('media', 'PUT', { id: editingMediaId, ...newMediaForm })
-        : await callAdminApi('media', 'POST', newMediaForm);
-      if (response.error) {
-        showMessage(response.error, 'error');
+      if (editingMediaId) {
+        await callAdminApi('media', 'PUT', { id: editingMediaId, ...newMediaForm });
       } else {
-        showMessage(editingMediaId ? 'Media updated successfully' : 'Media created successfully', 'success');
-        closeMediaModal();
-        await refreshRelatedMedia();
+        await callAdminApi('media', 'POST', newMediaForm);
       }
+      showMessage(editingMediaId ? 'Media updated successfully' : 'Media created successfully', 'success');
+      closeMediaModal();
+      await refreshRelatedMedia();
     } catch (error) {
-      showMessage(editingMediaId ? 'Error updating media' : 'Error creating media', 'error');
+      showMessage(describeAdminError(editingMediaId ? 'Error updating media' : 'Error creating media', error), 'error');
       console.error('Error saving media:', error);
     } finally {
       setLoading(false);

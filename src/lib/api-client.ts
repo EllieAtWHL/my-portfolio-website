@@ -33,6 +33,16 @@ export async function callAdminApi(
   }
 }
 
+/**
+ * "Error creating player history: Left On can't be before Joined On." - the
+ * fallback plus the server's reason when there is one. callAdminApi throws
+ * with the route's `error` message (e.g. a 400 from validation), so this is
+ * what tells the admin what to fix rather than just that something failed.
+ */
+export function describeAdminError(fallback: string, error: unknown): string {
+  return error instanceof Error && error.message ? `${fallback}: ${error.message}` : fallback;
+}
+
 // Function to create entity and reload data
 export async function createEntityAndReload<T>(
   endpoint: string,

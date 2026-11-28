@@ -26,12 +26,13 @@ export function CompetitionIcon({ iconSvg, className = 'w-5 h-5' }: CompetitionI
   const icon = parseSafeSvg(iconSvg);
 
   if (icon) {
+    const { width, height, viewBox, ...attributes } = icon.attributes;
     return (
       <svg
-        {...icon.attributes}
-        // The caller sizes the icon, whatever width/height the stored SVG had.
-        width={undefined}
-        height={undefined}
+        {...attributes}
+        // The caller sizes the icon, so the stored width/height are dropped -
+        // but they define the drawing's coordinates when there's no viewBox.
+        viewBox={viewBox ?? (width && height ? `0 0 ${width} ${height}` : undefined)}
         className={className}
         aria-hidden="true"
       >

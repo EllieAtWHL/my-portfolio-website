@@ -4,6 +4,7 @@ import { callAdminApi } from '@/lib/api-client';
 import type { Player, PlayerHistory, PlayerStats } from '@/types/spurs-women-admin';
 
 jest.mock('@/lib/api-client', () => ({
+  describeAdminError: jest.requireActual('@/lib/api-client').describeAdminError,
   callAdminApi: jest.fn(),
 }));
 
@@ -721,7 +722,7 @@ describe('usePlayersAdmin', () => {
     });
 
     it('sets a form error and keeps the modal open when the API returns an error, without showing a message', async () => {
-      mockCallAdminApi.mockResolvedValueOnce({ error: 'Squad number already taken' });
+      mockCallAdminApi.mockRejectedValueOnce(new Error('Squad number already taken'));
       const { result, showMessage } = setup();
 
       act(() => result.current.openNewPlayerHistory());
@@ -731,7 +732,7 @@ describe('usePlayersAdmin', () => {
         await result.current.handlePlayerHistorySubmit();
       });
 
-      expect(result.current.playerHistoryFormError).toBe('Squad number already taken');
+      expect(result.current.playerHistoryFormError).toBe('Error creating player history: Squad number already taken');
       expect(result.current.showPlayerHistoryModal).toBe(true);
       expect(showMessage).not.toHaveBeenCalled();
       expect(mockCallAdminApi).toHaveBeenCalledTimes(1);
@@ -769,7 +770,7 @@ describe('usePlayersAdmin', () => {
         await result.current.handlePlayerHistorySubmit();
       });
 
-      expect(result.current.playerHistoryFormError).toBe('Error creating player history');
+      expect(result.current.playerHistoryFormError).toBe('Error creating player history: boom');
       expect(setLoading).toHaveBeenLastCalledWith(false);
     });
 
@@ -783,7 +784,7 @@ describe('usePlayersAdmin', () => {
         await result.current.handlePlayerHistorySubmit();
       });
 
-      expect(result.current.playerHistoryFormError).toBe('Error updating player history');
+      expect(result.current.playerHistoryFormError).toBe('Error updating player history: boom');
     });
   });
 

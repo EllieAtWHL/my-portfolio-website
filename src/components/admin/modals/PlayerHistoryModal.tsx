@@ -30,8 +30,8 @@ export function PlayerHistoryModal({
     ));
   const teamOptions = renderTeamOptions(teams);
   // Excludes the currently selected Team - "loaned from itself" is never a
-  // meaningful state, and nothing downstream (this route's PUT/POST, the DB) rejects
-  // it otherwise (WEB-83's known lack of admin write-payload validation).
+  // meaningful state. The player history service rejects it too (WEB-83);
+  // this just keeps it from being offered.
   const loanFromOptions = renderTeamOptions(teams.filter((team) => team.id !== form.team_id));
 
   return (

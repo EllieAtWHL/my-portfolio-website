@@ -4,6 +4,7 @@ import { callAdminApi } from '@/lib/api-client';
 import type { Match, Team, Stadium, StadiumName, Media, PlayerStats } from '@/types/spurs-women-admin';
 
 jest.mock('@/lib/api-client', () => ({
+  describeAdminError: jest.requireActual('@/lib/api-client').describeAdminError,
   callAdminApi: jest.fn(),
 }));
 
@@ -1127,7 +1128,7 @@ describe('useMatchesAdmin', () => {
       });
 
       it('shows the response error and does not treat it as success', async () => {
-        mockCallAdminApi.mockResolvedValueOnce({ error: 'Validation failed' });
+        mockCallAdminApi.mockRejectedValueOnce(new Error('Validation failed'));
         const { result, showMessage } = setup();
         act(() => result.current.openNewMedia('photo'));
 
@@ -1135,7 +1136,7 @@ describe('useMatchesAdmin', () => {
           await result.current.handleMediaSubmit();
         });
 
-        expect(showMessage).toHaveBeenCalledWith('Validation failed', 'error');
+        expect(showMessage).toHaveBeenCalledWith('Error creating media: Validation failed', 'error');
         expect(showMessage).not.toHaveBeenCalledWith('Media created successfully', 'success');
         expect(result.current.showMediaModal).toBe(true); // modal was not closed
       });
@@ -1196,7 +1197,7 @@ describe('useMatchesAdmin', () => {
           await result.current.handleMediaSubmit();
         });
 
-        expect(showMessage).toHaveBeenCalledWith('Error creating media', 'error');
+        expect(showMessage).toHaveBeenCalledWith('Error creating media: save failed', 'error');
         expect(consoleErrorSpy).toHaveBeenCalledWith('Error saving media:', expect.any(Error));
         expect(setLoading).toHaveBeenLastCalledWith(false);
       });
@@ -1210,7 +1211,7 @@ describe('useMatchesAdmin', () => {
           await result.current.handleMediaSubmit();
         });
 
-        expect(showMessage).toHaveBeenCalledWith('Error updating media', 'error');
+        expect(showMessage).toHaveBeenCalledWith('Error updating media: save failed', 'error');
       });
     });
   });
