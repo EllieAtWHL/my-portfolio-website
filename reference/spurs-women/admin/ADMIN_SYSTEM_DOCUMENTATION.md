@@ -90,7 +90,7 @@ constraint, and index, not just the ones the admin UI touches - see
 - **Table**: `matches`
 - **Fields**:
   - `id` (string, UUID)
-  - `season_id` (number)
+  - `season_id` (string, UUID)
   - `competition_id` (string, UUID)
   - `date` (string, date)
   - `kickoff_time` (string, time)
@@ -113,7 +113,7 @@ constraint, and index, not just the ones the admin UI touches - see
   - `home_shots_on_target` / `away_shots_on_target` (number, nullable)
   - `home_corners` / `away_corners` (number, nullable)
 
-  Blank score/stat fields must be saved as `null`, not `0` (a blank field and a genuine 0 mean different things — e.g. `matches.ts` uses `spurs_score is null` to detect upcoming/unscored fixtures). This is enforced by `buildMatchPayload` in `src/lib/admin-match-payload.ts`, which the admin match form's submit handler uses to build its API payload — reuse it rather than constructing the payload inline.
+  Blank score/stat fields must be saved as `null`, not `0` (a blank field and a genuine 0 mean different things — e.g. `matches.ts` uses `spurs_score is null` to detect upcoming/unscored fixtures). The admin match form builds its API payload with `buildMatchPayload` in `src/lib/admin-match-payload.ts` (reuse it rather than constructing the payload inline), and since WEB-83 the match service also stores any blank value as `null` server-side, whoever sends it (see "Input validation").
 
 ### Media
 - **Table**: `media`
