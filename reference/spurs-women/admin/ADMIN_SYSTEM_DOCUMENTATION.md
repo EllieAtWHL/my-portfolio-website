@@ -20,8 +20,12 @@ The admin system provides a web-based interface for managing Spurs Women's footb
    - Next.js API routes for server-side operations
    - Authentication and authorization checks
    - Supabase service role client for admin operations (bypasses RLS)
+   - In the entity routes, every `POST`/`PUT`/`DELETE` is a one-line wrapper (`adminWriteRoute`) around an admin write service; only the `GET`s query Supabase in the route itself. The photo-upload routes validate their own payloads by hand (see "Photo Upload API"), and the cache route takes no body
 
-3. **Utilities**
+3. **Admin write services** (`src/lib/admin/services/`, WEB-83)
+   - One validated code path per entity for create/update/delete, shared by the API routes and the admin MCP write tools (WEB-251) - see "Input validation" below
+
+4. **Utilities**
    - `src/lib/admin-api.ts` - Supabase admin client and error handling
    - `src/lib/api-client.ts` - Generic API call functions
 
@@ -86,7 +90,7 @@ constraint, and index, not just the ones the admin UI touches - see
 - **Table**: `matches`
 - **Fields**:
   - `id` (string, UUID)
-  - `season_id` (number)
+  - `season_id` (string, UUID)
   - `competition_id` (string, UUID)
   - `date` (string, date)
   - `kickoff_time` (string, time)
@@ -109,7 +113,7 @@ constraint, and index, not just the ones the admin UI touches - see
   - `home_shots_on_target` / `away_shots_on_target` (number, nullable)
   - `home_corners` / `away_corners` (number, nullable)
 
-  Blank score/stat fields must be saved as `null`, not `0` (a blank field and a genuine 0 mean different things — e.g. `matches.ts` uses `spurs_score is null` to detect upcoming/unscored fixtures). This is enforced by `buildMatchPayload` in `src/lib/admin-match-payload.ts`, which the admin match form's submit handler uses to build its API payload — reuse it rather than constructing the payload inline.
+  Blank score/stat fields must be saved as `null`, not `0` (a blank field and a genuine 0 mean different things — e.g. `matches.ts` uses `spurs_score is null` to detect upcoming/unscored fixtures). The admin match form builds its API payload with `buildMatchPayload` in `src/lib/admin-match-payload.ts` (reuse it rather than constructing the payload inline), and since WEB-83 the match service also stores any blank value as `null` server-side, whoever sends it (see "Input validation").
 
 ### Media
 - **Table**: `media`
@@ -225,7 +229,39 @@ constraint, and index, not just the ones the admin UI touches - see
 
 The centralized middleware described above protects every `/api/admin/*` route for every method, including `GET` - there are no unauthenticated admin endpoints. (An earlier version of this doc described several `GET` routes, e.g. teams/players/stadiums, as not requiring authentication because they're used to populate dropdowns; that stopped being true once auth was centralized in `updateSession` - it now runs before any route handler, regardless of method.)
 
-All entity routes below also implement `PUT` (update by `id`) and `DELETE` (delete by `id`), both requiring authentication and admin authorization, except Stadium Names (no `PUT`) and Seasons/Competitions (read-only, see bottom).
+All entity routes below also implement `PUT` (update by `id`) and `DELETE` (delete by `id`), both requiring authentication and admin authorization, except Seasons/Competitions (read-only, see bottom).
+
+### Input validation
+
+Since WEB-83, every `POST`/`PUT`/`DELETE` body is validated before anything is written. The route handlers are thin wrappers (`adminWriteRoute` in `src/lib/admin/services/route-handler.ts`) around service functions in `src/lib/admin/services/` - `createMatch`, `updateMatch`, `deleteMatch`, and the same three for players, teams, stadia, stadium names, media, player history and player stats. The admin MCP write tools (WEB-251) are meant to call the same services, so both share one validated code path.
+
+Each service (built by `createCrudService` in `crud.ts`):
+
+1. **Validates the body with a zod schema** of the table's writable columns (`matchFields`, `playerFields`, ...): required fields, types, formats (uuid ids, integer team ids, `YYYY-MM-DD` dates, `HH:MM` kickoff, slug and Wikidata id patterns, http(s) links) and sane ranges (scores 0-99, possession 0-100, ratings 0-10, and so on). Blank inputs (`''`, whitespace) become `null`, never `''` or `0`. Unknown keys (`id`, `created_at`, a view-only column like `stadium_display_name`) are stripped, not written. An update takes the same fields, all optional, plus `id`.
+2. **Runs cross-field rules** on the row as it will be after the write. For an update, that's the stored row merged with the changes, so a partial update can't sidestep a rule.
+3. **Writes** with the service-role client (player stats create is an upsert on `player_id, match_id`).
+4. **Invalidates the right caches** via `src/lib/data/cache-invalidation.ts`.
+
+Responses:
+
+| Outcome | Status | Body |
+|---|---|---|
+| Saved | 200 | `{ data, message, success: true, warnings }` |
+| Invalid input (schema, a rule, a database constraint) - nothing written | 400 | `{ error, code: 'VALIDATION_ERROR' }`, `error` naming the field(s), e.g. `date: must be a date (YYYY-MM-DD)` |
+| No row with that `id` | 404 | `{ error, code: 'NOT_FOUND' }` |
+| Anything unexpected | 500 | `{ error, code }` |
+
+Cross-field rules:
+
+- **Match scores** (`src/lib/admin/match-score-rules.ts`, shared with the admin form so it can show the same messages live). `spurs_score`/`opponent_score` are the 90-minute score, `_aet` the score after extra time, `_pens` the shootout. Errors: each pair (90-minute, extra-time, penalties) is both-or-neither; extra time needs a level 90-minute score; extra-time goals can't go down; penalties need a level deciding score (after extra time if entered, else 90 minutes); a shootout can't end level. **Warning only:** penalties with no extra-time score ("Did this match go to extra time?"), since some competitions go straight to penalties (every League Cup shootout on record) but FA Cup ties have been entered without their AET score by mistake. The form shows it and the save goes ahead; the API returns it in `warnings`. There are deliberately no competition-specific rules.
+- **Match:** home and away teams differ; shots on target ≤ total shots per side.
+- **Stadium:** closed date not before opened date. Un-ticking `spurs_women` is refused while any match is linked to the ground (every match's ground has to be a Spurs Women ground).
+- **Stadium name:** `valid_to` not before `valid_from`.
+- **Media:** `url` must be an http(s) link, except for a `photo album`, whose url is a gallery folder key.
+- **Player history:** `left_on` not before `joined_on`; `on_loan_from_team_id` isn't the same team.
+- **Player stats:** minute off not before minute on; shots on target ≤ shots; passes completed ≤ attempted.
+
+Every stored row passed all of these when they were introduced (checked against the full database on 2026-11-27), so none blocks editing existing data.
 
 ### Matches API
 **Endpoint**: `/api/admin/matches`
@@ -234,7 +270,8 @@ All entity routes below also implement `PUT` (update by `id`) and `DELETE` (dele
 **POST** - Create a new match
 - Requires authentication
 - Requires admin authorization
-- Auto-calculates home/away team IDs based on `is_home_match` flag
+- Takes `home_team_id`/`away_team_id` directly; the admin form works them out from the `is_home_match` flag and the opponent (`buildMatchPayload`, `src/lib/admin-match-payload.ts`)
+- Enforces the match score rules (see "Input validation") and returns any warnings
 - Returns created match data
 
 **GET** - Fetch all matches
@@ -342,10 +379,11 @@ All entity routes below also implement `PUT` (update by `id`) and `DELETE` (dele
 
 **PUT** / **DELETE** - Update / delete a stadium by `id`
 - Requires authentication and admin authorization
+- `PUT` refuses to set `spurs_women` to false on a ground with matches, with an error the admin form shows
 
 ### Stadium Names API
 **Endpoint**: `/api/admin/stadium-names`
-**Methods**: GET, POST, DELETE (no PUT)
+**Methods**: GET, POST, PUT, DELETE
 
 **POST** - Create a new stadium name entry
 - Requires authentication
@@ -355,8 +393,9 @@ All entity routes below also implement `PUT` (update by `id`) and `DELETE` (dele
 **GET** - Fetch all stadium names
 - Requires authentication and admin authorization
 
-**DELETE** - Delete a stadium name entry by `id`
+**PUT** / **DELETE** - Update / delete a stadium name entry by `id`
 - Requires authentication and admin authorization
+- `PUT` was missing until WEB-83, so editing a stadium name in the admin UI always failed
 
 ### Seasons API
 **Endpoint**: `/api/admin/seasons`
@@ -493,11 +532,15 @@ Required environment variables:
 
 4. **Server-Side Operations**: Sensitive operations are performed server-side via API routes, not directly from the client.
 
+5. **Input Validation**: Every admin write is validated server-side before it reaches the database (see "Input validation" above).
+
+6. **Competition icons**: `competitions.icon_svg` (edited in Supabase directly; there's no admin route for competitions) is never rendered as raw HTML. `CompetitionIcon` parses it against an allowlist of SVG elements and presentation attributes (`src/lib/utils/safe-svg.ts`) and renders React elements; anything else (scripts, event handlers, links, styles, text) makes it fall back to a generic icon.
+
 ## Database Schema Notes
 
 1. **Stadium Table Name**: The stadium table is named `stadia` (plural) in the database. The code queries `stadia` consistently (`src/lib/data/stadiums.ts`, `src/lib/data/query-builders.ts`, `src/app/api/admin/stadia/route.ts`) - there's no fallback to `stadiums`/`stadium` table names.
 
-2. **ID Types**: Most entities use UUID strings for IDs, but teams and seasons use integer IDs (players use UUID strings, like most other entities).
+2. **ID Types**: Every entity uses UUID string IDs except teams, which use serial integer IDs.
 
 3. **Player Stats Upsert**: Player stats use `upsert` with conflict resolution on `player_id, match_id` to allow updating existing stats.
 
@@ -507,7 +550,6 @@ Required environment variables:
 
 Potential improvements to the admin system:
 - Add bulk import/export capabilities
-- Add data validation on the server side (tracked in WEB-83)
 - Add audit logging for admin operations
 - Implement role-based access control for multiple admin users
 - ~~Add file upload for media instead of URL input~~ - partially done: WEB-149 added a mobile photo-album upload flow (see "Photo Upload API" above); the Media form's URL input (for single photos/articles/social/video links) is unchanged

@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useSearchPagination } from '@/hooks/useSearchPagination';
-import { callAdminApi } from '@/lib/api-client';
+import { callAdminApi, describeAdminError } from '@/lib/api-client';
 import type { Player, PlayerStats, PlayerHistory } from '@/types/spurs-women-admin';
 
 const PLAYERS_PER_PAGE = 20;
@@ -261,22 +261,20 @@ export function usePlayersAdmin({ players, setPlayers, setLoading, showMessage }
         // <select>'s onChange already normalizes '' to null - see PlayerHistoryModal).
         left_on: playerHistoryForm.left_on || null,
       };
-      const response = editingPlayerHistoryId
-        ? await callAdminApi('player-history', 'PUT', { id: editingPlayerHistoryId, ...payload })
-        : await callAdminApi('player-history', 'POST', payload);
-      if (response.error) {
-        setPlayerHistoryFormError(response.error);
+      if (editingPlayerHistoryId) {
+        await callAdminApi('player-history', 'PUT', { id: editingPlayerHistoryId, ...payload });
       } else {
-        showMessage(editingPlayerHistoryId ? 'Player history updated successfully' : 'Player history created successfully', 'success');
-        closePlayerHistoryModal();
-        const playerHistoryRes = await callAdminApi('player-history', 'GET');
-        if (playerHistoryRes.data) {
-          const allPlayerHistory = playerHistoryRes.data as PlayerHistory[];
-          setRelatedPlayerHistory(allPlayerHistory.filter(ph => ph.player_id === editingPlayerId));
-        }
+        await callAdminApi('player-history', 'POST', payload);
+      }
+      showMessage(editingPlayerHistoryId ? 'Player history updated successfully' : 'Player history created successfully', 'success');
+      closePlayerHistoryModal();
+      const playerHistoryRes = await callAdminApi('player-history', 'GET');
+      if (playerHistoryRes.data) {
+        const allPlayerHistory = playerHistoryRes.data as PlayerHistory[];
+        setRelatedPlayerHistory(allPlayerHistory.filter(ph => ph.player_id === editingPlayerId));
       }
     } catch (error) {
-      setPlayerHistoryFormError(editingPlayerHistoryId ? 'Error updating player history' : 'Error creating player history');
+      setPlayerHistoryFormError(describeAdminError(editingPlayerHistoryId ? 'Error updating player history' : 'Error creating player history', error));
       console.error('Error saving player history:', error);
     } finally {
       setLoading(false);

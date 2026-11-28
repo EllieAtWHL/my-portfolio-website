@@ -248,4 +248,29 @@ describe('MatchForm', () => {
       expect(onSubmit).not.toHaveBeenCalled();
     });
   });
+
+  describe('score checks', () => {
+    it('shows nothing for valid scores', () => {
+      render(<MatchForm {...baseProps} matchForm={{ ...baseForm, spurs_score: 2, opponent_score: 1 }} />);
+
+      expect(screen.queryByText(/only possible|Did this match go to extra time|Enter both/)).not.toBeInTheDocument();
+    });
+
+    it('shows a score error, with the Extra Time section closed', () => {
+      render(
+        <MatchForm {...baseProps} matchForm={{ ...baseForm, spurs_score: 2, opponent_score: 1, spurs_score_aet: 3, opponent_score_aet: 1 }} />
+      );
+
+      expect(screen.getByText('Extra time is only possible when the 90-minute score is level.')).toBeInTheDocument();
+    });
+
+    it('shows the penalties-without-extra-time warning without disabling the save button', () => {
+      render(
+        <MatchForm {...baseProps} matchForm={{ ...baseForm, spurs_score: 1, opponent_score: 1, spurs_score_pens: 4, opponent_score_pens: 3 }} />
+      );
+
+      expect(screen.getByText(/Did this match go to extra time\?/)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Add Match|Save|Create/i })).toBeEnabled();
+    });
+  });
 });

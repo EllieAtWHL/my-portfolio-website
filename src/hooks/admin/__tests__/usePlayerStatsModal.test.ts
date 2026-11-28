@@ -4,6 +4,7 @@ import { callAdminApi } from '@/lib/api-client';
 import type { PlayerStats } from '@/types/spurs-women-admin';
 
 jest.mock('@/lib/api-client', () => ({
+  describeAdminError: jest.requireActual('@/lib/api-client').describeAdminError,
   callAdminApi: jest.fn(),
 }));
 
@@ -364,7 +365,7 @@ describe('usePlayerStatsModal', () => {
     });
 
     it('sets the form error and does not close the modal or refresh when the API returns an error', async () => {
-      mockCallAdminApi.mockResolvedValueOnce({ error: 'Duplicate player stats record' });
+      mockCallAdminApi.mockRejectedValueOnce(new Error('Duplicate player stats record'));
       const { result, setRelatedPlayerStats, showMessage } = setup();
 
       act(() => result.current.openNew('match'));
@@ -374,7 +375,7 @@ describe('usePlayerStatsModal', () => {
         await result.current.handleSubmit();
       });
 
-      expect(result.current.playerStatsFormError).toBe('Duplicate player stats record');
+      expect(result.current.playerStatsFormError).toBe('Error creating player stats: Duplicate player stats record');
       expect(result.current.showPlayerStatsModal).toBe(true);
       expect(setRelatedPlayerStats).not.toHaveBeenCalled();
       expect(showMessage).not.toHaveBeenCalled();
@@ -393,7 +394,7 @@ describe('usePlayerStatsModal', () => {
         await result.current.handleSubmit();
       });
 
-      expect(result.current.playerStatsFormError).toBe('Error creating player stats');
+      expect(result.current.playerStatsFormError).toBe('Error creating player stats: network down');
       expect(result.current.showPlayerStatsModal).toBe(true);
       expect(setLoading.mock.calls[setLoading.mock.calls.length - 1]).toEqual([false]);
       expect(consoleErrorSpy).toHaveBeenCalled();
@@ -432,7 +433,7 @@ describe('usePlayerStatsModal', () => {
         await result.current.handleSubmit();
       });
 
-      expect(result.current.playerStatsFormError).toBe('Error updating player stats');
+      expect(result.current.playerStatsFormError).toBe('Error updating player stats: network down');
     });
   });
 
